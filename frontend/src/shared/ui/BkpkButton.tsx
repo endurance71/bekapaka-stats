@@ -1,0 +1,58 @@
+import { motion } from 'framer-motion';
+import { cn } from '../lib/utils';
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+
+export interface BkpkButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    children: ReactNode;
+    variant?: 'primary' | 'ghost' | 'outline' | 'destructive';
+    size?: 'sm' | 'md' | 'lg';
+    loading?: boolean;
+    className?: string;
+}
+
+const variants = {
+    primary: 'bg-bkpk-primary-fill text-white hover:bg-bkpk-primary-fill-hover active:bg-bkpk-primary-fill-active shadow-bkpk-glow',
+    ghost: 'bg-bkpk-surface-tint-2 text-bkpk-text-primary hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong backdrop-blur-sm',
+    outline: 'bg-transparent border-2 border-bkpk-primary text-bkpk-primary hover:bg-bkpk-primary/10',
+    destructive: 'bg-bkpk-danger-fill text-white hover:bg-bkpk-danger-fill-hover active:bg-bkpk-danger-fill-active',
+};
+
+const sizes = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-5 py-2.5 text-base',
+    lg: 'px-8 py-3.5 text-lg',
+};
+
+export default function BkpkButton({
+    children,
+    variant = 'primary',
+    size = 'md',
+    loading = false,
+    className,
+    disabled,
+    ...props
+}: BkpkButtonProps) {
+    return (
+        <motion.button
+            className={cn(
+                'relative inline-flex items-center justify-center rounded-bkpk-md font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden',
+                variants[variant],
+                sizes[size],
+                className
+            )}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={disabled || loading}
+            {...(props as any)}
+        >
+            {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-inherit">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                </div>
+            )}
+            <span className={cn(loading && 'opacity-0')}>
+                {children}
+            </span>
+        </motion.button>
+    );
+}

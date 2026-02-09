@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  bkpk-db:
+    image: postgres:15-alpine
+    container_name: bkpk-db-prod
+    restart: always
+    environment:
+      POSTGRES_USER: bekapaka
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: bekapaka_stats
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    networks:
+      - bkpk-network
+
+  bkpk-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bkpk-backend-prod
+    restart: always
+    environment:
+      DATABASE_URL: postgres://bekapaka:${DB_PASSWORD}@bkpk-db:5432/bekapaka_stats
+      DB_HOST: bkpk-db
+      DB_USER: bekapaka
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: bekapaka_stats
+      NODE_ENV: production
+      PORT: 4001
+      JWT_SECRET: ${JWT_SECRET}
+      TZ: Europe/Warsaw
+    depends_on:
+      - bkpk-db
+    ports:
+      - "4001:4001"
+    networks:
+      - bkpk-network
+
+  bkpk-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    container_name: bkpk-frontend-prod
+    restart: always
+    ports:
+      - "8081:80"
+    depends_on:
+      - bkpk-backend
+    networks:
+      - bkpk-network
+
+networks:
+  bkpk-network:
+    name: bkpk-network
+    driver: bridge
