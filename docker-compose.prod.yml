@@ -15,9 +15,7 @@ services:
       - bkpk-network
 
   bkpk-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/endurance71/bekapaka-stats/backend:latest
     container_name: bkpk-backend-prod
     restart: always
     environment:
@@ -38,9 +36,7 @@ services:
       - bkpk-network
 
   bkpk-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/endurance71/bekapaka-stats/frontend:latest
     container_name: bkpk-frontend-prod
     restart: always
     ports:
