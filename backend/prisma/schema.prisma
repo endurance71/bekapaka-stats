@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Game {
+  id          String   @id @default(uuid())
+  date        DateTime
+  opponent    String
+  homeAway    String   @default("home") // "home" | "away"
+  result      String?  // "W" | "L" | null (if not played yet)
+  scoreUs     Int?
+  scoreThem   Int?
+  
+  // Statystyki zespołowe
+  teamStats   Json?
+  
+  // Box score (statystyki zawodników)
+  playerStats Json?
+  
+  // Notatki i analiza
+  notes       String?
+  mvp         String?
+  videoUrl    String?
+  tags        String[] @default([])
+  
+  // Stare pole dla kompatybilności wstecznej
+  data        Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RosterPlayer {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  number       Int?
+  position     String?  // "PG", "SG", "SF", "PF", "C"
+  birthDate    String?
+  heightCm     Int?
+  starter      Boolean  @default(false)
+  
+  // Powiązanie z KALK
+  kalkPlayerId String?  @unique
+  kalkPlayer   KalkPlayer? @relation(fields: [kalkPlayerId], references: [id])
+  
+  // Statystyki (obliczane z meczów)
+  gamesPlayed  Int      @default(0)
+  ppg          Float    @default(0)
+  rpg          Float    @default(0)
+  apg          Float    @default(0)
+  fgPercentage Float    @default(0)
+  threePercentage Float @default(0)
+  ftPercentage Float    @default(0)
+  
+  // Advanced Stats
+  tsPercentage Float    @default(0)
+  eFgPercentage Float   @default(0)
+  plusMinus    Float    @default(0)
+  
+  // Raw Totals (for aggregation)
+  pts          Int      @default(0)
+  fgm          Int      @default(0)
+  fga          Int      @default(0)
+  threePm      Int      @default(0)
+  threePa      Int      @default(0)
+  ftm          Int      @default(0)
+  fta          Int      @default(0)
+  orb          Int      @default(0)
+  drb          Int      @default(0)
+  reb          Int      @default(0)
+  ast          Int      @default(0)
+  stl          Int      @default(0)
+  blk          Int      @default(0)
+  tov          Int      @default(0)
+  
+  // Cele osobiste
+  goals        Json?    // { "ppg": 25, "fgPercentage": 50, "turnovers": 3 }
+  
+  // Stare pole dla kompatybilności
+  data         Json?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Auth
+  username     String?  @unique
+  password     String?
+  role         String   @default("USER") // "USER" | "ADMIN"
+}
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  username  String
+  success   Boolean
+  ipAddress String?
+  timestamp DateTime @default(now())
+}
+
+model KalkPlayer {
+  id            String   @id
+  name          String
+  team          String?
+  pointsTotal   Float?
+  pointsAverage Float?
+  matchesPlayed Int?
+  eval          Float?
+  profileUrl    String?
+  threePointStats String? // e.g. "14/40 (35%)"
+  raw           Json?
+  
+  // Relacja do RosterPlayer
+  rosterPlayer  RosterPlayer?
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model KalkScrapeRun {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  finishedAt DateTime?
+  status     String
+  message    String?
+  filePath   String
+  newPlayers Json?
+  log        Json?
+}
+
+model Training {
+  id         String   @id @default(uuid())
+  date       DateTime
+  focus      String[] @default([]) // ["rzuty-wolne", "obrona-pilki"]
+  attendance Json?    // { "present": ["id1", "id2"], "absent": ["id3"] }
+  notes      String?
+  duration   Int?     // minuty
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Play {
+  id          String   @id @default(uuid())
+  name        String
+  category    String   // "offense" | "defense" | "fastbreak"
+  diagram     String?  // URL do diagramu lub SVG
+  description String?
+  videoUrl    String?
+  
+  // Statystyki skuteczności
+  attempts    Int      @default(0)
+  successes   Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model LeagueTeam {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  matches       Int      @default(0)
+  points        Int      @default(0)
+  wins          Int      @default(0)
+  losses        Int      @default(0)
+  pointsFor     Int      @default(0)
+  pointsAgainst Int      @default(0)
+  
+  updatedAt     DateTime @updatedAt
+}
+
+model LeagueMatch {
+  id          String   @id @default(uuid())
+  date        DateTime
+  homeTeam    String
+  guestTeam   String
+  scoreHome   Int?
+  scoreAway   Int?
+  isFinished  Boolean  @default(false)
+  protocolUrl String?
+  details     Json?    // Store full scraped protocol here (quarters, etc.)
+  
+  updatedAt   DateTime @updatedAt
+}

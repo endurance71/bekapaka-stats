@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: bekapaka
+      POSTGRES_PASSWORD: bekapaka_pass
+      POSTGRES_DB: bekapaka_stats
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://bekapaka:bekapaka_pass@db:5432/bekapaka_stats
+      DB_HOST: db
+      DB_USER: bekapaka
+      DB_PASSWORD: bekapaka_pass
+      DB_NAME: bekapaka_stats
+      PORT: 4000
+      TZ: Europe/Warsaw
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app_sync:delegated
+      - /app/node_modules
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    working_dir: /app
+    volumes:
+      - ./frontend:/app_sync:delegated
+      - /app/node_modules
+    environment:
+      TZ: Europe/Warsaw
+      VITE_API_TARGET: http://backend:4000
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    depends_on:
+      - backend
+    ports:
+      - "8080:5173"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

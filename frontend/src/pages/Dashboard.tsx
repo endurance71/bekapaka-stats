@@ -1,0 +1,213 @@
+import { useCallback, useEffect, useState } from 'react';
+import { fetchJSON } from '../lib/api';
+import { Activity, Database, Calendar } from 'lucide-react';
+import BkpkCard from '../shared/ui/BkpkCard';
+import KalkEmptyState from '../shared/ui/KalkEmptyState';
+
+// 2026 UI Components
+import DashboardLayout from '../features/dashboard/DashboardLayout';
+import { WinCard, PPGCard, RatingCard } from '../features/dashboard/HeroStatsCards';
+import { FormTrendMiniChart } from '../features/dashboard/FormTrendMiniChart';
+import { NextChallengeWidget } from '../features/dashboard/NextChallengeWidget';
+
+// Temporary Legacy Components (until refactored)
+import TopPlayersCard from '../components/dashboard/TopPlayersCard';
+import TrainingPrioritiesCard from '../components/dashboard/TrainingPrioritiesCard';
+import ScoutingCard from '../components/dashboard/ScoutingCard';
+import DashboardMomentum from '../components/games/DashboardMomentum';
+
+type Game = {
+  id: string;
+  date: string;
+  opponent: string;
+  result?: 'W' | 'L' | null;
+  scoreUs?: number | null;
+  scoreThem?: number | null;
+  homeAway?: string;
+  mvp?: string | null;
+  fiveMinute?: any[];
+};
+
+type Player = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  ppg: number;
+};
+
+export default function Dashboard() {
+  const [games, setGames] = useState<Game[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [recordStats, setRecordStats] = useState({ wins: 0, losses: 0, total: 0, remaining: 0 });
+  const [nextMatch, setNextMatch] = useState<any>(null);
+  const [trainingStats, setTrainingStats] = useState<any>(null);
+  const [scoutingData, setScoutingData] = useState<any>(null);
+  const [lastGameFull, setLastGameFull] = useState<any>(null);
+  const [teamStats, setTeamStats] = useState<any>(null);
+
+  const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [gamesData, playersData, scheduleData, trainingData, scouting, tStats] = await Promise.all([
+        fetchJSON<Game[]>('/api/games'),
+        fetchJSON<Player[]>('/api/players'),
+        fetchJSON<any[]>('/api/league/schedule'),
+        fetchJSON<any>('/api/training/priorities'),
+        fetchJSON<any>('/api/scouting/next'),
+        fetchJSON<any>('/api/team/stats')
+      ]);
+
+      const played = (gamesData || []).filter(g => g.result);
+      const wins = played.filter(g => g.result === 'W').length;
+      const losses = played.filter(g => g.result === 'L').length;
+
+      setGames(gamesData || []);
+      setPlayers(playersData || []);
+      setTrainingStats(trainingData);
+      setScoutingData(scouting);
+      setTeamStats(tStats);
+
+      const ourSchedule = (scheduleData || []).filter(m =>
+        m.homeTeam?.toLowerCase().includes('bekapaka') ||
+        m.guestTeam?.toLowerCase().includes('bekapaka')
+      );
+
+      setRecordStats({
+        wins,
+        losses,
+        total: ourSchedule.length,
+        remaining: ourSchedule.filter(m => !m.isFinished).length
+      });
+
+      const sortedFuture = ourSchedule
+        .filter(m => !m.isFinished && new Date(m.date) >= new Date())
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      setNextMatch(sortedFuture[0] || null);
+
+      if (played.length > 0) {
+        const full = await fetchJSON<any>(`/api/games/${played[0].id}`);
+        setLastGameFull(full);
+      }
+    } catch (error) {
+      console.error('Błąd pobierania danych:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
+  const ppg = players.reduce((acc, p) => acc + p.ppg, 0) / (players.length || 1);
+  const recentTrendMatches = games.filter(g => g.result).slice(0, 10).map(g => ({
+    id: g.id,
+    result: g.result as 'W' | 'L',
+    score: `${g.scoreUs}-${g.scoreThem}`,
+    date: g.date
+  }));
+
+  return (
+    <DashboardLayout
+      header={
+        <>
+          <h1 className="text-3xl font-bold text-bkpk-text-primary font-outfit">Pulpit</h1>
+          <div className="flex items-center gap-2">
+            <p className="text-bkpk-text-secondary text-sm">Witamy w centrum dowodzenia BeKaPaKa 2026</p>
+            <span className="text-xs bg-bkpk-primary/20 text-bkpk-primary px-2 py-0.5 rounded-full font-bold border border-bkpk-primary/30">v3.1</span>
+          </div>
+        </>
+      }
+      hero={
+        <>
+          <WinCard
+            winPercentage={recordStats.total > 0 ? (recordStats.wins / (recordStats.wins + recordStats.losses)) * 100 : 0}
+            wins={recordStats.wins}
+            losses={recordStats.losses}
+            loading={loading}
+          />
+          <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend || 0} />
+          <RatingCard offRating={teamStats?.offRating || 0} defRating={teamStats?.defRating || 0} />
+        </>
+      }
+      main={
+        <div className="space-y-8">
+          <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
+
+          {lastGameFull?.data?.fiveMinute || lastGameFull?.data?.quarters ? (
+            <BkpkCard
+              title="Dynamika Ostatniego Meczu"
+              icon={<Activity className="w-5 h-5 text-bkpk-primary" />}
+            >
+              <DashboardMomentum
+                data={lastGameFull.data.fiveMinute || (() => {
+                  const isHome = lastGameFull.homeAway === 'home';
+                  let homeSum = 0;
+                  let awaySum = 0;
+                  const homePoints: number[] = [];
+                  const awayPoints: number[] = [];
+
+                  lastGameFull.data.quarters.forEach((q: any) => {
+                    homeSum += q.home;
+                    awaySum += q.away;
+                    homePoints.push(homeSum);
+                    awayPoints.push(awaySum);
+                  });
+
+                  return [
+                    { team: 'BB', points: isHome ? homePoints : awayPoints },
+                    { team: 'OP', points: isHome ? awayPoints : homePoints }
+                  ];
+                })()}
+                bkCode="BB"
+                oppCode="OP"
+                step={lastGameFull.data.fiveMinute ? 5 : 10}
+              />
+            </BkpkCard>
+          ) : !loading && (
+            <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
+              <Database className="w-4 h-4 text-bkpk-text-muted" />
+              <span className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest">Brak danych o dynamice meczu</span>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <ScoutingCard data={scoutingData} loading={loading} />
+            {trainingStats && (
+              <TrainingPrioritiesCard
+                teamStats={trainingStats.team}
+                leagueAverage={trainingStats.league}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
+      }
+      sidebar={
+        <div className="space-y-8">
+          {nextMatch ? (
+            <NextChallengeWidget
+              opponent={nextMatch.homeTeam?.toLowerCase().includes('bekapaka') ? nextMatch.guestTeam : nextMatch.homeTeam}
+              date={new Date(nextMatch.date).toLocaleDateString('pl-PL')}
+              time={new Date(nextMatch.date).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}
+              location={nextMatch.venue || "Hala Sportowa"}
+              difficulty={3}
+              homeAway={nextMatch.homeTeam?.toLowerCase().includes('bekapaka') ? 'Dom' : 'Wyjazd'}
+            />
+          ) : !loading && (
+            <div className="p-8 bg-bkpk-surface-tint-2 border-2 border-dashed border-bkpk-border-strong rounded-3xl text-center space-y-4">
+              <Calendar className="w-8 h-8 text-bkpk-text-muted mx-auto" />
+              <div className="space-y-1">
+                <p className="font-bold text-bkpk-text-primary uppercase tracking-tight">Brak zaplanowanych meczów</p>
+                <p className="text-xs text-bkpk-text-muted">Uruchom scraper w Administracji, aby pobrać aktualny terminarz.</p>
+              </div>
+            </div>
+          )}
+          <TopPlayersCard players={players} loading={loading} />
+        </div>
+      }
+    />
+  );
+}
