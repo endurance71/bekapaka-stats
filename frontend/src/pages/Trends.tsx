@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TrendingUp, PieChart, Target, Zap, Activity, Info, BarChart2 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface TeamTrend {
   gameId: string;
@@ -49,6 +50,7 @@ export default function Trends() {
   const [trends, setTrends] = useState<TeamTrend[]>([]);
   const [comparison, setComparison] = useState<LeagueComparison | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     Promise.all([
@@ -142,7 +144,7 @@ export default function Trends() {
               </div>
 
 
-              <div className="h-[400px] w-full mt-4">
+              <div className="w-full mt-4" style={{ height: isMobile ? '220px' : '400px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trends}>
                     <defs>
@@ -155,33 +157,38 @@ export default function Trends() {
                     <XAxis
                       dataKey="formattedDate"
                       stroke="var(--bkpk-text-muted)"
-                      fontSize={11}
+                      fontSize={10}
                       tickLine={false}
                       axisLine={false}
                       dy={10}
+                      interval={isMobile ? Math.ceil(trends.length / 4) : 0}
                     />
                     <YAxis
                       yAxisId="left"
                       stroke="var(--bkpk-text-muted)"
-                      fontSize={11}
+                      fontSize={10}
                       tickLine={false}
                       axisLine={false}
                       dx={-10}
+                      width={isMobile ? 25 : 40}
                     />
                     <YAxis
                       yAxisId="right"
                       orientation="right"
                       stroke="var(--bkpk-text-muted)"
-                      fontSize={11}
+                      fontSize={10}
                       tickLine={false}
                       axisLine={false}
+                      width={isMobile ? 25 : 40}
                     />
                     <Tooltip
+                      trigger={isMobile ? 'click' : 'hover'}
                       contentStyle={{
                         backgroundColor: 'var(--bkpk-color-surface-elevated)',
                         border: '1px solid var(--bkpk-border-strong)',
                         borderRadius: '12px',
-                        backdropFilter: 'blur(10px)'
+                        backdropFilter: 'blur(10px)',
+                        fontSize: '12px'
                       }}
                       itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
                     />
@@ -215,19 +222,21 @@ export default function Trends() {
                 <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">DNA Zdobywanych Punktów</h3>
               </div>
 
-              <div className="h-[300px] w-full">
+              <div className="w-full" style={{ height: isMobile ? '200px' : '300px' }}>
                 {trends.length > 0 && trends.some(t => (t.benchPoints || 0) + (t.fastBreakPoints || 0) + (t.pointsOffTO || 0) + (t.secondChancePoints || 0) > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={trends}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-3)" />
-                      <XAxis dataKey="formattedDate" stroke="var(--bkpk-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis stroke="var(--bkpk-text-muted)" fontSize={11} tickLine={false} axisLine={false} />
+                      <XAxis dataKey="formattedDate" stroke="var(--bkpk-text-muted)" fontSize={10} tickLine={false} axisLine={false} interval={isMobile ? Math.ceil(trends.length / 4) : 0} />
+                      <YAxis stroke="var(--bkpk-text-muted)" fontSize={10} tickLine={false} axisLine={false} width={isMobile ? 25 : 35} />
                       <Tooltip
+                        trigger={isMobile ? 'click' : 'hover'}
                         cursor={{ fill: 'var(--bkpk-surface-tint-1)' }}
                         contentStyle={{
                           backgroundColor: 'var(--bkpk-color-surface-elevated)',
                           border: '1px solid var(--bkpk-border-strong)',
-                          borderRadius: '12px'
+                          borderRadius: '12px',
+                          fontSize: '12px'
                         }}
                       />
                       <Bar dataKey="benchPoints" name="Ławka" stackId="a" fill="var(--color-bkpk-success)" radius={[0, 0, 0, 0]} />
@@ -253,11 +262,11 @@ export default function Trends() {
                 <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Porównanie z Ligą</h3>
                 <p className="text-xs text-bkpk-text-secondary uppercase tracking-widest font-bold">Względem średniej (100%)</p>
               </div>
-              <div className="h-[300px] w-full">
+              <div className="w-full" style={{ height: isMobile ? '220px' : '300px' }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                  <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '65%' : '80%'} data={radarData}>
                     <PolarGrid stroke="var(--bkpk-surface-tint-3)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: 11, fontWeight: 'bold' }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: isMobile ? 9 : 11, fontWeight: 'bold' }} />
                     <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
                     <Radar
                       name="BeKaPaKa"
@@ -268,10 +277,12 @@ export default function Trends() {
                       strokeWidth={3}
                     />
                     <Tooltip
+                      trigger={isMobile ? 'click' : 'hover'}
                       contentStyle={{
                         backgroundColor: 'var(--bkpk-color-surface-elevated)',
                         border: '1px solid var(--bkpk-border-strong)',
-                        borderRadius: '12px'
+                        borderRadius: '12px',
+                        fontSize: '12px'
                       }}
                     />
                   </RadarChart>

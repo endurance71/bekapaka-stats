@@ -72,7 +72,7 @@ export default function MatchCard({
                 </div>
 
                 {/* Score / Status */}
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-6 justify-between w-full md:w-auto md:justify-start">
                     {isPlayed ? (
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center">

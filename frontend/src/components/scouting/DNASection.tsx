@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkTooltip from '../../shared/ui/BkpkTooltip';
 import { Activity, Target, Crosshair, HelpCircle } from 'lucide-react';
+import useIsMobile from '../../hooks/useIsMobile';
 
 interface DNAProps {
     data: {
@@ -15,6 +15,8 @@ interface DNAProps {
 }
 
 export const DNASection: React.FC<DNAProps> = ({ data }) => {
+    const isMobile = useIsMobile();
+
     if (!data) return null;
 
     const { pace, shotProfile, fourFactors } = data;
@@ -116,15 +118,15 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                     className="h-full"
                     overflowVisible={true}
                 >
-                    <div className="h-48 w-full relative mb-4">
-                        <ResponsiveContainer>
+                    <div className="w-full relative mb-4" style={{ height: isMobile ? '160px' : '192px' }}>
+                        <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={pieData}
                                     cx="50%"
                                     cy="50%"
-                                    innerRadius={50}
-                                    outerRadius={70}
+                                    innerRadius={isMobile ? 40 : 50}
+                                    outerRadius={isMobile ? 55 : 70}
                                     paddingAngle={5}
                                     dataKey="value"
                                     stroke="none"
@@ -134,13 +136,14 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    contentStyle={{ background: 'var(--bkpk-color-surface-elevated)', border: '1px solid var(--bkpk-border-strong)', borderRadius: 12, color: 'var(--bkpk-text-primary)' }}
+                                    trigger={isMobile ? 'click' : 'hover'}
+                                    contentStyle={{ background: 'var(--bkpk-color-surface-elevated)', border: '1px solid var(--bkpk-border-strong)', borderRadius: 12, color: 'var(--bkpk-text-primary)', fontSize: '12px' }}
                                     itemStyle={{ color: 'var(--bkpk-text-primary)' }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-caption font-black text-bkpk-text-muted uppercase tracking-widest">Wykres</span>
+                            <span className="text-xs font-black text-bkpk-text-muted uppercase tracking-widest">Wykres</span>
                         </div>
                     </div>
 

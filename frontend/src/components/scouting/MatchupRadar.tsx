@@ -3,6 +3,7 @@ import React from 'react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { Crosshair } from 'lucide-react';
+import useIsMobile from '../../hooks/useIsMobile';
 
 interface Stats {
     ppg: number;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export const MatchupRadar: React.FC<Props> = ({ opponent, bekapaka }) => {
+    const isMobile = useIsMobile();
 
     const data = [
         { subject: 'Ofensywa', A: Number(bekapaka.ppg.toFixed(2)), B: Number(opponent.ppg.toFixed(2)), fullMark: 100 },
@@ -32,16 +34,16 @@ export const MatchupRadar: React.FC<Props> = ({ opponent, bekapaka }) => {
             title="Analiza Porównawcza"
             icon={<Crosshair className="w-5 h-5 text-bkpk-primary" />}
             variant="glass"
-            className="h-full min-h-[400px]"
+            className="h-full min-h-[350px]"
         >
             <div className="flex flex-col h-full">
-                <div className="flex-1 w-full h-[300px] -ml-4">
+                <div className="flex-1 w-full -ml-4" style={{ height: isMobile ? '220px' : '300px' }}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+                        <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '58%' : '70%'} data={data}>
                             <PolarGrid stroke="var(--bkpk-border-subtle)" strokeDasharray="3 3" />
                             <PolarAngleAxis
                                 dataKey="subject"
-                                tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: 12, fontWeight: 700 }}
+                                tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: isMobile ? 10 : 12, fontWeight: 700 }}
                             />
                             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
 
@@ -62,12 +64,13 @@ export const MatchupRadar: React.FC<Props> = ({ opponent, bekapaka }) => {
                                 fillOpacity={0.4}
                             />
                             <Legend
-                                wrapperStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                                iconSize={10}
+                                wrapperStyle={{ fontSize: isMobile ? '10px' : '12px', fontWeight: 'bold' }}
+                                iconSize={isMobile ? 8 : 10}
                             />
                             <Tooltip
-                                contentStyle={{ background: 'var(--bkpk-color-surface-elevated)', border: '1px solid var(--bkpk-border-strong)', borderRadius: 12, color: 'var(--bkpk-text-primary)' }}
-                                itemStyle={{ color: 'var(--bkpk-text-primary)', fontSize: '12px', fontWeight: 'bold' }}
+                                trigger={isMobile ? 'click' : 'hover'}
+                                contentStyle={{ background: 'var(--bkpk-color-surface-elevated)', border: '1px solid var(--bkpk-border-strong)', borderRadius: 12, color: 'var(--bkpk-text-primary)', fontSize: '12px' }}
+                                itemStyle={{ color: 'var(--bkpk-text-primary)', fontSize: isMobile ? '11px' : '12px', fontWeight: 'bold' }}
                                 labelStyle={{ color: '#94a3b8', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                             />
                         </RadarChart>
