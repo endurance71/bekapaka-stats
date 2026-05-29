@@ -9,8 +9,8 @@ echo "PostgreSQL jest gotowy."
 
 # Uruchom Prisma DB push
 echo "Synchronizacja schematu bazy danych..."
-npx prisma generate
-npx prisma db push --skip-generate || true
+node /app/node_modules/prisma/build/index.js generate
+node /app/node_modules/prisma/build/index.js db push --skip-generate || true
 
 # Synchronizacja kodu z wolumenu (zapobieganie E-35 na Macu)
 if [ -d "/app_sync" ]; then

@@ -20,6 +20,7 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
+from scrapling.fetchers import Fetcher
 
 BASE_URL = 'https://www.kalk-koszalin.com/'
 DIVISION_PATH = 'dzial,dywizja-2,4.html'
@@ -82,14 +83,29 @@ def parse_number(value: Optional[str]) -> Optional[float]:
 
 
 def fetch_soup(session: requests.Session, url: str) -> BeautifulSoup:
-    """Pobierz stronę, uszanuj limit i zwróć BeautifulSoup."""
+    """Pobierz stronę przez Scrapling (z fallbackiem) i zwróć BeautifulSoup."""
     logging.info('Pobieram %s', url)
     time.sleep(RATE_LIMIT_SECONDS)
-    response = session.get(url, headers=HEADERS, timeout=20)
-    response.raise_for_status()
-    # Strona KALK deklaruje UTF-8 w meta charset
-    response.encoding = 'utf-8'
-    text = response.text
+    text = None
+
+    try:
+        page = Fetcher.get(url, timeout=20000, stealthy_headers=True)
+        text = (
+            getattr(page, 'html', None)
+            or getattr(page, 'content', None)
+            or str(page)
+        )
+        if text:
+            logging.info('Pobrano przez Scrapling')
+    except Exception as exc:
+        logging.warning('Scrapling failed (%s), fallback to requests', exc)
+
+    if not text:
+        response = session.get(url, headers=HEADERS, timeout=20)
+        response.raise_for_status()
+        response.encoding = 'utf-8'
+        text = response.text
+
     return BeautifulSoup(text, 'html.parser')
 
 
@@ -135,7 +151,39 @@ def is_our_team(team_value: Optional[str]) -> bool:
     return any(keyword in text for keyword in OUR_TEAM_KEYWORDS)
 
 
-def extract_all_players(soup: BeautifulSoup) -> List[Dict[str, any]]:
+def extract_profile_photo_url(session: requests.Session, profile_url: str) -> Optional[str]:
+    """Pobiera URL zdjęcia z profilu zawodnika."""
+    if not profile_url:
+        return None
+    try:
+        profile_soup = fetch_soup(session, profile_url)
+    except Exception as exc:
+        logging.debug('Nie udało się pobrać profilu %s: %s', profile_url, exc)
+        return None
+
+    selectors = [
+        'img[src*="/zaw/"]',
+        'img[src*="zawodnik"]',
+        'img[src*="players"]',
+        'img[src*="zawodnicy"]',
+        '.zawodnik img',
+        '.player img',
+        '#content img'
+    ]
+
+    for selector in selectors:
+        for node in profile_soup.select(selector):
+            src = node.get('src')
+            if not src:
+                continue
+            src_lower = src.lower()
+            if any(skip in src_lower for skip in ['logo', 'baner', 'banner', 'icon', 'facebook', 'twitter', 'koszalin.jpg', 'zos.jpg']):
+                continue
+            return urljoin(BASE_URL, src)
+    return None
+
+
+def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[Dict[str, any]]:
     """Pobiera skrócone dane wszystkich zawodników (do rankingu)."""
     table = soup.find('table')
     if not table:
@@ -152,6 +200,12 @@ def extract_all_players(soup: BeautifulSoup) -> List[Dict[str, any]]:
         
         name = link.get_text(strip=True)
         profile_url = urljoin(BASE_URL, link['href'])
+        photo_url = None
+        image_node = row.find('img')
+        if image_node and image_node.get('src'):
+            photo_url = urljoin(BASE_URL, image_node['src'])
+        if not photo_url:
+            photo_url = extract_profile_photo_url(session, profile_url)
         
         # Zakładamy kolumny: Lp | Zawodnik | Drużyna | Punkty | Mecze | Średnia
         # Wiersz przykładowy: 1.|Gierłowski Igor|PIWIARNIA BUMERANG|272|8|34,00
@@ -170,7 +224,9 @@ def extract_all_players(soup: BeautifulSoup) -> List[Dict[str, any]]:
             'druzyna': team,
             'mecze_rozegrane': matches,
             'punkty_suma': points,
-            'srednia_punktow': avg
+            'srednia_punktow': avg,
+            'profile_url': profile_url,
+            'photo_url': photo_url
         })
     return players
 
@@ -436,18 +492,44 @@ def main() -> None:
         logging.info(f'Pobrano {len(team_matches)} meczów z terminarza zespołu')
         
         # Merge team matches with general schedule, preferring team data
-        # Create a dict keyed by (date, home, guest) to deduplicate
+        # Create a dict keyed by (date_only, home_normalized, guest_normalized) to deduplicate
+        def extract_date_only(date_str: str) -> str:
+            # 1. Try DD-MM-YYYY or DD.MM.YYYY
+            match = re.search(r'(\d{2})[-.](\d{2})[-.](\d{4})', date_str)
+            if match:
+                return f"{match.group(3)}-{match.group(2)}-{match.group(1)}"
+            # 2. Try YYYY-MM-DD or YYYY.MM.DD
+            match = re.search(r'(\d{4})[-.](\d{2})[-.](\d{2})', date_str)
+            if match:
+                return f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
+            return date_str
+
+        def normalize_team(name: str) -> str:
+            n = normalize_query(name)
+            if 'bekapaka' in n:
+                return 'bekapaka'
+            return n
+
         merged_dict = {}
         
         # First add general schedule
         for m in schedule_matches:
-            key = (m.get('date', ''), m.get('homeTeam', ''), m.get('guestTeam', ''))
+            key = (extract_date_only(m.get('date', '')), normalize_team(m.get('homeTeam', '')), normalize_team(m.get('guestTeam', '')))
             merged_dict[key] = m
         
         # Then overlay team schedule (which has more accurate data)
         for m in team_matches:
-            key = (m.get('date', ''), m.get('homeTeam', ''), m.get('guestTeam', ''))
-            merged_dict[key] = m  # Overwrite if exists
+            key = (extract_date_only(m.get('date', '')), normalize_team(m.get('homeTeam', '')), normalize_team(m.get('guestTeam', '')))
+            if key in merged_dict:
+                existing = merged_dict[key]
+                # Merge: prefer the date with time (the longer string)
+                date_to_keep = existing.get('date') if len(existing.get('date', '')) > len(m.get('date', '')) else m.get('date')
+                merged = {**existing, **m, 'date': date_to_keep}
+                if 'roundUrl' in existing and 'roundUrl' not in merged:
+                    merged['roundUrl'] = existing['roundUrl']
+                merged_dict[key] = merged
+            else:
+                merged_dict[key] = m
         
         # Convert back to list
         schedule_matches = list(merged_dict.values())
@@ -470,7 +552,7 @@ def main() -> None:
                  if rows and len(rows) > 1:
                      logging.info(f"Przykładowy wiersz statystyk: {rows[1].get_text(separator='|', strip=True)}")
             
-            players_list = extract_all_players(stats_soup)
+            players_list = extract_all_players(session, stats_soup)
             logging.info('Pobrano statystyki %d zawodników z ligi.', len(players_list))
         except Exception as exc:
             logging.error('Błąd pobierania statystyk: %s', exc)

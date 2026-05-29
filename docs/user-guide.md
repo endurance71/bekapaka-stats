@@ -23,3 +23,10 @@
 - Dodawaj notatki taktyczne.
 - Priorytety treningowe generują się automatycznie z danych.
 - Taguj kontekst meczu (back-to-back, turniej itd.).
+
+## Aktualizacja danych z ligi (admin)
+1. Wejdź w **Administracja**.
+2. Kliknij **Uruchom pełny import danych** (pobiera tabelę, terminarz i statystyki z kalk-koszalin.com).
+3. Poczekaj na zakończenie (ok. kilka–kilkanaście minut) — status i logi są widoczne na tej samej stronie.
+
+Technicznie: scraping przez [Scrapling](https://github.com/D4Vinci/Scrapling) — opis w [scraping.md](./scraping.md).

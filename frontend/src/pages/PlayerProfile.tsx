@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchJSON } from '../lib/api';
+import { fetchJSON, postJSON } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -42,6 +44,11 @@ interface PlayerStats {
         lastName: string;
         number: number;
         position: string;
+        kalkPlayer?: {
+            raw?: {
+                photo_url?: string | null;
+            };
+        };
     };
     averages: {
         ppg: number;
@@ -59,13 +66,26 @@ export default function PlayerProfile() {
     const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<PlayerStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [aiLoading, setAiLoading] = useState(false);
+    const [aiSummary, setAiSummary] = useState<string | null>(null);
+    const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'ADMIN';
 
     const fetchStats = useCallback(async () => {
         if (!id) return;
         setLoading(true);
         try {
-            const stats = await fetchJSON<PlayerStats>(`/api/players/${id}/stats?t=${Date.now()}`);
+            const [stats, playerRow] = await Promise.all([
+                fetchJSON<PlayerStats>(`/api/players/${id}/stats?t=${Date.now()}`),
+                fetchJSON<any>(`/api/players/${id}`)
+            ]);
             setData(stats);
+            setAiSummary(playerRow?.aiDevelopmentSummary || null);
+            setAiMeta({
+                at: playerRow?.aiDevelopmentAt,
+                model: playerRow?.aiDevelopmentModel
+            });
         } catch (error) {
             console.error('Error fetching player stats:', error);
         } finally {
@@ -76,6 +96,23 @@ export default function PlayerProfile() {
     useEffect(() => {
         fetchStats();
     }, [fetchStats]);
+
+    const handleGenerateAi = async (force = false) => {
+        if (!id) return;
+        setAiLoading(true);
+        try {
+            const result = await postJSON<{
+                aiDevelopmentSummary: string;
+                aiDevelopmentAt: string;
+            }>(`/api/players/${id}/analyze`, { force });
+            setAiSummary(result.aiDevelopmentSummary);
+            setAiMeta({ at: result.aiDevelopmentAt });
+        } catch (error: any) {
+            alert(error?.message || 'Nie udało się wygenerować planu rozwoju');
+        } finally {
+            setAiLoading(false);
+        }
+    };
 
     const trendData = useMemo(() => {
         if (!data?.gameLog) return [];
@@ -99,6 +136,16 @@ export default function PlayerProfile() {
     if (!data) return <div className="p-20 text-center text-bkpk-text-muted italic">Player not found.</div>;
 
     const { player, averages, gameLog } = data;
+    const normalize = (str: string) => str.toLowerCase()
+        .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
+        .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
+        .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
+        .replace(/\s+/g, '-')
+    const fallbackPhoto = `/photos/${normalize(player.firstName)}-${normalize(player.lastName)}.png`
+    const remotePhoto = player.kalkPlayer?.raw?.photo_url || null
+    const playerPhoto = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg')
+        ? remotePhoto
+        : fallbackPhoto
 
     return (
         <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
@@ -129,14 +176,7 @@ export default function PlayerProfile() {
                             </div>
                             <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-bkpk-primary/20 to-transparent p-1 border border-bkpk-border-strong relative">
                                 <img
-                                    src={(() => {
-                                        const normalize = (str: string) => str.toLowerCase()
-                                            .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
-                                            .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
-                                            .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
-                                            .replace(/\s+/g, '-');
-                                        return `/photos/${normalize(player.firstName)}-${normalize(player.lastName)}.png`;
-                                    })()}
+                                    src={playerPhoto}
                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                     className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all duration-700"
                                     alt=""
@@ -191,6 +231,17 @@ export default function PlayerProfile() {
                     {/* Decorative Background */}
                     <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-bkpk-primary/5 to-transparent pointer-events-none" />
                 </section>
+
+                <AiAnalysisBlock
+                    title="Plan rozwoju (AI)"
+                    content={aiSummary}
+                    generatedAt={aiMeta.at}
+                    model={aiMeta.model}
+                    isAdmin={isAdmin}
+                    loading={aiLoading}
+                    onGenerate={handleGenerateAi}
+                    emptyHint="Brak planu rozwoju AI. Administrator może go wygenerować (min. 3 mecze w bazie)."
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Charts Area */}

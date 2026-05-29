@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
+import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
 import { withShootingMetrics } from './metrics.js';
 import { generateGameInsights } from './insights.js';
-import { scrapePlayerDetailedStats, scrapeMatchProtocol } from './scrapers/kalkScraper.js';
 
 import fs from 'fs/promises';
 import path from 'path';
@@ -389,7 +389,8 @@ export async function getPlayerStats(playerId) {
       firstName: player.firstName,
       lastName: player.lastName,
       number: player.number,
-      position: player.position
+      position: player.position,
+      kalkPlayer: player.kalkPlayer
     },
     averages,
     gameLog: gameLog.reverse() // Ostatnie mecze na górze
@@ -994,6 +995,7 @@ export async function ingestKalkPlayers(entries) {
       pointsAverage: parseStat(entry.srednia_punktow),
       matchesPlayed: matchesValue === null ? null : Math.round(matchesValue),
       eval: parseStat(entry.eval),
+      profileUrl: entry.profile_url || null,
       raw: entry
     };
     await prisma.kalkPlayer.upsert({
@@ -1038,46 +1040,47 @@ export async function ingestLeagueSchedule(scheduleData) {
 
   const parseScheduleDate = (dateStr) => {
     if (!dateStr) return new Date();
-    // Format: "21-09-2025 14:40"
-    // Format: "YYYY-MM-DD" is also possible if scraped differently
+    // Format: "21-09-2025 14:40" or "21.09.2025" or ISO
 
-    // Try standard date first
-    let d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return d;
-
-    // Try custom format parsing
+    // 1. Try custom parsing for DD-MM-YYYY or DD.MM.YYYY format first to avoid US-locale month/day swap
     try {
-      // "DD-MM-YYYY HH:mm"
-      const [dayStr, timeStr] = dateStr.split(' ');
-      if (!dayStr) return new Date();
+      const match = dateStr.match(/^(\d{2})[-.](\d{2})[-.](\d{4})(?:\s+(\d{2}):(\d{2}))?$/);
+      if (match) {
+        const day = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1; // Month is 0-indexed
+        const year = parseInt(match[3], 10);
+        const hours = match[4] ? parseInt(match[4], 10) : 0;
+        const minutes = match[5] ? parseInt(match[5], 10) : 0;
 
-      const parts = dayStr.split('-'); // 21, 09, 2025
-      if (parts.length === 3) {
-        // Javascript Date(year, monthIndex, day, hours, minutes)
-        // Month is 0-indexed
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-
-        let hours = 0;
-        let minutes = 0;
-
-        if (timeStr) {
-          const timeParts = timeStr.split(':');
-          if (timeParts.length === 2) {
-            hours = parseInt(timeParts[0], 10);
-            minutes = parseInt(timeParts[1], 10);
-          }
-        }
-
-        d = new Date(year, month, day, hours, minutes);
+        const d = new Date(year, month, day, hours, minutes);
         if (!isNaN(d.getTime())) return d;
       }
     } catch (e) {
-      console.error('Date parsing error', e);
+      console.error('Custom date parsing error', e);
     }
 
-    return new Date(); // Fallback to now? Or invalid date
+    // 2. Try custom parsing for YYYY-MM-DD
+    try {
+      const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2}))?$/);
+      if (match) {
+        const year = parseInt(match[1], 10);
+        const month = parseInt(match[2], 10) - 1;
+        const day = parseInt(match[3], 10);
+        const hours = match[4] ? parseInt(match[4], 10) : 0;
+        const minutes = match[5] ? parseInt(match[5], 10) : 0;
+
+        const d = new Date(year, month, day, hours, minutes);
+        if (!isNaN(d.getTime())) return d;
+      }
+    } catch (e) {
+      console.error('Custom ISO date parsing error', e);
+    }
+
+    // 3. Try standard date parsing as fallback
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+
+    return new Date(); // Fallback to now
   };
 
   for (const match of scheduleData) {
@@ -1139,6 +1142,27 @@ export async function syncPlayersFromKalk() {
     console.error('Error cleaning roster:', error);
   }
 
+  // Pobierz wszystkich aktualnych roster graczy, żeby móc wyszukiwać ich w pamięci
+  const allRoster = await prisma.rosterPlayer.findMany();
+
+  const stripDiacritics = (str) => {
+    if (!str) return '';
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  };
+
+  const findRosterMatch = (fName, lName) => {
+    const cleanFirst = stripDiacritics(fName);
+    const cleanLast = stripDiacritics(lName);
+
+    return allRoster.find(r => {
+      const rFirst = stripDiacritics(r.firstName);
+      const rLast = stripDiacritics(r.lastName);
+
+      return (rFirst === cleanFirst && rLast === cleanLast) ||
+             (rFirst === cleanLast && rLast === cleanFirst);
+    });
+  };
+
   // 2. SYNCHRONIZACJA: Dodaj/Aktualizuj tylko naszych
   for (const kalkPlayer of ourKalkPlayers) {
     try {
@@ -1153,31 +1177,12 @@ export async function syncPlayersFromKalk() {
         lastName = nameParts.slice(0, nameParts.length - 1).join(' ');
       }
 
-      // Proboj znalezc po kalkPlayerId
-      let existing = await prisma.rosterPlayer.findFirst({
-        where: { kalkPlayerId: kalkPlayer.id }
-      });
+      // Proboj znalezc po kalkPlayerId w pamięci
+      let existing = allRoster.find(r => r.kalkPlayerId === kalkPlayer.id);
 
-      // Jesli nie ma po ID, sprawdz po imieniu i nazwisku (case-insensitive)
+      // Jesli nie ma po ID, sprawdz po imieniu i nazwisku (diacritic-insensitive) w pamięci
       if (!existing) {
-        existing = await prisma.rosterPlayer.findFirst({
-          where: {
-            OR: [
-              {
-                AND: [
-                  { firstName: { equals: firstName, mode: 'insensitive' } },
-                  { lastName: { equals: lastName, mode: 'insensitive' } }
-                ]
-              },
-              {
-                AND: [
-                  { firstName: { equals: lastName, mode: 'insensitive' } },
-                  { lastName: { equals: firstName, mode: 'insensitive' } }
-                ]
-              }
-            ]
-          }
-        });
+        existing = findRosterMatch(firstName, lastName);
 
         if (existing && !existing.kalkPlayerId) {
           // Polacz istniejacego zawodnika z KALK ID
@@ -1185,14 +1190,13 @@ export async function syncPlayersFromKalk() {
             where: { id: existing.id },
             data: { kalkPlayerId: kalkPlayer.id }
           });
+          existing.kalkPlayerId = kalkPlayer.id; // update local object reference
         }
       }
 
       if (!existing) {
         // FIX: Kalk name is "Surname Name" (e.g. "Karpiński Filip")
         const nameParts = kalkPlayer.name.trim().split(/\s+/);
-        // If 2 parts, assume Surname Firstname -> Firstname Surname
-        // If more/less, fallback to split1=First, rest=Last (or strict swap if known format)
         let firstName = nameParts[0] || '';
         let lastName = nameParts.slice(1).join(' ') || '';
 
@@ -1208,6 +1212,7 @@ export async function syncPlayersFromKalk() {
             kalkPlayerId: kalkPlayer.id,
           }
         });
+        allRoster.push(newPlayer); // Keep local cache updated
         synced.push(newPlayer);
       } else {
         // Zawsze upewnij sie, ze imie i nazwisko sa w dobrej kolejnosci z KALK
@@ -1245,7 +1250,7 @@ export async function updateRosterStats() {
     let stats = {
       pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0,
       fgm: 0, fga: 0, threePm: 0, threePa: 0, ftm: 0, fta: 0,
-      gamesPlayed: 0, plusMinus: 0
+      gamesPlayed: 0, plusMinus: 0, orb: 0, drb: 0
     };
 
     for (const game of allGames) {
@@ -1257,6 +1262,11 @@ export async function updateRosterStats() {
       });
 
       if (pStats) {
+        // Skip player if they didn't play (DNP)
+        if (pStats.didNotPlay === true || pStats.min === 'DNP' || pStats.min === 'dnp') {
+          continue;
+        }
+
         // Update number if found and valid
         if (pStats.number && pStats.number.length > 0 && pStats.number !== '0' && pStats.number !== '-') {
           stats.number = parseInt(pStats.number);
@@ -1265,6 +1275,8 @@ export async function updateRosterStats() {
         stats.gamesPlayed++;
         stats.pts += (pStats.pts || 0);
         stats.reb += (pStats.reb || 0);
+        stats.orb += (pStats.orb || 0);
+        stats.drb += (pStats.drb || 0);
         stats.ast += (pStats.ast || 0);
         stats.stl += (pStats.stl || 0);
         stats.blk += (pStats.blk || 0);
@@ -1311,6 +1323,7 @@ export async function updateRosterStats() {
       fgm: stats.fgm, fga: stats.fga,
       threePm: stats.threePm, threePa: stats.threePa,
       ftm: stats.ftm, fta: stats.fta,
+      orb: stats.orb, drb: stats.drb,
       reb: stats.reb, ast: stats.ast, stl: stats.stl, blk: stats.blk, tov: stats.tov
     };
 
@@ -1655,21 +1668,9 @@ async function getOpponentAdvancedStats(opponentName) {
   for (const match of matches) {
     let details = match.details;
 
-    // Lazy Load
+    // Only use details already stored from Scrapling import.
     if (!details || Object.keys(details).length === 0) {
-      console.log(`[DataStore] Deep scraping protocol for match: ${match.homeTeam} vs ${match.guestTeam}`);
-      try {
-        details = await scrapeMatchProtocol(match.protocolUrl);
-        if (details) {
-          await prisma.leagueMatch.update({
-            where: { id: match.id },
-            data: { details }
-          });
-        }
-      } catch (e) {
-        console.error(`[DataStore] Failed to scrape protocol: ${e.message}`);
-        continue;
-      }
+      continue;
     }
 
     if (!details || !details.teams) continue;
@@ -1845,13 +1846,29 @@ export async function getDetailedScouting(opponentName) {
     getOpponentAdvancedStats(bekapaka?.name || 'BeKaPaKa')
   ]);
 
-  // 4. Generate AI Analysis (Comprehensive Summary)
-  const aiAnalysis = {
+  // 4. AI Analysis — Gemini cache or fallback templates
+  let aiAnalysis = {
     summary: '',
     offense: '',
     defense: '',
     verdict: ''
   };
+  let aiMeta = { fromGemini: false };
+
+  const opponentKey = normalizeOpponentKey(opponentName);
+  const cachedReport = await prisma.scoutingAiReport.findUnique({
+    where: { opponentKey }
+  });
+
+  if (cachedReport?.analysisJson) {
+    aiAnalysis = cachedReport.analysisJson;
+    aiMeta = {
+      fromGemini: true,
+      generatedAt: cachedReport.generatedAt,
+      model: cachedReport.model,
+      stale: cachedReport.sourceHash !== null // refined on generate endpoint
+    };
+  }
 
   const oppPpg = opponent?.matches > 0 ? (opponent.pointsFor / opponent.matches) : 0;
   const oppOppg = opponent?.matches > 0 ? (opponent.pointsAgainst / opponent.matches) : 0;
@@ -1874,40 +1891,25 @@ export async function getDetailedScouting(opponentName) {
 
   const formDesc = recentWins >= 3 ? 'Są obecnie na fali wznoszącej (seria zwycięstw).' : (recentWins === 0 ? 'Przeżywają obecnie kryzys formy.' : 'Grają w kratkę, przeplatając dobre mecze słabymi.');
 
-  aiAnalysis.summary = `Zespół ${opponentName} to drużyna ${paceDesc} ${styleDesc}. ${formDesc}`;
+  if (!cachedReport?.analysisJson) {
+    aiAnalysis.summary = `Zespół ${opponentName} to drużyna ${paceDesc} ${styleDesc}. ${formDesc}`;
 
-  // Offense Analysis
-  const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
-  const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
-  aiAnalysis.offense = `${offenseStrength}. Głównym motorem napędowym są ${keyPlayerNames}. Generują średnio ${oppPpg.toFixed(1)} pkt/mecz.`;
+    const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
+    const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
+    aiAnalysis.offense = `${offenseStrength}. Głównym motorem napędowym są ${keyPlayerNames}. Generują średnio ${oppPpg.toFixed(1)} pkt/mecz.`;
 
-  // Defense Analysis
-  const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
-  const weakPoint = advancedStats?.fourFactors?.tov > 20 ? 'Często gubią piłkę pod presją' : (advancedStats?.fourFactors?.orb < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
-  aiAnalysis.defense = `${defenseStrength} (śr. ${oppOppg.toFixed(1)} straconych). Ich słabością może być to, że ${weakPoint.toLowerCase()}.`;
+    const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
+    const weakPoint = advancedStats?.fourFactors?.tov > 20 ? 'Często gubią piłkę pod presją' : (advancedStats?.fourFactors?.orb < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
+    aiAnalysis.defense = `${defenseStrength} (śr. ${oppOppg.toFixed(1)} straconych). Ich słabością może być to, że ${weakPoint.toLowerCase()}.`;
 
-  // Verdict / Key
-  aiAnalysis.verdict = pace > 84
-    ? 'KLUCZ: Zwolnić grę, nie wdawać się w wymianę ciosów, zamknąć trumnę.'
-    : 'KLUCZ: Narzucić własne, szybkie tempo i zmusić ich do błędów w kozłowaniu.';
+    aiAnalysis.verdict = pace > 84
+      ? 'KLUCZ: Zwolnić grę, nie wdawać się w wymianę ciosów, zamknąć trumnę.'
+      : 'KLUCZ: Narzucić własne, szybkie tempo i zmusić ich do błędów w kozłowaniu.';
+  }
 
-  // Enrich key players with 3-point stats (Deep Scrape on demand)
+  // Use only data available from imported scraping payload.
   const enrichedKeyPlayers = await Promise.all(keyPlayers.map(async (p) => {
     let stats3pt = p.threePointStats;
-
-    // Only scrape if missing AND we have a URL
-    if (!stats3pt && p.profileUrl) {
-      console.log(`[DataStore] Missing 3pt stats for ${p.name}, scraping...`);
-      const deepStats = await scrapePlayerDetailedStats(p.profileUrl);
-      if (deepStats && deepStats.threePt) {
-        stats3pt = deepStats.threePt;
-        // Save to DB
-        await prisma.kalkPlayer.update({
-          where: { id: p.id },
-          data: { threePointStats: stats3pt }
-        }).catch(e => console.error('[DataStore] Failed to save 3pt stats:', e));
-      }
-    }
 
     return {
       name: p.name.split(/\s+/).length === 2 ? `${p.name.split(/\s+/)[1]} ${p.name.split(/\s+/)[0]}` : p.name,
@@ -1949,7 +1951,9 @@ export async function getDetailedScouting(opponentName) {
         date: m.date.toISOString().split('T')[0]
       };
     }),
-    aiAnalysis
+    aiAnalysis,
+    aiMeta,
+    scoutingSummaryMd: cachedReport?.summaryMd || null
   };
 }
 

@@ -56,7 +56,7 @@ export default function LeagueTableModern() {
                     <thead>
                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
                             <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-12 text-center">#</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-inherit">Drużyna</th>
+                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface">Drużyna</th>
                             <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
                             <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
                             <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
@@ -84,8 +84,10 @@ export default function LeagueTableModern() {
                                         {index + 1}
                                     </td>
                                     <td className={cn(
-                                        "px-6 py-4 font-bold text-bkpk-text-primary sticky left-0 z-10 bg-inherit border-r border-bkpk-border-strong",
-                                        isBkpk && "text-bkpk-primary"
+                                        "px-6 py-4 font-bold sticky left-0 z-10 border-r border-bkpk-border-strong transition-colors",
+                                        isBkpk
+                                            ? "text-bkpk-primary bg-[#1d1614] group-hover:bg-[#281a17]"
+                                            : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
                                     )}>
                                         <div className="flex items-center gap-3">
                                             {isBkpk && <div className="w-1.5 h-1.5 rounded-full bg-bkpk-primary shadow-bkpk-glow animate-pulse" />}

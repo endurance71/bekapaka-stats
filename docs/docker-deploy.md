@@ -31,7 +31,14 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-## Szczegółowy przewodnik
-Pełna instrukcja konfiguracji znajduje się w systemowych dokumentach:
-- [VPS Deployment Guide](file:///Users/damianmotylinski/.gemini/antigravity/brain/c5e5fa2e-64a3-4c24-a7a9-bd6d6dc199d4/vps_deployment_guide.md)
-- [Walkthrough](file:///Users/damianmotylinski/.gemini/antigravity/brain/c5e5fa2e-64a3-4c24-a7a9-bd6d6dc199d4/walkthrough.md)
+## VPS (współdzielony z MOYA)
+
+Pełny runbook (SSH, struktura serwera, Caddy, DNS, **co wolno / czego nie wolno** względem MOYA):
+
+- **[vps-runbook.md](./vps-runbook.md)**
+
+Połączenie (lokalny alias): `ssh ovh-vps-cursor`
+
+Katalog na serwerze: `/opt/bekapaka-stats/`
+
+Dokumentacja MOYA (ten sam VPS): `moya-native-app/backend/docs/DEPLOY_VPS_IP_ONLY.md`

@@ -9,6 +9,7 @@ interface AIAnalysisProps {
         offense: string;
         defense: string;
         verdict: string;
+        lockerRoom?: string[];
     };
 }
 
@@ -58,6 +59,20 @@ export const AIAnalysisSection: React.FC<AIAnalysisProps> = ({ data }) => {
                     </div>
                     <p className="text-body text-bkpk-text-primary font-bold leading-relaxed">{data.verdict}</p>
                 </div>
+
+                {data.lockerRoom && data.lockerRoom.length > 0 && (
+                    <div className="bg-bkpk-surface-tint-2 p-4 rounded-xl border border-bkpk-border-strong">
+                        <h4 className="text-caption-bold text-bkpk-text-secondary uppercase tracking-widest mb-3">Szatnia — checklista</h4>
+                        <ul className="space-y-2">
+                            {data.lockerRoom.map((item, i) => (
+                                <li key={i} className="text-sm text-bkpk-text-secondary flex gap-2">
+                                    <span className="text-bkpk-primary font-bold">{i + 1}.</span>
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
             </div>
         </BkpkCard>

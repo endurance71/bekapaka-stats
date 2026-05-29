@@ -9,6 +9,11 @@ interface Player {
   id: string;
   firstName: string;
   lastName: string;
+  kalkPlayer?: {
+    raw?: {
+      photo_url?: string | null;
+    };
+  };
   number: number;
   position: string;
   starter: boolean;
@@ -82,7 +87,7 @@ export default function Roster() {
             className="flex items-center gap-4 w-full md:w-auto"
           >
             <div className="relative flex-1 md:w-80 group">
-              <Search className="absolute left-4 top-1/2 -u-translate-y-1/2 w-4 h-4 text-bkpk-text-muted group-focus-within:text-bkpk-primary transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-bkpk-text-muted group-focus-within:text-bkpk-primary transition-colors" />
               <input
                 type="text"
                 placeholder="Szukaj zawodnika..."
@@ -115,6 +120,7 @@ export default function Roster() {
               >
                 <PlayerCard
                   {...player}
+                  photoUrl={player.kalkPlayer?.raw?.photo_url || null}
                   isStarter={player.starter}
                   onClick={(id) => navigate(`/players/${id}`)}
                 />

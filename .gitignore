@@ -24,6 +24,15 @@ pnpm-debug.log*
 .env
 .env.production
 .env.local
+.venv/
+venv/
+ENV/
+
+# Credentials & Sensitive
+VPS-dane/
+*.ini
+*.json.bak
+*.sql.bak
 
 # OS
 .DS_Store
