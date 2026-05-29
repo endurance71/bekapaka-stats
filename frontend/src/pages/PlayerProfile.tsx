@@ -13,6 +13,7 @@ import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
+import useIsMobile from '../hooks/useIsMobile';
 
 interface StatSnapshot {
     gameId: string;
@@ -71,6 +72,7 @@ export default function PlayerProfile() {
     const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
+    const isMobile = useIsMobile();
 
     const fetchStats = useCallback(async () => {
         if (!id) return;
@@ -266,7 +268,7 @@ export default function PlayerProfile() {
                                     />
                                 </div>
                             ) : (
-                                <div className="h-[300px] w-full">
+                                <div className="w-full" style={{ height: isMobile ? '200px' : '300px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={trendData}>
                                             <defs>
@@ -279,24 +281,28 @@ export default function PlayerProfile() {
                                         <XAxis
                                             dataKey="formattedDate"
                                             stroke="var(--bkpk-text-muted)"
-                                            fontSize={10}
+                                            fontSize={9}
                                             tickLine={false}
                                             axisLine={false}
                                             dy={10}
+                                            interval={isMobile ? Math.ceil(trendData.length / 4) : 0}
                                         />
                                         <YAxis
                                             stroke="var(--bkpk-text-muted)"
-                                            fontSize={10}
+                                            fontSize={9}
                                             tickLine={false}
                                             axisLine={false}
                                             dx={-10}
+                                            width={isMobile ? 20 : 35}
                                         />
                                             <Tooltip
+                                                trigger={isMobile ? 'click' : 'hover'}
                                                 contentStyle={{
                                                     backgroundColor: 'var(--bkpk-color-surface-elevated)',
                                                     border: '1px solid var(--bkpk-border-strong)',
                                                     borderRadius: '12px',
-                                                    backdropFilter: 'blur(10px)'
+                                                    backdropFilter: 'blur(10px)',
+                                                    fontSize: '12px'
                                                 }}
                                                 itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
                                             />

@@ -3,7 +3,9 @@ import {
     PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer,
     Tooltip
 } from 'recharts';
-import styles from './FourFactorsChart.module.css';
+import BkpkCard from '../../shared/ui/BkpkCard';
+import useIsMobile from '../../hooks/useIsMobile';
+import { Target } from 'lucide-react';
 
 interface FourFactors {
     efg: number;
@@ -18,20 +20,22 @@ interface FourFactorsChartProps {
 }
 
 export default function FourFactorsChart({ data, title = "Four Factors" }: FourFactorsChartProps) {
+    const isMobile = useIsMobile();
+
     if (!data) {
         return (
-            <div className={styles.container}>
-                <h3 className={styles.title}>{title}</h3>
-                <div className={styles.noData}>Brak danych Four Factors</div>
-            </div>
+            <BkpkCard variant="glass" className="w-full">
+                <div className="flex items-center gap-2 mb-4">
+                    <Target className="w-5 h-5 text-bkpk-primary" />
+                    <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">{title}</h3>
+                </div>
+                <div className="h-[200px] flex items-center justify-center text-bkpk-text-muted text-sm italic border border-dashed border-bkpk-border-strong rounded-2xl">
+                    Brak danych Four Factors
+                </div>
+            </BkpkCard>
         );
     }
 
-    // Normalize data for radar chart (0-100 scale)
-    // eFG: 0.50 -> 50
-    // TOV%: 0.15 -> 15 (lower is better, but we show raw value or inverse)
-    // ORB%: 0.30 -> 30
-    // FTR: 0.25 -> 25
     const chartData = [
         { subject: 'eFG%', value: Math.round(data.efg * 100), fullMark: 100 },
         { subject: 'TOV%', value: Math.round(data.tovPct * 100), fullMark: 100 },
@@ -40,15 +44,19 @@ export default function FourFactorsChart({ data, title = "Four Factors" }: FourF
     ];
 
     return (
-        <div className={styles.container}>
-            <h3 className={styles.title}>{title}</h3>
-            <div className={styles.chartWrapper}>
-                <ResponsiveContainer width="100%" height={300}>
-                    <RadarChart cx="50%" cy="50%" outerRadius="80%" data={chartData}>
+        <BkpkCard variant="glass" className="w-full space-y-6">
+            <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
+                <Target className="w-5 h-5 text-bkpk-primary" />
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">{title}</h3>
+            </div>
+
+            <div className="w-full flex justify-center items-center" style={{ height: isMobile ? '220px' : '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '60%' : '80%'} data={chartData}>
                         <PolarGrid stroke="var(--bkpk-surface-tint-3)" />
                         <PolarAngleAxis
                             dataKey="subject"
-                            tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: 12 }}
+                            tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: isMobile ? 10 : 12, fontWeight: 700 }}
                         />
                         <PolarRadiusAxis
                             angle={30}
@@ -62,29 +70,32 @@ export default function FourFactorsChart({ data, title = "Four Factors" }: FourF
                             stroke="var(--bkpk-color-primary)"
                             fill="var(--bkpk-color-primary)"
                             fillOpacity={0.5}
+                            strokeWidth={2}
                         />
                         <Tooltip
+                            trigger={isMobile ? 'click' : 'hover'}
                             contentStyle={{
                                 backgroundColor: 'var(--bkpk-color-surface-elevated)',
                                 border: '1px solid var(--bkpk-border-strong)',
-                                borderRadius: '8px',
-                                color: 'var(--bkpk-text-primary)'
+                                borderRadius: '12px',
+                                color: 'var(--bkpk-text-primary)',
+                                fontSize: '12px'
                             }}
                         />
                     </RadarChart>
                 </ResponsiveContainer>
             </div>
 
-            <div className={styles.legend}>
-                <div className={styles.legendItem}>
-                    <span className={styles.efgColor}></span>
-                    <span>eFG%: Skuteczność efektywna</span>
+            <div className="flex flex-col gap-2 pt-4 border-t border-bkpk-border-strong text-xs text-bkpk-text-muted">
+                <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-bkpk-primary rounded-sm"></span>
+                    <span><strong>eFG%</strong>: Skuteczność efektywna (rzuty z gry)</span>
                 </div>
-                <div className={styles.legendItem}>
-                    <span className={styles.tovColor}></span>
-                    <span>TOV%: Straty (im mniej tym lepiej)</span>
+                <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 bg-bkpk-border-strong rounded-sm"></span>
+                    <span><strong>TOV%</strong>: Straty posiadania (im mniej tym lepiej)</span>
                 </div>
             </div>
-        </div>
+        </BkpkCard>
     );
 }

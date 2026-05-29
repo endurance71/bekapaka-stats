@@ -1,6 +1,7 @@
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { Activity } from 'lucide-react';
 import BkpkCard from '../../shared/ui/BkpkCard';
+import useIsMobile from '../../hooks/useIsMobile';
 
 interface MomentumPoint {
     time: string;
@@ -17,6 +18,8 @@ interface DashboardMomentumProps {
 }
 
 export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: DashboardMomentumProps) {
+    const isMobile = useIsMobile();
+
     if (!data || data.length === 0) return null;
 
     // Transform raw data: [{team: 'BB', points: [...]}, {team: 'PR', points: [...]}]
@@ -34,7 +37,7 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
     chartData.unshift({ time: '0\'', bekapaka: 0, opponent: 0, diff: 0 });
 
     return (
-        <BkpkCard variant="glass" className="space-y-6">
+        <BkpkCard variant="glass" className="space-y-6 overflow-hidden w-full">
             <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
                 <Activity className="w-5 h-5 text-bkpk-primary" />
                 <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">
@@ -42,7 +45,7 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
                 </h3>
             </div>
 
-            <div className="h-[250px] w-full">
+            <div className="w-full" style={{ height: isMobile ? '200px' : '250px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                         <defs>
@@ -55,22 +58,26 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
                         <XAxis
                             dataKey="time"
                             stroke="var(--bkpk-text-muted)"
-                            fontSize={12}
+                            fontSize={10}
                             tickLine={false}
                             axisLine={false}
+                            interval={isMobile ? Math.ceil(chartData.length / 5) : 0}
                         />
                         <YAxis
                             stroke="var(--bkpk-text-muted)"
-                            fontSize={12}
+                            fontSize={10}
                             tickLine={false}
                             axisLine={false}
+                            width={isMobile ? 25 : 40}
                         />
                         <Tooltip
+                            trigger={isMobile ? 'click' : 'hover'}
                             contentStyle={{
                                 backgroundColor: 'var(--bkpk-color-surface-elevated)',
                                 border: '1px solid var(--bkpk-border-strong)',
                                 borderRadius: '12px',
-                                backdropFilter: 'blur(10px)'
+                                backdropFilter: 'blur(10px)',
+                                fontSize: '12px'
                             }}
                             itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
                         />
