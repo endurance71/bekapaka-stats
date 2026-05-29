@@ -10,8 +10,9 @@ Aplikacja to SPA (React + Vite) z lekkim backendem REST (Node.js + Express). Fro
 
 ## Przepływ danych
 1. Frontend pobiera dane przez `GET /dashboard`, `GET /games`, `GET /games/:id`, `GET /roster`.
-2. Import raportu (`POST /import`) parsuje Markdown/JSON i zwraca podgląd lub zapisuje nowy mecz.
-3. Wyniki i metryki są wyliczane w backendzie (eFG%, TS%, TO%, FT Rate).
+2. Import raportu (`POST /import`) parsuje Markdown/JSON i zwraca podgląd lub zapisuje nowy mecz (`backend/parser.js`).
+3. Scraping ligi KALK (`POST /api/scrape/kalk/div2/run`) pobiera tabelę, terminarz i statystyki zawodników przez Scrapling — szczegóły: [scraping.md](./scraping.md).
+4. Wyniki i metryki są wyliczane w backendzie (eFG%, TS%, TO%, FT Rate).
 
 ## Metryki
 Wzory w `backend/metrics.js`:

@@ -33,6 +33,29 @@ export default function Shell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+  const getPhotoUrl = (f?: string, l?: string) => {
+    if (!f || !l) return '/photos/default.png';
+    const normalize = (str: string) => str.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/ł/g, 'l')
+      .replace(/\s+/g, '-');
+    return `/photos/${normalize(f)}-${normalize(l)}.png`;
+  };
+
+  const getPositionLabel = (pos?: string) => {
+    if (!pos) return 'Zawodnik';
+    const mapping: Record<string, string> = {
+      'G': 'Obrońca',
+      'F': 'Skrzydłowy',
+      'C': 'Środkowy',
+      'PG': 'Rozgrywający',
+      'SG': 'Rzucający Obrońca',
+      'SF': 'Niski Skrzydłowy',
+      'PF': 'Silny Skrzydłowy'
+    };
+    return mapping[pos] || pos;
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -125,8 +148,28 @@ export default function Shell({ children }: { children: ReactNode }) {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute inset-0 top-[81px] bg-bkpk-bg/95 backdrop-blur-2xl z-50 p-6 flex flex-col space-y-4"
+              className="lg:hidden absolute inset-x-0 bottom-0 top-[81px] bg-bkpk-bg/95 backdrop-blur-2xl z-50 p-6 flex flex-col space-y-4 overflow-y-auto no-scrollbar pb-10"
             >
+              {user && (
+                <div className="flex items-center gap-4 p-4 bg-bkpk-surface border border-bkpk-border-strong rounded-2xl mb-2">
+                  <div className="w-12 h-12 rounded-full border border-bkpk-primary/30 overflow-hidden relative">
+                    <img 
+                      src={getPhotoUrl(user.firstName, user.lastName)} 
+                      onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                      className="w-full h-full object-cover grayscale" 
+                      alt=""
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none mb-1">
+                      #{user.number || '--'} · {getPositionLabel(user.position)}
+                    </div>
+                    <div className="text-base font-black font-outfit text-bkpk-text-primary leading-tight truncate">
+                      {user.firstName} {user.lastName}
+                    </div>
+                  </div>
+                </div>
+              )}
               {links.map((link) => {
                 const Icon = link.icon;
                 return (

@@ -2,6 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import { loginUser, getLoginLogs } from './dataStore.js';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import fs from 'node:fs/promises';
+import { promisify } from 'node:util';
+import { execFile as execFileCb } from 'node:child_process';
 import {
   getDB,
   saveGame,
@@ -10,6 +14,8 @@ import {
   getGameById,
   listGames,
   upsertRoster,
+  ingestLeagueTable,
+  ingestLeagueSchedule,
   ingestKalkPlayers,
   logKalkScrapeRun,
   getLatestKalkScrapeRun,
@@ -43,11 +49,25 @@ import {
 } from './dataStore.js';
 import { parseImportPayload } from './parser.js';
 import { withShootingMetrics } from './metrics.js';
+import {
+  generateGameAnalysis,
+  generatePlayerDevelopment,
+  generateScoutingReport,
+  generateTeamBriefing,
+  getTeamBriefingCached
+} from './ai/generate.js';
+import { isGeminiConfigured } from './ai/geminiClient.js';
+import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+const execFile = promisify(execFileCb);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const KALK_SCRAPLING_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scraper.py');
+const KALK_SCRAPLING_OUTPUT = path.resolve(__dirname, '../kalk_stats.json');
 const app = express();
 app.use(cors({
   origin: true, // Reflect request origin
@@ -367,6 +387,78 @@ app.get(['/api/scouting/detailed', '/scouting/detailed'], async (req, res) => {
   }
 });
 
+// --- AI (Gemini) ---
+const handleAiRouteError = (err, res) => {
+  if (err instanceof AiConfigError) {
+    return res.status(503).json({ error: err.message });
+  }
+  if (err instanceof AiValidationError) {
+    return res.status(400).json({ error: err.message });
+  }
+  if (err instanceof AiBusyError) {
+    return res.status(409).json({ error: err.message });
+  }
+  console.error('[AI]', err);
+  return res.status(500).json({ error: err.message || 'Błąd generacji AI' });
+};
+
+app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
+  res.json({
+    configured: isGeminiConfigured(),
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+  });
+});
+
+app.get(['/api/ai/briefing', '/ai/briefing'], authenticateToken, async (req, res) => {
+  try {
+    const briefing = await getTeamBriefingCached();
+    res.json({
+      contentMd: briefing?.contentMd || null,
+      generatedAt: briefing?.generatedAt || null,
+      model: briefing?.model || null
+    });
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+app.post(['/api/ai/briefing/generate', '/ai/briefing/generate'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await generateTeamBriefing({ force: Boolean(req.body?.force) });
+    res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+app.post(['/api/games/:id/analyze', '/games/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await generateGameAnalysis(req.params.id, { force: Boolean(req.body?.force) });
+    res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+app.post(['/api/players/:id/analyze', '/players/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await generatePlayerDevelopment(req.params.id, { force: Boolean(req.body?.force) });
+    res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+app.post(['/api/scouting/analyze', '/scouting/analyze'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const opponent = req.query.opponent || req.body?.opponent;
+    const result = await generateScoutingReport(opponent, { force: Boolean(req.body?.force) });
+    res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
 // --- SCRAPER ---
 let scraperRunning = false;
 const scraperState = {
@@ -389,8 +481,44 @@ const updateScraperLog = (msg) => {
 };
 
 app.get(['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'], authenticateToken, requireAdmin, (req, res) => res.json(scraperState));
-app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateToken, requireAdmin, async (req, res) => {
-  if (scraperRunning) return res.status(409).json({ error: 'Scraper już działa.' });
+async function ensureDefaultAdminUser() {
+  const username = (process.env.ADMIN_USERNAME || 'motylinski').toLowerCase().trim();
+  const password = process.env.ADMIN_PASSWORD || 'BeKaPaKa!2026';
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const existing = await prisma.rosterPlayer.findFirst({
+    where: { username }
+  });
+
+  if (existing) {
+    await prisma.rosterPlayer.update({
+      where: { id: existing.id },
+      data: {
+        firstName: existing.firstName || 'Damian',
+        lastName: existing.lastName || 'Motylinski',
+        role: 'ADMIN',
+        password: passwordHash
+      }
+    });
+    return;
+  }
+
+  await prisma.rosterPlayer.create({
+    data: {
+      firstName: 'Damian',
+      lastName: 'Motylinski',
+      username,
+      role: 'ADMIN',
+      password: passwordHash,
+      starter: false
+    }
+  });
+}
+
+async function runScrapeImportPipeline(triggerLabel = 'manual') {
+  if (scraperRunning) {
+    throw new Error('Scraper już działa.');
+  }
 
   scraperRunning = true;
   scraperState.running = true;
@@ -399,14 +527,11 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
   scraperState.message = 'Uruchamianie scrapera...';
 
   updateScraperLog('Rozpoczynanie pełnego importu danych...');
+  const originalLog = console.log;
+  const originalError = console.error;
 
   try {
-    const { runFullScrape } = await import('./scrapers/kalkScraper.js');
-
     // Intercept console.log temporarily
-    const originalLog = console.log;
-    const originalError = console.error;
-
     console.log = (...args) => {
       updateScraperLog(args.join(' '));
       originalLog.apply(console, args);
@@ -417,13 +542,32 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
     };
 
     scraperState.step = 'pobieranie';
-    scraperState.message = 'Pobieranie danych z kalk-koszalin.com...';
+    scraperState.message = 'Pobieranie danych przez Scrapling...';
+    updateScraperLog(`Trigger: ${triggerLabel}`);
+    updateScraperLog('Uruchamiam scrapling script (Python)...');
 
-    const result = await runFullScrape();
+    const { stdout, stderr } = await execFile('python3', [KALK_SCRAPLING_SCRIPT], {
+      cwd: __dirname,
+      timeout: 15 * 60 * 1000,
+      maxBuffer: 10 * 1024 * 1024
+    });
+
+    if (stdout?.trim()) updateScraperLog(stdout.trim());
+    if (stderr?.trim()) updateScraperLog(`STDERR: ${stderr.trim()}`);
+
+    scraperState.step = 'import-bazy';
+    scraperState.message = 'Import danych ze scrapingu do bazy...';
+
+    const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
+    const stats = JSON.parse(statsRaw);
+    await ingestLeagueTable(stats.table || []);
+    await ingestLeagueSchedule(stats.schedule || []);
+    const playersIngest = await ingestKalkPlayers(stats.players || []);
 
     scraperState.step = 'synchronizacja';
     scraperState.message = 'Synchronizacja zawodników...';
     await syncPlayersFromKalk();
+    await ensureDefaultAdminUser();
 
     // Restore console
     console.log = originalLog;
@@ -436,13 +580,34 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
     scraperState.lastFinishedAt = new Date().toISOString();
 
     updateScraperLog('Import zakończony sukcesem.');
-    res.json(result);
+    return {
+      success: true,
+      source: 'scrapling',
+      teams: Array.isArray(stats.table) ? stats.table.length : 0,
+      matches: Array.isArray(stats.schedule) ? stats.schedule.length : 0,
+      players: playersIngest?.total || 0
+    };
   } catch (err) {
     scraperRunning = false;
     scraperState.running = false;
     scraperState.step = 'error';
     scraperState.message = `Błąd: ${err.message}`;
     updateScraperLog(`FATAL ERROR: ${err.message}`);
+    throw err;
+  } finally {
+    console.log = originalLog;
+    console.error = originalError;
+  }
+}
+
+app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await runScrapeImportPipeline('manual-admin');
+    res.json(result);
+  } catch (err) {
+    if (err.message === 'Scraper już działa.') {
+      return res.status(409).json({ error: err.message });
+    }
     res.status(500).json({ error: err.message });
   }
 });
@@ -481,6 +646,34 @@ app.use('*', (req, res) => {
   console.log(`[404] Unmatched: ${req.method} ${req.url}`);
   res.status(404).json({ error: `Not Found: ${req.url}` });
 });
+
+async function bootstrapScrapingIfEmpty() {
+  try {
+    const [teamsCount, matchesCount, playersCount] = await Promise.all([
+      prisma.leagueTeam.count(),
+      prisma.leagueMatch.count(),
+      prisma.kalkPlayer.count()
+    ]);
+
+    if (teamsCount > 0 && matchesCount > 0 && playersCount > 0) {
+      await ensureDefaultAdminUser();
+      console.log('[Bootstrap] Scraping bootstrap skipped - data already present.');
+      return;
+    }
+
+    console.log('[Bootstrap] Empty scraping tables detected. Running initial scrape...');
+    await runScrapeImportPipeline('startup-bootstrap');
+    console.log('[Bootstrap] Initial scrape completed.');
+  } catch (error) {
+    console.error('[Bootstrap] Initial scrape failed:', error.message);
+  }
+}
+
+setTimeout(() => {
+  bootstrapScrapingIfEmpty().catch((error) => {
+    console.error('[Bootstrap] Unexpected error:', error.message);
+  });
+}, 5000);
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, '0.0.0.0', () => console.log(`API running on ${PORT}`));

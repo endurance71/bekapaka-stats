@@ -10,6 +10,22 @@ async function seedUsers() {
     const players = await prisma.rosterPlayer.findMany();
     const passwordHash = await bcrypt.hash('bekapaka2026', 10);
 
+    if (players.length === 0) {
+        await prisma.rosterPlayer.create({
+            data: {
+                firstName: 'Damian',
+                lastName: 'Motylinski',
+                username: 'motylinski',
+                password: passwordHash,
+                role: 'ADMIN',
+                starter: false
+            }
+        });
+        console.log('Created fallback admin user: motylinski');
+        console.log('User seeding complete.');
+        return;
+    }
+
     for (const player of players) {
         // Normalize last name to create username
         // Remove diacritics and convert to lowercase

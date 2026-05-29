@@ -1,0 +1,41 @@
+---
+description: VPS OVH, deploy BeKaPaKa i ochrona backendu MOYA na współdzielonym serwerze
+alwaysApply: true
+---
+
+# VPS i MOYA — reguły dla agenta
+
+Przed SSH, Dockerem na produkcji lub zmianą Caddy przeczytaj: `docs/vps-runbook.md`.
+
+## Połączenie
+
+- VPS IPv4: `51.210.102.167`
+- SSH (lokalnie): `ssh ovh-vps-cursor`
+- BeKaPaKa na serwerze: `/opt/bekapaka-stats`
+- MOYA na serwerze: `~/apps/moya-native-app`
+
+## Porty (nie zajmować / nie zmieniać MOYA)
+
+| Port | Usługa |
+|------|--------|
+| 3000 | MOYA API — **nie dotykać** |
+| 4001 | BeKaPaKa backend |
+| 8081 | BeKaPaKa frontend |
+| 80/443 | Caddy (host) |
+
+## MOYA — zakazy
+
+- Nie uruchamiaj `docker compose down` ani `prune` w katalogu MOYA bez wyraźnej zgody użytkownika.
+- Nie zmieniaj bloku `moya-api.damianmotylinski.pl` w `/etc/caddy/Caddyfile`.
+- Nie usuwaj wolumenów ani bazy MOYA.
+- Restart MOYA tylko na wyraźną prośbę.
+
+## BeKaPaKa — dozwolone
+
+- Tylko kontenery `bkpk-*` i sieć `bkpk-network`.
+- Deploy: `docker compose -f docker-compose.prod.yml up -d --build` w `/opt/bekapaka-stats`.
+- Scraping wyłącznie przez Scrapling: `backend/scripts/kalk_scraper.py` — szczegóły: `docs/scraping.md`.
+
+## DNS
+
+Domeny `bekapaka.pl`, `www`, `panel` → A `51.210.102.167`. Jeśli widać parking SEOhost (`188.210.221.221`), to problem strefy u SEOhost, nie aplikacji.

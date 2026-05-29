@@ -1,7 +1,10 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { fetchJSON } from '../lib/api';
+import { fetchJSON, postJSON } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import BkpkButton from '../shared/ui/BkpkButton';
+import { Bot, Loader2 } from 'lucide-react';
 import { DNASection } from '../components/scouting/DNASection';
 import { MatchupRadar } from '../components/scouting/MatchupRadar';
 import { PersonnelSection } from '../components/scouting/PersonnelSection';
@@ -16,21 +19,39 @@ export default function ScoutingPage() {
     const navigate = useNavigate();
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [aiLoading, setAiLoading] = useState(false);
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'ADMIN';
+
+    const loadScouting = async () => {
+        setLoading(true);
+        try {
+            const opponent = searchParams.get('opponent');
+            const res = await fetchJSON(`/api/scouting/detailed${opponent ? `?opponent=${encodeURIComponent(opponent)}` : ''}`);
+            setData(res);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchScouting = async () => {
-            try {
-                const opponent = searchParams.get('opponent');
-                const res = await fetchJSON(`/api/scouting/detailed${opponent ? `?opponent=${opponent}` : ''}`);
-                setData(res);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchScouting();
+        loadScouting();
     }, [searchParams]);
+
+    const handleGenerateScoutingAi = async () => {
+        setAiLoading(true);
+        try {
+            const opponent = searchParams.get('opponent') || data?.teamInfo?.opponent?.name;
+            await postJSON(`/api/scouting/analyze${opponent ? `?opponent=${encodeURIComponent(opponent)}` : ''}`, { force: true });
+            await loadScouting();
+        } catch (err: any) {
+            alert(err?.message || 'Błąd generacji scoutingu AI');
+        } finally {
+            setAiLoading(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -199,7 +220,17 @@ export default function ScoutingPage() {
                         transition={{ delay: 0.4 }}
                         className="lg:col-span-12"
                     >
-                        <AIAnalysisSection data={aiAnalysis} />
+                        <div className="space-y-4">
+                            {isAdmin && (
+                                <div className="flex justify-end">
+                                    <BkpkButton variant="primary" size="sm" onClick={handleGenerateScoutingAi} disabled={aiLoading}>
+                                        {aiLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Bot className="w-4 h-4 mr-2" />}
+                                        {data?.aiMeta?.fromGemini ? 'Odśwież raport AI' : 'Generuj raport AI (Gemini)'}
+                                    </BkpkButton>
+                                </div>
+                            )}
+                            <AIAnalysisSection data={aiAnalysis} />
+                        </div>
                     </motion.div>
 
                     {/* 3. Key Players */}

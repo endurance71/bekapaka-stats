@@ -107,7 +107,7 @@ export default function TopScorersModern() {
                             <thead>
                                 <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
                                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-12 text-center">#</th>
-                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">Zawodnik</th>
+                                    <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface">Zawodnik</th>
                                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">Drużyna</th>
                                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
                                     <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">Suma</th>
@@ -132,8 +132,10 @@ export default function TopScorersModern() {
                                                 {index + 4}
                                             </td>
                                             <td className={cn(
-                                                "px-6 py-4 font-bold text-bkpk-text-primary",
-                                                isBkpk && "text-bkpk-primary"
+                                                "px-6 py-4 font-bold sticky left-0 z-10 border-r border-bkpk-border-strong transition-colors",
+                                                isBkpk
+                                                    ? "text-bkpk-primary bg-[#1d1614] group-hover:bg-[#281a17]"
+                                                    : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
                                             )}>
                                                 {player.name}
                                             </td>

@@ -16,7 +16,7 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                     <span className="text-bkpk-text-muted text-xs uppercase font-medium">Ostatnie {matches.length} meczów</span>
                 </div>
 
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 -u-scrollbar-hide">
+                <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
                     {matches.map((match, idx) => (
                         <motion.div
                             key={match.id}

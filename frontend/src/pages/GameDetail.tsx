@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchJSON, putJSON } from '../lib/api';
+import { fetchJSON, postJSON, putJSON } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ChevronLeft,
@@ -34,6 +36,9 @@ export default function GameDetail() {
   const [editData, setEditData] = useState({ notes: '', mvp: '' });
   const [activeTab, setActiveTab] = useState<'bekapaka' | 'opponent'>('bekapaka');
   const [saving, setSaving] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const fetchGame = useCallback(async () => {
     if (!id) return;
@@ -55,6 +60,27 @@ export default function GameDetail() {
   useEffect(() => {
     fetchGame();
   }, [fetchGame]);
+
+  const handleGenerateAi = async (force = false) => {
+    if (!id) return;
+    setAiLoading(true);
+    try {
+      const result = await postJSON<{
+        aiSummary: string;
+        aiSummaryAt: string;
+        cached?: boolean;
+      }>(`/api/games/${id}/analyze`, { force });
+      setGame((prev: any) => ({
+        ...prev,
+        aiSummary: result.aiSummary,
+        aiSummaryAt: result.aiSummaryAt
+      }));
+    } catch (error: any) {
+      alert(error?.message || 'Nie udało się wygenerować analizy AI');
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!id) return;
@@ -179,8 +205,8 @@ export default function GameDetail() {
 
           {/* Decorative Background Elements */}
           <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-            <div className="absolute top-1/2 left-1/4 -u-translate-y-1/2 w-[500px] h-[500px] bg-bkpk-primary/10 rounded-full blur-[120px]" />
-            <div className="absolute top-1/2 right-1/4 -u-translate-y-1/2 w-[500px] h-[500px] bg-bkpk-success/5 rounded-full blur-[120px]" />
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-bkpk-primary/10 rounded-full blur-[120px]" />
+            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-bkpk-success/5 rounded-full blur-[120px]" />
           </div>
         </section>
 
@@ -221,6 +247,16 @@ export default function GameDetail() {
                 </section>
               )}
             </AnimatePresence>
+
+            <AiAnalysisBlock
+              title="Analiza meczu (AI)"
+              content={game.aiSummary}
+              generatedAt={game.aiSummaryAt}
+              model={game.aiSummaryModel}
+              isAdmin={isAdmin}
+              loading={aiLoading}
+              onGenerate={handleGenerateAi}
+            />
 
             {/* Box Score Section */}
             <section className="space-y-6">
@@ -287,7 +323,7 @@ export default function GameDetail() {
                     <h4 className="text-2xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tight">{game.mvp}</h4>
                   </div>
                 </div>
-                <div className="absolute -bottom-10 left-1/2 -u-translate-x-1/2 w-48 h-48 bg-bkpk-warning/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-bkpk-warning/5 rounded-full blur-3xl pointer-events-none" />
               </BkpkCard>
             )}
 

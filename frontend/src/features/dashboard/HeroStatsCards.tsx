@@ -39,7 +39,7 @@ export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) 
             </div>
 
             {/* Decorative background element */}
-            <div className="absolute top-0 right-0 -u-translate-y-1/2 translate-x-1/2 w-32 h-32 bg-bkpk-primary/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-bkpk-primary/5 rounded-full blur-3xl pointer-events-none" />
         </BkpkCard>
     );
 }

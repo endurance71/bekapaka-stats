@@ -274,8 +274,8 @@
               "stl": 1,
               "blk": 1,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -17
+              "plusMinus": -17,
+              "pts": 6
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -288,8 +288,8 @@
               "stl": 0,
               "blk": 0,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -18
+              "plusMinus": -18,
+              "pts": 0
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -302,8 +302,8 @@
               "stl": 0,
               "blk": 1,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -19
+              "plusMinus": -19,
+              "pts": 0
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -316,8 +316,8 @@
               "stl": 5,
               "blk": 0,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -30
+              "plusMinus": -30,
+              "pts": 11
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -330,8 +330,8 @@
               "stl": 1,
               "blk": 0,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -20
+              "plusMinus": -20,
+              "pts": 0
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -344,8 +344,8 @@
               "stl": 0,
               "blk": 0,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -11
+              "plusMinus": -11,
+              "pts": 0
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -358,8 +358,8 @@
               "stl": 0,
               "blk": 0,
               "pf": 0,
-              "plusMinus": 0,
-              "pts": -2
+              "plusMinus": -2,
+              "pts": 0
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -372,8 +372,8 @@
               "stl": 2,
               "blk": 2,
               "pf": 0,
-              "plusMinus": 2,
-              "pts": -17
+              "plusMinus": -17,
+              "pts": 2
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -386,8 +386,8 @@
               "stl": 2,
               "blk": 1,
               "pf": 0,
-              "plusMinus": 2,
-              "pts": -17
+              "plusMinus": -17,
+              "pts": 4
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -400,8 +400,8 @@
               "stl": 3,
               "blk": 1,
               "pf": 0,
-              "plusMinus": 3,
-              "pts": -29
+              "plusMinus": -29,
+              "pts": 10
             },
             {
               "team": "BEKAPAKA BOBOLICE",
@@ -414,8 +414,8 @@
               "stl": 2,
               "blk": 2,
               "pf": 0,
-              "plusMinus": 1,
-              "pts": -35
+              "plusMinus": -35,
+              "pts": 7
             }
           ],
           "totals": {

@@ -81,7 +81,7 @@ export default function Training() {
     );
 
     return (
-        <div className="p-6 flex flex-col gap-6 h-[calc(100vh-48px)] max-w-[1600px] mx-auto">
+        <div className="p-6 flex flex-col gap-6 h-auto lg:h-[calc(100vh-80px)] max-w-[1600px] mx-auto">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-bkpk-text-primary font-outfit">Centrum Treningowe</h1>
                 <button
@@ -93,8 +93,8 @@ export default function Training() {
                 </button>
             </div>
 
-            <div className="flex gap-6 flex-1 overflow-hidden">
-                <aside className="w-64 flex flex-col gap-4 border-r border-bkpk-border-strong pr-6 overflow-y-auto">
+            <div className="flex flex-col lg:flex-row gap-6 flex-1 lg:overflow-hidden">
+                <aside className="w-full lg:w-64 flex flex-col gap-4 border-b lg:border-b-0 lg:border-r border-bkpk-border-strong pb-6 lg:pb-0 pr-0 lg:pr-6 lg:overflow-y-auto">
                     <h3 className="text-sm font-bold text-bkpk-text-muted uppercase tracking-wider">Lista Treningów</h3>
                     <div className="flex flex-col gap-3">
                         {trainings.map(t => (
@@ -119,7 +119,7 @@ export default function Training() {
                     </div>
                 </aside>
 
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 lg:overflow-y-auto">
                     {selectedTraining ? (
                         <div className="bg-bkpk-surface border border-bkpk-border-strong rounded-2xl p-6 shadow-sm">
                             <div className="flex justify-between items-center mb-6 pb-6 border-b border-bkpk-border-strong">

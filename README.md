@@ -4,8 +4,11 @@ System do zarządzania statystykami i scoutingiem dla drużyny BeKaPaKa.
 
 ## 🚀 Szybki Start (Produkcja)
 
-Aplikacja jest hostowana na Mikrus VPS pod adresem:
-👉 [**bekapaka.tojest.dev**](https://bekapaka.tojest.dev)
+Aplikacja działa na **OVH VPS** (`51.210.102.167`) obok backendu MOYA.
+
+Docelowe domeny: `bekapaka.pl`, `www.bekapaka.pl`, `panel.bekapaka.pl` (reverse proxy: Caddy).
+
+**Dla agentów AI i deployu:** [docs/vps-runbook.md](docs/vps-runbook.md), [VPS-dane/README.md](VPS-dane/README.md) oraz [AGENTS.md](AGENTS.md).
 
 ## 🛠 Deployment & CI/CD
 
@@ -16,6 +19,8 @@ Projekt korzysta z automatycznego wdrażania przez **GitHub Actions**.
 
 ### Dokumentacja techniczna:
 - [Instrukcja Deploymentu](docs/docker-deploy.md)
+- [VPS i MOYA (runbook)](docs/vps-runbook.md)
+- [Scraping KALK (Scrapling)](docs/scraping.md)
 - [Architektura Systemu](docs/architecture.md)
 - [API Reference](docs/api.md)
 

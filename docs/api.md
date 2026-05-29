@@ -79,56 +79,76 @@ Body:
 { "tag": "back-to-back" }
 ```
 
-## Kalk Div2 snapshot
-`GET /scrape/kalk/div2`
+## KALK Div2 — scraping (Scrapling)
 
-Response:
+Wymaga nagłówka `Authorization: Bearer <token>` oraz roli **ADMIN**.
+
+Pełna dokumentacja pipeline: [scraping.md](./scraping.md).
+
+### Uruchomienie pełnego importu
+`POST /api/scrape/kalk/div2/run`
+
+Uruchamia `python3 backend/scripts/kalk_scraper.py` (biblioteka [Scrapling](https://github.com/D4Vinci/Scrapling)), zapisuje `kalk_stats.json`, importuje dane do tabel `LeagueTeam`, `LeagueMatch`, `KalkPlayer` i synchronizuje skład BeKaPaKa.
+
+Response (200):
 ```json
 {
-  "source": "kalk-koszalin.com",
-  "division": "dywizja-2-grupa-4",
-  "url": "https://www.kalk-koszalin.com/dzial,dywizja-2,4.html",
-  "fetchedAt": "2026-02-05T11:02:00.000Z",
-  "recentMatches": [{ "homeTeam": "...", "awayTeam": "...", "homeScore": 0, "awayScore": 0 }],
-  "upcomingMatches": [{ "homeTeam": "...", "awayTeam": "...", "date": "2026-02-15", "time": "18:30" }],
-  "standings": [{ "rank": 1, "team": "...", "matches": null, "wins": null, "losses": null, "points": null, "ratio": null }]
+  "success": true,
+  "source": "scrapling",
+  "teams": 12,
+  "matches": 83,
+  "players": 140
 }
 ```
 
-### Uruchomienie skryptu
-`POST /scrape/kalk/div2/run`
+Błędy:
 
-Uruchamia skrypt Pythona (`backend/scripts/kalk_scraper.py`) na VPS-ie. Zwraca status wykonania, fragmenty stdout/stderr i ścieżkę do `kalk_stats.json`.
+- `409` — `{ "error": "Scraper już działa." }`
+- `500` — `{ "error": "<komunikat błędu>" }` (szczegóły w logu ze statusu)
 
-Przykład odpowiedzi (status 200):
-```json
-{
-  "message": "Zapisano 32 rekordów z KALK.",
-  "summary": "Dodano 3 nowych zawodników: Jan Kowalski, Anna Nowak, Piotr Zieliński.",
-  "total": 32,
-  "newPlayers": ["Jan Kowalski", "Anna Nowak", "Piotr Zieliński"],
-  "runId": "ckxyz"
-}
-```
+Czas wykonania: do ok. 15 minut (timeout procesu Pythona).
 
-Jeśli skrypt już działa, odpowiedź to 409 z komunikatem o oczekiwaniu na zakończenie poprzedniego uruchomienia. W przypadku błędu wyjściowego status to 500 z `logs`.
-
-Ten endpoint uruchamia proces, który generuje `kalk_stats.json` (lista zawodników) *i* zapisuje dane w tabeli `KalkPlayer` w bazie danych oraz rejestruje historię w `KalkScrapeRun`. Komunikat końcowy zawiera listę nowych zawodników, a frontend może wyświetlić aktualny stan przez osobne żądanie statusu.
-
-## Stan skrapera (widoczny w UI)
-`GET /scrape/kalk/div2/status`
+### Stan skrapera (UI Administracja)
+`GET /api/scrape/kalk/div2/status`
 
 Response:
 ```json
 {
   "running": false,
   "step": "idle",
-  "message": "Brak aktywnego pobierania",
-  "lastRunId": "ckxyz",
-  "lastRunAt": "2026-02-05T11:02:00.000Z",
-  "lastFinishedAt": "2026-02-05T11:05:12.000Z",
-  "lastNewPlayers": ["Jan Kowalski", "Anna Nowak"]
+  "message": "Zakończono pomyślnie",
+  "lastFinishedAt": "2026-05-28T13:11:50.000Z",
+  "lastLog": "[12:11:50] Import zakończony sukcesem.\n"
 }
 ```
 
-Odpowiedź pokazuje, co aktualnie dzieje się w procesie (status: `fetching`, `processing`, `idle`, `error`) oraz jakie dane zostały dopisane przy ostatnim pobraniu.
+Pole `step` podczas pracy: `inicjalizacja` → `pobieranie` → `import-bazy` → `synchronizacja` → `idle` (lub `error`).
+
+Pole `lastLog` zawiera ostatnie ~1000 linii logu (stdout/stderr skryptu i backendu).
+
+### Dane ligowe po imporcie (publiczne API)
+
+| Endpoint | Opis |
+|----------|------|
+| `GET /api/league/table` | Tabela ligowa |
+| `GET /api/league/schedule` | Terminarz |
+| `GET /api/league/scorers?limit=20` | Top strzelcy (`KalkPlayer`) |
+
+## Analiza AI (Google Gemini)
+
+Wymaga `GEMINI_API_KEY` na backendzie. Generacja: **ADMIN** + Bearer token.
+
+| Endpoint | Opis |
+|----------|------|
+| `GET /api/ai/status` | Czy skonfigurowano klucz + model |
+| `GET /api/ai/briefing` | Ostatni briefing (Markdown) |
+| `POST /api/ai/briefing/generate` | Briefing tygodniowy (Dashboard) |
+| `POST /api/games/:id/analyze` | Analiza meczu → `Game.aiSummary` |
+| `POST /api/players/:id/analyze` | Plan rozwoju zawodnika (min. 3 mecze) |
+| `POST /api/scouting/analyze?opponent=` | Raport scoutingu rywala |
+
+Body (opcjonalnie): `{ "force": true }` — wymusza ponowne wywołanie API (pomija cache).
+
+Błędy: `503` brak klucza, `400` za mało danych, `409` generacja już trwa.
+
+Szczegóły: [ai-match-analysis-plan.md](./ai-match-analysis-plan.md).

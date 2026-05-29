@@ -27,6 +27,9 @@ services:
       NODE_ENV: production
       PORT: 4001
       JWT_SECRET: ${JWT_SECRET}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      AI_ANALYSIS_ENABLED: ${AI_ANALYSIS_ENABLED:-true}
       TZ: Europe/Warsaw
     depends_on:
       - bkpk-db

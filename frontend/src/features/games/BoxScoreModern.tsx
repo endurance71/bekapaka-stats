@@ -61,7 +61,7 @@ export default function BoxScore({ playerStats, loading }: BoxScoreProps) {
 
     return (
         <BkpkCard variant="glass" padding="none" className="overflow-hidden">
-            <div className="overflow-x-auto -u-scrollbar-hide">
+            <div className="overflow-x-auto no-scrollbar">
                 <table className="w-full border-collapse text-sm">
                     <thead>
                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
@@ -79,9 +79,9 @@ export default function BoxScore({ playerStats, loading }: BoxScoreProps) {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: idx * 0.03 }}
-                                className="hover:bg-bkpk-surface-tint-2 transition-colors"
+                                className="group hover:bg-bkpk-surface-tint-2 transition-colors"
                             >
-                                <td className="px-4 py-3 font-bold text-bkpk-text-primary sticky left-0 z-10 bg-inherit border-r border-bkpk-border-strong">
+                                <td className="px-4 py-3 font-bold text-bkpk-text-primary sticky left-0 z-10 bg-bkpk-surface group-hover:bg-bkpk-surface-elevated transition-colors border-r border-bkpk-border-strong">
                                     <div className="flex items-center gap-2">
                                         {player.number && <span className="text-xs text-bkpk-primary tabular-nums">#{player.number}</span>}
                                         <span className="truncate">{player.name}</span>

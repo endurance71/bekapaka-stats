@@ -7,6 +7,7 @@ export interface PlayerCardProps {
     id: string;
     firstName: string;
     lastName: string;
+    photoUrl?: string | null;
     number: number;
     position: string;
     ppg: number;
@@ -20,6 +21,7 @@ export default function PlayerCard({
     id,
     firstName,
     lastName,
+    photoUrl,
     number,
     position,
     ppg,
@@ -68,7 +70,9 @@ export default function PlayerCard({
             .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
             .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
             .replace(/\s+/g, '-');
-        return `/photos/${normalize(f)}-${normalize(l)}.png`;
+        const localPhoto = `/photos/${normalize(f)}-${normalize(l)}.png`;
+        const hasValidRemotePhoto = Boolean(photoUrl) && !photoUrl.toLowerCase().includes('empty.jpg');
+        return hasValidRemotePhoto ? photoUrl : localPhoto;
     };
 
     return (

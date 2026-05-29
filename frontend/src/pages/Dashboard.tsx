@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchJSON } from '../lib/api';
+import { fetchJSON, postJSON } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
+import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { Activity, Database, Calendar } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
@@ -45,17 +47,22 @@ export default function Dashboard() {
   const [scoutingData, setScoutingData] = useState<any>(null);
   const [lastGameFull, setLastGameFull] = useState<any>(null);
   const [teamStats, setTeamStats] = useState<any>(null);
+  const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string } | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
 
   const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      const [gamesData, playersData, scheduleData, trainingData, scouting, tStats] = await Promise.all([
+      const [gamesData, playersData, scheduleData, trainingData, scouting, tStats, briefingData] = await Promise.all([
         fetchJSON<Game[]>('/api/games'),
         fetchJSON<Player[]>('/api/players'),
         fetchJSON<any[]>('/api/league/schedule'),
         fetchJSON<any>('/api/training/priorities'),
         fetchJSON<any>('/api/scouting/next'),
-        fetchJSON<any>('/api/team/stats')
+        fetchJSON<any>('/api/team/stats'),
+        fetchJSON<any>('/api/ai/briefing').catch(() => null)
       ]);
 
       const played = (gamesData || []).filter(g => g.result);
@@ -67,6 +74,7 @@ export default function Dashboard() {
       setTrainingStats(trainingData);
       setScoutingData(scouting);
       setTeamStats(tStats);
+      setBriefing(briefingData);
 
       const ourSchedule = (scheduleData || []).filter(m =>
         m.homeTeam?.toLowerCase().includes('bekapaka') ||
@@ -101,6 +109,25 @@ export default function Dashboard() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
+  const handleGenerateBriefing = async (force = false) => {
+    setBriefingLoading(true);
+    try {
+      const result = await postJSON<{ contentMd: string; generatedAt: string; model?: string }>(
+        '/api/ai/briefing/generate',
+        { force }
+      );
+      setBriefing({
+        contentMd: result.contentMd,
+        generatedAt: result.generatedAt,
+        model: result.model
+      });
+    } catch (error: any) {
+      alert(error?.message || 'Nie udało się wygenerować briefingu');
+    } finally {
+      setBriefingLoading(false);
+    }
+  };
+
   const ppg = players.reduce((acc, p) => acc + p.ppg, 0) / (players.length || 1);
   const recentTrendMatches = games.filter(g => g.result).slice(0, 10).map(g => ({
     id: g.id,
@@ -134,6 +161,17 @@ export default function Dashboard() {
       }
       main={
         <div className="space-y-8">
+          <AiAnalysisBlock
+            title="Briefing tygodniowy (AI)"
+            content={briefing?.contentMd}
+            generatedAt={briefing?.generatedAt}
+            model={briefing?.model}
+            isAdmin={isAdmin}
+            loading={briefingLoading}
+            onGenerate={handleGenerateBriefing}
+            emptyHint="Brak briefingu. Administrator może wygenerować podsumowanie tygodnia dla drużyny."
+          />
+
           <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
 
           {lastGameFull?.data?.fiveMinute || lastGameFull?.data?.quarters ? (

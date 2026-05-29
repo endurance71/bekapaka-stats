@@ -30,6 +30,12 @@ model Game {
   
   // Stare pole dla kompatybilności wstecznej
   data        Json?
+
+  // Analiza AI (Gemini)
+  aiSummary      String?   @db.Text
+  aiSummaryAt    DateTime?
+  aiSummaryModel String?
+  aiSummaryHash  String?
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -84,6 +90,12 @@ model RosterPlayer {
   
   // Stare pole dla kompatybilności
   data         Json?
+
+  // Analiza rozwoju AI (Gemini)
+  aiDevelopmentSummary String?   @db.Text
+  aiDevelopmentAt      DateTime?
+  aiDevelopmentModel   String?
+  aiDevelopmentHash    String?
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -171,6 +183,26 @@ model LeagueTeam {
   pointsAgainst Int      @default(0)
   
   updatedAt     DateTime @updatedAt
+}
+
+model ScoutingAiReport {
+  opponentKey  String   @id
+  opponentName String
+  summaryMd    String   @db.Text
+  analysisJson Json?
+  model        String?
+  sourceHash   String?
+  generatedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model TeamBriefing {
+  id           String   @id @default("default")
+  contentMd    String   @db.Text
+  model        String?
+  sourceHash   String?
+  generatedAt  DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model LeagueMatch {
