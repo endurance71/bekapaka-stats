@@ -74,7 +74,8 @@ export default function LeagueScheduleModern() {
                             isBkpkInvolved && "border-bkpk-primary/20 bg-bkpk-primary/5"
                         )}
                     >
-                        <div className="flex flex-col md:flex-row items-center gap-6">
+                        {/* Desktop View */}
+                        <div className="hidden md:flex flex-row items-center gap-6 w-full">
                             {/* Date Badge */}
                             <div className="flex flex-col items-center justify-center p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong min-w-[100px]">
                                 <span className="text-xs font-bold text-bkpk-primary uppercase tracking-widest">
@@ -89,7 +90,7 @@ export default function LeagueScheduleModern() {
                             </div>
 
                             {/* Match Details */}
-                            <div className="flex-1 flex items-center justify-between gap-8 w-full">
+                            <div className="flex-1 flex items-center justify-between gap-8">
                                 <div className={cn(
                                     "flex-1 text-right font-bold text-lg",
                                     isHomeBkpk ? "text-bkpk-primary" : "text-bkpk-text-primary"
@@ -126,6 +127,70 @@ export default function LeagueScheduleModern() {
                                 <div className="hidden sm:flex items-center gap-1.5">
                                     <Clock className="w-3.5 h-3.5" />
                                     <span>Division II</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile View */}
+                        <div className="flex md:hidden flex-col gap-4 w-full">
+                            {/* Top Info Row */}
+                            <div className="flex justify-between items-center text-xs text-bkpk-text-muted border-b border-bkpk-border-strong pb-2">
+                                <div className="flex items-center gap-1.5 font-bold">
+                                    <Calendar className="w-3.5 h-3.5 text-bkpk-primary" />
+                                    <span>
+                                        {new Date(match.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
+                                        {' · '}
+                                        {new Date(match.date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 font-bold">
+                                    <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
+                                    <span>Hala Koszalin</span>
+                                </div>
+                            </div>
+
+                            {/* Teams & Score Row */}
+                            <div className="flex flex-col gap-3">
+                                <div className="flex justify-between items-center">
+                                    <span className={cn(
+                                        "font-bold text-base",
+                                        isHomeBkpk ? "text-bkpk-primary" : "text-bkpk-text-primary"
+                                    )}>
+                                        {match.homeTeam}
+                                    </span>
+                                    {match.isFinished ? (
+                                        <span className={cn(
+                                            "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
+                                            match.scoreHome! > match.scoreAway! ? "text-bkpk-text-primary" : "text-bkpk-text-muted"
+                                        )}>
+                                            {match.scoreHome}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                            DOM
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex justify-between items-center">
+                                    <span className={cn(
+                                        "font-bold text-base",
+                                        isAwayBkpk ? "text-bkpk-primary" : "text-bkpk-text-primary"
+                                    )}>
+                                        {match.guestTeam}
+                                    </span>
+                                    {match.isFinished ? (
+                                        <span className={cn(
+                                            "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
+                                            match.scoreAway! > match.scoreHome! ? "text-bkpk-text-primary" : "text-bkpk-text-muted"
+                                        )}>
+                                            {match.scoreAway}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                            WYJAZD
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         </div>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { Trophy, Star } from 'lucide-react';
@@ -32,6 +32,15 @@ export default function PlayerCard({
 }: PlayerCardProps) {
     const cardRef = useRef<HTMLDivElement>(null);
     const [hovered, setHovered] = useState(false);
+    const [canHover, setCanHover] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia('(hover: hover)');
+        setCanHover(media.matches);
+        const listener = (e: MediaQueryListEvent) => setCanHover(e.matches);
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, []);
 
     // Mouse tilt values
     const x = useMotionValue(0);
@@ -83,9 +92,9 @@ export default function PlayerCard({
             onMouseLeave={handleMouseLeave}
             onClick={() => onClick?.(id)}
             style={{
-                rotateX,
-                rotateY,
-                transformStyle: "preserve-3d",
+                rotateX: canHover ? rotateX : 0,
+                rotateY: canHover ? rotateY : 0,
+                transformStyle: canHover ? "preserve-3d" : "flat",
             }}
             className="relative w-full aspect-[3/4] cursor-pointer group select-none"
         >

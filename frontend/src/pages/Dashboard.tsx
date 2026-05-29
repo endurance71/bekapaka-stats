@@ -175,35 +175,30 @@ export default function Dashboard() {
           <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
 
           {lastGameFull?.data?.fiveMinute || lastGameFull?.data?.quarters ? (
-            <BkpkCard
-              title="Dynamika Ostatniego Meczu"
-              icon={<Activity className="w-5 h-5 text-bkpk-primary" />}
-            >
-              <DashboardMomentum
-                data={lastGameFull.data.fiveMinute || (() => {
-                  const isHome = lastGameFull.homeAway === 'home';
-                  let homeSum = 0;
-                  let awaySum = 0;
-                  const homePoints: number[] = [];
-                  const awayPoints: number[] = [];
+            <DashboardMomentum
+              data={lastGameFull.data.fiveMinute || (() => {
+                const isHome = lastGameFull.homeAway === 'home';
+                let homeSum = 0;
+                let awaySum = 0;
+                const homePoints: number[] = [];
+                const awayPoints: number[] = [];
 
-                  lastGameFull.data.quarters.forEach((q: any) => {
-                    homeSum += q.home;
-                    awaySum += q.away;
-                    homePoints.push(homeSum);
-                    awayPoints.push(awaySum);
-                  });
+                lastGameFull.data.quarters.forEach((q: any) => {
+                  homeSum += q.home;
+                  awaySum += q.away;
+                  homePoints.push(homeSum);
+                  awayPoints.push(awaySum);
+                });
 
-                  return [
-                    { team: 'BB', points: isHome ? homePoints : awayPoints },
-                    { team: 'OP', points: isHome ? awayPoints : homePoints }
-                  ];
-                })()}
-                bkCode="BB"
-                oppCode="OP"
-                step={lastGameFull.data.fiveMinute ? 5 : 10}
-              />
-            </BkpkCard>
+                return [
+                  { team: 'BB', points: isHome ? homePoints : awayPoints },
+                  { team: 'OP', points: isHome ? awayPoints : homePoints }
+                ];
+              })()}
+              bkCode="BB"
+              oppCode="OP"
+              step={lastGameFull.data.fiveMinute ? 5 : 10}
+            />
           ) : !loading && (
             <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
               <Database className="w-4 h-4 text-bkpk-text-muted" />

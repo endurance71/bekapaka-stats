@@ -194,7 +194,7 @@ export default function PlayerProfile() {
                                     <span className="text-bkpk-primary block text-xl mb-1">{player.firstName}</span>
                                     {player.lastName}
                                 </h1>
-                                <p className="text-bkpk-text-muted font-medium flex items-center justify-center md:justify-start gap-4 mt-2">
+                                <p className="text-bkpk-text-muted font-medium flex flex-wrap items-center justify-center md:justify-start gap-y-2 gap-x-4 md:gap-4 mt-2">
                                     <span className="flex items-center gap-1.5"><Target className="w-4 h-4" /> {
                                         player.position === 'G' ? 'Obrońca' :
                                             player.position === 'F' ? 'Skrzydłowy' :
@@ -204,9 +204,9 @@ export default function PlayerProfile() {
                                                             player.position === 'SF' ? 'Niski Skrzydłowy' :
                                                                 player.position === 'PF' ? 'Silny Skrzydłowy' : player.position
                                     }</span>
-                                    <span className="w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
+                                    <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
                                     <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Sezon 2025/26</span>
-                                    <span className="w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
+                                    <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
                                     <span className="flex items-center gap-1.5 text-bkpk-success"><Star className="w-4 h-4" /> {averages.gamesPlayed} meczy</span>
                                 </p>
                             </div>
