@@ -7,6 +7,8 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { cn } from '../shared/lib/utils';
 import { motion } from 'framer-motion';
+import { compressImage } from '../shared/lib/imageCompression';
+import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 type ScraperStatus = {
     running: boolean;
@@ -407,6 +409,7 @@ function UserManagement() {
     const [addUsername, setAddUsername] = useState('');
     const [addPassword, setAddPassword] = useState('');
     const [addRole, setAddRole] = useState<'USER' | 'ADMIN'>('USER');
+    const [addPhoto, setAddPhoto] = useState<string | null>(null);
     const [addError, setAddError] = useState<string | null>(null);
 
     // Form fields for Edit
@@ -418,6 +421,7 @@ function UserManagement() {
     const [editUsername, setEditUsername] = useState('');
     const [editPassword, setEditPassword] = useState('');
     const [editRole, setEditRole] = useState<'USER' | 'ADMIN'>('USER');
+    const [editPhoto, setEditPhoto] = useState<string | null>(null);
     const [editError, setEditError] = useState<string | null>(null);
 
     const fetchUsers = () => {
@@ -447,6 +451,7 @@ function UserManagement() {
                 lastName: addLastName,
                 number: addNumber !== '' ? parseInt(addNumber) : null,
                 position: addPosition || null,
+                photo: addPhoto
             };
 
             if (addEnableLogin) {
@@ -470,6 +475,7 @@ function UserManagement() {
             setAddUsername('');
             setAddPassword('');
             setAddRole('USER');
+            setAddPhoto(null);
             fetchUsers();
         } catch (err: any) {
             setAddError(err.message || 'Błąd dodawania użytkownika');
@@ -486,6 +492,7 @@ function UserManagement() {
         setEditUsername(user.username || '');
         setEditPassword('');
         setEditRole(user.role || 'USER');
+        setEditPhoto(user.photo || user.data?.photo || null);
         setEditError(null);
         setIsEditModalOpen(true);
     };
@@ -502,6 +509,7 @@ function UserManagement() {
                 number: editNumber !== '' ? parseInt(editNumber) : null,
                 position: editPosition || null,
                 role: editRole,
+                photo: editPhoto
             };
 
             if (editEnableLogin) {
@@ -520,6 +528,7 @@ function UserManagement() {
             await putJSON(`/api/admin/users/${selectedUser.id}`, body);
             setIsEditModalOpen(false);
             setSelectedUser(null);
+            setEditPhoto(null);
             fetchUsers();
         } catch (err: any) {
             setEditError(err.message || 'Błąd aktualizacji użytkownika');
@@ -636,8 +645,16 @@ function UserManagement() {
                         <tbody className="divide-y divide-bkpk-border-subtle">
                             {filteredUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-bkpk-surface-tint-1 transition-colors">
-                                    <td className="py-3 px-4 font-bold text-bkpk-text-primary">
-                                        {user.firstName} {user.lastName}
+                                    <td className="py-3 px-4 font-bold text-bkpk-text-primary flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
+                                            <img
+                                                src={resolvePlayerPhoto(user)}
+                                                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                                                className="w-full h-full object-cover"
+                                                alt=""
+                                            />
+                                        </div>
+                                        <span>{user.firstName} {user.lastName}</span>
                                     </td>
                                     <td className="py-3 px-4 text-bkpk-text-secondary">
                                         {user.number !== null ? `#${user.number}` : '-'} | {user.position || '-'}
@@ -762,6 +779,49 @@ function UserManagement() {
                                 <option value="PF">PF (Silny skrzydłowy)</option>
                                 <option value="C">C (Środkowy)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Zdjęcie Zawodnika</label>
+                        <div className="flex items-center gap-4 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle">
+                            <div className="w-16 h-16 rounded-full border border-bkpk-border-strong bg-bkpk-bg overflow-hidden flex items-center justify-center shrink-0">
+                                {addPhoto ? (
+                                    <img src={addPhoto} className="w-full h-full object-cover" alt="Preview" />
+                                ) : (
+                                    <span className="text-xs text-bkpk-text-muted italic">Brak</span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="cursor-pointer bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong text-bkpk-text-primary px-3 py-1.5 rounded-lg text-xs font-bold text-center select-none transition-colors">
+                                    Wgraj zdjęcie
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                try {
+                                                    const compressed = await compressImage(file);
+                                                    setAddPhoto(compressed);
+                                                } catch (err) {
+                                                    alert('Błąd podczas kompresji zdjęcia');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                {addPhoto && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setAddPhoto(null)}
+                                        className="text-xs font-bold text-bkpk-danger hover:underline text-left animate-in fade-in"
+                                    >
+                                        Usuń zdjęcie
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -892,6 +952,49 @@ function UserManagement() {
                                 <option value="PF">PF (Silny skrzydłowy)</option>
                                 <option value="C">C (Środkowy)</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Zdjęcie Zawodnika</label>
+                        <div className="flex items-center gap-4 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle">
+                            <div className="w-16 h-16 rounded-full border border-bkpk-border-strong bg-bkpk-bg overflow-hidden flex items-center justify-center shrink-0">
+                                {editPhoto ? (
+                                    <img src={editPhoto} className="w-full h-full object-cover" alt="Preview" />
+                                ) : (
+                                    <span className="text-xs text-bkpk-text-muted italic">Brak</span>
+                                )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="cursor-pointer bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong text-bkpk-text-primary px-3 py-1.5 rounded-lg text-xs font-bold text-center select-none transition-colors">
+                                    Wgraj zdjęcie
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (file) {
+                                                try {
+                                                    const compressed = await compressImage(file);
+                                                    setEditPhoto(compressed);
+                                                } catch (err) {
+                                                    alert('Błąd podczas kompresji zdjęcia');
+                                                }
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                {editPhoto && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditPhoto(null)}
+                                        className="text-xs font-bold text-bkpk-danger hover:underline text-left animate-in fade-in"
+                                    >
+                                        Usuń zdjęcie
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
 

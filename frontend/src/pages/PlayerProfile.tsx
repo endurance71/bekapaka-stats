@@ -14,7 +14,7 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import useIsMobile from '../hooks/useIsMobile';
-import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
+import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 interface StatSnapshot {
     gameId: string;
@@ -139,11 +139,7 @@ export default function PlayerProfile() {
     if (!data) return <div className="p-20 text-center text-bkpk-text-muted italic">Player not found.</div>;
 
     const { player, averages, gameLog } = data;
-    const playerPhoto = (() => {
-        const remotePhoto = player.kalkPlayer?.raw?.photo_url || null;
-        const hasValid = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg');
-        return hasValid ? remotePhoto : getPhotoUrl(player.firstName, player.lastName);
-    })();
+    const playerPhoto = resolvePlayerPhoto(player);
 
     return (
         <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">

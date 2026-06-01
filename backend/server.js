@@ -642,7 +642,7 @@ app.get(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, a
 
 app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { firstName, lastName, number, position, username, password, role } = req.body;
+    const { firstName, lastName, number, position, username, password, role, photo } = req.body;
     
     if (!firstName || !lastName) {
       return res.status(400).json({ error: 'Imię i nazwisko są wymagane' });
@@ -675,7 +675,8 @@ app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, 
         username: cleanUsername,
         password: passwordHash,
         role: role || 'USER',
-        starter: false
+        starter: false,
+        data: photo ? { photo } : null
       }
     });
 
@@ -690,7 +691,7 @@ app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, 
 app.put(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, number, position, username, password, role } = req.body;
+    const { firstName, lastName, number, position, username, password, role, photo } = req.body;
 
     const existingUser = await prisma.rosterPlayer.findUnique({
       where: { id }
@@ -735,6 +736,14 @@ app.put(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, req
       updateData.password = await bcrypt.hash(password, 10);
     }
 
+    if (photo !== undefined) {
+      const existingData = existingUser.data || {};
+      updateData.data = {
+        ...existingData,
+        photo: photo || null
+      };
+    }
+
     const updatedUser = await prisma.rosterPlayer.update({
       where: { id },
       data: updateData
@@ -745,6 +754,70 @@ app.put(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, req
   } catch (err) {
     console.error('Failed to update user:', err);
     res.status(500).json({ error: 'Błąd aktualizacji użytkownika' });
+  }
+});
+
+// --- USER PROFILE API (SELF SERVICE) ---
+app.put(['/api/profile', '/profile'], authenticateToken, async (req, res) => {
+  try {
+    const { photo } = req.body;
+    const existingUser = await prisma.rosterPlayer.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+    }
+
+    const updated = await prisma.rosterPlayer.update({
+      where: { id: req.user.id },
+      data: {
+        data: {
+          ...(existingUser.data || {}),
+          photo: photo !== undefined ? photo : (existingUser.data?.photo || null)
+        }
+      }
+    });
+
+    const { password: _, ...safeUser } = updated;
+    res.json(safeUser);
+  } catch (err) {
+    console.error('Failed to update profile photo:', err);
+    res.status(500).json({ error: 'Błąd aktualizacji zdjęcia profilowego' });
+  }
+});
+
+app.put(['/api/profile/password', '/profile/password'], authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Oba hasła są wymagane' });
+    }
+
+    const user = await prisma.rosterPlayer.findUnique({
+      where: { id: req.user.id }
+    });
+
+    if (!user || !user.password) {
+      return res.status(404).json({ error: 'Konto logowania nie istnieje lub nie posiada hasła' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ error: 'Aktualne hasło jest niepoprawne' });
+    }
+
+    const newPasswordHash = await bcrypt.hash(newPassword, 10);
+    await prisma.rosterPlayer.update({
+      where: { id: req.user.id },
+      data: { password: newPasswordHash }
+    });
+
+    res.json({ success: true, message: 'Hasło zostało pomyślnie zmienione' });
+  } catch (err) {
+    console.error('Failed to update profile password:', err);
+    res.status(500).json({ error: 'Błąd zmiany hasła' });
   }
 });
 

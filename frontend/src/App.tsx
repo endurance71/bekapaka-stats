@@ -12,6 +12,7 @@ import LoginPage from './pages/LoginPage';
 // Lazy-loaded: heavy pages loaded on demand
 const Roster = lazy(() => import('./pages/Roster'));
 const Trends = lazy(() => import('./pages/Trends'));
+const Profile = lazy(() => import('./pages/Profile'));
 const Administration = lazy(() => import('./pages/Administration'));
 const GameCenter = lazy(() => import('./pages/GameCenter'));
 const GameDetail = lazy(() => import('./pages/GameDetail'));
@@ -50,6 +51,7 @@ export default function App() {
                       <Route path="/league" element={<League />} />
                       <Route path="/scouting" element={<ScoutingPage />} />
                       <Route path="/roster" element={<Roster />} />
+                      <Route path="/profile" element={<Profile />} />
                       <Route path="/training" element={<Training />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route path="/trends" element={<Trends />} />

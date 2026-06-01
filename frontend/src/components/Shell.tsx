@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -16,7 +16,7 @@ import {
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
 import SidebarProfile from './SidebarProfile';
-import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
+import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 const allLinks = [
   { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
@@ -67,7 +67,11 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
         </div>
 
-        {user && <SidebarProfile user={user} />}
+        {user && (
+          <Link to="/profile" className="block cursor-pointer">
+            <SidebarProfile user={user} />
+          </Link>
+        )}
 
         <nav className="flex-1 space-y-2">
           {links.map((link) => {
@@ -126,16 +130,16 @@ export default function Shell({ children }: { children: ReactNode }) {
             <span className="font-black font-outfit text-base tracking-tight text-bkpk-text-primary">BeKaPaKa</span>
           </div>
           {user && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full border border-bkpk-border-strong overflow-hidden">
+            <Link to="/profile" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2">
                 <img
-                  src={getPhotoUrl(user.firstName, user.lastName)}
+                  src={resolvePlayerPhoto(user)}
                   onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                   className="w-full h-full object-cover grayscale"
                   alt=""
                 />
               </div>
-            </div>
+            </Link>
           )}
         </header>
 
