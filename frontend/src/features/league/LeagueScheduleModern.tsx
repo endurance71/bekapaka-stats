@@ -122,7 +122,7 @@ export default function LeagueScheduleModern() {
                             <div className="flex items-center gap-6 text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">
                                 <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
                                     <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                                    <span>{isHomeBkpk ? 'Dom' : 'Wyjazd'}</span>
+                                    <span>KOSiR Koszalin</span>
                                 </div>
                                 <div className="hidden sm:flex items-center gap-1.5">
                                     <Clock className="w-3.5 h-3.5" />
@@ -145,7 +145,7 @@ export default function LeagueScheduleModern() {
                                 </div>
                                 <div className="flex items-center gap-1.5 font-bold">
                                     <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                                    <span>{isHomeBkpk ? 'Dom' : 'Wyjazd'}</span>
+                                    <span>KOSiR Koszalin</span>
                                 </div>
                             </div>
 

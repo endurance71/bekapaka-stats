@@ -2,18 +2,14 @@ import { clsx } from 'clsx';
 
 interface GameFiltersProps {
     resultFilter: 'all' | 'W' | 'L';
-    homeAwayFilter: 'all' | 'home' | 'away';
     onResultChange: (filter: 'all' | 'W' | 'L') => void;
-    onHomeAwayChange: (filter: 'all' | 'home' | 'away') => void;
     onSortChange: (sort: 'date-desc' | 'date-asc') => void;
     sortBy: 'date-desc' | 'date-asc';
 }
 
 export default function GameFilters({
     resultFilter,
-    homeAwayFilter,
     onResultChange,
-    onHomeAwayChange,
     onSortChange,
     sortBy
 }: GameFiltersProps) {
@@ -52,29 +48,7 @@ export default function GameFilters({
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2">
-                <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-wider">Lokalizacja:</label>
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        className={clsx(baseButtonClass, homeAwayFilter === 'all' && activeBaseClass)}
-                        onClick={() => onHomeAwayChange('all')}
-                    >
-                        Wszystkie
-                    </button>
-                    <button
-                        className={clsx(baseButtonClass, homeAwayFilter === 'home' && activeBaseClass)}
-                        onClick={() => onHomeAwayChange('home')}
-                    >
-                        🏠 Dom
-                    </button>
-                    <button
-                        className={clsx(baseButtonClass, homeAwayFilter === 'away' && activeBaseClass)}
-                        onClick={() => onHomeAwayChange('away')}
-                    >
-                        ✈️ Wyjazd
-                    </button>
-                </div>
-            </div>
+
 
             <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-wider">Sortowanie:</label>

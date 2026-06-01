@@ -63,9 +63,9 @@ export default function MatchCard({
                                 <Calendar className="w-3.5 h-3.5" />
                                 {new Date(date).toLocaleDateString()}
                             </div>
-                            <div className="flex items-center gap-1.5">
+                             <div className="flex items-center gap-1.5">
                                 <MapPin className="w-3.5 h-3.5" />
-                                {homeAway === 'home' ? 'Hala Bobolice' : 'Wyjazd'}
+                                KOSiR Koszalin
                             </div>
                         </div>
                     </div>
