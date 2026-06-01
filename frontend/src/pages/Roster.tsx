@@ -4,16 +4,19 @@ import { motion } from 'framer-motion';
 import PlayerCard from '../shared/ui/PlayerCard';
 import { useNavigate } from 'react-router-dom';
 import { Users, Filter, Search } from 'lucide-react';
+import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 interface Player {
   id: string;
   firstName: string;
   lastName: string;
+  photo?: string | null;
+  data?: any;
   kalkPlayer?: {
     raw?: {
       photo_url?: string | null;
-    };
-  };
+    } | null;
+  } | null;
   number: number;
   position: string;
   starter: boolean;
@@ -120,7 +123,7 @@ export default function Roster() {
               >
                 <PlayerCard
                   {...player}
-                  photoUrl={player.kalkPlayer?.raw?.photo_url || null}
+                  photoUrl={resolvePlayerPhoto(player)}
                   isStarter={player.starter}
                   onClick={(id) => navigate(`/players/${id}`)}
                 />

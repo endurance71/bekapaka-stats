@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
+import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 interface User {
     firstName: string;
@@ -7,6 +7,9 @@ interface User {
     number?: number;
     position?: string;
     username: string;
+    photo?: string | null;
+    data?: any;
+    kalkPlayer?: any;
 }
 
 interface SidebarProfileProps {
@@ -35,7 +38,7 @@ export default function SidebarProfile({ user }: SidebarProfileProps) {
                 <div className="h-48 w-full relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-bkpk-surface-tint-1 via-transparent to-transparent z-10" />
                     <img
-                        src={getPhotoUrl(user.firstName, user.lastName)}
+                        src={resolvePlayerPhoto(user)}
                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                         alt={user.lastName}
                         className="w-full h-full object-cover object-top grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-70 transition-all duration-700"

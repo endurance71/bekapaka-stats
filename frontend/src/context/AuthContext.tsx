@@ -10,6 +10,9 @@ interface User {
     role: 'ADMIN' | 'USER';
     number?: number;
     position?: string;
+    photo?: string | null;
+    data?: any;
+    kalkPlayer?: any;
 }
 
 interface AuthContextType {
@@ -18,6 +21,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (username: string, password: string) => Promise<void>;
     logout: () => void;
+    refreshUser: () => Promise<void>;
     loading: boolean;
 }
 
@@ -27,6 +31,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('bkpk_token'));
     const [loading, setLoading] = useState(true);
+
+    const refreshUser = async () => {
+        if (token) {
+            try {
+                const data = await fetchJSON<{ user: User }>('/api/auth/me');
+                setUser(data.user);
+            } catch (err) {
+                console.error('Failed to refresh user:', err);
+            }
+        }
+    };
 
     useEffect(() => {
         if (token) {
@@ -57,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, token, isAuthenticated: !!user, login, logout, refreshUser, loading }}>
             {children}
         </AuthContext.Provider>
     );
