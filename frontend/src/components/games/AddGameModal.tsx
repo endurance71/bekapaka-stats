@@ -107,34 +107,12 @@ export default function AddGameModal({ onClose, onGameAdded }: AddGameModalProps
 
                     <div>
                         <label className={labelClass}>Lokalizacja</label>
-                        <div className="flex gap-3">
-                            <label className="flex-1 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="homeAway"
-                                    value="home"
-                                    checked={formData.homeAway === 'home'}
-                                    onChange={(e) => handleChange('homeAway', e.target.value)}
-                                    className="peer sr-only"
-                                />
-                                <div className="flex items-center justify-center gap-2 p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-strong rounded-lg peer-checked:bg-bkpk-primary/10 peer-checked:border-bkpk-primary peer-checked:text-bkpk-primary transition-all hover:bg-bkpk-surface-tint-2">
-                                    <span>🏠 Dom</span>
-                                </div>
-                            </label>
-                            <label className="flex-1 cursor-pointer">
-                                <input
-                                    type="radio"
-                                    name="homeAway"
-                                    value="away"
-                                    checked={formData.homeAway === 'away'}
-                                    onChange={(e) => handleChange('homeAway', e.target.value)}
-                                    className="peer sr-only"
-                                />
-                                <div className="flex items-center justify-center gap-2 p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-strong rounded-lg peer-checked:bg-bkpk-primary/10 peer-checked:border-bkpk-primary peer-checked:text-bkpk-primary transition-all hover:bg-bkpk-surface-tint-2">
-                                    <span>✈️ Wyjazd</span>
-                                </div>
-                            </label>
-                        </div>
+                        <input
+                            type="text"
+                            value="KOSiR Koszalin"
+                            disabled
+                            className="w-full p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-strong rounded-lg text-bkpk-text-muted text-sm cursor-not-allowed"
+                        />
                     </div>
 
                     <div className="flex items-center gap-3 my-2">

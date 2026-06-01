@@ -20,7 +20,6 @@ interface GamesListProps {
 
 export default function GamesList({ games, loading }: GamesListProps) {
     const [resultFilter, setResultFilter] = useState<'all' | 'W' | 'L'>('all');
-    const [homeAwayFilter, setHomeAwayFilter] = useState<'all' | 'home' | 'away'>('all');
     const [sortBy, setSortBy] = useState<'date-desc' | 'date-asc'>('date-desc');
 
     // Filtrowanie i sortowanie
@@ -32,10 +31,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
             filtered = filtered.filter(game => game.result === resultFilter);
         }
 
-        // Filtr lokalizacji
-        if (homeAwayFilter !== 'all') {
-            filtered = filtered.filter(game => game.homeAway === homeAwayFilter);
-        }
+
 
         // Sortowanie
         filtered.sort((a, b) => {
@@ -45,7 +41,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
         });
 
         return filtered;
-    }, [games, resultFilter, homeAwayFilter, sortBy]);
+    }, [games, resultFilter, sortBy]);
 
     if (loading) {
         return (
@@ -60,10 +56,8 @@ export default function GamesList({ games, loading }: GamesListProps) {
         <div className="w-full space-y-6">
             <GameFilters
                 resultFilter={resultFilter}
-                homeAwayFilter={homeAwayFilter}
                 sortBy={sortBy}
                 onResultChange={setResultFilter}
-                onHomeAwayChange={setHomeAwayFilter}
                 onSortChange={setSortBy}
             />
 

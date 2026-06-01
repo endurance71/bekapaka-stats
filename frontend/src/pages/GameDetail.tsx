@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { fetchJSON, postJSON, putJSON } from '../lib/api';
+import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,16 +10,10 @@ import {
   MapPin,
   Trophy,
   Download,
-  Edit3,
-  Save,
-  X,
   Zap,
   BarChart2,
-  Users,
-  FileText
+  Users
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
@@ -32,10 +26,7 @@ export default function GameDetail() {
   const { id } = useParams<{ id: string }>();
   const [game, setGame] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ notes: '', mvp: '' });
   const [activeTab, setActiveTab] = useState<'bekapaka' | 'opponent'>('bekapaka');
-  const [saving, setSaving] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
@@ -46,10 +37,6 @@ export default function GameDetail() {
     try {
       const data = await fetchJSON<any>(`/api/games/${id}`);
       setGame(data);
-      setEditData({
-        notes: data.notes || '',
-        mvp: data.mvp || ''
-      });
     } catch (error) {
       console.error('Błąd podczas pobierania meczu:', error);
     } finally {
@@ -79,23 +66,6 @@ export default function GameDetail() {
       alert(error?.message || 'Nie udało się wygenerować analizy AI');
     } finally {
       setAiLoading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    if (!id) return;
-    setSaving(true);
-    try {
-      await putJSON(`/api/games/${id}`, {
-        notes: editData.notes,
-        mvp: editData.mvp
-      });
-      await fetchGame();
-      setIsEditing(false);
-    } catch (error) {
-      alert('Błąd podczas zapisywania zmian');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -132,21 +102,6 @@ export default function GameDetail() {
               <Download className="w-4 h-4" />
               Eksportuj JSON
             </BkpkButton>
-            <BkpkButton
-              variant={isEditing ? 'primary' : 'outline'}
-              size="sm"
-              className="gap-2"
-              onClick={isEditing ? handleSave : () => setIsEditing(true)}
-              loading={saving}
-            >
-              {isEditing ? <Save className="w-4 h-4" /> : <Edit3 className="w-4 h-4" />}
-              {isEditing ? 'Zapisz' : 'Edytuj'}
-            </BkpkButton>
-            {isEditing && (
-              <BkpkButton variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
-                <X className="w-4 h-4" />
-              </BkpkButton>
-            )}
           </div>
         </div>
 
@@ -177,7 +132,7 @@ export default function GameDetail() {
                 </div>
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                  {game.venue || 'Hala Bobolice'}
+                  {game.venue || 'KOSiR Koszalin'}
                 </div>
               </div>
             </div>
@@ -201,8 +156,8 @@ export default function GameDetail() {
             </div>
             <div className="w-px h-2 bg-bkpk-border-strong" />
             <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-bkpk-primary" />
-              {game.venue || 'Hala Bobolice'}
+              <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
+              {game.venue || 'KOSiR Koszalin'}
             </div>
           </div>
 
@@ -358,63 +313,7 @@ export default function GameDetail() {
           </aside>
         </div>
 
-        {/* Coach Notes - Full Width at Bottom */}
-        <BkpkCard variant="glass" className="p-8 md:p-12">
-          <div className="flex items-center justify-between border-b border-bkpk-border-strong pb-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-bkpk-primary/10 rounded-xl border border-bkpk-primary/20">
-                <FileText className="w-6 h-6 text-bkpk-primary" />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-bkpk-text-primary font-outfit">Notatki Trenera</h3>
-                <p className="text-sm text-bkpk-text-muted">Szczegółowa analiza i wnioski pomeczowe</p>
-              </div>
-            </div>
-            {!isEditing && (
-              <BkpkButton variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                <Edit3 className="w-4 h-4 mr-2" />
-                Edytuj Notatki
-              </BkpkButton>
-            )}
-          </div>
 
-          {isEditing ? (
-            <div className="space-y-4">
-              <textarea
-                value={editData.notes}
-                onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
-                className="w-full h-[400px] bg-bkpk-overlay-weak border border-bkpk-border-strong rounded-xl p-6 text-bkpk-text-primary text-lg leading-relaxed focus:border-bkpk-primary transition-colors outline-none resize-y placeholder:text-bkpk-text-muted font-mono"
-                placeholder="Wpisz szczegółowe notatki, wnioski i analizę..."
-              />
-              <div className="flex justify-end gap-3">
-                <BkpkButton variant="ghost" onClick={() => setIsEditing(false)}>Anuluj</BkpkButton>
-                <BkpkButton variant="primary" onClick={handleSave} loading={saving}>Zapisz Notatki</BkpkButton>
-              </div>
-            </div>
-          ) : (
-            <div className="prose prose-invert max-w-none 
-              prose-p:text-lg prose-p:leading-8 prose-p:text-bkpk-text-secondary 
-              prose-headings:text-bkpk-text-primary prose-strong:text-bkpk-primary
-              prose-hr:border-bkpk-border-strong prose-hr:my-8
-              prose-ul:list-disc prose-ul:ml-6 prose-ul:space-y-2
-              prose-li:text-bkpk-text-secondary prose-li:leading-7
-              prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl
-              prose-blockquote:border-l-4 prose-blockquote:border-bkpk-primary prose-blockquote:bg-bkpk-surface-tint-1 prose-blockquote:p-4 prose-blockquote:rounded-r-lg">
-              {game.notes ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {game.notes}
-                </ReactMarkdown>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-bkpk-border-strong rounded-2xl">
-                  <p className="text-bkpk-text-muted text-lg mb-4">Brak notatek dla tego meczu</p>
-                  <BkpkButton variant="outline" onClick={() => setIsEditing(true)}>
-                    Dodaj pierwszą notatkę
-                  </BkpkButton>
-                </div>
-              )}
-            </div>
-          )}
-        </BkpkCard>
       </div>
     </div>
   );

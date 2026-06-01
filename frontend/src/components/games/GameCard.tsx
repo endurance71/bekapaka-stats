@@ -45,7 +45,7 @@ export default function GameCard({ game }: GameCardProps) {
                 </div>
 
                 <div className="text-2xl">
-                    {isHome ? '🏠' : '✈️'}
+                    🏀
                 </div>
             </div>
 
