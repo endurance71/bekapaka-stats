@@ -15,21 +15,26 @@ interface Match {
     isFinished: boolean;
 }
 
-export default function LeagueScheduleModern() {
+interface LeagueScheduleModernProps {
+    seasonId?: string | null;
+}
+
+export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernProps) {
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchSchedule = useCallback(async () => {
+        if (!seasonId) return;
         setLoading(true);
         try {
-            const data = await fetchJSON<Match[]>('/api/league/schedule');
+            const data = await fetchJSON<Match[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`);
             setMatches(data || []);
         } catch (err) {
             console.error(err);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [seasonId]);
 
     useEffect(() => {
         fetchSchedule();
@@ -166,8 +171,8 @@ export default function LeagueScheduleModern() {
                                             {match.scoreHome}
                                         </span>
                                     ) : (
-                                        <span className="text-xs font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
-                                            DOM
+                                        <span className="text-[10px] font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                            GOSP.
                                         </span>
                                     )}
                                 </div>
@@ -187,8 +192,8 @@ export default function LeagueScheduleModern() {
                                             {match.scoreAway}
                                         </span>
                                     ) : (
-                                        <span className="text-xs font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
-                                            WYJAZD
+                                        <span className="text-[10px] font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                            GOŚĆ
                                         </span>
                                     )}
                                 </div>

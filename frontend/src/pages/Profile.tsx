@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { resolvePlayerPhoto, getPositionLabel } from '../shared/lib/playerUtils';
 import { compressImage } from '../shared/lib/imageCompression';
 import PlayerCard from '../shared/ui/PlayerCard';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
-import { putJSON } from '../lib/api';
+import { putJSON, fetchJSON } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, User, Key, Lock, Image as ImageIcon, ExternalLink, RefreshCw } from 'lucide-react';
+import { ShieldCheck, User, Key, Image as ImageIcon, ExternalLink, RefreshCw } from 'lucide-react';
+import { PasswordInput } from '../shared/ui/PasswordInput';
+import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
+import SeasonSelector from '../components/SeasonSelector';
+import { useSeasonPreference } from '../hooks/useSeasonPreference';
 
 export default function Profile() {
     const { user, refreshUser } = useAuth();
@@ -23,9 +27,36 @@ export default function Profile() {
     const [passwordError, setPasswordError] = useState<string | null>(null);
     const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
     const [passwordLoading, setPasswordLoading] = useState(false);
+    const [showCurrentPwd, setShowCurrentPwd] = useState(false);
+    const [showNewPwd, setShowNewPwd] = useState(false);
+    const [showConfirmPwd, setShowConfirmPwd] = useState(false);
 
     const [photoLoading, setPhotoLoading] = useState(false);
     const [photoError, setPhotoError] = useState<string | null>(null);
+
+    // AI Summary State
+    const [aiSummary, setAiSummary] = useState<string | null>(null);
+    const [aiMeta, setAiMeta] = useState<{ at?: string | null; model?: string | null }>({});
+    const [aiLoading] = useState(false);
+    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } =
+        useSeasonPreference(user?.id);
+
+    useEffect(() => {
+        if (!user?.id) return;
+        const fetchAiData = async () => {
+            try {
+                const playerRow = await fetchJSON<any>(`/api/players/${user.id}`);
+                setAiSummary(playerRow?.aiDevelopmentSummary || null);
+                setAiMeta({
+                    at: playerRow?.aiDevelopmentAt,
+                    model: playerRow?.aiDevelopmentModel
+                });
+            } catch (err) {
+                console.error('Failed to fetch player AI data:', err);
+            }
+        };
+        fetchAiData();
+    }, [user?.id]);
 
     if (!user) {
         return (
@@ -130,9 +161,29 @@ export default function Profile() {
                         transition={{ delay: 0.2 }}
                         className="text-bkpk-text-muted text-sm sm:text-lg"
                     >
-                        Zarządzaj swoimi danymi logowania, wgraj zdjęcie do karty zawodnika oraz zobacz podgląd swojej karty.
+                        Zarządzaj kontem, wybierz sezon do statystyk (archiwum) i zobacz podgląd karty.
                     </motion.p>
+                    {user?.id && (
+                        <SeasonSelector
+                            seasons={seasons}
+                            seasonId={seasonId}
+                            onChange={setSeasonId}
+                            loading={seasonsLoading}
+                            className="pt-2"
+                        />
+                    )}
                 </header>
+
+                <AiAnalysisBlock
+                    title="Twój plan rozwoju (AI)"
+                    content={aiSummary}
+                    generatedAt={aiMeta.at}
+                    model={aiMeta.model}
+                    isAdmin={false}
+                    loading={aiLoading}
+                    onGenerate={() => {}}
+                    emptyHint="Twój plan rozwoju nie został jeszcze wygenerowany przez trenera."
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     
@@ -162,7 +213,10 @@ export default function Profile() {
                             onClick={() => navigate(`/players/${user.id}`)}
                             className="w-full max-w-[320px] flex items-center justify-center gap-2 font-bold"
                         >
-                            <span>Zobacz pełne statystyki</span>
+                            <span>
+                                Statystyki
+                                {selectedSeason ? ` — ${selectedSeason.label}` : ''}
+                            </span>
                             <ExternalLink className="w-4 h-4" />
                         </BkpkButton>
                     </div>
@@ -231,6 +285,7 @@ export default function Profile() {
                         <BkpkCard
                             title="Bezpieczeństwo Konta"
                             icon={<Key className="w-5 h-5 text-bkpk-primary" />}
+                            animateEntrance={false}
                         >
                             <form onSubmit={handlePasswordChange} className="space-y-4">
                                 <div className="flex items-center gap-3 p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong text-xs text-bkpk-text-secondary">
@@ -249,47 +304,38 @@ export default function Profile() {
                                     </div>
                                 )}
 
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
-                                        <Lock className="w-3.5 h-3.5" /> Aktualne hasło *
-                                    </label>
-                                    <input
-                                        type="password"
-                                        required
-                                        className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                        placeholder="Wpisz obecne hasło..."
-                                        value={currentPassword}
-                                        onChange={(e) => setCurrentPassword(e.target.value)}
-                                    />
-                                </div>
+                                <PasswordInput
+                                    label="Aktualne hasło *"
+                                    placeholder="Wpisz obecne hasło..."
+                                    value={currentPassword}
+                                    onChange={setCurrentPassword}
+                                    required
+                                    autoComplete="current-password"
+                                    showPassword={showCurrentPwd}
+                                    onToggleShow={() => setShowCurrentPwd((v) => !v)}
+                                />
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
-                                            <Lock className="w-3.5 h-3.5 text-bkpk-primary" /> Nowe hasło *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            required
-                                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                            placeholder="Min. 6 znaków..."
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
-                                            <Lock className="w-3.5 h-3.5 text-bkpk-primary" /> Powtórz nowe hasło *
-                                        </label>
-                                        <input
-                                            type="password"
-                                            required
-                                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                            placeholder="Powtórz nowe hasło..."
-                                            value={confirmNewPassword}
-                                            onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                        />
-                                    </div>
+                                    <PasswordInput
+                                        label="Nowe hasło *"
+                                        placeholder="Min. 6 znaków..."
+                                        value={newPassword}
+                                        onChange={setNewPassword}
+                                        required
+                                        autoComplete="new-password"
+                                        showPassword={showNewPwd}
+                                        onToggleShow={() => setShowNewPwd((v) => !v)}
+                                    />
+                                    <PasswordInput
+                                        label="Powtórz nowe hasło *"
+                                        placeholder="Powtórz nowe hasło..."
+                                        value={confirmNewPassword}
+                                        onChange={setConfirmNewPassword}
+                                        required
+                                        autoComplete="new-password"
+                                        showPassword={showConfirmPwd}
+                                        onToggleShow={() => setShowConfirmPwd((v) => !v)}
+                                    />
                                 </div>
 
                                 <div className="pt-2 border-t border-bkpk-border-subtle flex justify-end">

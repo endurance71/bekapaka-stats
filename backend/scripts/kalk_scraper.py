@@ -35,6 +35,7 @@ OUTPUT_FILE = Path(__file__).resolve().parents[2] / 'kalk_stats.json'
 
 SECTION_KEYWORDS: Dict[str, List[str]] = {
     'tabela': ['tabela'],
+    'tabela_play_out': ['tabela play out'],
     'terminarz': ['terminarz'],
     'statystyki': ['statystyki indywidualne', 'statystyki zawodników', 'statystyki']
 }
@@ -151,38 +152,6 @@ def is_our_team(team_value: Optional[str]) -> bool:
     return any(keyword in text for keyword in OUR_TEAM_KEYWORDS)
 
 
-def extract_profile_photo_url(session: requests.Session, profile_url: str) -> Optional[str]:
-    """Pobiera URL zdjęcia z profilu zawodnika."""
-    if not profile_url:
-        return None
-    try:
-        profile_soup = fetch_soup(session, profile_url)
-    except Exception as exc:
-        logging.debug('Nie udało się pobrać profilu %s: %s', profile_url, exc)
-        return None
-
-    selectors = [
-        'img[src*="/zaw/"]',
-        'img[src*="zawodnik"]',
-        'img[src*="players"]',
-        'img[src*="zawodnicy"]',
-        '.zawodnik img',
-        '.player img',
-        '#content img'
-    ]
-
-    for selector in selectors:
-        for node in profile_soup.select(selector):
-            src = node.get('src')
-            if not src:
-                continue
-            src_lower = src.lower()
-            if any(skip in src_lower for skip in ['logo', 'baner', 'banner', 'icon', 'facebook', 'twitter', 'koszalin.jpg', 'zos.jpg']):
-                continue
-            return urljoin(BASE_URL, src)
-    return None
-
-
 def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[Dict[str, any]]:
     """Pobiera skrócone dane wszystkich zawodników (do rankingu)."""
     table = soup.find('table')
@@ -200,13 +169,7 @@ def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[
         
         name = link.get_text(strip=True)
         profile_url = urljoin(BASE_URL, link['href'])
-        photo_url = None
-        image_node = row.find('img')
-        if image_node and image_node.get('src'):
-            photo_url = urljoin(BASE_URL, image_node['src'])
-        if not photo_url:
-            photo_url = extract_profile_photo_url(session, profile_url)
-        
+
         # Zakładamy kolumny: Lp | Zawodnik | Drużyna | Punkty | Mecze | Średnia
         # Wiersz przykładowy: 1.|Gierłowski Igor|PIWIARNIA BUMERANG|272|8|34,00
         team = cells[2].get_text(strip=True)
@@ -225,10 +188,89 @@ def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[
             'mecze_rozegrane': matches,
             'punkty_suma': points,
             'srednia_punktow': avg,
-            'profile_url': profile_url,
-            'photo_url': photo_url
+            'profile_url': profile_url
         })
     return players
+
+
+def find_category_urls(stats_soup: BeautifulSoup) -> Dict[str, str]:
+    urls = {}
+    for option in stats_soup.find_all('option'):
+        val = option.get('value', '')
+        if not val:
+            continue
+        full_url = urljoin(BASE_URL, val)
+        if 'eval' in val:
+            urls['eval'] = full_url
+        elif 'zbiorki' in val:
+            urls['rebounds'] = full_url
+        elif 'asysty' in val:
+            urls['assists'] = full_url
+        elif 'prz' in val:
+            urls['steals'] = full_url
+        elif 'bl' in val:
+            urls['blocks'] = full_url
+        elif 'proc3' in val:
+            urls['three_pct'] = full_url
+    return urls
+
+
+def extract_category_stats(session: requests.Session, url: str, category_name: str) -> Dict[str, Dict[str, any]]:
+    """Pobiera i ekstrahuje statystyki z tabeli danej kategorii."""
+    try:
+        soup = fetch_soup(session, url)
+    except Exception as exc:
+        logging.error(f'Błąd pobierania statystyk dla {category_name}: {exc}')
+        return {}
+
+    table = soup.find('table')
+    if not table:
+        return {}
+
+    stats = {}
+    for row in table.find_all('tr'):
+        if row.find('th'): continue
+        cells = row.find_all('td')
+        if not cells or len(cells) < 4: continue
+
+        link = row.find('a', href=True)
+        if not link: continue
+
+        name = link.get_text(strip=True)
+        profile_url = urljoin(BASE_URL, link['href'])
+        player_id = generate_player_id(profile_url, name)
+
+        if category_name == 'three_pct':
+            try:
+                pct_str = cells[3].get_text(strip=True).replace(',', '.')
+                pct = float(pct_str) if pct_str else 0.0
+                celne_oddane = cells[4].get_text(strip=True)
+                made, att = 0, 0
+                if '/' in celne_oddane:
+                    m_parts = celne_oddane.split('/')
+                    made = int(m_parts[0].strip())
+                    att = int(m_parts[1].strip())
+                stats[player_id] = {
+                    'three_pct': pct,
+                    'three_made': made,
+                    'three_attempted': att
+                }
+            except Exception as e:
+                logging.warning(f"Error parsing 3pt row for {name}: {e}")
+        else:
+            try:
+                suma_str = cells[3].get_text(strip=True).replace(',', '.')
+                suma = float(suma_str) if suma_str else 0.0
+                srednia_str = cells[5].get_text(strip=True).replace(',', '.')
+                srednia = float(srednia_str) if srednia_str else 0.0
+                stats[player_id] = {
+                    f'{category_name}_suma': suma,
+                    f'{category_name}_srednia': srednia
+                }
+            except Exception as e:
+                logging.warning(f"Error parsing {category_name} row for {name}: {e}")
+
+    return stats
 
 
 def extract_league_table(soup: BeautifulSoup) -> List[Dict[str, any]]:
@@ -376,6 +418,17 @@ def main() -> None:
             logging.info('Pobrano tabelę ligową: %d drużyn', len(league_table))
         except Exception as exc:
             logging.error('Błąd pobierania tabeli: %s', exc)
+
+    # --- TABELA PLAY OUT ---
+    playout_url = section_urls.get('tabela_play_out')
+    playout_table = []
+    if playout_url:
+        try:
+            playout_soup = fetch_soup(session, playout_url)
+            playout_table = extract_league_table(playout_soup)
+            logging.info('Pobrano tabelę play-out: %d drużyn', len(playout_table))
+        except Exception as exc:
+            logging.error('Błąd pobierania tabeli play-out: %s', exc)
 
     # --- TERMINARZ ---
     schedule_url = section_urls.get('terminarz')
@@ -538,28 +591,36 @@ def main() -> None:
     except Exception as exc:
         logging.error(f'Błąd pobierania terminarza zespołu: {exc}')
 
-    # --- ZAWODNICY (TOP STRZELCY) ---
+    # --- ZAWODNICY (TOP STRZELCY & INNE KATEGORIE) ---
     players_list = []
     stats_url = section_urls.get('statystyki')
     if stats_url:
         try:
             stats_soup = fetch_soup(session, stats_url)
-            # Debugging table structure if extraction fails
-            table = stats_soup.find('table')
-            if table:
-                 rows = table.find_all('tr')
-                 logging.info(f"Tabela statystyk ma {len(rows)} wierszy.")
-                 if rows and len(rows) > 1:
-                     logging.info(f"Przykładowy wiersz statystyk: {rows[1].get_text(separator='|', strip=True)}")
-            
             players_list = extract_all_players(session, stats_soup)
-            logging.info('Pobrano statystyki %d zawodników z ligi.', len(players_list))
+            players_dict = {p['id_zawodnika']: p for p in players_list}
+            logging.info('Pobrano listę podstawową %d zawodników.', len(players_list))
+            
+            # Dynamiczne pobieranie dodatkowych kategorii
+            cat_urls = find_category_urls(stats_soup)
+            logging.info(f"Znalezione URL-e kategorii: {cat_urls}")
+            
+            for cat_name, cat_url in cat_urls.items():
+                logging.info(f"Pobieram statystyki dla kategorii: {cat_name}...")
+                cat_stats = extract_category_stats(session, cat_url, cat_name)
+                for p_id, stats_data in cat_stats.items():
+                    if p_id in players_dict:
+                        players_dict[p_id].update(stats_data)
+            
+            players_list = list(players_dict.values())
+            logging.info('Pobrano i scalono statystyki %d zawodników z ligi.', len(players_list))
         except Exception as exc:
             logging.error('Błąd pobierania statystyk: %s', exc)
 
     final_data = {
         'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'table': league_table,
+        'playout_table': playout_table,
         'schedule': schedule_matches,
         'players': players_list
     }
@@ -573,6 +634,7 @@ def main() -> None:
     logging.info('PODSUMOWANIE FAZY 7')
     logging.info('=' * 60)
     logging.info('Tabela: %d drużyn', len(league_table))
+    logging.info('Tabela play-out: %d drużyn', len(playout_table))
     logging.info('Mecze: %d spotkań', len(schedule_matches))
     logging.info('Zawodnicy: %d (wszyscy)', len(players_list))
     logging.info('Zapisano do: %s', OUTPUT_FILE)

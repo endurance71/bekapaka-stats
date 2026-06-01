@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
 import TopScorersModern from '../features/league/TopScorersModern';
+import SeasonSelector from '../components/SeasonSelector';
+import { useSeasonPreference } from '../hooks/useSeasonPreference';
 import { Trophy, Calendar, Target, Activity } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 
@@ -10,6 +12,8 @@ type Tab = 'table' | 'schedule' | 'scorers';
 
 export default function League() {
     const [activeTab, setActiveTab] = useState<Tab>('table');
+    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } =
+        useSeasonPreference('league-view');
 
     const tabs = [
         { id: 'table' as Tab, label: 'Tabela', icon: Trophy, color: 'text-bkpk-warning' },
@@ -45,9 +49,18 @@ export default function League() {
                             transition={{ delay: 0.2 }}
                             className="text-bkpk-text-muted text-lg max-w-xl"
                         >
-                            Oficjalna tabela i terminarz rozgrywek w sezonie 2025/26.
+                            {selectedSeason
+                                ? `Oficjalna tabela i terminarz — ${selectedSeason.label}.`
+                                : 'Oficjalna tabela i terminarz rozgrywek.'}
                         </motion.p>
                     </div>
+                    <SeasonSelector
+                        seasons={seasons}
+                        seasonId={seasonId}
+                        onChange={setSeasonId}
+                        loading={seasonsLoading}
+                        className="shrink-0"
+                    />
                 </header>
 
                 {/* Tab Navigation */}
@@ -83,13 +96,13 @@ export default function League() {
                         transition={{ duration: 0.3 }}
                         className="min-h-[600px]"
                     >
-                        {activeTab === 'table' && <LeagueTableModern />}
+                        {activeTab === 'table' && <LeagueTableModern seasonId={seasonId} />}
                         {activeTab === 'schedule' && (
                             <div className="bg-bkpk-glass border border-bkpk-glass-border rounded-bkpk-lg p-1 overflow-hidden">
-                                <LeagueSchedule />
+                                <LeagueSchedule seasonId={seasonId} />
                             </div>
                         )}
-                        {activeTab === 'scorers' && <TopScorersModern />}
+                        {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
                     </motion.div>
                 </AnimatePresence>
             </div>

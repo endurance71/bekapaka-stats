@@ -15,21 +15,31 @@ interface Team {
     pointsAgainst: number;
 }
 
-export default function LeagueTableModern() {
+type TablePhase = 'regular' | 'playout';
+
+interface LeagueTableModernProps {
+    seasonId?: string | null;
+}
+
+export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) {
     const [table, setTable] = useState<Team[]>([]);
+    const [phase, setPhase] = useState<TablePhase>('regular');
     const [loading, setLoading] = useState(true);
 
     const fetchTable = useCallback(async () => {
+        if (!seasonId) return;
         setLoading(true);
         try {
-            const data = await fetchJSON<Team[]>('/api/league/table');
+            const q = new URLSearchParams({ phase });
+            q.set('seasonId', seasonId);
+            const data = await fetchJSON<Team[]>(`/api/league/table?${q.toString()}`);
             setTable(data || []);
         } catch (err) {
             console.error(err);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [phase, seasonId]);
 
     useEffect(() => {
         fetchTable();
@@ -38,6 +48,7 @@ export default function LeagueTableModern() {
     if (loading) {
         return (
             <div className="space-y-4">
+                <div className="h-10 bg-bkpk-surface-tint-2 animate-pulse rounded-xl w-64" />
                 {[1, 2, 3, 4, 5].map(i => (
                     <div key={i} className="h-12 bg-bkpk-surface-tint-2 animate-pulse rounded-xl" />
                 ))}
@@ -45,12 +56,38 @@ export default function LeagueTableModern() {
         );
     }
 
-    if (table.length === 0) {
-        return <KalkEmptyState title="Tabela Ligowa jest pusta" />;
-    }
-
     return (
-        <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
+        <div className="space-y-6">
+            {/* Phase Selector */}
+            <div className="flex gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-fit">
+                <button
+                    onClick={() => setPhase('regular')}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        phase === 'regular'
+                            ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
+                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                    )}
+                >
+                    Runda Zasadnicza
+                </button>
+                <button
+                    onClick={() => setPhase('playout')}
+                    className={cn(
+                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        phase === 'playout'
+                            ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
+                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                    )}
+                >
+                    Tabela Play-out
+                </button>
+            </div>
+
+            {table.length === 0 ? (
+                <KalkEmptyState title="Tabela Ligowa jest pusta" />
+            ) : (
+                <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
             <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left border-collapse">
                     <thead>
@@ -113,5 +150,7 @@ export default function LeagueTableModern() {
                 </table>
             </div>
         </BkpkCard>
-    );
+      )}
+    </div>
+  );
 }

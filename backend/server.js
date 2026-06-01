@@ -41,11 +41,14 @@ import {
   getLeagueTable,
   getLeagueSchedule,
   getTopScorers,
+  getLeagueLeaders,
   getTrainingPriorities,
   getNextOpponentScouting,
   getDetailedScouting,
   getLeagueTrends,
-  getTeamStatsSummary
+  getTeamStatsSummary,
+  listSeasons,
+  setPlayerSeasonPreference
 } from './dataStore.js';
 import { parseImportPayload } from './parser.js';
 import { withShootingMetrics } from './metrics.js';
@@ -321,11 +324,37 @@ app.get(['/api/players/:id', '/players/:id'], async (req, res) => {
 
 app.get(['/api/players/:id/stats', '/players/:id/stats'], async (req, res) => {
   try {
-    const stats = await getPlayerStats(req.params.id);
+    const stats = await getPlayerStats(req.params.id, req.query.seasonId);
+    if (!stats) return res.status(404).json({ error: 'Zawodnik nie znaleziony' });
     res.json(stats);
   } catch (err) {
     console.error('Stats error:', err);
     res.status(500).json({ error: 'Błąd statystyk' });
+  }
+});
+
+app.get(['/api/seasons', '/seasons'], async (req, res) => {
+  try {
+    const seasons = await listSeasons();
+    res.json(seasons);
+  } catch (err) {
+    res.status(500).json({ error: 'Błąd pobierania sezonów' });
+  }
+});
+
+app.put(['/api/players/:id/season', '/players/:id/season'], authenticateToken, async (req, res) => {
+  try {
+    const targetId = req.params.id;
+    const isAdmin = req.user?.role === 'ADMIN';
+    if (!isAdmin && req.user?.id !== targetId) {
+      return res.status(403).json({ error: 'Brak uprawnień' });
+    }
+    const seasonId = req.body?.seasonId;
+    if (!seasonId) return res.status(400).json({ error: 'Wymagane pole seasonId' });
+    await setPlayerSeasonPreference(targetId, seasonId);
+    res.json({ success: true, seasonId });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Nie udało się zapisać sezonu' });
   }
 });
 
@@ -560,7 +589,10 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
 
     const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
     const stats = JSON.parse(statsRaw);
-    await ingestLeagueTable(stats.table || []);
+    await ingestLeagueTable(stats.table || [], 'regular');
+    if (stats.playout_table) {
+      await ingestLeagueTable(stats.playout_table, 'playout');
+    }
     await ingestLeagueSchedule(stats.schedule || []);
     const playersIngest = await ingestKalkPlayers(stats.players || []);
 
@@ -851,11 +883,44 @@ app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requ
 // --- REMAINING ROUTES ---
 app.get(['/api/trainings', '/trainings'], async (req, res) => res.json(await listAllTrainings()));
 app.get(['/api/plays', '/plays'], async (req, res) => res.json(await listAllPlays(req.query.category)));
-app.get(['/api/league/table', '/league/table'], async (req, res) => res.json(await getLeagueTable()));
-app.get(['/api/league/schedule', '/league/schedule'], async (req, res) => res.json(await getLeagueSchedule()));
+app.get(['/api/league/table', '/league/table'], async (req, res) => {
+  const phase = req.query.phase || 'regular';
+  res.json(await getLeagueTable(phase, req.query.seasonId));
+});
+app.get(['/api/league/schedule', '/league/schedule'], async (req, res) => {
+  res.json(await getLeagueSchedule(req.query.seasonId));
+});
 app.get(['/api/league/scorers', '/league/scorers'], async (req, res) => {
   const limit = parseInt(req.query.limit) || 20;
-  res.json(await getTopScorers(limit));
+  res.json(await getTopScorers(limit, req.query.seasonId));
+});
+app.get(['/api/league/leaders', '/league/leaders'], async (req, res) => {
+  const category = req.query.category || 'points';
+  const limit = parseInt(req.query.limit) || 20;
+  res.json(await getLeagueLeaders(category, limit, req.query.seasonId));
+});
+
+/** Sync KALK — wyłącznie z hosta (cron) lub Hermes; nagłówek X-Cron-Secret. */
+app.post(['/api/internal/kalk/sync', '/internal/kalk/sync'], async (req, res) => {
+  const secret = process.env.KALK_CRON_SECRET;
+  const provided = req.get('X-Cron-Secret') || req.get('x-cron-secret');
+  if (!secret || provided !== secret) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const mode = req.query.mode || 'auto';
+  if (mode === 'probe') {
+    return res.json({
+      success: true,
+      mode: 'probe',
+      message: 'Probe — pełny import w kolejnej fazie (Faza 2 planu). Uruchom mode=full.'
+    });
+  }
+  try {
+    const result = await runScrapeImportPipeline(`cron-${mode}`);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post(['/api/coach-notes/:gameId', '/coach-notes/:gameId'], async (req, res) => {
