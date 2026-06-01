@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
-import { cn } from '../lib/utils';
-import { Trophy, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { getPhotoUrl as buildPhotoUrl, getPositionLabel } from '../lib/playerUtils';
 
 export interface PlayerCardProps {
     id: string;
@@ -73,16 +73,10 @@ export default function PlayerCard({
         y.set(0);
     };
 
-    const getPhotoUrl = (f: string, l: string) => {
-        const normalize = (str: string) => str.toLowerCase()
-            .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
-            .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
-            .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
-            .replace(/\s+/g, '-');
-        const localPhoto = `/photos/${normalize(f)}-${normalize(l)}.png`;
-        const hasValidRemotePhoto = Boolean(photoUrl) && !photoUrl.toLowerCase().includes('empty.jpg');
-        return hasValidRemotePhoto ? photoUrl : localPhoto;
-    };
+    const resolvedPhotoUrl = (() => {
+        const hasValidRemotePhoto = Boolean(photoUrl) && !photoUrl!.toLowerCase().includes('empty.jpg');
+        return hasValidRemotePhoto ? photoUrl! : buildPhotoUrl(firstName, lastName);
+    })();
 
     return (
         <motion.div
@@ -118,7 +112,7 @@ export default function PlayerCard({
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bkpk-bg/20 to-bkpk-bg z-10" />
                     <motion.img
-                        src={getPhotoUrl(firstName, lastName)}
+                        src={resolvedPhotoUrl}
                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
                         style={{ transform: "translateZ(-20px) scale(1.1)" }}
@@ -138,36 +132,30 @@ export default function PlayerCard({
                 </div>
 
                 {/* Info Overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-6 z-20 space-y-4">
+                <div className="absolute inset-x-0 bottom-0 p-3 sm:p-6 z-20 space-y-2 sm:space-y-4">
                     <div className="space-y-0.5">
-                        <h3 className="text-2xl font-black font-outfit text-bkpk-text-primary leading-none">
-                            <span className="block text-sm text-bkpk-primary/80 mb-1">{firstName}</span>
+                        <h3 className="text-lg sm:text-2xl font-black font-outfit text-bkpk-text-primary leading-none">
+                            <span className="block text-xs sm:text-sm text-bkpk-primary/80 mb-0.5 sm:mb-1">{firstName}</span>
                             {lastName}
                         </h3>
-                        <span className="text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">
-                            {position === 'G' ? 'Obrońca' :
-                                position === 'F' ? 'Skrzydłowy' :
-                                    position === 'C' ? 'Środkowy' :
-                                        position === 'PG' ? 'Rozgrywający' :
-                                            position === 'SG' ? 'Rzucający Obrońca' :
-                                                position === 'SF' ? 'Niski Skrzydłowy' :
-                                                    position === 'PF' ? 'Silny Skrzydłowy' : position}
+                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">
+                            {getPositionLabel(position)}
                         </span>
                     </div>
 
                     {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-3 gap-2 py-3 border-t border-bkpk-border-strong bg-bkpk-overlay-weak -mx-6 px-6">
+                    <div className="grid grid-cols-3 gap-1 py-1.5 sm:gap-2 sm:py-3 border-t border-bkpk-border-strong bg-bkpk-overlay-weak -mx-3 px-3 sm:-mx-6 sm:px-6">
                         <div className="text-center">
-                            <div className="text-xs font-bold text-bkpk-text-muted uppercase">PPG</div>
-                            <div className="text-sm font-bold text-bkpk-text-primary">{ppg.toFixed(1)}</div>
+                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">PPG</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{ppg.toFixed(1)}</div>
                         </div>
                         <div className="text-center border-x border-bkpk-border-strong">
-                            <div className="text-xs font-bold text-bkpk-text-muted uppercase">RPG</div>
-                            <div className="text-sm font-bold text-bkpk-text-primary">{rpg.toFixed(1)}</div>
+                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">RPG</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{rpg.toFixed(1)}</div>
                         </div>
                         <div className="text-center">
-                            <div className="text-xs font-bold text-bkpk-text-muted uppercase">APG</div>
-                            <div className="text-sm font-bold text-bkpk-text-primary">{apg.toFixed(1)}</div>
+                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">APG</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{apg.toFixed(1)}</div>
                         </div>
                     </div>
                 </div>

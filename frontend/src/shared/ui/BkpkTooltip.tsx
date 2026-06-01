@@ -11,8 +11,7 @@ interface BkpkTooltipProps {
 }
 
 export default function BkpkTooltip({ content, children, className }: BkpkTooltipProps) {
-    // DEBUG: Verify component version
-    useEffect(() => { console.log("BkpkTooltip MOUNTED - Portal Version Active"); }, []);
+
 
     const [isVisible, setIsVisible] = useState(false);
     const [coords, setCoords] = useState({ x: 0, y: 0 });

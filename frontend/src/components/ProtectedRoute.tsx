@@ -12,7 +12,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     const { user, loading, isAuthenticated } = useAuth();
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-bkpk-background text-bkpk-text-primary">Ładowanie...</div>;
+        return <div className="min-h-screen flex items-center justify-center bg-bkpk-bg text-bkpk-text-primary">Ładowanie...</div>;
     }
 
     if (!isAuthenticated) {

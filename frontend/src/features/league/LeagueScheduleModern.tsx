@@ -57,7 +57,7 @@ export default function LeagueScheduleModern() {
     }
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
             {matches.map((match, idx) => {
                 const isHomeBkpk = match.homeTeam.toLowerCase().includes('bekapaka');
                 const isAwayBkpk = match.guestTeam.toLowerCase().includes('bekapaka');
@@ -122,11 +122,11 @@ export default function LeagueScheduleModern() {
                             <div className="flex items-center gap-6 text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">
                                 <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
                                     <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                                    <span>Hala Koszalin</span>
+                                    <span>{isHomeBkpk ? 'Dom' : 'Wyjazd'}</span>
                                 </div>
                                 <div className="hidden sm:flex items-center gap-1.5">
                                     <Clock className="w-3.5 h-3.5" />
-                                    <span>Division II</span>
+                                    <span>KALK</span>
                                 </div>
                             </div>
                         </div>
@@ -145,7 +145,7 @@ export default function LeagueScheduleModern() {
                                 </div>
                                 <div className="flex items-center gap-1.5 font-bold">
                                     <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                                    <span>Hala Koszalin</span>
+                                    <span>{isHomeBkpk ? 'Dom' : 'Wyjazd'}</span>
                                 </div>
                             </div>
 

@@ -623,6 +623,158 @@ app.post(['/api/admin/reset-data', '/admin/reset-data'], authenticateToken, requ
   }
 });
 
+app.get(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const users = await prisma.rosterPlayer.findMany({
+      orderBy: [
+        { role: 'asc' },
+        { lastName: 'asc' }
+      ]
+    });
+    // Omit passwords
+    const safeUsers = users.map(({ password, ...user }) => user);
+    res.json(safeUsers);
+  } catch (err) {
+    console.error('Failed to list admin users:', err);
+    res.status(500).json({ error: 'Błąd pobierania użytkowników' });
+  }
+});
+
+app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { firstName, lastName, number, position, username, password, role } = req.body;
+    
+    if (!firstName || !lastName) {
+      return res.status(400).json({ error: 'Imię i nazwisko są wymagane' });
+    }
+
+    let passwordHash = null;
+    let cleanUsername = null;
+
+    if (username && username.trim() !== '') {
+      cleanUsername = username.toLowerCase().trim();
+      const existing = await prisma.rosterPlayer.findUnique({
+        where: { username: cleanUsername }
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'Nazwa użytkownika jest już zajęta' });
+      }
+      
+      if (!password || password.trim() === '') {
+        return res.status(400).json({ error: 'Hasło jest wymagane w przypadku tworzenia konta logowania' });
+      }
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
+    const newUser = await prisma.rosterPlayer.create({
+      data: {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        number: number !== undefined && number !== null && number !== '' ? parseInt(number) : null,
+        position: position || null,
+        username: cleanUsername,
+        password: passwordHash,
+        role: role || 'USER',
+        starter: false
+      }
+    });
+
+    const { password: _, ...safeUser } = newUser;
+    res.status(201).json(safeUser);
+  } catch (err) {
+    console.error('Failed to create user:', err);
+    res.status(500).json({ error: 'Błąd tworzenia użytkownika' });
+  }
+});
+
+app.put(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, number, position, username, password, role } = req.body;
+
+    const existingUser = await prisma.rosterPlayer.findUnique({
+      where: { id }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+    }
+
+    const updateData = {};
+    if (firstName !== undefined) updateData.firstName = firstName.trim();
+    if (lastName !== undefined) updateData.lastName = lastName.trim();
+    if (number !== undefined) {
+      updateData.number = number !== null && number !== '' ? parseInt(number) : null;
+    }
+    if (position !== undefined) updateData.position = position || null;
+    if (role !== undefined) updateData.role = role;
+
+    if (username !== undefined) {
+      if (username === null || username.trim() === '') {
+        updateData.username = null;
+        updateData.password = null;
+      } else {
+        const cleanUsername = username.toLowerCase().trim();
+        if (cleanUsername !== existingUser.username) {
+          const uniqueCheck = await prisma.rosterPlayer.findUnique({
+            where: { username: cleanUsername }
+          });
+          if (uniqueCheck) {
+            return res.status(400).json({ error: 'Nazwa użytkownika jest już zajęta' });
+          }
+        }
+        updateData.username = cleanUsername;
+      }
+    }
+
+    if (password && password.trim() !== '') {
+      const activeUsername = updateData.username !== undefined ? updateData.username : existingUser.username;
+      if (!activeUsername) {
+        return res.status(400).json({ error: 'Nie można ustawić hasła bez nazwy użytkownika' });
+      }
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    const updatedUser = await prisma.rosterPlayer.update({
+      where: { id },
+      data: updateData
+    });
+
+    const { password: _, ...safeUser } = updatedUser;
+    res.json(safeUser);
+  } catch (err) {
+    console.error('Failed to update user:', err);
+    res.status(500).json({ error: 'Błąd aktualizacji użytkownika' });
+  }
+});
+
+app.delete(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (req.user?.id === id) {
+      return res.status(400).json({ error: 'Nie możesz usunąć własnego konta administratora.' });
+    }
+
+    const existingUser = await prisma.rosterPlayer.findUnique({
+      where: { id }
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+    }
+
+    await prisma.rosterPlayer.delete({
+      where: { id }
+    });
+
+    res.json({ success: true, message: 'Użytkownik został pomyślnie usunięty' });
+  } catch (err) {
+    console.error('Failed to delete user:', err);
+    res.status(500).json({ error: 'Błąd usuwania użytkownika' });
+  }
+});
+
 // --- REMAINING ROUTES ---
 app.get(['/api/trainings', '/trainings'], async (req, res) => res.json(await listAllTrainings()));
 app.get(['/api/plays', '/plays'], async (req, res) => res.json(await listAllPlays(req.query.category)));

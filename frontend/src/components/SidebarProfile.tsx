@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { cn } from '../shared/lib/utils';
+import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
 
 interface User {
     firstName: string;
@@ -14,29 +14,6 @@ interface SidebarProfileProps {
 }
 
 export default function SidebarProfile({ user }: SidebarProfileProps) {
-    const getPhotoUrl = (f?: string, l?: string) => {
-        if (!f || !l) return '/photos/default.png';
-        const normalize = (str: string) => str.toLowerCase()
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/ł/g, 'l')
-            .replace(/\s+/g, '-');
-        return `/photos/${normalize(f)}-${normalize(l)}.png`;
-    };
-
-    const getPositionLabel = (pos?: string) => {
-        if (!pos) return 'Zawodnik';
-        const mapping: Record<string, string> = {
-            'G': 'Obrońca',
-            'F': 'Skrzydłowy',
-            'C': 'Środkowy',
-            'PG': 'Rozgrywający',
-            'SG': 'Rzucający Obrońca',
-            'SF': 'Niski Skrzydłowy',
-            'PF': 'Silny Skrzydłowy'
-        };
-        return mapping[pos] || pos;
-    };
-
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
