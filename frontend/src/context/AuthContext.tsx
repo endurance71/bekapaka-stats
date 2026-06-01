@@ -13,6 +13,9 @@ interface User {
     photo?: string | null;
     data?: any;
     kalkPlayer?: any;
+    ppg?: number;
+    rpg?: number;
+    apg?: number;
 }
 
 interface AuthContextType {

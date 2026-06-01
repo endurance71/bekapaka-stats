@@ -50,7 +50,10 @@ export default function BkpkButton({
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 </div>
             )}
-            <span className={cn(loading && 'opacity-0')}>
+            <span className={cn(
+                'inline-flex items-center justify-center gap-2',
+                loading && 'opacity-0'
+            )}>
                 {children}
             </span>
         </motion.button>

@@ -35,6 +35,9 @@ type Player = {
   firstName: string;
   lastName: string;
   ppg: number;
+  photo?: string | null;
+  data?: any;
+  kalkPlayer?: any;
 };
 
 export default function Dashboard() {

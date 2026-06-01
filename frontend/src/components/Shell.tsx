@@ -12,6 +12,7 @@ import {
   LogOut,
   MoreHorizontal,
   X,
+  User,
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
@@ -25,6 +26,7 @@ const allLinks = [
   { to: '/roster', label: 'Skład', icon: Users, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
   { to: '/training', label: 'Trening', icon: Target, public: true },
+  { to: '/profile', label: 'Mój Profil', icon: User, public: true },
   { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
 ];
 

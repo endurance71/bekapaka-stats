@@ -688,7 +688,7 @@ app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, 
   }
 });
 
-app.put(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
+app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { firstName, lastName, number, position, username, password, role, photo } = req.body;
@@ -821,7 +821,7 @@ app.put(['/api/profile/password', '/profile/password'], authenticateToken, async
   }
 });
 
-app.delete(['/api/admin/users/:id', '/api/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
+app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 

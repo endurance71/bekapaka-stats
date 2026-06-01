@@ -149,6 +149,9 @@ export default function Profile() {
                                 number={user.number || 0}
                                 position={user.position}
                                 photoUrl={userPhoto}
+                                ppg={user.ppg}
+                                rpg={user.rpg}
+                                apg={user.apg}
                                 isStarter={user.kalkPlayer?.rosterPlayer?.starter || false}
                                 onClick={() => navigate(`/players/${user.id}`)}
                             />
