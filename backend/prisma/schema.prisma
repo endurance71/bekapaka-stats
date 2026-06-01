@@ -7,8 +7,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model KalkSeason {
+  id           String   @id
+  slug         String   @unique
+  label        String
+  divisionPath String   @default("dzial,dywizja-2,4.html")
+  isActive     Boolean  @default(false)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  leagueTeams   LeagueTeam[]
+  leagueMatches LeagueMatch[]
+  kalkPlayers   KalkPlayer[]
+  games         Game[]
+  preferences   PlayerSeasonPreference[]
+}
+
 model Game {
   id          String   @id @default(uuid())
+  seasonId    String?
+  season      KalkSeason? @relation(fields: [seasonId], references: [id])
   date        DateTime
   opponent    String
   homeAway    String   @default("home") // "home" | "away"
@@ -104,6 +124,16 @@ model RosterPlayer {
   username     String?  @unique
   password     String?
   role         String   @default("USER") // "USER" | "ADMIN"
+
+  seasonPreference PlayerSeasonPreference?
+}
+
+model PlayerSeasonPreference {
+  rosterPlayerId String   @id
+  seasonId       String
+  rosterPlayer   RosterPlayer @relation(fields: [rosterPlayerId], references: [id], onDelete: Cascade)
+  season         KalkSeason   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  updatedAt      DateTime @updatedAt
 }
 
 model LoginLog {
@@ -116,6 +146,8 @@ model LoginLog {
 
 model KalkPlayer {
   id            String   @id
+  seasonId      String
+  season        KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   name          String
   team          String?
   pointsTotal   Float?
@@ -126,6 +158,19 @@ model KalkPlayer {
   threePointStats String? // e.g. "14/40 (35%)"
   raw           Json?
   
+  // Nowe kategorie statystyk ligowych
+  stealsTotal      Float?
+  stealsAverage    Float?
+  blocksTotal      Float?
+  blocksAverage    Float?
+  reboundsTotal    Float?
+  reboundsAverage  Float?
+  assistsTotal     Float?
+  assistsAverage   Float?
+  threePointsMade  Int?
+  threePointsAttempted Int?
+  threePointsPct   Float?
+
   // Relacja do RosterPlayer
   rosterPlayer  RosterPlayer?
   
@@ -174,7 +219,10 @@ model Play {
 
 model LeagueTeam {
   id            String   @id @default(uuid())
-  name          String   @unique
+  seasonId      String
+  season        KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  name          String
+  phase         String   @default("regular") // "regular" | "playout"
   matches       Int      @default(0)
   points        Int      @default(0)
   wins          Int      @default(0)
@@ -183,6 +231,8 @@ model LeagueTeam {
   pointsAgainst Int      @default(0)
   
   updatedAt     DateTime @updatedAt
+
+  @@unique([seasonId, name, phase])
 }
 
 model ScoutingAiReport {
@@ -207,6 +257,8 @@ model TeamBriefing {
 
 model LeagueMatch {
   id          String   @id @default(uuid())
+  seasonId    String
+  season      KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   date        DateTime
   homeTeam    String
   guestTeam   String

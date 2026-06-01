@@ -79,6 +79,17 @@ Body:
 { "tag": "back-to-back" }
 ```
 
+## Sezony KALK
+
+| Metoda | Endpoint | Opis |
+|--------|----------|------|
+| `GET` | `/api/seasons` | Lista sezonów (`slug`, `label`, `isActive`, zakres dat) |
+| `PUT` | `/api/players/:id/season` | Preferowany sezon widoku (JWT; własny profil lub ADMIN). Body: `{ "seasonId": "season_2025-2026" }` |
+
+Parametr query `seasonId` na endpointach ligi i `/api/players/:id/stats` — filtruje dane do wybranego sezonu.
+
+Wewnętrzny cron (host): `POST /api/internal/kalk/sync?mode=full` z nagłówkiem `X-Cron-Secret` — patrz [vps-runbook.md](./vps-runbook.md).
+
 ## KALK Div2 — scraping (Scrapling)
 
 Wymaga nagłówka `Authorization: Bearer <token>` oraz roli **ADMIN**.

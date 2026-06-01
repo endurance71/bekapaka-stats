@@ -2,6 +2,26 @@ import { PrismaClient } from '@prisma/client';
 import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
 import { withShootingMetrics } from './metrics.js';
 import { generateGameInsights } from './insights.js';
+import {
+  ensureDefaultSeason,
+  getActiveSeason,
+  listSeasons,
+  resolveSeasonId,
+  resolvePlayerViewSeasonId,
+  setPlayerSeasonPreference,
+  findKalkPlayerForRoster,
+  filterGamesBySeason,
+  buildKalkPlayerDbId
+} from './seasonService.js';
+import { resolveSeasonIdForDate } from './lib/kalkSeason.js';
+
+export {
+  ensureDefaultSeason,
+  listSeasons,
+  getActiveSeason,
+  resolveSeasonId,
+  setPlayerSeasonPreference
+};
 
 import fs from 'fs/promises';
 import path from 'path';
@@ -280,18 +300,24 @@ export async function getRoster() {
 /**
  * Agreguje statystyki zawodnika na podstawie wszystkich meczów w bazie.
  */
-export async function getPlayerStats(playerId) {
+export async function getPlayerStats(playerId, seasonIdParam) {
   await ensureSeeded();
+  await ensureDefaultSeason();
   const player = await prisma.rosterPlayer.findUnique({
     where: { id: playerId },
     include: { kalkPlayer: true }
   });
   if (!player) return null;
 
+  const seasonId = await resolvePlayerViewSeasonId(playerId, seasonIdParam);
+  const seasonRow = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
+  const kalkPlayer = await findKalkPlayerForRoster(player, seasonId);
+
   const fullName = `${player.firstName} ${player.lastName}`.trim();
   const allGames = await prisma.game.findMany({
     orderBy: { date: 'asc' }
   });
+  const gamesInSeason = await filterGamesBySeason(allGames, seasonId);
 
   const gameLog = [];
   let totalPoints = 0;
@@ -306,12 +332,12 @@ export async function getPlayerStats(playerId) {
   let totalPlusMinus = 0;
   let gamesCount = 0;
 
-  for (const game of allGames) {
+  for (const game of gamesInSeason) {
     const pStats = game.playerStats || game.data?.teams?.flatMap(t => t.players) || [];
     const stats = pStats.find(ps =>
       ps.name === fullName ||
       ps.name === player.lastName ||
-      (player.kalkPlayer && ps.name === player.kalkPlayer.name)
+      (kalkPlayer && ps.name === kalkPlayer.name)
     );
 
     if (stats) {
@@ -384,14 +410,37 @@ export async function getPlayerStats(playerId) {
   };
 
   return {
+    season: seasonRow
+      ? {
+          id: seasonRow.id,
+          slug: seasonRow.slug,
+          label: seasonRow.label,
+          isActive: seasonRow.isActive,
+          startsAt: seasonRow.startsAt,
+          endsAt: seasonRow.endsAt
+        }
+      : null,
     player: {
       id: player.id,
       firstName: player.firstName,
       lastName: player.lastName,
       number: player.number,
       position: player.position,
-      kalkPlayer: player.kalkPlayer
+      kalkPlayer: kalkPlayer || null
     },
+    leagueKalk: kalkPlayer
+      ? {
+          pointsTotal: kalkPlayer.pointsTotal,
+          pointsAverage: kalkPlayer.pointsAverage,
+          matchesPlayed: kalkPlayer.matchesPlayed,
+          eval: kalkPlayer.eval,
+          stealsAverage: kalkPlayer.stealsAverage,
+          reboundsAverage: kalkPlayer.reboundsAverage,
+          assistsAverage: kalkPlayer.assistsAverage,
+          threePointsPct: kalkPlayer.threePointsPct,
+          threePointStats: kalkPlayer.threePointStats
+        }
+      : null,
     averages,
     gameLog: gameLog.reverse() // Ostatnie mecze na górze
   };
@@ -966,12 +1015,19 @@ export async function updateGame(id, gameData) {
 
 export async function ingestKalkPlayers(entries) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+  if (!activeSeason) {
+    throw new Error('Brak aktywnego sezonu KALK');
+  }
   if (!Array.isArray(entries) || !entries.length) {
     return { newPlayers: [], total: 0 };
   }
 
   const normalizedEntries = entries.filter((entry) => entry && entry.id_zawodnika);
-  const ids = [...new Set(normalizedEntries.map((entry) => entry.id_zawodnika))];
+  const ids = [...new Set(normalizedEntries.map((entry) =>
+    buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika)
+  ))];
   const existing = await prisma.kalkPlayer.findMany({
     where: { id: { in: ids } },
     select: { id: true }
@@ -984,7 +1040,7 @@ export async function ingestKalkPlayers(entries) {
     if (normalizedEntries.indexOf(entry) === 0) {
       console.log('[DEBUG Ingest] First entry:', JSON.stringify(entry));
     }
-    const playerId = entry.id_zawodnika;
+    const playerId = buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika);
     if (!playerId) continue;
     const matchesValue = parseStat(entry.mecze_rozegrane);
     const record = {
@@ -994,8 +1050,24 @@ export async function ingestKalkPlayers(entries) {
       pointsTotal: parseStat(entry.punkty_suma),
       pointsAverage: parseStat(entry.srednia_punktow),
       matchesPlayed: matchesValue === null ? null : Math.round(matchesValue),
-      eval: parseStat(entry.eval),
+      eval: parseStat(entry.eval_srednia || entry.eval),
       profileUrl: entry.profile_url || null,
+      
+      // Nowe kategorie
+      stealsTotal: parseStat(entry.steals_suma),
+      stealsAverage: parseStat(entry.steals_srednia),
+      blocksTotal: parseStat(entry.blocks_suma),
+      blocksAverage: parseStat(entry.blocks_srednia),
+      reboundsTotal: parseStat(entry.rebounds_suma),
+      reboundsAverage: parseStat(entry.rebounds_srednia),
+      assistsTotal: parseStat(entry.assists_suma),
+      assistsAverage: parseStat(entry.assists_srednia),
+      threePointsMade: entry.three_made ? parseInt(entry.three_made) : null,
+      threePointsAttempted: entry.three_attempted ? parseInt(entry.three_attempted) : null,
+      threePointsPct: parseStat(entry.three_pct),
+      threePointStats: entry.three_made ? `${entry.three_made}/${entry.three_attempted} (${entry.three_pct}%)` : null,
+
+      seasonId: activeSeason.id,
       raw: entry
     };
     await prisma.kalkPlayer.upsert({
@@ -1013,30 +1085,48 @@ export async function ingestKalkPlayers(entries) {
   return { newPlayers, total: savedCount };
 }
 
-export async function ingestLeagueTable(tableData) {
+export async function ingestLeagueTable(tableData, phase = 'regular') {
   await ensureSeeded();
-  if (!Array.isArray(tableData)) return;
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+  if (!activeSeason || !Array.isArray(tableData)) return;
 
   for (const team of tableData) {
     if (!team.name) continue;
 
+    const data = {
+      seasonId: activeSeason.id,
+      name: team.name,
+      phase,
+      matches: team.matches,
+      points: team.points,
+      wins: team.wins,
+      losses: team.losses,
+      pointsFor: team.pointsFor,
+      pointsAgainst: team.pointsAgainst
+    };
+
     await prisma.leagueTeam.upsert({
-      where: { name: team.name },
-      create: team,
-      update: team
+      where: {
+        seasonId_name_phase: {
+          seasonId: activeSeason.id,
+          name: team.name,
+          phase
+        }
+      },
+      create: data,
+      update: data
     });
   }
 }
 
 export async function ingestLeagueSchedule(scheduleData) {
   await ensureSeeded();
-  if (!Array.isArray(scheduleData)) return;
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+  if (!activeSeason || !Array.isArray(scheduleData)) return;
 
-  // Najpierw czyścimy stare wpisy, żeby uniknąć duplikatów lub nieaktualnych danych?
-  // W tym przypadku lepiej upsertować po unikalnym kluczu, ale mecze nie mają ID ze scrapera.
-  // Użyjemy kombinacji data + gospodarz jako "unikalny" klucz lub po prostu usuniemy wszystko i wstawimy nowe.
-  // Strategia: Usunięcie i wstawienie nowych jest bezpieczniejsze przy pełnym scrapie.
-  await prisma.leagueMatch.deleteMany();
+  await prisma.leagueMatch.deleteMany({ where: { seasonId: activeSeason.id } });
 
   const parseScheduleDate = (dateStr) => {
     if (!dateStr) return new Date();
@@ -1086,6 +1176,7 @@ export async function ingestLeagueSchedule(scheduleData) {
   for (const match of scheduleData) {
     await prisma.leagueMatch.create({
       data: {
+        seasonId: activeSeason.id,
         date: parseScheduleDate(match.date),
         homeTeam: match.homeTeam,
         guestTeam: match.guestTeam,
@@ -1115,8 +1206,10 @@ export async function getLatestKalkScrapeRun() {
 export async function syncPlayersFromKalk() {
   await ensureSeeded();
 
-  // Pobierz wszystkich zawodników KALK
-  const kalkPlayers = await prisma.kalkPlayer.findMany();
+  const activeSeason = await getActiveSeason();
+  const kalkPlayers = await prisma.kalkPlayer.findMany({
+    where: activeSeason ? { seasonId: activeSeason.id } : undefined
+  });
 
   // Filtrujemy tylko naszych zawodników
   const ourKalkPlayers = kalkPlayers.filter(kp =>
@@ -1369,8 +1462,14 @@ export async function updatePlayerGoals(id, goals) {
 
 export async function createGame(gameData) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const seasons = await listSeasons();
+  const gameDate = new Date(gameData.date);
+  const seasonId = resolveSeasonIdForDate(gameDate, seasons);
+
   return await prisma.game.create({
     data: {
+      seasonId,
       date: new Date(gameData.date),
       opponent: gameData.opponent,
       homeAway: gameData.homeAway || 'home',
@@ -1436,31 +1535,84 @@ export async function listAllPlays(category = null) {
 }
 
 // LIGA - Pobierz tabelę
-export async function getLeagueTable() {
+export async function getLeagueTable(phase = 'regular', seasonIdParam) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const seasonId = await resolveSeasonId(seasonIdParam);
   return await prisma.leagueTeam.findMany({
+    where: { phase, seasonId },
     orderBy: [
       { points: 'desc' },
-      { matches: 'asc' }, // Mniej meczów przy tych samych punktach = wyżej (teoretycznie)
+      { wins: 'desc' },
+      { matches: 'asc' },
       { pointsFor: 'desc' }
     ]
   });
 }
 
 // LIGA - Pobierz terminarz
-export async function getLeagueSchedule() {
+export async function getLeagueSchedule(seasonIdParam) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const seasonId = await resolveSeasonId(seasonIdParam);
   return await prisma.leagueMatch.findMany({
+    where: { seasonId },
     orderBy: { date: 'asc' }
   });
 }
 
 // LIGA - Top Strzelcy (używamy istniejącej tabeli KalkPlayer)
-export async function getTopScorers(limit = 20) {
+export async function getTopScorers(limit = 20, seasonIdParam) {
+  return await getLeagueLeaders('points', limit, seasonIdParam);
+}
+
+// LIGA - Pobierz liderów w danej kategorii
+export async function getLeagueLeaders(category = 'points', limit = 20, seasonIdParam) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const seasonId = await resolveSeasonId(seasonIdParam);
+
+  let orderBy = {};
+  const where = { seasonId };
+
+  if (category === 'points') {
+    orderBy = { pointsAverage: 'desc' };
+    where.pointsAverage = { not: null };
+  } else if (category === 'three') {
+    orderBy = { threePointsMade: 'desc' };
+    where.threePointsMade = { not: null };
+  } else if (category === 'assists') {
+    orderBy = { assistsAverage: 'desc' };
+    where.assistsAverage = { not: null };
+  } else if (category === 'rebounds') {
+    orderBy = { reboundsAverage: 'desc' };
+    where.reboundsAverage = { not: null };
+  } else if (category === 'steals') {
+    orderBy = { stealsAverage: 'desc' };
+    where.stealsAverage = { not: null };
+  } else if (category === 'blocks') {
+    orderBy = { blocksAverage: 'desc' };
+    where.blocksAverage = { not: null };
+  } else {
+    orderBy = { pointsAverage: 'desc' };
+    where.pointsAverage = { not: null };
+  }
+
   return await prisma.kalkPlayer.findMany({
-    orderBy: { pointsAverage: 'desc' },
-    take: limit
+    where,
+    orderBy,
+    take: limit,
+    include: {
+      rosterPlayer: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          starter: true,
+          data: true
+        }
+      }
+    }
   });
 }
 

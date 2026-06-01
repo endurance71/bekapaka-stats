@@ -12,37 +12,50 @@ type ModalProps = {
 export default function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-4xl' }: ModalProps) {
     const dialogRef = useRef<HTMLDivElement>(null);
     const previousFocusRef = useRef<HTMLElement | null>(null);
+    const onCloseRef = useRef(onClose);
+    onCloseRef.current = onClose;
 
+    // Tylko przy otwarciu/zamknięciu — NIE przy każdym re-renderze rodzica (inaczej input traci focus)
     useEffect(() => {
+        if (!isOpen) return;
+
         const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
+            if (e.key === 'Escape') onCloseRef.current();
         };
 
-        if (isOpen) {
-            // Save currently focused element to restore later
-            previousFocusRef.current = document.activeElement as HTMLElement;
-            document.addEventListener('keydown', handleEsc);
-            document.body.style.overflow = 'hidden';
-
-            // Focus the dialog
-            requestAnimationFrame(() => {
-                dialogRef.current?.focus();
-            });
-        }
+        previousFocusRef.current = document.activeElement as HTMLElement;
+        document.addEventListener('keydown', handleEsc);
+        document.body.style.overflow = 'hidden';
 
         return () => {
             document.removeEventListener('keydown', handleEsc);
             document.body.style.overflow = 'unset';
-
-            // Restore focus when modal closes
-            if (previousFocusRef.current) {
+            if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
                 previousFocusRef.current.focus();
-                previousFocusRef.current = null;
             }
+            previousFocusRef.current = null;
         };
-    }, [isOpen, onClose]);
+    }, [isOpen]);
 
-    // Focus trap — keep Tab/Shift+Tab within the modal
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const frame = requestAnimationFrame(() => {
+            const dialog = dialogRef.current;
+            if (!dialog) return;
+            const firstField = dialog.querySelector<HTMLElement>(
+                'input:not([type="hidden"]), select, textarea'
+            );
+            if (firstField) {
+                firstField.focus();
+            } else {
+                dialog.focus();
+            }
+        });
+
+        return () => cancelAnimationFrame(frame);
+    }, [isOpen]);
+
     useEffect(() => {
         if (!isOpen) return;
 
@@ -75,7 +88,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     return (
         <div
             className="fixed inset-0 bg-bkpk-overlay-strong flex items-center justify-center z-50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
-            onClick={onClose}
+            onClick={() => onCloseRef.current()}
             role="presentation"
         >
             <div
@@ -90,8 +103,9 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 <div className="flex justify-between items-center p-6 border-b border-bkpk-border-strong">
                     <h2 className="text-xl font-bold text-bkpk-text-primary font-outfit">{title}</h2>
                     <button
+                        type="button"
                         className="p-1 -mr-1 text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 rounded-lg transition-colors"
-                        onClick={onClose}
+                        onClick={() => onCloseRef.current()}
                         aria-label="Zamknij"
                     >
                         <X size={24} />

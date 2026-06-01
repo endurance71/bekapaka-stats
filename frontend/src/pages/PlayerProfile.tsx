@@ -13,6 +13,8 @@ import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
+import SeasonSelector from '../components/SeasonSelector';
+import { useSeasonPreference } from '../hooks/useSeasonPreference';
 import useIsMobile from '../hooks/useIsMobile';
 import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
@@ -40,6 +42,18 @@ interface StatSnapshot {
 }
 
 interface PlayerStats {
+    season?: {
+        id: string;
+        slug: string;
+        label: string;
+        isActive: boolean;
+    } | null;
+    leagueKalk?: {
+        pointsAverage?: number | null;
+        pointsTotal?: number | null;
+        matchesPlayed?: number | null;
+        eval?: number | null;
+    } | null;
     player: {
         id: string;
         firstName: string;
@@ -74,13 +88,15 @@ export default function PlayerProfile() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
     const isMobile = useIsMobile();
+    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } = useSeasonPreference(id);
 
     const fetchStats = useCallback(async () => {
-        if (!id) return;
+        if (!id || !seasonId) return;
         setLoading(true);
         try {
+            const statsQ = new URLSearchParams({ t: String(Date.now()), seasonId });
             const [stats, playerRow] = await Promise.all([
-                fetchJSON<PlayerStats>(`/api/players/${id}/stats?t=${Date.now()}`),
+                fetchJSON<PlayerStats>(`/api/players/${id}/stats?${statsQ.toString()}`),
                 fetchJSON<any>(`/api/players/${id}`)
             ]);
             setData(stats);
@@ -94,7 +110,7 @@ export default function PlayerProfile() {
         } finally {
             setLoading(false);
         }
-    }, [id]);
+    }, [id, seasonId]);
 
     useEffect(() => {
         fetchStats();
@@ -154,9 +170,19 @@ export default function PlayerProfile() {
                         <span className="font-bold uppercase tracking-wider text-xs">Powrót do Składu</span>
                     </Link>
 
-                    <div className="flex items-center gap-3 bg-bkpk-surface-tint-2 px-4 py-1.5 rounded-full border border-bkpk-border-strong">
-                        <div className="w-2 h-2 bg-bkpk-success rounded-full animate-pulse" />
-                        <span className="text-[10px] font-bold text-bkpk-text-secondary uppercase tracking-widest">Aktywny Profil Zawodnika</span>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                        <SeasonSelector
+                            seasons={seasons}
+                            seasonId={seasonId}
+                            onChange={setSeasonId}
+                            loading={seasonsLoading}
+                            compact
+                        />
+                        {selectedSeason && !selectedSeason.isActive && (
+                            <span className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-3 py-1.5 rounded-full border border-bkpk-warning/30 bg-bkpk-warning/10">
+                                Archiwum sezonu
+                            </span>
+                        )}
                     </div>
                 </div>
 
@@ -191,7 +217,10 @@ export default function PlayerProfile() {
                                 <p className="text-bkpk-text-muted text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center md:justify-start gap-y-1.5 gap-x-3 md:gap-4 mt-2">
                                     <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {getPositionLabel(player.position)}</span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
-                                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Sezon 2025/26</span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {selectedSeason?.label ?? 'Sezon'}
+                                    </span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
                                     <span className="flex items-center gap-1.5 text-bkpk-success"><Star className="w-3.5 h-3.5" /> {averages.gamesPlayed} meczy</span>
                                 </p>
@@ -218,16 +247,18 @@ export default function PlayerProfile() {
                     <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-bkpk-primary/5 to-transparent pointer-events-none" />
                 </section>
 
-                <AiAnalysisBlock
-                    title="Plan rozwoju (AI)"
-                    content={aiSummary}
-                    generatedAt={aiMeta.at}
-                    model={aiMeta.model}
-                    isAdmin={isAdmin}
-                    loading={aiLoading}
-                    onGenerate={handleGenerateAi}
-                    emptyHint="Brak planu rozwoju AI. Administrator może go wygenerować (min. 3 mecze w bazie)."
-                />
+                {(isAdmin || user?.id === id) && (
+                    <AiAnalysisBlock
+                        title="Plan rozwoju (AI)"
+                        content={aiSummary}
+                        generatedAt={aiMeta.at}
+                        model={aiMeta.model}
+                        isAdmin={isAdmin}
+                        loading={aiLoading}
+                        onGenerate={handleGenerateAi}
+                        emptyHint="Brak planu rozwoju AI. Administrator może go wygenerować (min. 3 mecze w bazie)."
+                    />
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Charts Area */}

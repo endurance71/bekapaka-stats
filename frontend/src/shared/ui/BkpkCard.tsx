@@ -12,6 +12,8 @@ export interface BkpkCardProps {
     title?: ReactNode;
     icon?: ReactNode;
     overflowVisible?: boolean;
+    /** Wyłącz animację wejścia — formularze z inputami nie tracą focusu przy re-renderze */
+    animateEntrance?: boolean;
 }
 
 const paddings = {
@@ -37,6 +39,7 @@ export function BkpkCard({
     title,
     icon,
     overflowVisible = false,
+    animateEntrance = true,
 }: BkpkCardProps) {
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
@@ -67,9 +70,9 @@ export function BkpkCard({
                 boxShadow: '0 0 30px rgba(255, 107, 53, 0.2)'
             } : undefined}
             whileTap={onClick ? { scale: 0.98 } : undefined}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            initial={animateEntrance ? { opacity: 0, y: 10 } : false}
+            animate={animateEntrance ? { opacity: 1, y: 0 } : undefined}
+            transition={animateEntrance ? { duration: 0.4, ease: [0.16, 1, 0.3, 1] } : undefined}
         >
             {(title || icon) && (
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-bkpk-border-strong">

@@ -9,6 +9,7 @@ import { cn } from '../shared/lib/utils';
 import { motion } from 'framer-motion';
 import { compressImage } from '../shared/lib/imageCompression';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { PasswordInput } from '../shared/ui/PasswordInput';
 
 type ScraperStatus = {
     running: boolean;
@@ -411,6 +412,7 @@ function UserManagement() {
     const [addRole, setAddRole] = useState<'USER' | 'ADMIN'>('USER');
     const [addPhoto, setAddPhoto] = useState<string | null>(null);
     const [addError, setAddError] = useState<string | null>(null);
+    const [showAddPassword, setShowAddPassword] = useState(false);
 
     // Form fields for Edit
     const [editFirstName, setEditFirstName] = useState('');
@@ -423,6 +425,7 @@ function UserManagement() {
     const [editRole, setEditRole] = useState<'USER' | 'ADMIN'>('USER');
     const [editPhoto, setEditPhoto] = useState<string | null>(null);
     const [editError, setEditError] = useState<string | null>(null);
+    const [showEditPassword, setShowEditPassword] = useState(false);
 
     const fetchUsers = () => {
         setLoading(true);
@@ -851,18 +854,17 @@ function UserManagement() {
                                     onChange={(e) => setAddUsername(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
-                                    <Key className="w-3 h-3 text-bkpk-primary" /> Hasło *
-                                </label>
-                                <input
-                                    type="password"
-                                    required={addEnableLogin}
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                    value={addPassword}
-                                    onChange={(e) => setAddPassword(e.target.value)}
-                                />
-                            </div>
+                            <PasswordInput
+                                label="Hasło *"
+                                placeholder="Wpisz hasło..."
+                                value={addPassword}
+                                onChange={setAddPassword}
+                                required={addEnableLogin}
+                                autoComplete="new-password"
+                                showPassword={showAddPassword}
+                                onToggleShow={() => setShowAddPassword((v) => !v)}
+                                className="[&_input]:px-3 [&_input]:py-2"
+                            />
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
                                 <select
@@ -1024,18 +1026,16 @@ function UserManagement() {
                                     onChange={(e) => setEditUsername(e.target.value)}
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
-                                    <Key className="w-3 h-3 text-bkpk-primary" /> Nowe hasło (Zostaw puste, jeśli nie chcesz zmieniać)
-                                </label>
-                                <input
-                                    type="password"
-                                    placeholder="Wpisz nowe hasło..."
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                    value={editPassword}
-                                    onChange={(e) => setEditPassword(e.target.value)}
-                                />
-                            </div>
+                            <PasswordInput
+                                label="Nowe hasło (zostaw puste, aby nie zmieniać)"
+                                placeholder="Wpisz nowe hasło..."
+                                value={editPassword}
+                                onChange={setEditPassword}
+                                autoComplete="new-password"
+                                showPassword={showEditPassword}
+                                onToggleShow={() => setShowEditPassword((v) => !v)}
+                                className="[&_input]:px-3 [&_input]:py-2"
+                            />
                             <div className="space-y-1">
                                 <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
                                 <select
