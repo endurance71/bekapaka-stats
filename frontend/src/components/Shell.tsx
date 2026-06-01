@@ -10,13 +10,13 @@ import {
   ShieldCheck,
   Activity,
   LogOut,
-  Menu,
+  MoreHorizontal,
   X,
-  User as UserIcon
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
 import SidebarProfile from './SidebarProfile';
+import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
 
 const allLinks = [
   { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
@@ -25,36 +25,16 @@ const allLinks = [
   { to: '/roster', label: 'Skład', icon: Users, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
   { to: '/training', label: 'Trening', icon: Target, public: true },
-  { to: '/admin', label: 'Administracja', icon: ShieldCheck, public: false, adminOnly: true },
+  { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
 ];
 
+// Primary tabs shown in the bottom bar (max 5 for ergonomics)
+const PRIMARY_TAB_COUNT = 5;
+
 export default function Shell({ children }: { children: ReactNode }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const getPhotoUrl = (f?: string, l?: string) => {
-    if (!f || !l) return '/photos/default.png';
-    const normalize = (str: string) => str.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/ł/g, 'l')
-      .replace(/\s+/g, '-');
-    return `/photos/${normalize(f)}-${normalize(l)}.png`;
-  };
-
-  const getPositionLabel = (pos?: string) => {
-    if (!pos) return 'Zawodnik';
-    const mapping: Record<string, string> = {
-      'G': 'Obrońca',
-      'F': 'Skrzydłowy',
-      'C': 'Środkowy',
-      'PG': 'Rozgrywający',
-      'SG': 'Rzucający Obrońca',
-      'SF': 'Niski Skrzydłowy',
-      'PF': 'Silny Skrzydłowy'
-    };
-    return mapping[pos] || pos;
-  };
 
   const handleLogout = () => {
     logout();
@@ -62,12 +42,21 @@ export default function Shell({ children }: { children: ReactNode }) {
   };
 
   const links = allLinks.filter(link => !link.adminOnly || user?.role === 'ADMIN');
+  const primaryLinks = links.slice(0, PRIMARY_TAB_COUNT);
+  const secondaryLinks = links.slice(PRIMARY_TAB_COUNT);
+  const hasMore = secondaryLinks.length > 0;
 
   return (
     <div className="flex h-screen bg-bkpk-bg overflow-hidden font-inter text-bkpk-text-primary">
 
-      {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col w-72 bg-bkpk-surface border-r border-bkpk-border-strong p-8 transition-all duration-500">
+      {/* ═══════════════════════════════════════════════
+          SIDEBAR — Desktop (lg+)
+          ═══════════════════════════════════════════════ */}
+      <aside
+        role="navigation"
+        aria-label="Nawigacja główna"
+        className="hidden lg:flex flex-col w-72 bg-bkpk-surface border-r border-bkpk-border-strong p-8 transition-all duration-500"
+      >
         <div className="flex items-center gap-4 mb-12 px-2">
           <div className="w-10 h-10 rounded-xl bg-bkpk-surface flex items-center justify-center shadow-bkpk-glow border border-bkpk-border-strong overflow-hidden p-1">
             <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain" />
@@ -115,6 +104,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           <button
             onClick={handleLogout}
             className="flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-danger transition-colors font-bold text-sm tracking-tight w-full text-left"
+            aria-label="Wyloguj się"
           >
             <LogOut className="w-5 h-5" />
             <span>Wyloguj</span>
@@ -122,86 +112,159 @@ export default function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* Main Content Area */}
+      {/* ═══════════════════════════════════════════════
+          MAIN CONTENT AREA
+          ═══════════════════════════════════════════════ */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-        {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between p-6 bg-bkpk-surface/50 backdrop-blur-xl border-b border-bkpk-border-strong z-40">
+        {/* Mobile Header — compact top bar */}
+        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-bkpk-surface/80 backdrop-blur-xl border-b border-bkpk-border-strong z-40">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-bkpk-surface flex items-center justify-center border border-bkpk-border-strong shadow-bkpk-glow overflow-hidden p-0.5">
               <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain" />
             </div>
-            <span className="font-black font-outfit text-lg tracking-tight text-bkpk-text-primary">BeKaPaKa</span>
+            <span className="font-black font-outfit text-base tracking-tight text-bkpk-text-primary">BeKaPaKa</span>
           </div>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 bg-bkpk-surface-tint-2 rounded-lg border border-bkpk-border-strong"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {user && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full border border-bkpk-border-strong overflow-hidden">
+                <img
+                  src={getPhotoUrl(user.firstName, user.lastName)}
+                  onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                  className="w-full h-full object-cover grayscale"
+                  alt=""
+                />
+              </div>
+            </div>
+          )}
         </header>
 
-        {/* Mobile Navigation Overlay */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="lg:hidden absolute inset-x-0 bottom-0 top-[81px] bg-bkpk-bg/95 backdrop-blur-2xl z-50 p-6 flex flex-col space-y-4 overflow-y-auto no-scrollbar pb-10"
-            >
-              {user && (
-                <div className="flex items-center gap-4 p-4 bg-bkpk-surface border border-bkpk-border-strong rounded-2xl mb-2">
-                  <div className="w-12 h-12 rounded-full border border-bkpk-primary/30 overflow-hidden relative">
-                    <img 
-                      src={getPhotoUrl(user.firstName, user.lastName)} 
-                      onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                      className="w-full h-full object-cover grayscale" 
-                      alt=""
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none mb-1">
-                      #{user.number || '--'} · {getPositionLabel(user.position)}
-                    </div>
-                    <div className="text-base font-black font-outfit text-bkpk-text-primary leading-tight truncate">
-                      {user.firstName} {user.lastName}
-                    </div>
-                  </div>
-                </div>
-              )}
-              {links.map((link) => {
-                const Icon = link.icon;
-                return (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={({ isActive }) => cn(
-                      "flex items-center gap-5 p-5 rounded-2xl transition-all font-black text-xl font-outfit",
-                      isActive ? "bg-bkpk-primary text-bkpk-bg" : "text-bkpk-text-secondary"
-                    )}
-                  >
-                    <Icon className="w-6 h-6" />
-                    {link.label}
-                  </NavLink>
-                );
-              })}
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-5 p-5 rounded-2xl transition-all font-black text-xl font-outfit text-bkpk-danger mt-auto"
-              >
-                <LogOut className="w-6 h-6" />
-                Wyloguj
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Content Viewport */}
-        <main className="flex-1 overflow-y-auto no-scrollbar relative z-10 scroll-smooth">
+        {/* Content Viewport — extra bottom padding on mobile for tab bar */}
+        <main className="flex-1 overflow-y-auto no-scrollbar relative z-10 scroll-smooth lg:pb-0 pb-20">
           {children}
         </main>
+
+        {/* ═══════════════════════════════════════════════
+            BOTTOM TAB BAR — Mobile (<lg)
+            ═══════════════════════════════════════════════ */}
+        <nav
+          role="navigation"
+          aria-label="Nawigacja mobilna"
+          className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-bkpk-surface/90 backdrop-blur-2xl border-t border-bkpk-border-strong"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <div className="flex items-stretch justify-around h-16">
+            {primaryLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className={({ isActive }) => cn(
+                    "flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors duration-200 relative",
+                    isActive ? "text-bkpk-primary" : "text-bkpk-text-muted active:text-bkpk-text-primary"
+                  )}
+                  aria-current={undefined} // React Router handles this
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <motion.div
+                          layoutId="bottom-tab-active"
+                          className="absolute top-0 inset-x-3 h-0.5 bg-bkpk-primary rounded-full"
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
+                      <span className={cn(
+                        "text-[10px] leading-none",
+                        isActive ? "font-bold" : "font-medium"
+                      )}>
+                        {link.label}
+                      </span>
+                    </>
+                  )}
+                </NavLink>
+              );
+            })}
+
+            {/* "More" tab for secondary links */}
+            {hasMore && (
+              <button
+                onClick={() => setIsMoreOpen(!isMoreOpen)}
+                className={cn(
+                  "flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors duration-200",
+                  isMoreOpen ? "text-bkpk-primary" : "text-bkpk-text-muted active:text-bkpk-text-primary"
+                )}
+                aria-expanded={isMoreOpen}
+                aria-label="Więcej opcji nawigacji"
+              >
+                {isMoreOpen ? <X className="w-5 h-5" /> : <MoreHorizontal className="w-5 h-5" />}
+                <span className="text-[10px] font-medium leading-none">Więcej</span>
+              </button>
+            )}
+          </div>
+        </nav>
+
+        {/* ═══════════════════════════════════════════════
+            "More" Sheet — Slides up from bottom tab bar
+            ═══════════════════════════════════════════════ */}
+        <AnimatePresence>
+          {isMoreOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="lg:hidden fixed inset-0 bg-bkpk-overlay-medium z-40"
+                onClick={() => setIsMoreOpen(false)}
+              />
+              {/* Sheet */}
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+                className="lg:hidden fixed bottom-16 inset-x-0 z-40 bg-bkpk-surface border-t border-bkpk-border-strong rounded-t-2xl overflow-hidden"
+                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+              >
+                <div className="p-4 space-y-1">
+                  {/* Drag handle */}
+                  <div className="flex justify-center mb-3">
+                    <div className="w-10 h-1 rounded-full bg-bkpk-border-strong" />
+                  </div>
+
+                  {secondaryLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <NavLink
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setIsMoreOpen(false)}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-4 p-4 rounded-xl transition-all font-bold text-sm",
+                          isActive ? "bg-bkpk-primary/10 text-bkpk-primary" : "text-bkpk-text-secondary hover:bg-bkpk-surface-tint-1"
+                        )}
+                      >
+                        <Icon className="w-5 h-5" />
+                        {link.label}
+                      </NavLink>
+                    );
+                  })}
+
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-4 p-4 rounded-xl transition-all font-bold text-sm text-bkpk-danger w-full text-left mt-2 border-t border-bkpk-border-strong pt-4"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Wyloguj
+                  </button>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Global Ambient Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-bkpk-primary/5 blur-[120px] rounded-full pointer-events-none -mr-48 -mt-48" />

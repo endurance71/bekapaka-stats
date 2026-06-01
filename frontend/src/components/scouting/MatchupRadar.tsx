@@ -37,7 +37,7 @@ export const MatchupRadar: React.FC<Props> = ({ opponent, bekapaka }) => {
             className="h-full min-h-[350px]"
         >
             <div className="flex flex-col h-full">
-                <div className="flex-1 w-full -ml-4" style={{ height: isMobile ? '220px' : '300px' }}>
+                <div className="flex-1 w-full md:-ml-4" style={{ height: isMobile ? '220px' : '300px' }}>
                     <ResponsiveContainer width="100%" height="100%">
                         <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '58%' : '70%'} data={data}>
                             <PolarGrid stroke="var(--bkpk-border-subtle)" strokeDasharray="3 3" />

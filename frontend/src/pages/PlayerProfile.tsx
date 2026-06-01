@@ -14,6 +14,7 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import useIsMobile from '../hooks/useIsMobile';
+import { getPhotoUrl, getPositionLabel } from '../shared/lib/playerUtils';
 
 interface StatSnapshot {
     gameId: string;
@@ -138,23 +139,18 @@ export default function PlayerProfile() {
     if (!data) return <div className="p-20 text-center text-bkpk-text-muted italic">Player not found.</div>;
 
     const { player, averages, gameLog } = data;
-    const normalize = (str: string) => str.toLowerCase()
-        .replace(/ą/g, 'a').replace(/ć/g, 'c').replace(/ę/g, 'e')
-        .replace(/ł/g, 'l').replace(/ń/g, 'n').replace(/ó/g, 'o')
-        .replace(/ś/g, 's').replace(/ź/g, 'z').replace(/ż/g, 'z')
-        .replace(/\s+/g, '-')
-    const fallbackPhoto = `/photos/${normalize(player.firstName)}-${normalize(player.lastName)}.png`
-    const remotePhoto = player.kalkPlayer?.raw?.photo_url || null
-    const playerPhoto = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg')
-        ? remotePhoto
-        : fallbackPhoto
+    const playerPhoto = (() => {
+        const remotePhoto = player.kalkPlayer?.raw?.photo_url || null;
+        const hasValid = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg');
+        return hasValid ? remotePhoto : getPhotoUrl(player.firstName, player.lastName);
+    })();
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1400px] mx-auto space-y-12">
+        <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+            <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-12">
 
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
                     <Link to="/roster" className="group flex items-center gap-2 text-bkpk-text-muted hover:text-bkpk-text-primary transition-colors">
                         <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
                             <ChevronLeft className="w-4 h-4" />
@@ -162,68 +158,60 @@ export default function PlayerProfile() {
                         <span className="font-bold uppercase tracking-wider text-xs">Powrót do Składu</span>
                     </Link>
 
-                    <div className="flex items-center gap-4 bg-bkpk-surface-tint-2 px-4 py-2 rounded-full border border-bkpk-border-strong">
+                    <div className="flex items-center gap-3 bg-bkpk-surface-tint-2 px-4 py-1.5 rounded-full border border-bkpk-border-strong">
                         <div className="w-2 h-2 bg-bkpk-success rounded-full animate-pulse" />
-                        <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Aktywny Profil Zawodnika</span>
+                        <span className="text-[10px] font-bold text-bkpk-text-secondary uppercase tracking-widest">Aktywny Profil Zawodnika</span>
                     </div>
                 </div>
 
                 {/* Immersive Profile Hero */}
-                <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-8 md:p-12">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-12">
+                <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-5 sm:p-8 md:p-12">
+                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
                         {/* Player Number & Photo Avatar */}
                         <div className="relative">
-                            <div className="text-8xl md:text-9xl font-black font-outfit text-white/5 absolute -top-8 -left-8 pointer-events-none">
+                            <div className="hidden sm:block text-8xl md:text-9xl font-black font-outfit text-white/5 absolute -top-8 -left-8 pointer-events-none">
                                 {player.number}
                             </div>
-                            <div className="w-48 h-48 rounded-full bg-gradient-to-tr from-bkpk-primary/20 to-transparent p-1 border border-bkpk-border-strong relative">
+                            <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-tr from-bkpk-primary/20 to-transparent p-1 border border-bkpk-border-strong relative">
                                 <img
                                     src={playerPhoto}
                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                     className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all duration-700"
                                     alt=""
                                 />
-                                <div className="absolute -bottom-2 -right-2 w-12 h-12 bg-bkpk-bg border border-bkpk-border-strong rounded-2xl flex items-center justify-center shadow-2xl">
-                                    <span className="text-xl font-black font-outfit text-bkpk-primary">#{player.number}</span>
+                                <div className="absolute -bottom-1 -right-1 w-9 h-9 md:w-12 md:h-12 bg-bkpk-bg border border-bkpk-border-strong rounded-xl md:rounded-2xl flex items-center justify-center shadow-2xl">
+                                    <span className="text-sm md:text-xl font-black font-outfit text-bkpk-primary">#{player.number}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Player Meta */}
-                        <div className="flex-1 text-center md:text-left space-y-4">
+                        <div className="flex-1 text-center md:text-left space-y-4 w-full">
                             <div>
-                                <h1 className="text-4xl md:text-6xl font-black font-outfit text-bkpk-text-primary tracking-tight uppercase">
-                                    <span className="text-bkpk-primary block text-xl mb-1">{player.firstName}</span>
+                                <h1 className="text-2xl sm:text-4xl md:text-6xl font-black font-outfit text-bkpk-text-primary tracking-tight uppercase">
+                                    <span className="text-bkpk-primary block text-base sm:text-xl mb-0.5 sm:mb-1">{player.firstName}</span>
                                     {player.lastName}
                                 </h1>
-                                <p className="text-bkpk-text-muted font-medium flex flex-wrap items-center justify-center md:justify-start gap-y-2 gap-x-4 md:gap-4 mt-2">
-                                    <span className="flex items-center gap-1.5"><Target className="w-4 h-4" /> {
-                                        player.position === 'G' ? 'Obrońca' :
-                                            player.position === 'F' ? 'Skrzydłowy' :
-                                                player.position === 'C' ? 'Środkowy' :
-                                                    player.position === 'PG' ? 'Rozgrywający' :
-                                                        player.position === 'SG' ? 'Rzucający Obrońca' :
-                                                            player.position === 'SF' ? 'Niski Skrzydłowy' :
-                                                                player.position === 'PF' ? 'Silny Skrzydłowy' : player.position
-                                    }</span>
+                                <p className="text-bkpk-text-muted text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center md:justify-start gap-y-1.5 gap-x-3 md:gap-4 mt-2">
+                                    <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {getPositionLabel(player.position)}</span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
-                                    <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> Sezon 2025/26</span>
+                                    <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> Sezon 2025/26</span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
-                                    <span className="flex items-center gap-1.5 text-bkpk-success"><Star className="w-4 h-4" /> {averages.gamesPlayed} meczy</span>
+                                    <span className="flex items-center gap-1.5 text-bkpk-success"><Star className="w-3.5 h-3.5" /> {averages.gamesPlayed} meczy</span>
                                 </p>
                             </div>
 
                             {/* Key Stats Bar */}
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-2xl">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-2xl w-full">
                                 {[
                                     { label: 'PPG', value: averages.ppg.toFixed(1), color: 'text-bkpk-primary' },
                                     { label: 'RPG', value: averages.rpg.toFixed(1), color: 'text-bkpk-text-primary' },
                                     { label: 'APG', value: averages.apg.toFixed(1), color: 'text-bkpk-text-primary' },
                                     { label: 'EVAL', value: (averages.efg * 100).toFixed(0), color: 'text-bkpk-warning' },
                                 ].map((s, idx) => (
-                                    <div key={idx} className="bg-bkpk-surface-tint-2 border border-bkpk-border-strong p-4 rounded-2xl text-center">
-                                        <div className="text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">{s.label}</div>
-                                        <div className={cn("text-2xl font-black font-outfit mt-1", s.color)}>{s.value}</div>
+                                    <div key={idx} className="bg-bkpk-surface-tint-2 border border-bkpk-border-strong p-2.5 sm:p-4 rounded-xl sm:rounded-2xl text-center">
+                                        <div className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">{s.label}</div>
+                                        <div className={cn("text-lg sm:text-2xl font-black font-outfit mt-0.5 sm:mt-1", s.color)}>{s.value}</div>
                                     </div>
                                 ))}
                             </div>
@@ -384,7 +372,7 @@ export default function PlayerProfile() {
                                 <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Najlepsze Występy</h3>
                             </div>
                             <div className="space-y-4">
-                                {gameLog.sort((a, b) => b.pts - a.pts).slice(0, 3).map((g, idx) => (
+                                {[...gameLog].sort((a, b) => b.pts - a.pts).slice(0, 3).map((g, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong">
                                         <div>
                                             <div className="text-xs font-bold text-bkpk-text-primary">{g.opponent}</div>

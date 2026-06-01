@@ -151,26 +151,26 @@ export default function GameDetail() {
         </div>
 
         {/* Immersive Scoreboard Header */}
-        <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-8 md:p-12 lg:p-16">
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-12 text-center md:text-left">
+        <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-5 sm:p-8 md:p-12 lg:p-16">
+          <div className="relative z-10 flex flex-row items-center justify-between gap-3 md:gap-12">
             {/* Home Team */}
-            <div className="flex-1 flex flex-col items-center md:items-end gap-4">
-              <div className="w-20 h-20 bg-bkpk-primary/20 rounded-3xl flex items-center justify-center border border-bkpk-primary/30">
-                <span className="text-2xl font-bold text-bkpk-primary">BK</span>
+            <div className="flex-1 flex flex-col items-center md:items-end gap-2 md:gap-4 min-w-0">
+              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-primary/20 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-primary/30 shrink-0">
+                <span className="text-base md:text-2xl font-bold text-bkpk-primary">BK</span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter">
+              <h2 className="text-xs sm:text-base md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-right">
                 {bekapaka.name}
               </h2>
             </div>
 
             {/* Score */}
-            <div className="flex flex-col items-center gap-2">
-              <div className="text-7xl md:text-8xl font-black font-outfit text-bkpk-text-primary flex items-center gap-6 tabular-nums">
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-outfit text-bkpk-text-primary flex items-center gap-2 md:gap-6 tabular-nums">
                 <span>{game.scoreUs ?? 0}</span>
-                <span className="text-white/10 text-4xl">:</span>
+                <span className="text-white/10 text-2xl md:text-4xl">:</span>
                 <span>{game.scoreThem ?? 0}</span>
               </div>
-              <div className="flex items-center gap-4 text-bkpk-text-secondary font-bold text-xs uppercase tracking-widest bg-bkpk-surface-tint-2 px-4 py-2 rounded-full border border-bkpk-border-strong">
+              <div className="hidden sm:flex items-center gap-4 text-bkpk-text-secondary font-bold text-xs uppercase tracking-widest bg-bkpk-surface-tint-2 px-4 py-2 rounded-full border border-bkpk-border-strong">
                 <div className="flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-bkpk-primary" />
                   {new Date(game.date).toLocaleDateString()}
@@ -183,22 +183,35 @@ export default function GameDetail() {
             </div>
 
             {/* Away Team */}
-            <div className="flex-1 flex flex-col items-center md:items-start gap-4">
-              <div className="w-20 h-20 bg-bkpk-surface-tint-2 rounded-3xl flex items-center justify-center border border-bkpk-border-strong">
-                <span className="text-2xl font-bold text-bkpk-text-secondary">OP</span>
+            <div className="flex-1 flex flex-col items-center md:items-start gap-2 md:gap-4 min-w-0">
+              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-surface-tint-2 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-border-strong shrink-0">
+                <span className="text-base md:text-2xl font-bold text-bkpk-text-secondary">OP</span>
               </div>
-              <h2 className="text-2xl md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter">
+              <h2 className="text-xs sm:text-base md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-left">
                 {opponentTeam.name}
               </h2>
             </div>
           </div>
 
+          {/* Mobile Info Badge */}
+          <div className="sm:hidden flex items-center justify-center gap-2.5 mt-4 text-bkpk-text-secondary font-bold text-[10px] uppercase tracking-widest bg-bkpk-surface-tint-2 px-3 py-1.5 rounded-full border border-bkpk-border-strong w-fit mx-auto relative z-10">
+            <div className="flex items-center gap-1">
+              <Calendar className="w-3 h-3 text-bkpk-primary" />
+              {new Date(game.date).toLocaleDateString()}
+            </div>
+            <div className="w-px h-2 bg-bkpk-border-strong" />
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-bkpk-primary" />
+              {game.venue || 'Hala Bobolice'}
+            </div>
+          </div>
+
           {/* Quarter Scores */}
-          <div className="mt-12 flex justify-center gap-2 md:gap-4 overflow-x-auto pb-4">
+          <div className="mt-8 md:mt-12 flex justify-center gap-2 md:gap-4 overflow-x-auto pb-2 sm:pb-4 no-scrollbar">
             {game.quarters?.map((q: any, i: number) => (
-              <div key={i} className="flex flex-col items-center gap-1 min-w-[60px] bg-bkpk-surface-tint-2 border border-bkpk-border-strong px-4 py-2 rounded-xl">
-                <span className="text-xs font-bold text-bkpk-text-muted uppercase">Q{i + 1}</span>
-                <span className="text-lg font-black font-outfit text-bkpk-text-primary">{q.home}-{q.away}</span>
+              <div key={i} className="flex flex-col items-center gap-1 min-w-[56px] bg-bkpk-surface-tint-2 border border-bkpk-border-strong px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl">
+                <span className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase">Q{i + 1}</span>
+                <span className="text-sm sm:text-lg font-black font-outfit text-bkpk-text-primary">{q.home}-{q.away}</span>
               </div>
             ))}
           </div>

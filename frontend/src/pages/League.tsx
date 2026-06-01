@@ -51,7 +51,7 @@ export default function League() {
                 </header>
 
                 {/* Tab Navigation */}
-                <div className="flex flex-wrap justify-center md:justify-start gap-4 p-1.5 bg-bkpk-glass border border-bkpk-glass-border rounded-2xl w-fit">
+                <div className="flex overflow-x-auto no-scrollbar max-w-full justify-start sm:justify-start gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-full sm:w-fit shrink-0">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -60,7 +60,7 @@ export default function League() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={cn(
-                                    "flex items-center gap-2.5 px-6 py-3 rounded-xl transition-all duration-300 font-bold text-sm uppercase tracking-wider",
+                                    "flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider shrink-0",
                                     isActive
                                         ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
                                         : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"

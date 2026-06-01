@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
-import { fetchJSON, postJSON } from '../lib/api';
+import { fetchJSON, postJSON, putJSON, deleteJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { cn } from '../shared/lib/utils';
@@ -59,13 +59,13 @@ export default function Administration() {
     };
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1000px] mx-auto space-y-12">
+        <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+            <div className="max-w-[1000px] mx-auto space-y-6 sm:space-y-12">
                 <header className="space-y-2">
                     <motion.div
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-xs"
+                        className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-[10px] sm:text-xs"
                     >
                         <ShieldCheck className="w-4 h-4" />
                         <span>Panel Kontrolny</span>
@@ -73,7 +73,7 @@ export default function Administration() {
                     <motion.h1
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="text-4xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
+                        className="text-2xl sm:text-3xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
                     >
                         Administracja <span className="text-bkpk-primary">Systemu</span>
                     </motion.h1>
@@ -81,7 +81,7 @@ export default function Administration() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-bkpk-text-muted text-lg"
+                        className="text-bkpk-text-muted text-sm sm:text-lg"
                     >
                         Narzędzia do zarządzania danymi i aktualizacji systemowych.
                     </motion.p>
@@ -142,7 +142,13 @@ export default function Administration() {
                     )}
                 </BkpkCard>
 
-
+                <BkpkCard
+                    title="Zarządzanie Zawodnikami i Użytkownikami"
+                    icon={<Users className="w-5 h-5 text-bkpk-primary" />}
+                    className="space-y-6"
+                >
+                    <UserManagement />
+                </BkpkCard>
 
                 <BkpkCard
                     title="Historia Logowań (Audyt)"
@@ -371,6 +377,593 @@ function LoginLogs() {
                     </BkpkButton>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function UserManagement() {
+    const [users, setUsers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // Filter states
+    const [searchTerm, setSearchTerm] = useState('');
+    const [roleFilter, setRoleFilter] = useState('all'); // all, USER, ADMIN, no-login
+
+    // Modals
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+
+    // Current logged in user (from Auth context) to prevent deleting oneself
+    const { user: currentUser } = useAuth();
+
+    // Form fields for Add
+    const [addFirstName, setAddFirstName] = useState('');
+    const [addLastName, setAddLastName] = useState('');
+    const [addNumber, setAddNumber] = useState('');
+    const [addPosition, setAddPosition] = useState('');
+    const [addEnableLogin, setAddEnableLogin] = useState(false);
+    const [addUsername, setAddUsername] = useState('');
+    const [addPassword, setAddPassword] = useState('');
+    const [addRole, setAddRole] = useState<'USER' | 'ADMIN'>('USER');
+    const [addError, setAddError] = useState<string | null>(null);
+
+    // Form fields for Edit
+    const [editFirstName, setEditFirstName] = useState('');
+    const [editLastName, setEditLastName] = useState('');
+    const [editNumber, setEditNumber] = useState('');
+    const [editPosition, setEditPosition] = useState('');
+    const [editEnableLogin, setEditEnableLogin] = useState(false);
+    const [editUsername, setEditUsername] = useState('');
+    const [editPassword, setEditPassword] = useState('');
+    const [editRole, setEditRole] = useState<'USER' | 'ADMIN'>('USER');
+    const [editError, setEditError] = useState<string | null>(null);
+
+    const fetchUsers = () => {
+        setLoading(true);
+        fetchJSON<any[]>('/api/admin/users')
+            .then(data => {
+                setUsers(data);
+                setError(null);
+            })
+            .catch(err => {
+                console.error(err);
+                setError(err.message);
+            })
+            .finally(() => setLoading(false));
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const handleAddUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setAddError(null);
+        try {
+            const body: any = {
+                firstName: addFirstName,
+                lastName: addLastName,
+                number: addNumber !== '' ? parseInt(addNumber) : null,
+                position: addPosition || null,
+            };
+
+            if (addEnableLogin) {
+                if (!addUsername.trim() || !addPassword.trim()) {
+                    setAddError('Nazwa użytkownika i hasło są wymagane dla konta logowania.');
+                    return;
+                }
+                body.username = addUsername;
+                body.password = addPassword;
+                body.role = addRole;
+            }
+
+            await postJSON('/api/admin/users', body);
+            setIsAddModalOpen(false);
+            // Reset fields
+            setAddFirstName('');
+            setAddLastName('');
+            setAddNumber('');
+            setAddPosition('');
+            setAddEnableLogin(false);
+            setAddUsername('');
+            setAddPassword('');
+            setAddRole('USER');
+            fetchUsers();
+        } catch (err: any) {
+            setAddError(err.message || 'Błąd dodawania użytkownika');
+        }
+    };
+
+    const handleOpenEdit = (user: any) => {
+        setSelectedUser(user);
+        setEditFirstName(user.firstName || '');
+        setEditLastName(user.lastName || '');
+        setEditNumber(user.number !== null && user.number !== undefined ? user.number.toString() : '');
+        setEditPosition(user.position || '');
+        setEditEnableLogin(!!user.username);
+        setEditUsername(user.username || '');
+        setEditPassword('');
+        setEditRole(user.role || 'USER');
+        setEditError(null);
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setEditError(null);
+        if (!selectedUser) return;
+
+        try {
+            const body: any = {
+                firstName: editFirstName,
+                lastName: editLastName,
+                number: editNumber !== '' ? parseInt(editNumber) : null,
+                position: editPosition || null,
+                role: editRole,
+            };
+
+            if (editEnableLogin) {
+                if (!editUsername.trim()) {
+                    setEditError('Nazwa użytkownika jest wymagana dla konta logowania.');
+                    return;
+                }
+                body.username = editUsername;
+                if (editPassword.trim() !== '') {
+                    body.password = editPassword;
+                }
+            } else {
+                body.username = null; // Clear username/login account
+            }
+
+            await putJSON(`/api/admin/users/${selectedUser.id}`, body);
+            setIsEditModalOpen(false);
+            setSelectedUser(null);
+            fetchUsers();
+        } catch (err: any) {
+            setEditError(err.message || 'Błąd aktualizacji użytkownika');
+        }
+    };
+
+    const handleDeleteUser = async (userId: string, name: string) => {
+        if (currentUser?.id === userId) {
+            alert('Nie możesz usunąć własnego konta administratora.');
+            return;
+        }
+
+        if (window.confirm(`Czy na pewno chcesz usunąć użytkownika/zawodnika ${name}? Tej operacji nie można cofnąć. Statystyki historyczne w meczach zostaną zachowane jako tekst, ale profil zawodnika zostanie usunięty.`)) {
+            try {
+                await deleteJSON(`/api/admin/users/${userId}`);
+                fetchUsers();
+            } catch (err: any) {
+                alert(`Błąd usuwania użytkownika: ${err.message}`);
+            }
+        }
+    };
+
+    // Filter logic
+    const filteredUsers = users.filter(user => {
+        const matchesSearch = 
+            `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        if (roleFilter === 'all') return matchesSearch;
+        if (roleFilter === 'ADMIN') return matchesSearch && user.role === 'ADMIN';
+        if (roleFilter === 'USER') return matchesSearch && user.role === 'USER' && !!user.username;
+        if (roleFilter === 'no-login') return matchesSearch && !user.username;
+        return matchesSearch;
+    });
+
+    return (
+        <div className="space-y-6">
+            {/* Header + Add button */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <p className="text-bkpk-text-secondary text-sm">
+                    Zarządzaj składem zawodników, ich rolami (użytkownik/administrator) oraz uprawnieniami do logowania.
+                </p>
+                <BkpkButton
+                    variant="primary"
+                    onClick={() => {
+                        setAddError(null);
+                        setIsAddModalOpen(true);
+                    }}
+                    className="sm:self-start flex items-center gap-2 text-sm"
+                >
+                    <UserPlus className="w-4 h-4" />
+                    Dodaj nowego
+                </BkpkButton>
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex-1 space-y-2 w-full">
+                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                        <Search className="w-3 h-3" />
+                        Szukaj (imię, nazwisko, login)
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Szukaj..."
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="w-full md:w-64 space-y-2">
+                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                        <Filter className="w-3 h-3" />
+                        Typ konta / Rola
+                    </label>
+                    <select
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                    >
+                        <option value="all">Wszyscy zawodnicy</option>
+                        <option value="ADMIN">Administratorzy (ADMIN)</option>
+                        <option value="USER">Użytkownicy z loginem (USER)</option>
+                        <option value="no-login">Bez konta logowania (tylko zawodnik)</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* User List Table */}
+            <div className="overflow-x-auto rounded-2xl border border-bkpk-border-subtle">
+                {error && (
+                    <div className="p-3 m-4 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                        Błąd pobierania użytkowników: {error}
+                    </div>
+                )}
+                
+                {loading ? (
+                    <div className="py-12 text-center text-bkpk-text-muted">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-bkpk-primary" />
+                        Ładowanie listy...
+                    </div>
+                ) : (
+                    <table className="w-full text-sm text-left">
+                        <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
+                            <tr>
+                                <th className="py-3 px-4">Zawodnik</th>
+                                <th className="py-3 px-4">Numer i Poz.</th>
+                                <th className="py-3 px-4">Login</th>
+                                <th className="py-3 px-4">Rola</th>
+                                <th className="py-3 px-4">Status</th>
+                                <th className="py-3 px-4 text-right">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-bkpk-border-subtle">
+                            {filteredUsers.map((user) => (
+                                <tr key={user.id} className="hover:bg-bkpk-surface-tint-1 transition-colors">
+                                    <td className="py-3 px-4 font-bold text-bkpk-text-primary">
+                                        {user.firstName} {user.lastName}
+                                    </td>
+                                    <td className="py-3 px-4 text-bkpk-text-secondary">
+                                        {user.number !== null ? `#${user.number}` : '-'} | {user.position || '-'}
+                                    </td>
+                                    <td className="py-3 px-4 font-mono text-xs text-bkpk-text-muted">
+                                        {user.username || <span className="italic text-gray-600">brak</span>}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {user.username ? (
+                                            <span className={cn(
+                                                "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
+                                                user.role === 'ADMIN' ? "bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/20" : "bg-bkpk-secondary/10 text-bkpk-text-secondary border border-bkpk-border-subtle"
+                                            )}>
+                                                {user.role}
+                                            </span>
+                                        ) : '-'}
+                                    </td>
+                                    <td className="py-3 px-4">
+                                        {user.username ? (
+                                            <span className="text-xs text-bkpk-success flex items-center gap-1.5 font-bold">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-bkpk-success font-bold" />
+                                                Aktywny login
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs text-bkpk-text-muted flex items-center gap-1.5">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-bkpk-text-muted/45" />
+                                                Tylko profil
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="py-3 px-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleOpenEdit(user)}
+                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-surface-tint-2 rounded-lg transition-all"
+                                                title="Edytuj profil / Zmień hasło"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                                                disabled={currentUser?.id === user.id}
+                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-danger hover:bg-bkpk-danger/10 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                                                title={currentUser?.id === user.id ? "Nie możesz usunąć samego siebie" : "Usuń zawodnika"}
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {filteredUsers.length === 0 && (
+                                <tr>
+                                    <td colSpan={6} className="py-8 text-center text-bkpk-text-muted italic">Brak zawodników spełniających kryteria wyszukiwania.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            {/* Add User Modal */}
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                title="Dodaj Nowego Zawodnika / Użytkownika"
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleAddUser} className="space-y-4">
+                    {addError && (
+                        <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                            {addError}
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Imię *</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={addFirstName}
+                                onChange={(e) => setAddFirstName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Nazwisko *</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={addLastName}
+                                onChange={(e) => setAddLastName(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
+                            <input
+                                type="number"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={addNumber}
+                                onChange={(e) => setAddNumber(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
+                            <select
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={addPosition}
+                                onChange={(e) => setAddPosition(e.target.value)}
+                            >
+                                <option value="">Wybierz pozycję...</option>
+                                <option value="PG">PG (Rozgrywający)</option>
+                                <option value="SG">SG (Rzucający obrońca)</option>
+                                <option value="SF">SF (Niski skrzydłowy)</option>
+                                <option value="PF">PF (Silny skrzydłowy)</option>
+                                <option value="C">C (Środkowy)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-bkpk-border-subtle">
+                        <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
+                            <input
+                                type="checkbox"
+                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                checked={addEnableLogin}
+                                onChange={(e) => setAddEnableLogin(e.target.checked)}
+                            />
+                            <span className="text-sm font-bold text-bkpk-text-primary">Stwórz konto logowania</span>
+                        </label>
+                    </div>
+
+                    {addEnableLogin && (
+                        <div className="space-y-3 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                                    <Lock className="w-3 h-3 text-bkpk-primary" /> Login *
+                                </label>
+                                <input
+                                    type="text"
+                                    required={addEnableLogin}
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={addUsername}
+                                    onChange={(e) => setAddUsername(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                                    <Key className="w-3 h-3 text-bkpk-primary" /> Hasło *
+                                </label>
+                                <input
+                                    type="password"
+                                    required={addEnableLogin}
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={addPassword}
+                                    onChange={(e) => setAddPassword(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                                <select
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={addRole}
+                                    onChange={(e) => setAddRole(e.target.value as any)}
+                                >
+                                    <option value="USER">Użytkownik (USER)</option>
+                                    <option value="ADMIN">Administrator (ADMIN)</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-bkpk-border-subtle">
+                        <BkpkButton variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)}>
+                            Anuluj
+                        </BkpkButton>
+                        <BkpkButton variant="primary" type="submit">
+                            Zapisz
+                        </BkpkButton>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Edit User Modal */}
+            <Modal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedUser(null);
+                }}
+                title={`Edycja: ${selectedUser?.firstName} ${selectedUser?.lastName}`}
+                maxWidth="max-w-md"
+            >
+                <form onSubmit={handleEditUser} className="space-y-4">
+                    {editError && (
+                        <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                            {editError}
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Imię *</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={editFirstName}
+                                onChange={(e) => setEditFirstName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Nazwisko *</label>
+                            <input
+                                type="text"
+                                required
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={editLastName}
+                                onChange={(e) => setEditLastName(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
+                            <input
+                                type="number"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={editNumber}
+                                onChange={(e) => setEditNumber(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
+                            <select
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={editPosition}
+                                onChange={(e) => setEditPosition(e.target.value)}
+                            >
+                                <option value="">Wybierz pozycję...</option>
+                                <option value="PG">PG (Rozgrywający)</option>
+                                <option value="SG">SG (Rzucający obrońca)</option>
+                                <option value="SF">SF (Niski skrzydłowy)</option>
+                                <option value="PF">PF (Silny skrzydłowy)</option>
+                                <option value="C">C (Środkowy)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-bkpk-border-subtle">
+                        <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
+                            <input
+                                type="checkbox"
+                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                checked={editEnableLogin}
+                                onChange={(e) => setEditEnableLogin(e.target.checked)}
+                            />
+                            <span className="text-sm font-bold text-bkpk-text-primary">Zezwól na logowanie do systemu</span>
+                        </label>
+                    </div>
+
+                    {editEnableLogin && (
+                        <div className="space-y-3 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                                    <Lock className="w-3 h-3 text-bkpk-primary" /> Login *
+                                </label>
+                                <input
+                                    type="text"
+                                    required={editEnableLogin}
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={editUsername}
+                                    onChange={(e) => setEditUsername(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                                    <Key className="w-3 h-3 text-bkpk-primary" /> Nowe hasło (Zostaw puste, jeśli nie chcesz zmieniać)
+                                </label>
+                                <input
+                                    type="password"
+                                    placeholder="Wpisz nowe hasło..."
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={editPassword}
+                                    onChange={(e) => setEditPassword(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                                <select
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    value={editRole}
+                                    onChange={(e) => setEditRole(e.target.value as any)}
+                                >
+                                    <option value="USER">Użytkownik (USER)</option>
+                                    <option value="ADMIN">Administrator (ADMIN)</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-bkpk-border-subtle">
+                        <BkpkButton
+                            variant="ghost"
+                            type="button"
+                            onClick={() => {
+                                setIsEditModalOpen(false);
+                                setSelectedUser(null);
+                            }}
+                        >
+                            Anuluj
+                        </BkpkButton>
+                        <BkpkButton variant="primary" type="submit">
+                            Zapisz zmiany
+                        </BkpkButton>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 }

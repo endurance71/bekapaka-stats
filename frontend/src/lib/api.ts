@@ -6,30 +6,25 @@ async function handleResponse<T>(res: Response): Promise<T> {
   let data = null;
   try {
     data = text ? JSON.parse(text) : null;
-  } catch (e) {
-    console.error('Failed to parse response as JSON:', text);
+  } catch {
+    // Response is not valid JSON — propagate the HTTP error below
   }
 
   if (!res.ok) {
     const message = data?.error || `Request failed: ${res.status}`;
     throw new Error(message);
   }
-  console.log(`[API Response]`, data);
   return data as T;
 }
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem('bkpk_token');
-  if (!token) {
-    console.warn('[API] No token found in localStorage');
-  }
   return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
 export async function fetchJSON<T>(path: string, options: RequestInit = {}): Promise<T> {
   const authHeaders = getAuthHeaders();
   const headers = { ...authHeaders, ...(options.headers as Record<string, string>) };
-  console.log(`[API] Fetching ${path}`, { hasAuth: !!authHeaders.Authorization });
   const res = await fetch(`${API_URL}${path}`, { ...options, headers, cache: 'no-store' });
   return handleResponse<T>(res);
 }

@@ -55,15 +55,15 @@ export default function LeagueTableModern() {
                 <table className="w-full text-sm text-left border-collapse">
                     <thead>
                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-12 text-center">#</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface">Drużyna</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-danger">P</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">RZ</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">ST</th>
-                            <th className="px-6 py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">+/-</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-10 sm:w-12 text-center">#</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface border-r border-bkpk-border-strong">Drużyna</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-danger">P</th>
+                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">RZ</th>
+                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">ST</th>
+                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">+/-</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-bkpk-border-subtle">
@@ -80,28 +80,28 @@ export default function LeagueTableModern() {
                                         isBkpk && "bg-bkpk-primary/5 hover:bg-bkpk-primary/10"
                                     )}
                                 >
-                                    <td className="px-6 py-4 text-center font-bold text-bkpk-text-muted group-hover:text-bkpk-text-secondary transition-colors">
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold text-bkpk-text-muted group-hover:text-bkpk-text-secondary transition-colors">
                                         {index + 1}
                                     </td>
                                     <td className={cn(
-                                        "px-6 py-4 font-bold sticky left-0 z-10 border-r border-bkpk-border-strong transition-colors",
+                                        "px-3 py-2.5 sm:px-6 sm:py-4 font-bold transition-colors sticky left-0 z-10 border-r border-bkpk-border-strong",
                                         isBkpk
                                             ? "text-bkpk-primary bg-[#1d1614] group-hover:bg-[#281a17]"
                                             : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
                                     )}>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 sm:gap-3">
                                             {isBkpk && <div className="w-1.5 h-1.5 rounded-full bg-bkpk-primary shadow-bkpk-glow animate-pulse" />}
                                             {team.name}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center text-bkpk-text-secondary tabular-nums">{team.matches}</td>
-                                    <td className="px-6 py-4 text-center font-black text-bkpk-text-primary tabular-nums text-lg">{team.points}</td>
-                                    <td className="px-6 py-4 text-center text-bkpk-success/80 font-bold tabular-nums">{team.wins}</td>
-                                    <td className="px-6 py-4 text-center text-bkpk-danger/80 font-bold tabular-nums">{team.losses}</td>
-                                    <td className="px-6 py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
-                                    <td className="px-6 py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary tabular-nums">{team.matches}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg">{team.points}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-success/80 font-bold tabular-nums">{team.wins}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-danger/80 font-bold tabular-nums">{team.losses}</td>
+                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
+                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
                                     <td className={cn(
-                                        "px-6 py-4 text-center font-bold tabular-nums",
+                                        "hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold tabular-nums",
                                         (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-danger"
                                     )}>
                                         {(team.pointsFor - team.pointsAgainst) > 0 ? `+${team.pointsFor - team.pointsAgainst}` : team.pointsFor - team.pointsAgainst}
