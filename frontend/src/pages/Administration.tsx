@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { compressImage } from '../shared/lib/imageCompression';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import { PasswordInput } from '../shared/ui/PasswordInput';
+import { MobileDataCard, MobileDataList, DesktopTableShell } from '../shared/ui/MobileDataCard';
 
 type ScraperStatus = {
     running: boolean;
@@ -311,12 +312,40 @@ function LoginLogs() {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-2xl border border-bkpk-border-subtle">
+            <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
                 {error && (
                     <div className="p-3 m-4 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
                         Błąd pobierania logów: {error}
                     </div>
                 )}
+                <MobileDataList className="p-4">
+                    {logs.map((log) => (
+                        <MobileDataCard
+                            key={log.id}
+                            title={log.username}
+                            subtitle={new Date(log.timestamp).toLocaleString('pl-PL')}
+                            highlight={
+                                <span
+                                    className={cn(
+                                        'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
+                                        log.success
+                                            ? 'bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20'
+                                            : 'bg-bkpk-danger/10 text-bkpk-danger border border-bkpk-danger/20'
+                                    )}
+                                >
+                                    {log.success ? 'Udane' : 'Błąd'}
+                                </span>
+                            }
+                            stats={[{ label: 'Adres IP', value: log.ipAddress || '—' }]}
+                        />
+                    ))}
+                    {logs.length === 0 && (
+                        <p className="py-6 text-center text-bkpk-text-muted italic text-sm">
+                            Brak wpisów pasujących do filtrów.
+                        </p>
+                    )}
+                </MobileDataList>
+                <DesktopTableShell>
                 <table className="w-full text-sm text-left">
                     <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
                         <tr>
@@ -349,6 +378,7 @@ function LoginLogs() {
                         )}
                     </tbody>
                 </table>
+                </DesktopTableShell>
             </div>
 
             {/* Pagination */}
@@ -621,7 +651,7 @@ function UserManagement() {
             </div>
 
             {/* User List Table */}
-            <div className="overflow-x-auto rounded-2xl border border-bkpk-border-subtle">
+            <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
                 {error && (
                     <div className="p-3 m-4 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
                         Błąd pobierania użytkowników: {error}
@@ -634,6 +664,77 @@ function UserManagement() {
                         Ładowanie listy...
                     </div>
                 ) : (
+                    <>
+                    <MobileDataList className="p-4">
+                        {filteredUsers.map((user) => (
+                            <MobileDataCard
+                                key={user.id}
+                                title={`${user.firstName} ${user.lastName}`}
+                                subtitle={user.username ? `@${user.username}` : 'Brak konta logowania'}
+                                leading={
+                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
+                                        <img
+                                            src={resolvePlayerPhoto(user)}
+                                            onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                                            className="w-full h-full object-cover"
+                                            alt=""
+                                        />
+                                    </div>
+                                }
+                                highlight={
+                                    user.username ? (
+                                        <span
+                                            className={cn(
+                                                'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
+                                                user.role === 'ADMIN'
+                                                    ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/20'
+                                                    : 'bg-bkpk-secondary/10 text-bkpk-text-secondary border border-bkpk-border-subtle'
+                                            )}
+                                        >
+                                            {user.role}
+                                        </span>
+                                    ) : undefined
+                                }
+                                stats={[
+                                    {
+                                        label: 'Nr / Poz.',
+                                        value: `${user.number !== null ? `#${user.number}` : '—'} · ${user.position || '—'}`
+                                    },
+                                    {
+                                        label: 'Status',
+                                        value: user.username ? 'Aktywny login' : 'Tylko profil'
+                                    }
+                                ]}
+                                footer={
+                                    <div className="flex justify-end gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleOpenEdit(user)}
+                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-primary bg-bkpk-surface-tint-2 rounded-lg border border-bkpk-border-strong"
+                                        >
+                                            <Edit2 className="w-4 h-4" />
+                                            Edytuj
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
+                                            disabled={currentUser?.id === user.id}
+                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-30"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                            Usuń
+                                        </button>
+                                    </div>
+                                }
+                            />
+                        ))}
+                        {filteredUsers.length === 0 && (
+                            <p className="py-6 text-center text-bkpk-text-muted italic text-sm">
+                                Brak zawodników spełniających kryteria wyszukiwania.
+                            </p>
+                        )}
+                    </MobileDataList>
+                    <DesktopTableShell>
                     <table className="w-full text-sm text-left">
                         <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
                             <tr>
@@ -718,6 +819,8 @@ function UserManagement() {
                             )}
                         </tbody>
                     </table>
+                    </DesktopTableShell>
+                    </>
                 )}
             </div>
 

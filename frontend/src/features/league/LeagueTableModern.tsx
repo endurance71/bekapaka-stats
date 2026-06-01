@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
+import { MobileDataCard, MobileDataList, DesktopTableShell } from '../../shared/ui/MobileDataCard';
 
 interface Team {
     name: string;
@@ -88,7 +89,42 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                 <KalkEmptyState title="Tabela Ligowa jest pusta" />
             ) : (
                 <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
-            <div className="overflow-x-auto">
+            <MobileDataList>
+                {table.map((team, index) => {
+                    const isBkpk = team.name.toLowerCase().includes('bekapaka');
+                    const diff = team.pointsFor - team.pointsAgainst;
+                    return (
+                        <MobileDataCard
+                            key={team.name}
+                            rank={index + 1}
+                            title={team.name}
+                            accent={isBkpk}
+                            highlight={
+                                <div>
+                                    <div className="text-xl font-black font-outfit text-bkpk-text-primary tabular-nums">
+                                        {team.points}
+                                    </div>
+                                    <div className="text-[10px] font-bold text-bkpk-text-muted uppercase">pkt</div>
+                                </div>
+                            }
+                            stats={[
+                                { label: 'M', value: team.matches },
+                                { label: 'Z', value: team.wins, emphasize: false },
+                                { label: 'P', value: team.losses },
+                                { label: 'RZ', value: team.pointsFor },
+                                { label: 'ST', value: team.pointsAgainst },
+                                {
+                                    label: '+/-',
+                                    value: diff > 0 ? `+${diff}` : diff,
+                                    emphasize: true
+                                }
+                            ]}
+                        />
+                    );
+                })}
+            </MobileDataList>
+
+            <DesktopTableShell>
                 <table className="w-full text-sm text-left border-collapse">
                     <thead>
                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
@@ -148,7 +184,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                         })}
                     </tbody>
                 </table>
-            </div>
+            </DesktopTableShell>
         </BkpkCard>
       )}
     </div>
