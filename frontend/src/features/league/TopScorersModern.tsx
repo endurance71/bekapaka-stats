@@ -5,6 +5,7 @@ import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { Trophy, Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
+import { MobileDataCard, MobileDataList, DesktopTableShell } from '../../shared/ui/MobileDataCard';
 
 interface Scorer {
     id: string;
@@ -238,7 +239,53 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                     {/* Rest of the List (4-20) */}
                     <div className="md:col-span-12 lg:col-span-8 order-1 lg:order-2">
                         <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
-                            <div className="overflow-x-auto">
+                            <MobileDataList>
+                                {leaders.slice(3).map((player, index) => {
+                                    const isBkpk = player.team?.toLowerCase().includes('bekapaka');
+                                    const stats = getCategoryStats(player, activeCategory);
+                                    return (
+                                        <MobileDataCard
+                                            key={player.id}
+                                            rank={index + 4}
+                                            accent={isBkpk}
+                                            title={player.name}
+                                            subtitle={player.team}
+                                            leading={
+                                                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-bkpk-border-subtle">
+                                                    <img
+                                                        src={resolveLeaderPhoto(player)}
+                                                        onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                                                        className="w-full h-full object-cover"
+                                                        alt=""
+                                                    />
+                                                </div>
+                                            }
+                                            highlight={
+                                                <div>
+                                                    <div className="text-xl font-black font-outfit text-bkpk-text-primary tabular-nums">
+                                                        {stats.main}
+                                                    </div>
+                                                    <div className="text-[10px] font-bold text-bkpk-primary uppercase">
+                                                        {stats.label}
+                                                    </div>
+                                                </div>
+                                            }
+                                            stats={[
+                                                {
+                                                    label: 'Mecze',
+                                                    value: player.matchesPlayed ?? player.raw?.mecze_rozegrane ?? 0
+                                                },
+                                                {
+                                                    label: currentCatInfo.totalLabel,
+                                                    value: stats.sub
+                                                }
+                                            ]}
+                                        />
+                                    );
+                                })}
+                            </MobileDataList>
+
+                            <DesktopTableShell>
                                 <table className="w-full text-sm text-left border-collapse">
                                     <thead>
                                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
@@ -301,7 +348,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                         })}
                                     </tbody>
                                 </table>
-                            </div>
+                            </DesktopTableShell>
                         </BkpkCard>
                     </div>
                 </div>

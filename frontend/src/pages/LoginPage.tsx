@@ -4,13 +4,14 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
-import { Lock, User } from 'lucide-react';
+import { Lock, User, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -77,13 +78,22 @@ export default function LoginPage() {
                             <div className="relative">
                                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bkpk-text-muted" />
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-subtle rounded-bkpk-md py-2.5 pl-10 pr-4 text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary transition-colors"
+                                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-subtle rounded-bkpk-md py-2.5 pl-10 pr-12 text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary transition-colors"
                                     placeholder="••••••••"
                                     required
+                                    autoComplete="current-password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(v => !v)}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-bkpk-text-muted hover:text-bkpk-primary transition-colors p-1"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
                             </div>
                         </div>
 

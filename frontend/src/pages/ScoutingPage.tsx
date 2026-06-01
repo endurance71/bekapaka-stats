@@ -13,6 +13,7 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import { ArrowLeft, Users, History, Trophy } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { motion } from 'framer-motion';
+import { MobileDataCard, MobileDataList, DesktopTableShell } from '../shared/ui/MobileDataCard';
 
 export default function ScoutingPage() {
     const [searchParams] = useSearchParams();
@@ -247,35 +248,58 @@ export default function ScoutingPage() {
                             className="h-full"
                             overflowVisible={true}
                         >
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                            <MobileDataList className="p-0 pb-3">
+                                {keyPlayers.map((p: { name: string; matches: number; ppg: number; threePointStats?: string; totalPoints: number }, i: number) => (
+                                    <MobileDataCard
+                                        key={`${p.name}-${i}`}
+                                        rank={i + 1}
+                                        title={p.name}
+                                        highlight={
+                                            <div>
+                                                <div className="text-xl font-black font-outfit text-bkpk-primary tabular-nums">
+                                                    {p.ppg.toFixed(1)}
+                                                </div>
+                                                <div className="text-[10px] font-bold text-bkpk-text-muted uppercase">PPG</div>
+                                            </div>
+                                        }
+                                        stats={[
+                                            { label: 'Mecze', value: p.matches },
+                                            { label: '3PT', value: p.threePointStats || '—' },
+                                            { label: 'Pkt łącznie', value: p.totalPoints, emphasize: true }
+                                        ]}
+                                    />
+                                ))}
+                            </MobileDataList>
+
+                            <DesktopTableShell>
+                                <table className="w-full text-left border-collapse text-sm">
                                     <thead>
-                                        <tr className="text-[10px] sm:text-sm font-bold text-bkpk-text-muted uppercase tracking-widest border-b border-bkpk-border-strong">
+                                        <tr className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest border-b border-bkpk-border-strong">
                                             <th className="pb-3 pl-2">Zawodnik</th>
-                                            <th className="pb-3 text-center hidden sm:table-cell">Mecze</th>
+                                            <th className="pb-3 text-center">Mecze</th>
                                             <th className="pb-3 text-center">PPG</th>
-                                            <th className="pb-3 text-center hidden sm:table-cell">3PT</th>
+                                            <th className="pb-3 text-center">3PT</th>
                                             <th className="pb-3 text-center">PTS</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {keyPlayers.map((p: any, i: number) => (
+                                        {keyPlayers.map((p: { name: string; matches: number; ppg: number; threePointStats?: string; totalPoints: number }, i: number) => (
                                             <tr key={i} className="border-b border-bkpk-border-strong last:border-0 hover:bg-bkpk-surface-tint-3 transition-colors">
-                                                <td className="py-2 sm:py-3 pl-2 font-bold text-bkpk-text-primary">
-                                                    <span className="inline-flex items-center justify-center w-5 h-5 rounded bg-bkpk-surface-tint-4 text-[9px] sm:text-caption text-bkpk-text-secondary mr-2">
+                                                <td className="py-3 pl-2 font-bold text-bkpk-text-primary">
+                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-bkpk-surface-tint-4 text-caption text-bkpk-text-secondary mr-2">
                                                         {i + 1}
                                                     </span>
                                                     {p.name}
                                                 </td>
-                                                <td className="py-2 sm:py-3 text-center text-bkpk-text-secondary font-mono hidden sm:table-cell">{p.matches}</td>
-                                                <td className="py-2 sm:py-3 text-center text-bkpk-primary font-black">{p.ppg.toFixed(1)}</td>
-                                                <td className="py-2 sm:py-3 text-center text-bkpk-text-secondary font-mono hidden sm:table-cell">{p.threePointStats || '-'}</td>
-                                                <td className="py-2 sm:py-3 text-center text-bkpk-text-secondary font-bold">{p.totalPoints}</td>
+                                                <td className="py-3 text-center text-bkpk-text-secondary font-mono">{p.matches}</td>
+                                                <td className="py-3 text-center text-bkpk-primary font-black">{p.ppg.toFixed(1)}</td>
+                                                <td className="py-3 text-center text-bkpk-text-secondary font-mono">{p.threePointStats || '-'}</td>
+                                                <td className="py-3 text-center text-bkpk-text-secondary font-bold">{p.totalPoints}</td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                            </div>
+                            </DesktopTableShell>
                         </BkpkCard>
                     </motion.div>
 

@@ -1778,26 +1778,51 @@ export async function getNextOpponentScouting() {
 }
 
 
-// Helper: Get Advanced Stats for Opponent (Last 5 Games)
+function hasValidLeagueMatchDetails(match) {
+  const details = match?.details;
+  if (!details || typeof details !== 'object' || Object.keys(details).length === 0) {
+    return false;
+  }
+  if (!Array.isArray(details.teams) || details.teams.length < 2) {
+    return false;
+  }
+  return details.teams.some(
+    (team) => team && (team.fourFactors || (Array.isArray(team.players) && team.players.length > 0))
+  );
+}
+
+// Helper: statystyki zaawansowane rywala z meczów ligowych (protokoły w LeagueMatch.details)
 async function getOpponentAdvancedStats(opponentName) {
   if (!opponentName) return null;
 
   // Simplify name: "GLAZURIX-Salon Łazienek" -> "GLAZURIX"
   const simplifiedName = opponentName.split('-')[0].trim();
 
-  // Find last 5 matches
+  // Szukaj w głąb historii — ostatnie mecze często nie mają jeszcze protokołu w DB
   const matches = await prisma.leagueMatch.findMany({
     where: {
       OR: [
         { homeTeam: { contains: simplifiedName, mode: 'insensitive' } },
         { guestTeam: { contains: simplifiedName, mode: 'insensitive' } }
       ],
-      isFinished: true,
-      protocolUrl: { not: null }
+      isFinished: true
     },
     orderBy: { date: 'desc' },
-    take: 5
+    take: 25
   });
+
+  const matchesWithDetails = matches.filter(hasValidLeagueMatchDetails);
+  if (!matchesWithDetails.length) {
+    return null;
+  }
+
+  const latestFinished = matches[0];
+  const fallbackFromPreviousMatch = Boolean(
+    latestFinished && !hasValidLeagueMatchDetails(latestFinished)
+  );
+
+  const matchesToProcess = matchesWithDetails.slice(0, 5);
+  const sourceMatch = matchesToProcess[0];
 
   const stats = {
     matchesScraped: 0,
@@ -1805,27 +1830,28 @@ async function getOpponentAdvancedStats(opponentName) {
     shotProfile: { two: 0, three: 0, ft: 0 },
     fourFactors: { efg: 0, tov: 0, orb: 0, ftr: 0 },
     situational: { fourthQuarterDiff: 0, clutchPlay: '?' },
-    personnel: { shooters: [], paintProtectors: [], playmakers: [] } // Names
+    personnel: { shooters: [], paintProtectors: [], playmakers: [] },
+    fallbackFromPreviousMatch,
+    sourceMatchDate: sourceMatch?.date
+      ? sourceMatch.date.toISOString().split('T')[0]
+      : null,
+    sourceMatchLabel: sourceMatch
+      ? `${sourceMatch.homeTeam} — ${sourceMatch.guestTeam} (${sourceMatch.scoreHome}:${sourceMatch.scoreAway})`
+      : null
   };
 
   let totalPoss = 0;
   let totalPts = 0;
   let total2PM = 0, total3PM = 0, totalFTM = 0;
   let totalFGA = 0, totalFGM = 0, totalFTA = 0, totalTOV = 0, totalORB = 0, totalOppDRB = 0;
-  let total3PA = 0; // New
+  let total3PA = 0;
   let q4DiffSum = 0;
 
-  const playerStatsMap = {}; // name -> stats
+  const playerStatsMap = {};
 
-  for (const match of matches) {
-    let details = match.details;
-
-    // Only use details already stored from Scrapling import.
-    if (!details || Object.keys(details).length === 0) {
-      continue;
-    }
-
-    if (!details || !details.teams) continue;
+  for (const match of matchesToProcess) {
+    const details = match.details;
+    if (!hasValidLeagueMatchDetails(match)) continue;
 
     stats.matchesScraped++;
 
@@ -1914,11 +1940,14 @@ async function getOpponentAdvancedStats(opponentName) {
   // 3PT Accuracy
   stats.threePointAccuracy = total3PA > 0 ? Number(((total3PM / total3PA) * 100).toFixed(2)) : 0;
 
+  const minGamesForPersonnel =
+    stats.fallbackFromPreviousMatch && stats.matchesScraped === 1 ? 1 : 2;
+
   // Process Personnel
   Object.entries(playerStatsMap).forEach(([name, s]) => {
     // @ts-ignore
     const gp = s.gp;
-    if (gp < 2) return; // Ignore if played only 1 game out of 5
+    if (gp < minGamesForPersonnel) return;
 
     // @ts-ignore
     const ppg = s.pts / gp;
