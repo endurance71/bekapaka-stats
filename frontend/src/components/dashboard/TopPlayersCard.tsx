@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Trophy, Star, Medal } from 'lucide-react';
 import { BkpkCard } from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
+import { resolvePlayerPhoto } from '../../shared/lib/playerUtils';
 
 interface Player {
     id: string;
@@ -11,6 +12,9 @@ interface Player {
     ppg: number;
     rpg?: number;
     apg?: number;
+    photo?: string | null;
+    data?: any;
+    kalkPlayer?: any;
 }
 
 interface TopPlayersCardProps {
@@ -68,19 +72,27 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                     : "bg-bkpk-surface-tint-1 border border-bkpk-border-strong hover:bg-bkpk-surface-tint-2"
                             )}
                         >
-                            <div className="relative">
-                                <div className={cn(
-                                    "w-12 h-12 rounded-full flex items-center justify-center font-black font-outfit text-xl shadow-lg",
-                                    index === 0 ? "bg-bkpk-primary text-black" :
-                                        index === 1 ? "bg-slate-300 text-slate-900" :
-                                            "bg-orange-800 text-orange-200"
-                                )}>
-                                    {index + 1}
-                                </div>
-                                {isFirst && (
-                                    <Medal className="absolute -top-1 -right-1 w-5 h-5 text-bkpk-primary drop-shadow-[0_0_8px_rgba(255,107,53,0.5)]" />
-                                )}
-                            </div>
+                             <div className="relative">
+                                 <div className="w-12 h-12 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-strong shadow-lg flex items-center justify-center relative">
+                                     <img
+                                         src={resolvePlayerPhoto(player)}
+                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                         alt=""
+                                     />
+                                     <div className={cn(
+                                         "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-outfit text-[10px] shadow-md border border-bkpk-border-strong",
+                                         index === 0 ? "bg-bkpk-primary text-black" :
+                                             index === 1 ? "bg-slate-300 text-slate-900" :
+                                                 "bg-orange-800 text-orange-200"
+                                     )}>
+                                         {index + 1}
+                                     </div>
+                                 </div>
+                                 {isFirst && (
+                                     <Medal className="absolute -top-1.5 -left-1.5 w-5 h-5 text-bkpk-primary drop-shadow-[0_0_8px_rgba(255,107,53,0.5)] z-20" />
+                                 )}
+                             </div>
 
                             <div className="flex-1 min-w-0">
                                 <div className="font-black font-outfit text-bkpk-text-primary truncate group-hover:text-bkpk-primary transition-colors">

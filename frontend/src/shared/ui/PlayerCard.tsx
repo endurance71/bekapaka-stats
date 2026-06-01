@@ -9,10 +9,10 @@ export interface PlayerCardProps {
     lastName: string;
     photoUrl?: string | null;
     number: number;
-    position: string;
-    ppg: number;
-    rpg: number;
-    apg: number;
+    position?: string;
+    ppg?: number;
+    rpg?: number;
+    apg?: number;
     isStarter?: boolean;
     onClick?: (id: string) => void;
 }
@@ -147,15 +147,15 @@ export default function PlayerCard({
                     <div className="grid grid-cols-3 gap-1 py-1.5 sm:gap-2 sm:py-3 border-t border-bkpk-border-strong bg-bkpk-overlay-weak -mx-3 px-3 sm:-mx-6 sm:px-6">
                         <div className="text-center">
                             <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">PPG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{ppg.toFixed(1)}</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(ppg ?? 0).toFixed(1)}</div>
                         </div>
                         <div className="text-center border-x border-bkpk-border-strong">
                             <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">RPG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{rpg.toFixed(1)}</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(rpg ?? 0).toFixed(1)}</div>
                         </div>
                         <div className="text-center">
                             <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">APG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{apg.toFixed(1)}</div>
+                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(apg ?? 0).toFixed(1)}</div>
                         </div>
                     </div>
                 </div>
