@@ -45,47 +45,46 @@ export function RosterList({ roster }: RosterListProps) {
               type='button'
               aria-label={`Pokaż statystyki zawodnika ${player.firstName} ${player.lastName}`}
             >
-              <div className='player-card__image-wrap'>
-                {!hasPhoto ? (
-                  <div className='player-card__avatar-placeholder-premium-large'>
-                    <span>{initials}</span>
-                  </div>
-                ) : (
-                  <>
+              <div className='player-card__inner'>
+                <div className='player-card__media' aria-hidden='true'>
+                  {!hasPhoto ? (
+                    <div className='player-card__avatar-placeholder-premium-large'>
+                      <span>{initials}</span>
+                    </div>
+                  ) : (
                     <img
                       src={resolvePlayerPhoto(player)}
-                      alt={`${player.firstName} ${player.lastName}`}
-                      className='player-card__image'
+                      alt=''
+                      className='player-card__photo'
                     />
-                    <div className='player-card__overlay' />
-                  </>
-                )}
-                <div className='player-card__number'>#{player.number}</div>
-              </div>
-              <div className='player-card__info'>
-                <h2 className='player-card__name'>
-                  {player.firstName} <span className='highlight-gold'>{player.lastName}</span>
-                </h2>
-                <p className='player-card__position'>{getPositionLabel(player.position)}</p>
-                
-                {player.ppg !== undefined || player.rpg !== undefined || player.apg !== undefined ? (
-                  <div className='player-card__quick-stats'>
-                    <div className='quick-stat-item'>
-                      <span className='qs-label'>PTS</span>
-                      <span className='qs-val'>{formatStat(player.ppg)}</span>
+                  )}
+                  <div className='player-card__scrim' />
+                </div>
+
+                <span className='player-card__number'>{player.number}</span>
+
+                <div className='player-card__footer'>
+                  <div className='player-card__identity'>
+                    <span className='player-card__first-name'>{player.firstName}</span>
+                    <span className='player-card__last-name'>{player.lastName}</span>
+                    <span className='player-card__position'>{getPositionLabel(player.position)}</span>
+                  </div>
+
+                  <div className='player-card__stats'>
+                    <div className='player-card__stat'>
+                      <span className='player-card__stat-label'>PPG</span>
+                      <span className='player-card__stat-value'>{formatStat(player.ppg)}</span>
                     </div>
-                    <div className='quick-stat-item'>
-                      <span className='qs-label'>REB</span>
-                      <span className='qs-val'>{formatStat(player.rpg)}</span>
+                    <div className='player-card__stat player-card__stat--divider'>
+                      <span className='player-card__stat-label'>RPG</span>
+                      <span className='player-card__stat-value'>{formatStat(player.rpg)}</span>
                     </div>
-                    <div className='quick-stat-item'>
-                      <span className='qs-label'>AST</span>
-                      <span className='qs-val'>{formatStat(player.apg)}</span>
+                    <div className='player-card__stat'>
+                      <span className='player-card__stat-label'>APG</span>
+                      <span className='player-card__stat-value'>{formatStat(player.apg)}</span>
                     </div>
                   </div>
-                ) : null}
-                
-                <div className='player-card__action-hint'>Szczegóły zawodnika ➔</div>
+                </div>
               </div>
             </button>
           );

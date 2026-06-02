@@ -13,11 +13,12 @@
   }
 
   .stats-drawer__panel {
-    max-height: min(94dvh, 100%);
+    max-height: 100dvh;
+    min-height: 100dvh;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
-  .stats-drawer__panel {
+  .stats-drawer__panel-body {
     padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
 
@@ -47,8 +48,7 @@
     gap: var(--space-3);
   }
 
-  .player-card__image {
-    height: 112%;
+  .player-card__photo {
     object-position: center 8%;
   }
 }
