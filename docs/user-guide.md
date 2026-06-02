@@ -3,7 +3,7 @@
 ## Dodawanie raportu z meczu
 1. Wejdź w `Dashboard`.
 2. Kliknij `Dodaj nowy raport`.
-3. Wklej protokół w formacie Markdown lub JSON.
+3. Wklej protokół w formacie Markdown.
 4. Kliknij `Parsuj` i sprawdź podgląd.
 5. Po akceptacji zapisz (kolejny krok w wersji produkcyjnej).
 
@@ -17,11 +17,9 @@
 
 ## Trends
 - Sprawdź trendy TO%, 3P%, FT% oraz lead chart.
-- Heatmapa pokazuje obecność na treningach.
 
 ## Strategy Room
 - Dodawaj notatki taktyczne.
-- Priorytety treningowe generują się automatycznie z danych.
 - Taguj kontekst meczu (back-to-back, turniej itd.).
 
 ## Aktualizacja danych z ligi (admin)
@@ -30,3 +28,8 @@
 3. Poczekaj na zakończenie (ok. kilka–kilkanaście minut) — status i logi są widoczne na tej samej stronie.
 
 Technicznie: scraping przez [Scrapling](https://github.com/D4Vinci/Scrapling) — opis w [scraping.md](./scraping.md).
+
+## Scouting — plan meczowy (AI)
+- Na stronie **Scouting** blok „Plan meczowy (AI)” korzysta z raportu Gemini zapisanego w bazie (lub ze szablonu z tabeli ligi, gdy raportu jeszcze nie ma).
+- Jeśli raport jest krótki, puste sekcje lub widać surowy JSON — **administrator** powinien kliknąć **Odśwież** (pierwsza generacja) lub ikonę **wymuszenia** (ponowna generacja po zmianie danych ligi).
+- Pełna jakość wymaga aktualnego importu KALK (statystyki zawodników, forma) przed generacją.

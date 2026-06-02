@@ -24,26 +24,14 @@ function summarizePlayers(players, limit = 5) {
 }
 
 /**
- * @param {string} gameId
+ * @param {object} game
  */
-export async function buildMatchContext(gameId) {
-  const game = await getGameById(gameId);
-  if (!game) {
-    throw new AiValidationError('Mecz nie znaleziony');
-  }
-
+export function buildMatchPayloadFromGame(game) {
   const teams = game.teams || game.teamStats || [];
   const bekapaka = teams.find((t) => t.isBekapaka) || teams[0];
   const opponent = teams.find((t) => !t.isBekapaka) || teams[1];
 
-  const hasBoxScore = bekapaka?.players?.length > 0 || game.playerStats?.length > 0;
-  if (!hasBoxScore) {
-    throw new AiValidationError(
-      'Brak pełnych statystyk — zaimportuj protokół meczu (to nie jest mecz z box score)'
-    );
-  }
-
-  const payload = {
+  return {
     meta: {
       date: game.date,
       opponent: game.opponent || opponent?.name,
@@ -71,6 +59,40 @@ export async function buildMatchContext(gameId) {
     },
     ruleInsights: game.insights || []
   };
+}
+
+/**
+ * @param {object} game — wzbogacony obiekt z getGameById (insights, fourFactors)
+ * @returns {string | null}
+ */
+export function hashGameForAi(game) {
+  const teams = game.teams || game.teamStats || [];
+  const bekapaka = teams.find((t) => t.isBekapaka) || teams[0];
+  const hasBoxScore = bekapaka?.players?.length > 0 || game.playerStats?.length > 0;
+  if (!hasBoxScore) return null;
+  return hashPayload(buildMatchPayloadFromGame(game));
+}
+
+/**
+ * @param {string} gameId
+ */
+export async function buildMatchContext(gameId) {
+  const game = await getGameById(gameId);
+  if (!game) {
+    throw new AiValidationError('Mecz nie znaleziony');
+  }
+
+  const teams = game.teams || game.teamStats || [];
+  const bekapaka = teams.find((t) => t.isBekapaka) || teams[0];
+
+  const hasBoxScore = bekapaka?.players?.length > 0 || game.playerStats?.length > 0;
+  if (!hasBoxScore) {
+    throw new AiValidationError(
+      'Brak pełnych statystyk — zaimportuj protokół meczu (to nie jest mecz z box score)'
+    );
+  }
+
+  const payload = buildMatchPayloadFromGame(game);
 
   return {
     gameId,

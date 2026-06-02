@@ -13,8 +13,7 @@ import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
-import SeasonSelector from '../components/SeasonSelector';
-import { useSeasonPreference } from '../hooks/useSeasonPreference';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
@@ -74,6 +73,7 @@ interface PlayerStats {
         ts: number;
         plusMinusAvg: number;
         gamesPlayed: number;
+        minutesPlayed?: number;
     };
     gameLog: StatSnapshot[];
 }
@@ -88,10 +88,14 @@ export default function PlayerProfile() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
     const isMobile = useIsMobile();
-    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } = useSeasonPreference(id);
+    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
     const fetchStats = useCallback(async () => {
-        if (!id || !seasonId) return;
+        if (!id) return;
+        if (!seasonId) {
+            setLoading(false);
+            return;
+        }
         setLoading(true);
         try {
             const statsQ = new URLSearchParams({ t: String(Date.now()), seasonId });
@@ -123,9 +127,10 @@ export default function PlayerProfile() {
             const result = await postJSON<{
                 aiDevelopmentSummary: string;
                 aiDevelopmentAt: string;
+                model?: string;
             }>(`/api/players/${id}/analyze`, { force });
             setAiSummary(result.aiDevelopmentSummary);
-            setAiMeta({ at: result.aiDevelopmentAt });
+            setAiMeta({ at: result.aiDevelopmentAt, model: result.model });
         } catch (error: any) {
             alert(error?.message || 'Nie udało się wygenerować planu rozwoju');
         } finally {
@@ -158,7 +163,7 @@ export default function PlayerProfile() {
     const playerPhoto = resolvePlayerPhoto(player);
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
             <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-12">
 
                 {/* Header Section */}
@@ -170,20 +175,11 @@ export default function PlayerProfile() {
                         <span className="font-bold uppercase tracking-wider text-xs">Powrót do Składu</span>
                     </Link>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                        <SeasonSelector
-                            seasons={seasons}
-                            seasonId={seasonId}
-                            onChange={setSeasonId}
-                            loading={seasonsLoading}
-                            compact
-                        />
-                        {selectedSeason && !selectedSeason.isActive && (
-                            <span className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-3 py-1.5 rounded-full border border-bkpk-warning/30 bg-bkpk-warning/10">
-                                Archiwum sezonu
-                            </span>
-                        )}
-                    </div>
+                    {selectedSeason && !selectedSeason.isActive ? (
+                        <span className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-3 py-1.5 rounded-full border border-bkpk-warning/30 bg-bkpk-warning/10">
+                            Archiwum sezonu
+                        </span>
+                    ) : null}
                 </div>
 
                 {/* Immersive Profile Hero */}
@@ -222,7 +218,11 @@ export default function PlayerProfile() {
                                         {selectedSeason?.label ?? 'Sezon'}
                                     </span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
-                                    <span className="flex items-center gap-1.5 text-bkpk-success"><Star className="w-3.5 h-3.5" /> {averages.gamesPlayed} meczy</span>
+                                    <span className="flex items-center gap-1.5 text-bkpk-success">
+                                        <Star className="w-3.5 h-3.5" /> {averages.gamesPlayed} meczy
+                                        <span className="opacity-60">•</span>
+                                        {(averages.minutesPlayed ?? 0)} min
+                                    </span>
                                 </p>
                             </div>
 
@@ -253,7 +253,7 @@ export default function PlayerProfile() {
                         content={aiSummary}
                         generatedAt={aiMeta.at}
                         model={aiMeta.model}
-                        isAdmin={isAdmin}
+                        canGenerate={isAdmin}
                         loading={aiLoading}
                         onGenerate={handleGenerateAi}
                         emptyHint="Brak planu rozwoju AI. Administrator może go wygenerować (min. 3 mecze w bazie)."
@@ -278,7 +278,11 @@ export default function PlayerProfile() {
                                 <div className="py-20">
                                     <KalkEmptyState
                                         title="Brak statystyk meczowych"
-                                        message="Ten zawodnik nie ma jeszcze zarejestrowanych występów w obecnym sezonie KALK."
+                                        message={
+                                            selectedSeason
+                                                ? `Brak występów w sezonie ${selectedSeason.label}. Wybierz inny sezon w menu lub uruchom import meczów.`
+                                                : 'Ten zawodnik nie ma jeszcze zarejestrowanych występów w tym sezonie.'
+                                        }
                                         className="bg-transparent border-none p-0"
                                     />
                                 </div>

@@ -11,8 +11,7 @@ import { motion } from 'framer-motion';
 import { ShieldCheck, User, Key, Image as ImageIcon, ExternalLink, RefreshCw } from 'lucide-react';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
-import SeasonSelector from '../components/SeasonSelector';
-import { useSeasonPreference } from '../hooks/useSeasonPreference';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 export default function Profile() {
     const { user, refreshUser } = useAuth();
@@ -38,8 +37,7 @@ export default function Profile() {
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [aiMeta, setAiMeta] = useState<{ at?: string | null; model?: string | null }>({});
     const [aiLoading] = useState(false);
-    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } =
-        useSeasonPreference(user?.id);
+    const { selectedSeason } = useSeasonPreferenceContext();
 
     useEffect(() => {
         if (!user?.id) return;
@@ -135,7 +133,7 @@ export default function Profile() {
     const userPhoto = resolvePlayerPhoto(user);
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
             <div className="max-w-[1100px] mx-auto space-y-6 sm:space-y-12">
                 
                 {/* Header */}
@@ -161,17 +159,8 @@ export default function Profile() {
                         transition={{ delay: 0.2 }}
                         className="text-bkpk-text-muted text-sm sm:text-lg"
                     >
-                        Zarządzaj kontem, wybierz sezon do statystyk (archiwum) i zobacz podgląd karty.
+                        Zarządzaj kontem i zobacz podgląd karty. Sezon wybierasz w menu nawigacji.
                     </motion.p>
-                    {user?.id && (
-                        <SeasonSelector
-                            seasons={seasons}
-                            seasonId={seasonId}
-                            onChange={setSeasonId}
-                            loading={seasonsLoading}
-                            className="pt-2"
-                        />
-                    )}
                 </header>
 
                 <AiAnalysisBlock
@@ -179,9 +168,7 @@ export default function Profile() {
                     content={aiSummary}
                     generatedAt={aiMeta.at}
                     model={aiMeta.model}
-                    isAdmin={false}
                     loading={aiLoading}
-                    onGenerate={() => {}}
                     emptyHint="Twój plan rozwoju nie został jeszcze wygenerowany przez trenera."
                 />
 

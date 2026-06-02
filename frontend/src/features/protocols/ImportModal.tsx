@@ -4,10 +4,8 @@ import type { Game } from './types';
 
 interface ImportModalProps {
   onClose: () => void;
-  onImportParse: (content?: string, format?: 'markdown' | 'json') => Promise<void>;
+  onImportParse: (content?: string) => Promise<void>;
   onImportSave: () => Promise<void>;
-  importFormat: 'markdown' | 'json';
-  setImportFormat: (format: 'markdown' | 'json') => void;
   importContent: string;
   setImportContent: (content: string) => void;
   importPreview: Game | null;
@@ -22,8 +20,6 @@ export default function ImportModal({
   onClose,
   onImportParse,
   onImportSave,
-  importFormat,
-  setImportFormat,
   importContent,
   setImportContent,
   importPreview,
@@ -48,17 +44,6 @@ export default function ImportModal({
 
         <div className="p-6 flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1.5 text-xs text-bkpk-text-muted font-bold uppercase tracking-wider">
-              Format danych
-              <select
-                className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-lg px-3 py-2 text-bkpk-text-primary text-sm font-normal normal-case focus:border-bkpk-primary outline-none transition-colors"
-                value={importFormat}
-                onChange={(e) => setImportFormat(e.target.value as 'markdown' | 'json')}
-              >
-                <option value="markdown">Markdown</option>
-                <option value="json">JSON (Baza danych)</option>
-              </select>
-            </label>
             <label className="flex flex-col gap-1.5 text-xs text-bkpk-text-muted font-bold uppercase tracking-wider">
               Data meczu
               <input
@@ -118,11 +103,16 @@ export default function ImportModal({
         )}
 
         {importPreview && (
-          <div className="mx-6 mb-6">
-            <span className="block text-xs font-bold text-bkpk-text-muted uppercase tracking-wider mb-2">Podgląd danych</span>
-            <pre className="bg-bkpk-surface-tint-2 p-4 rounded-lg overflow-x-auto text-xs font-mono border border-bkpk-border-subtle max-h-60 text-bkpk-text-secondary">
-              {JSON.stringify(importPreview, null, 2)}
-            </pre>
+          <div className="mx-6 mb-6 rounded-lg border border-bkpk-border-subtle bg-bkpk-surface-tint-2 p-4 text-sm text-bkpk-text-secondary space-y-1">
+            <p className="font-bold text-bkpk-text-primary">Podgląd protokołu</p>
+            <p>
+              {importPreview.date} · {importPreview.opponent} · wynik{' '}
+              {importPreview.scoreUs ?? '–'}:{importPreview.scoreThem ?? '–'}
+            </p>
+            <p>
+              Zawodnicy:{' '}
+              {importPreview.teams?.reduce((n, t) => n + (t.players?.length ?? 0), 0) ?? 0}
+            </p>
           </div>
         )}
 
@@ -146,7 +136,7 @@ export default function ImportModal({
           <button
             className="px-4 py-2 bg-bkpk-primary text-white text-sm font-bold rounded-xl hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             onClick={onImportSave}
-            disabled={!importPreview && importFormat === 'markdown'}
+            disabled={!importPreview}
           >
             <Save size={16} />
             {importPreview ? 'Zapisz protokół' : 'Dodaj'}

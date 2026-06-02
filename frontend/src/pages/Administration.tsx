@@ -10,7 +10,9 @@ import { motion } from 'framer-motion';
 import { compressImage } from '../shared/lib/imageCompression';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import { PasswordInput } from '../shared/ui/PasswordInput';
-import { MobileDataCard, MobileDataList, DesktopTableShell } from '../shared/ui/MobileDataCard';
+import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
+import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
+import { usePortraitMobile } from '../hooks/useIsMobile';
 
 type ScraperStatus = {
     running: boolean;
@@ -63,7 +65,7 @@ export default function Administration() {
     };
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
             <div className="max-w-[1000px] mx-auto space-y-6 sm:space-y-12">
                 <header className="space-y-2">
                     <motion.div
@@ -222,6 +224,7 @@ function LoginLogs() {
     const [logs, setLogs] = useState<any[]>([]);
     const [error, setError] = useState<string | null>(null);
     const { isAuthenticated, loading } = useAuth();
+    const showCards = usePortraitMobile();
 
     // Filtering & Pagination state
     const [usernameFilter, setUsernameFilter] = useState('');
@@ -318,6 +321,7 @@ function LoginLogs() {
                         Błąd pobierania logów: {error}
                     </div>
                 )}
+                {showCards ? (
                 <MobileDataList className="p-4">
                     {logs.map((log) => (
                         <MobileDataCard
@@ -345,8 +349,9 @@ function LoginLogs() {
                         </p>
                     )}
                 </MobileDataList>
-                <DesktopTableShell>
-                <table className="w-full text-sm text-left">
+                ) : (
+                <ScrollableTableShell compact className="border-0 rounded-none">
+                <table className="w-full text-sm text-left min-w-[480px]">
                     <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
                         <tr>
                             <th className="py-2 px-4">Kto</th>
@@ -378,7 +383,8 @@ function LoginLogs() {
                         )}
                     </tbody>
                 </table>
-                </DesktopTableShell>
+                </ScrollableTableShell>
+                )}
             </div>
 
             {/* Pagination */}
@@ -418,6 +424,7 @@ function UserManagement() {
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const showCards = usePortraitMobile();
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
@@ -665,6 +672,7 @@ function UserManagement() {
                     </div>
                 ) : (
                     <>
+                    {showCards ? (
                     <MobileDataList className="p-4">
                         {filteredUsers.map((user) => (
                             <MobileDataCard
@@ -734,8 +742,9 @@ function UserManagement() {
                             </p>
                         )}
                     </MobileDataList>
-                    <DesktopTableShell>
-                    <table className="w-full text-sm text-left">
+                    ) : (
+                    <ScrollableTableShell compact className="border-0 rounded-none">
+                    <table className="w-full text-sm text-left min-w-[640px]">
                         <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
                             <tr>
                                 <th className="py-3 px-4">Zawodnik</th>
@@ -819,7 +828,8 @@ function UserManagement() {
                             )}
                         </tbody>
                     </table>
-                    </DesktopTableShell>
+                    </ScrollableTableShell>
+                    )}
                     </>
                 )}
             </div>

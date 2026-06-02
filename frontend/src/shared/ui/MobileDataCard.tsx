@@ -108,15 +108,5 @@ export function MobileDataList({
     children: ReactNode;
     className?: string;
 }) {
-    return <div className={cn('md:hidden space-y-2.5 p-3', className)}>{children}</div>;
-}
-
-export function DesktopTableShell({
-    children,
-    className
-}: {
-    children: ReactNode;
-    className?: string;
-}) {
-    return <div className={cn('hidden md:block overflow-x-auto', className)}>{children}</div>;
+    return <div className={cn('space-y-2.5 p-3', className)}>{children}</div>;
 }

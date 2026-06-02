@@ -91,7 +91,7 @@ export default function Trends() {
   }
 
   return (
-    <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
+    <div className="bg-bkpk-bg p-4 md:p-8 lg:p-12">
       <div className="max-w-[1400px] mx-auto space-y-12">
 
         {/* Header Section */}

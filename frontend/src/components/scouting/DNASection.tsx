@@ -12,6 +12,7 @@ interface DNAProps {
         fourFactors: { efg: number; tov: number; orb: number; ftr: number };
         situational?: { fourthQuarterDiff: number; clutchPlay: string };
         fallbackFromPreviousMatch?: boolean;
+        fallbackBasicOnly?: boolean;
         sourceMatchDate?: string | null;
         sourceMatchLabel?: string | null;
     };
@@ -76,19 +77,6 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                 <div className="h-8 w-1 bg-bkpk-primary rounded-full" />
                 <h2 className="text-2xl font-black text-bkpk-text-primary font-outfit uppercase tracking-wider">DNA Zespołu</h2>
             </div>
-
-            {data.fallbackFromPreviousMatch && (
-                <div className="rounded-xl border border-bkpk-warning/30 bg-bkpk-warning/10 px-4 py-3 text-sm text-bkpk-text-secondary">
-                    Brak protokołu z najnowszego meczu rywala — poniższe dane pochodzą z{' '}
-                    {data.sourceMatchDate ? (
-                        <>poprzedniego spotkania ({data.sourceMatchDate}
-                            {data.sourceMatchLabel ? `: ${data.sourceMatchLabel}` : ''})</>
-                    ) : (
-                        'ostatniego dostępnego meczu z protokołem'
-                    )}
-                    .
-                </div>
-            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 

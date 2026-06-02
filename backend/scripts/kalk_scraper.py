@@ -20,7 +20,14 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from scrapling.fetchers import Fetcher
+
+try:
+    from scrapling.fetchers import Fetcher
+    HAS_SCRAPLING = True
+except ImportError as exc:
+    import logging
+    logging.warning('Scrapling import failed (%s). Falling back to requests only.', exc)
+    HAS_SCRAPLING = False
 
 BASE_URL = 'https://www.kalk-koszalin.com/'
 DIVISION_PATH = 'dzial,dywizja-2,4.html'
@@ -89,20 +96,21 @@ def fetch_soup(session: requests.Session, url: str) -> BeautifulSoup:
     time.sleep(RATE_LIMIT_SECONDS)
     text = None
 
-    try:
-        page = Fetcher.get(url, timeout=20000, stealthy_headers=True)
-        text = (
-            getattr(page, 'html', None)
-            or getattr(page, 'content', None)
-            or str(page)
-        )
-        if text:
-            logging.info('Pobrano przez Scrapling')
-    except Exception as exc:
-        logging.warning('Scrapling failed (%s), fallback to requests', exc)
+    if HAS_SCRAPLING:
+        try:
+            page = Fetcher.get(url, timeout=5000, stealthy_headers=True)
+            text = (
+                getattr(page, 'html', None)
+                or getattr(page, 'content', None)
+                or str(page)
+            )
+            if text:
+                logging.info('Pobrano przez Scrapling')
+        except Exception as exc:
+            logging.warning('Scrapling failed (%s), fallback to requests', exc)
 
     if not text:
-        response = session.get(url, headers=HEADERS, timeout=20)
+        response = session.get(url, headers=HEADERS, timeout=10)
         response.raise_for_status()
         response.encoding = 'utf-8'
         text = response.text
@@ -177,7 +185,8 @@ def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[
             points = float(cells[3].get_text(strip=True).replace(',', '.'))
             matches = int(cells[4].get_text(strip=True))
             avg = float(cells[5].get_text(strip=True).replace(',', '.'))
-        except:
+        except ValueError as e:
+            logging.warning('Nie udało się sparsować statystyk dla zawodnika %s: %s. Ustawiam wartości domyślne 0.', name, e)
             matches, points, avg = 0, 0, 0
 
         # Tylko proste dane do rankingu, bez wchodzenia w profile (za dużo requestów)
@@ -390,12 +399,8 @@ def main() -> None:
     for name, url in section_urls.items():
         if not url:
             logging.warning('Nie znaleziono linku do sekcji "%s".', name)
-            continue
-        try:
-            soup = fetch_soup(session, url)
-            logging.info('Sekcja %s zawiera %d tabel.', name, len(soup.find_all('table')))
-        except requests.RequestException as exc:
-            logging.warning('Błąd pobierania sekcji %s: %s', name, exc)
+        else:
+            logging.info('Znaleziono sekcję "%s": %s', name, url)
 
     # --- TABELA ---
     table_url = section_urls.get('tabela')

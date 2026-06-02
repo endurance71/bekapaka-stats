@@ -1,6 +1,45 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+html {
+  height: 100%;
+  height: -webkit-fill-available;
+  background-color: var(--bkpk-color-bg, #0b0b0e);
+}
+
+body {
+  min-height: 100%;
+  min-height: 100dvh;
+  min-height: 100svh;
+  min-height: -webkit-fill-available;
+  background-color: var(--bkpk-color-bg, #0b0b0e);
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100dvh;
+  min-height: 100svh;
+  min-height: -webkit-fill-available;
+  isolation: isolate;
+}
+
+/* Mobile Safari: scroll całej strony (nie fixed shell) — blur pod paskiem adresu */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 1023px) {
+    html,
+    body {
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #root {
+      min-height: auto;
+      isolation: auto;
+    }
+  }
+}
+
 @theme {
   /* Brand Colors - High Intensity 2026 Palette */
   --bkpk-color-primary: #FF6B35;
@@ -191,6 +230,25 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  .safe-area-top {
+    padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+  }
+
+  /* Belka mobilna: ten sam kolor co html/body w notch (theme-color #0B0B0E) */
+  .mobile-header-safe-top {
+    padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+    background-color: var(--bkpk-color-bg, #0b0b0e);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .safe-area-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 }
 

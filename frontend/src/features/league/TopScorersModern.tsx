@@ -5,7 +5,9 @@ import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { Trophy, Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
-import { MobileDataCard, MobileDataList, DesktopTableShell } from '../../shared/ui/MobileDataCard';
+import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
+import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
+import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 
 interface Scorer {
     id: string;
@@ -55,6 +57,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const [activeCategory, setActiveCategory] = useState<LeaderCategory>('points');
     const [leaders, setLeaders] = useState<Scorer[]>([]);
     const [loading, setLoading] = useState(true);
+    const showCards = usePortraitMobile();
+    const isNarrow = useIsMobile(1024);
 
     const fetchLeaders = useCallback(async () => {
         if (!seasonId) return;
@@ -239,6 +243,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                     {/* Rest of the List (4-20) */}
                     <div className="md:col-span-12 lg:col-span-8 order-1 lg:order-2">
                         <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
+                            {showCards ? (
                             <MobileDataList>
                                 {leaders.slice(3).map((player, index) => {
                                     const isBkpk = player.team?.toLowerCase().includes('bekapaka');
@@ -284,16 +289,16 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                     );
                                 })}
                             </MobileDataList>
-
-                            <DesktopTableShell>
-                                <table className="w-full text-sm text-left border-collapse">
+                            ) : (
+                            <ScrollableTableShell compact={isNarrow} className="border-0 rounded-none">
+                                <table className="w-full text-sm text-left border-collapse min-w-[520px]">
                                     <thead>
                                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
                                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-10 sm:w-12 text-center">#</th>
                                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface border-r border-bkpk-border-strong">Zawodnik</th>
-                                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">Drużyna</th>
+                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted whitespace-nowrap">Drużyna</th>
                                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
-                                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">
+                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">
                                                 {currentCatInfo.totalLabel}
                                             </th>
                                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">
@@ -337,9 +342,9 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                             {player.name}
                                                         </div>
                                                     </td>
-                                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-bkpk-text-muted text-xs font-semibold">{player.team}</td>
+                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-bkpk-text-muted text-xs font-semibold max-w-[120px] truncate">{player.team}</td>
                                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary tabular-nums">{player.matchesPlayed ?? player.raw?.mecze_rozegrane ?? 0}</td>
-                                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary font-medium tabular-nums">{stats.sub}</td>
+                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary font-medium tabular-nums">{stats.sub}</td>
                                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg bg-bkpk-surface-tint-2">
                                                         {stats.main}
                                                     </td>
@@ -348,7 +353,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                         })}
                                     </tbody>
                                 </table>
-                            </DesktopTableShell>
+                            </ScrollableTableShell>
+                            )}
                         </BkpkCard>
                     </div>
                 </div>
