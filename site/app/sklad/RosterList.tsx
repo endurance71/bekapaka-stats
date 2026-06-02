@@ -35,62 +35,62 @@ export function RosterList({ roster }: RosterListProps) {
   return (
     <>
       <div className='roster-grid'>
-        {roster.map((player) => (
-          <button
-            key={player.id}
-            className='player-card player-card--button'
-            onClick={() => handleOpenDrawer(player)}
-            type='button'
-            aria-label={`Pokaż statystyki zawodnika ${player.firstName} ${player.lastName}`}
-          >
-            <div className='player-card__image-wrap'>
-              {resolvePlayerPhoto(player).includes('default.png') ? (
-                <div className='player-card__jersey-fallback'>
-                  <div className='jersey-back'>
-                    <span className='jersey-name'>{player.lastName}</span>
-                    <span className='jersey-num'>{player.number}</span>
-                    <span className='jersey-logo'>BEKAPAKA</span>
+        {roster.map((player) => {
+          const hasPhoto = player.photo || player.photoUrl;
+          const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
+          return (
+            <button
+              key={player.id}
+              className='player-card player-card--button'
+              onClick={() => handleOpenDrawer(player)}
+              type='button'
+              aria-label={`Pokaż statystyki zawodnika ${player.firstName} ${player.lastName}`}
+            >
+              <div className='player-card__image-wrap'>
+                {!hasPhoto || resolvePlayerPhoto(player).includes('default.png') ? (
+                  <div className='player-card__avatar-placeholder-premium-large'>
+                    <span>{initials}</span>
                   </div>
-                </div>
-              ) : (
-                <>
-                  <img
-                    src={resolvePlayerPhoto(player)}
-                    alt={`${player.firstName} ${player.lastName}`}
-                    className='player-card__image'
-                  />
-                  <div className='player-card__overlay' />
-                </>
-              )}
-              <div className='player-card__number'>#{player.number}</div>
-            </div>
-            <div className='player-card__info'>
-              <h2 className='player-card__name'>
-                {player.firstName} <span className='highlight-gold'>{player.lastName}</span>
-              </h2>
-              <p className='player-card__position'>{getPositionLabel(player.position)}</p>
-              
-              {player.ppg !== undefined || player.rpg !== undefined || player.apg !== undefined ? (
-                <div className='player-card__quick-stats'>
-                  <div className='quick-stat-item'>
-                    <span className='qs-label'>PTS</span>
-                    <span className='qs-val'>{formatStat(player.ppg)}</span>
+                ) : (
+                  <>
+                    <img
+                      src={resolvePlayerPhoto(player)}
+                      alt={`${player.firstName} ${player.lastName}`}
+                      className='player-card__image'
+                    />
+                    <div className='player-card__overlay' />
+                  </>
+                )}
+                <div className='player-card__number'>#{player.number}</div>
+              </div>
+              <div className='player-card__info'>
+                <h2 className='player-card__name'>
+                  {player.firstName} <span className='highlight-gold'>{player.lastName}</span>
+                </h2>
+                <p className='player-card__position'>{getPositionLabel(player.position)}</p>
+                
+                {player.ppg !== undefined || player.rpg !== undefined || player.apg !== undefined ? (
+                  <div className='player-card__quick-stats'>
+                    <div className='quick-stat-item'>
+                      <span className='qs-label'>PTS</span>
+                      <span className='qs-val'>{formatStat(player.ppg)}</span>
+                    </div>
+                    <div className='quick-stat-item'>
+                      <span className='qs-label'>REB</span>
+                      <span className='qs-val'>{formatStat(player.rpg)}</span>
+                    </div>
+                    <div className='quick-stat-item'>
+                      <span className='qs-label'>AST</span>
+                      <span className='qs-val'>{formatStat(player.apg)}</span>
+                    </div>
                   </div>
-                  <div className='quick-stat-item'>
-                    <span className='qs-label'>REB</span>
-                    <span className='qs-val'>{formatStat(player.rpg)}</span>
-                  </div>
-                  <div className='quick-stat-item'>
-                    <span className='qs-label'>AST</span>
-                    <span className='qs-val'>{formatStat(player.apg)}</span>
-                  </div>
-                </div>
-              ) : null}
-              
-              <div className='player-card__action-hint'>Szczegóły zawodnika ➔</div>
-            </div>
-          </button>
-        ))}
+                ) : null}
+                
+                <div className='player-card__action-hint'>Szczegóły zawodnika ➔</div>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       <SlideoutPanel isOpen={isOpen} onClose={handleCloseDrawer} title='Karta zawodnika'>
@@ -99,9 +99,9 @@ export function RosterList({ roster }: RosterListProps) {
             {/* Profile Header */}
             <div className='profile-header'>
               <div className='profile-avatar-wrap'>
-                {resolvePlayerPhoto(selectedPlayer).includes('default.png') ? (
-                  <div className='profile-avatar-fallback'>
-                    #{selectedPlayer.number}
+                {!(selectedPlayer.photo || selectedPlayer.photoUrl) || resolvePlayerPhoto(selectedPlayer).includes('default.png') ? (
+                  <div className='profile-avatar-fallback-initials'>
+                    {`${selectedPlayer.firstName[0] || ''}${selectedPlayer.lastName[0] || ''}`.toUpperCase()}
                   </div>
                 ) : (
                   <img

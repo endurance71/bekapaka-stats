@@ -15,7 +15,6 @@ export function ClubLogo({
       {!compact ? (
         <span className='club-logo__text'>
           <strong>BeKaPaKa Bobolice</strong>
-          <small>Koszykowka amatorska</small>
         </span>
       ) : null}
     </Link>
