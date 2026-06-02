@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
+import { formatVenue } from '../../../lib/venue'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 
 export function MegaHomeTemplate({
@@ -112,12 +113,10 @@ export function MegaHomeTemplate({
                     <span className='ticket-detail-label'>Data meczu</span>
                     <strong className='ticket-detail-value'>{formatDateTime(nextGame.date)}</strong>
                   </div>
-                  {nextGame.data?.venue && (
-                    <div className='ticket-detail-item'>
-                      <span className='ticket-detail-label'>Hala</span>
-                      <strong className='ticket-detail-value'>{nextGame.data.venue}</strong>
-                    </div>
-                  )}
+                  <div className='ticket-detail-item'>
+                    <span className='ticket-detail-label'>Hala</span>
+                    <strong className='ticket-detail-value'>{formatVenue(nextGame.data?.venue)}</strong>
+                  </div>
                 </div>
               </div>
               <div className='ticket-divider'>
@@ -126,7 +125,7 @@ export function MegaHomeTemplate({
                 <span className='notch notch-bottom'></span>
               </div>
               <div className='ticket-stub'>
-                <span className='ticket-badge-pill'>{nextGame.homeAway === 'home' ? 'Gospodarz' : 'Wyjazd'}</span>
+                <span className='ticket-badge-pill'>Liga KALK</span>
                 <Link href='/mecze' className='button button--primary stub-button'>
                   Szczegóły
                 </Link>
@@ -264,31 +263,30 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {/* ROW 4: JOIN US / PARTNER WIDGET (12) */}
-        <article className='surface-card dashboard-docs'>
+        {/* ROW 4: JOIN US (6) & BECOME A SPONSOR (6) */}
+        <article className='surface-card dashboard-join-us'>
           <p className='section-kicker'>Zbudujmy to razem</p>
-          <div className='join-us-container-premium'>
-            <div className='join-us-section'>
-              <h3>Dołącz do drużyny</h3>
-              <p className='muted'>
-                Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
-              </p>
-              <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium'>
-                Zagraj z nami ➔
-              </a>
-            </div>
-            
-            <div className='join-us-divider-premium'></div>
+          <div className='join-us-section' style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <h3>Dołącz do drużyny</h3>
+            <p className='muted'>
+              Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
+            </p>
+            <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+              Zagraj z nami ➔
+            </a>
+          </div>
+        </article>
 
-            <div className='join-us-section'>
-              <h3>Zostań naszym sponsorem</h3>
-              <p className='muted'>
-                Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
-              </p>
-              <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium'>
-                Zostań Partnerem ➔
-              </a>
-            </div>
+        <article className='surface-card dashboard-become-sponsor'>
+          <p className='section-kicker'>Wspieraj klub</p>
+          <div className='join-us-section' style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+            <h3>Zostań sponsorem</h3>
+            <p className='muted'>
+              Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
+            </p>
+            <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+              Zostań Partnerem ➔
+            </a>
           </div>
         </article>
 

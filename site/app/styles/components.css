@@ -131,6 +131,14 @@
   gap: var(--space-4);
 }
 
+.hero-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-4) !important;
+  margin-top: var(--space-2);
+}
+
 .dashboard-hero h1 {
   font-size: clamp(2rem, 7vw, 3.8rem);
   font-weight: 400;
@@ -737,6 +745,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center top;
   transition: transform var(--transition);
 }
 
@@ -807,8 +816,8 @@
   color: var(--bkp-gold);
 }
 
-/* Premium Documents Bento */
-.dashboard-docs { order: 8; }
+.dashboard-join-us { order: 8; }
+.dashboard-become-sponsor { order: 9; }
 
 .documents-list-premium {
   list-style: none;
@@ -880,7 +889,7 @@
 }
 
 /* Premium Sponsors Grid */
-.dashboard-sponsors { order: 9; }
+.dashboard-sponsors { order: 10; }
 
 .sponsors-grid-premium {
   display: grid;
@@ -1250,17 +1259,17 @@
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-4);
 }
-
 .player-card {
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 3px solid var(--bkp-gold);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: rgba(24, 24, 27, 0.65);
+  background: radial-gradient(circle at 50% 0%, rgba(236, 167, 44, 0.05) 0%, rgba(24, 24, 27, 0.85) 80%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transition: var(--transition);
   position: relative;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .player-card--button {
@@ -1273,21 +1282,29 @@
 
 .player-card:hover {
   transform: translateY(-6px);
-  border-color: rgba(236, 167, 44, 0.45);
-  box-shadow: var(--shadow-md), 0 0 25px rgba(236, 167, 44, 0.08);
+  border-color: rgba(236, 167, 44, 0.5);
+  border-top-color: var(--accent-strong);
+  box-shadow: var(--shadow-md), 0 0 25px rgba(236, 167, 44, 0.12);
 }
 
 .player-card__image-wrap {
-  aspect-ratio: 3 / 4;
-  background: var(--bg-elevated);
+  aspect-ratio: 4 / 5;
+  background: linear-gradient(180deg, rgba(236, 167, 44, 0.06) 0%, var(--bg-elevated) 45%);
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .player-card__image {
   width: 100%;
-  height: 100%;
+  height: 108%;
+  max-height: none;
   object-fit: cover;
+  object-position: center 12%;
+  transform: scale(1.02);
+  transform-origin: center top;
   transition: transform var(--transition);
 }
 
@@ -1298,10 +1315,9 @@
 .player-card__overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(0deg, #121214 0%, rgba(18, 18, 20, 0) 60%);
+  background: linear-gradient(0deg, #0b0b0c 0%, rgba(11, 11, 12, 0.4) 40%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
 }
-
 .player-card__number {
   position: absolute;
   top: 16px;
@@ -1554,27 +1570,49 @@
   transition: opacity var(--transition);
   cursor: pointer;
 }
-
 .stats-drawer__panel {
-  position: absolute;
+  position: fixed;
   inset: auto 0 0 0;
-  max-height: 94dvh;
+  max-height: min(92dvh, 100%);
+  overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-strong);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: var(--space-6) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
+  padding: var(--space-5) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   transform: translateY(100%);
   transition: transform var(--transition);
   box-shadow: var(--shadow-md), 0 -10px 40px rgba(0,0,0,0.5);
   z-index: 3;
 }
 
+.stats-drawer__panel-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  margin-bottom: var(--space-3);
+  flex-shrink: 0;
+}
+
+.stats-drawer__handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .stats-drawer__close {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  top: 0;
+  right: 0;
+  z-index: 5;
   width: 36px;
   height: 36px;
   border: 1px solid var(--border);
@@ -1638,6 +1676,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 15%;
 }
 
 .profile-avatar-fallback {
@@ -2095,8 +2134,12 @@
     grid-column: span 12;
   }
 
-  .dashboard-docs {
-    grid-column: span 12;
+  .dashboard-join-us {
+    grid-column: span 6;
+  }
+
+  .dashboard-become-sponsor {
+    grid-column: span 6;
   }
 
   .dashboard-sponsors {
@@ -2109,6 +2152,21 @@
 
   .roster-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .stats-drawer__handle {
+    display: none;
+  }
+
+  .stats-drawer__panel-header {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    left: auto;
+    margin: 0;
+    min-height: 0;
+    width: 36px;
+    justify-content: flex-end;
   }
 
   .stats-drawer__panel {
@@ -2125,6 +2183,10 @@
 
   .stats-drawer.is-open .stats-drawer__panel {
     transform: translateX(0);
+  }
+
+  .stats-drawer__close {
+    position: static;
   }
   
   .profile-header {
@@ -2376,6 +2438,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   background: radial-gradient(circle at center, rgba(236, 167, 44, 0.15) 0%, #121214 80%), #121214;
   color: var(--bkp-gold);
   font-family: var(--font-bebas-neue), sans-serif;
@@ -2383,9 +2446,23 @@
   text-shadow: 0 0 15px rgba(236, 167, 44, 0.4);
 }
 
+.home-player-card__avatar-placeholder-premium::before,
+.player-card__avatar-placeholder-premium-large::before,
+.profile-avatar-fallback-initials::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(236, 167, 44, 0.06) 1.5px, transparent 1.5px);
+  background-size: 14px 14px;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .home-player-card__avatar-placeholder-premium span,
 .player-card__avatar-placeholder-premium-large span,
 .profile-avatar-fallback-initials span {
+  position: relative;
+  z-index: 2;
   background: linear-gradient(135deg, #FFFFFF 30%, var(--bkp-gold) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

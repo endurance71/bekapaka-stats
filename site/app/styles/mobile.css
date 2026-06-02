@@ -1,3 +1,58 @@
+/* Mobile — modale, hero, karty zawodników, safe area */
+
+@media (max-width: 899px) {
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3) !important;
+  }
+
+  .hero-actions .button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-drawer__panel {
+    max-height: min(94dvh, 100%);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .stats-drawer__panel-header {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .drawer-profile-panel {
+    padding-top: var(--space-6);
+  }
+
+  .drawer-match-header {
+    padding-top: var(--space-2);
+  }
+
+  .drawer-match-scoreboard {
+    gap: var(--space-2);
+  }
+
+  .scoreboard-team-name {
+    font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+    word-break: break-word;
+  }
+
+  .table-shell-v2 {
+    margin-inline: calc(-1 * var(--space-2));
+    border-radius: var(--radius-sm);
+  }
+
+  .roster-grid {
+    gap: var(--space-3);
+  }
+
+  .player-card__image {
+    height: 112%;
+    object-position: center 8%;
+  }
+}
+
 @media (max-width: 480px) {
   .surface-card {
     padding: var(--space-4);
@@ -17,5 +72,23 @@
 
   .quarters-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quarters-grid-premium {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-dashboard-summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .profile-full-name {
+    font-size: 1.45rem;
   }
 }

@@ -38,7 +38,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='pl' className={`${montserrat.variable} ${bebasNeue.variable}`}>
-      <body><PublicShell logoUrl="/logo.png">{children}</PublicShell></body>
+      <body className='site-body'>
+        <PublicShell logoUrl='/logo.png'>{children}</PublicShell>
+      </body>
     </html>
   )
 }

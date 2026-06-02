@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { GameSummary } from '../../lib/data'
 import { formatDateTime } from '../../lib/format'
 import { SlideoutPanel } from '../../components/public/shared/SlideoutPanel'
+import { formatVenue } from '../../lib/venue'
 import { MatchDrawerContent } from './MatchDrawerContent'
 
 interface MatchesListProps {
@@ -82,7 +83,7 @@ export function MatchesList({ games }: MatchesListProps) {
                   </div>
                   <h2 className='pm-card-opponent'>vs {game.opponent}</h2>
                   <span className='pm-card-location'>
-                    {game.homeAway === 'home' ? 'Mecz u siebie (Bobolice)' : 'Mecz wyjazdowy'}
+                    KALK · 📍 {formatVenue(game.data?.venue)}
                   </span>
                 </div>
                 
@@ -107,12 +108,11 @@ export function MatchesList({ games }: MatchesListProps) {
                 <span className='upcoming-pill'>Termin</span>
                 <h2 className='pm-card-opponent'>vs {game.opponent}</h2>
                 <p className='muted pm-card-location'>
-                  📅 {formatDateTime(game.date)}
-                  {game.data?.venue ? ` · 📍 Haza: ${game.data.venue}` : ''}
+                  📅 {formatDateTime(game.date)} · 📍 {formatVenue(game.data?.venue)}
                 </p>
               </div>
               <div className='pm-card-right'>
-                <span className='upcoming-venue-badge'>{game.homeAway === 'home' ? 'DOM' : 'WYJAZD'}</span>
+                <span className='upcoming-venue-badge'>KALK</span>
               </div>
             </div>
           ))}
