@@ -17,8 +17,8 @@
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   }
 
-  .stats-drawer__panel-header {
-    padding-top: env(safe-area-inset-top, 0px);
+  .stats-drawer__panel {
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   }
 
   .drawer-profile-panel {

@@ -135,6 +135,7 @@ export function PublicShell({
 
       <main id='content' className='container'>
         {children}
+        <div className='page-bottom-safe-spacer' aria-hidden='true' />
       </main>
       <SiteFooter />
     </>

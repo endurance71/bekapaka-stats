@@ -22,7 +22,8 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0B0B0C'
+  themeColor: '#0B0B0C',
+  colorScheme: 'dark'
 }
 
 export const metadata: Metadata = {
@@ -32,7 +33,15 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/'
   },
-  keywords: ['BeKaPaKa', 'Bobolice', 'koszykówka', 'klub sportowy', 'terminarz', 'tabela', 'skład', 'sponsorzy']
+  keywords: ['BeKaPaKa', 'Bobolice', 'koszykówka', 'klub sportowy', 'terminarz', 'tabela', 'skład', 'sponsorzy'],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'BeKaPaKa'
+  },
+  other: {
+    'mobile-web-app-capable': 'yes'
+  }
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
