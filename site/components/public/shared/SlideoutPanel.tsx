@@ -23,6 +23,8 @@ export function SlideoutPanel({
     if (!isOpen) return
 
     const scrollY = window.scrollY
+    const root = document.documentElement
+    root.classList.add('is-scroll-locked')
     document.body.classList.add('is-scroll-locked')
     document.body.style.top = `-${scrollY}px`
 
@@ -35,6 +37,7 @@ export function SlideoutPanel({
     document.addEventListener('keydown', handleEsc)
 
     return () => {
+      document.documentElement.classList.remove('is-scroll-locked')
       document.body.classList.remove('is-scroll-locked')
       document.body.style.top = ''
       window.scrollTo(0, scrollY)
@@ -115,7 +118,7 @@ export function SlideoutPanel({
         tabIndex={-1}
         ref={panelRef}
       >
-        <div className="stats-drawer__panel-header safe-area-top">
+        <div className="stats-drawer__panel-header">
           <span className="stats-drawer__handle" aria-hidden="true" />
           <button
             className="stats-drawer__close"
@@ -126,7 +129,7 @@ export function SlideoutPanel({
             ✕
           </button>
         </div>
-        <div className="stats-drawer__panel-body safe-area-bottom">{children}</div>
+        <div className="stats-drawer__panel-body">{children}</div>
       </div>
     </div>,
     document.body

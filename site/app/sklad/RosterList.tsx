@@ -226,7 +226,7 @@ export function RosterList({ roster }: RosterListProps) {
 
             {/* Game Log Table */}
             {selectedPlayer.games && selectedPlayer.games.length > 0 && (
-              <div className='drawer-section-v2' style={{ marginTop: '8px' }}>
+              <div className='drawer-section-v2 drawer-section-v2--game-log'>
                 <h3 className='drawer-section-title'>Historia występów</h3>
                 <div className='table-shell-v2'>
                   <table className='data-table-v2 text-sm'>
