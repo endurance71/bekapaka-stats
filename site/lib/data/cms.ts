@@ -43,8 +43,8 @@ const fallbackNews: NewsPost[] = [
     id: 'fn-1',
     title: 'Rewolucyjne zmiany w klubie i nowy portal statystyczny!',
     slug: 'nowy-portal-statystyczny',
-    excerpt: 'Uruchamiamy nową platformę dla kibiców BeKaPaKa Bobolice ze szczegółowymi analizami AI meczów oraz statystykami graczy.',
-    content: 'Z dumą prezentujemy nasz nowy portal internetowy! Dzięki integracji z systemem analiz sportowych KALK oraz modelami sztucznej inteligencji Gemini od Google, nasi kibice mogą od dziś śledzić niezwykle szczegółowe, zaawansowane statystyki zawodników, a także czytać automatycznie generowane raporty z meczów. Zapraszamy do eksploracji podstron Skład oraz Mecze!',
+    excerpt: 'Uruchamiamy nową platformę dla kibiców BeKaPaKa Bobolice ze szczegółowymi statystykami oraz wynikami spotkań.',
+    content: 'Z dumą prezentujemy nasz nowy portal internetowy! Dzięki integracji z systemem analiz sportowych KALK, nasi kibice mogą od dziś śledzić niezwykle szczegółowe, zaawansowane statystyki zawodników oraz terminarz i wyniki meczów. Zapraszamy do eksploracji podstron Skład oraz Mecze!',
     publishedAt: '2026-06-01T12:00:00Z',
     coverImageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000&auto=format&fit=crop'
   },

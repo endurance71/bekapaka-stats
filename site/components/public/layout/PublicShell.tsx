@@ -107,6 +107,7 @@ export function PublicShell({
         className={`mobile-menu-drawer ${isMenuOpen ? 'is-open' : ''}`}
         aria-hidden={!isMenuOpen}
       >
+        <button className='mobile-menu-drawer__backdrop' aria-label='Zamknij menu' onClick={closeMenu} />
         <div
           className='mobile-menu-drawer__content'
           role='dialog'
@@ -130,7 +131,6 @@ export function PublicShell({
             </button>
           </div>
         </div>
-        <button className='mobile-menu-drawer__backdrop' aria-label='Zamknij menu' onClick={closeMenu} />
       </div>
 
       <main id='content' className='container'>

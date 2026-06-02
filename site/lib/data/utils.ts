@@ -67,6 +67,45 @@ export function getPositionLabel(position?: string): string {
   return POSITION_MAP[position.toUpperCase()] || position
 }
 
+const LOCAL_PHOTOS = new Set([
+  'damian-motylinski',
+  'emil-klos',
+  'filip-karpinski',
+  'filip-kawecki',
+  'miroslaw-malina',
+  'pablo-iriarte',
+  'patryk-szczesniak',
+  'pawel-samusionek',
+  'przemyslaw-klimek',
+  'robert-kulik',
+  'tomasz-kaszubowski'
+])
+
+export function hasPlayerPhoto(player?: {
+  firstName?: string
+  lastName?: string
+  photo?: string | null
+  photoUrl?: string | null
+} | null): boolean {
+  if (!player) return false
+
+  // 1. Database photo
+  if (player.photo) return true
+
+  // 2. Remote photo from KALK
+  const remotePhoto = player.photoUrl
+  const hasValidRemote = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg')
+  if (hasValidRemote) return true
+
+  // 3. Check if local photo exists in our known list
+  if (player.firstName && player.lastName) {
+    const norm = normalizePolishChars(player.firstName) + '-' + normalizePolishChars(player.lastName)
+    if (LOCAL_PHOTOS.has(norm)) return true
+  }
+
+  return false
+}
+
 export function resolvePlayerPhoto(player?: {
   firstName?: string
   lastName?: string
@@ -87,4 +126,5 @@ export function resolvePlayerPhoto(player?: {
   // 3. Fallback to name-based pattern
   return getPhotoUrl(player.firstName, player.lastName)
 }
+
 

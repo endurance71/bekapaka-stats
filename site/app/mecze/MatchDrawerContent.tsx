@@ -1,6 +1,5 @@
 import type { GameSummary } from '../../lib/data'
 import { formatDateTime } from '../../lib/format'
-import { MarkdownContent } from '../../components/public/shared/MarkdownContent'
 
 function getTeamsFromGame(game: GameSummary) {
   const teams = game.teams || game.data?.teams
@@ -125,18 +124,7 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
         </section>
       ) : null}
 
-      {/* AI Match Summary */}
-      {game.aiSummary ? (
-        <section className='ai-development-card-premium'>
-          <div className='ai-card-title'>
-            <span className='ai-spark-icon'>✨</span>
-            <h4>Analiza Meczowa AI (Gemini Agent)</h4>
-          </div>
-          <div className='ai-card-body'>
-            <MarkdownContent markdown={game.aiSummary} />
-          </div>
-        </section>
-      ) : null}
+
 
       {/* Coach Notes */}
       {game.coachNotes ? (

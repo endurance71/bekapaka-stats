@@ -3,9 +3,8 @@
 import React, { useState } from 'react'
 import type { RosterPlayer } from '../../lib/data'
 import { formatStat } from '../../lib/format'
-import { resolvePlayerPhoto, getPositionLabel } from '../../lib/data/utils'
+import { resolvePlayerPhoto, getPositionLabel, hasPlayerPhoto } from '../../lib/data/utils'
 import { SlideoutPanel } from '../../components/public/shared/SlideoutPanel'
-import { MarkdownContent } from '../../components/public/shared/MarkdownContent'
 
 interface RosterListProps {
   roster: RosterPlayer[]
@@ -36,7 +35,7 @@ export function RosterList({ roster }: RosterListProps) {
     <>
       <div className='roster-grid'>
         {roster.map((player) => {
-          const hasPhoto = player.photo || player.photoUrl;
+          const hasPhoto = hasPlayerPhoto(player);
           const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
           return (
             <button
@@ -47,7 +46,7 @@ export function RosterList({ roster }: RosterListProps) {
               aria-label={`Pokaż statystyki zawodnika ${player.firstName} ${player.lastName}`}
             >
               <div className='player-card__image-wrap'>
-                {!hasPhoto || resolvePlayerPhoto(player).includes('default.png') ? (
+                {!hasPhoto ? (
                   <div className='player-card__avatar-placeholder-premium-large'>
                     <span>{initials}</span>
                   </div>
@@ -99,7 +98,7 @@ export function RosterList({ roster }: RosterListProps) {
             {/* Profile Header */}
             <div className='profile-header'>
               <div className='profile-avatar-wrap'>
-                {!(selectedPlayer.photo || selectedPlayer.photoUrl) || resolvePlayerPhoto(selectedPlayer).includes('default.png') ? (
+                {!hasPlayerPhoto(selectedPlayer) ? (
                   <div className='profile-avatar-fallback-initials'>
                     {`${selectedPlayer.firstName[0] || ''}${selectedPlayer.lastName[0] || ''}`.toUpperCase()}
                   </div>
@@ -224,18 +223,7 @@ export function RosterList({ roster }: RosterListProps) {
               </div>
             </div>
 
-            {/* AI Development Summary */}
-            {selectedPlayer.aiDevelopmentSummary && (
-              <div className='ai-development-card-premium'>
-                <div className='ai-card-title'>
-                  <span className='ai-spark-icon'>✨</span>
-                  <h4>Raport Rozwoju AI (Gemini Spec)</h4>
-                </div>
-                <div className='ai-card-body'>
-                  <MarkdownContent markdown={selectedPlayer.aiDevelopmentSummary} />
-                </div>
-              </div>
-            )}
+
 
             {/* Game Log Table */}
             {selectedPlayer.games && selectedPlayer.games.length > 0 && (
