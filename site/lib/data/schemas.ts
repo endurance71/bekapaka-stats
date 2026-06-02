@@ -141,9 +141,11 @@ export type RosterPlayer = z.infer<typeof rosterPlayerSchema>
 export type GameSummary = z.infer<typeof gameSummarySchema>
 
 export type DataStateStatus = 'ok' | 'empty' | 'error'
+export type DataStateSource = 'live' | 'fallback'
 
 export type DataState<T> = {
   status: DataStateStatus
   data: T
+  source: DataStateSource
   message?: string
 }

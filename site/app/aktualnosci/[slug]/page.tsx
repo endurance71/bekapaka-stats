@@ -4,6 +4,8 @@ import { EditorialDetailTemplate } from '../../../components/public/templates/Ed
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 
+export const dynamic = 'force-dynamic'
+
 type Params = { slug: string }
 
 async function getNewsBySlug(slug: string): Promise<NewsPost | null> {

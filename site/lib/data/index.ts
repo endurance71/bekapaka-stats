@@ -46,7 +46,20 @@ export async function getPublicSiteData() {
 
   const table = tableState.data
   const roster = rosterState.data
-  const recentGames = recentGamesState.data
+  const allGames = recentGamesState.data
+  const now = Date.now()
+  const upcomingGames = allGames
+    .filter((game) => {
+      const isUpcoming = !game.result && game.scoreUs === null && game.scoreThem === null
+      const gameTime = new Date(game.date).getTime()
+      return isUpcoming && Number.isFinite(gameTime) && gameTime >= now
+    })
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const recentGames = allGames
+    .filter((game) => game.result || (game.scoreUs !== null && game.scoreThem !== null))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6)
+  const nextGame = upcomingGames[0] ?? null
   const news = newsState.data
   const events = eventsState.data
   const sponsors = sponsorsState.data
@@ -64,11 +77,22 @@ export async function getPublicSiteData() {
     documentsState,
     homepageSectionsState
   ].filter((state) => state.status === 'error')
+  const dataFallbacks = [
+    tableState,
+    rosterState,
+    recentGamesState,
+    newsState,
+    eventsState,
+    sponsorsState,
+    documentsState,
+    homepageSectionsState
+  ].filter((state) => state.source === 'fallback')
 
   return {
     table,
     roster,
     recentGames,
+    nextGame,
     news,
     events,
     sponsors,
@@ -76,7 +100,18 @@ export async function getPublicSiteData() {
     homepageSections,
     ourPosition,
     clubLogoUrl: '/favicon.ico',
-    dataErrors
+    dataErrors,
+    dataFallbacks,
+    states: {
+      table: tableState,
+      roster: rosterState,
+      recentGames: recentGamesState,
+      news: newsState,
+      events: eventsState,
+      sponsors: sponsorsState,
+      documents: documentsState,
+      homepageSections: homepageSectionsState
+    }
   }
 }
 

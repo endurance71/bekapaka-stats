@@ -9,7 +9,8 @@ export function sanitizeText(value: unknown, fallback = ''): string {
 export function sanitizeNumber(value: unknown, fallback = 0): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value
   if (typeof value === 'string') {
-    const parsed = Number.parseInt(value, 10)
+    const normalized = value.replace(',', '.').trim()
+    const parsed = Number.parseFloat(normalized)
     if (Number.isFinite(parsed)) return parsed
   }
   return fallback

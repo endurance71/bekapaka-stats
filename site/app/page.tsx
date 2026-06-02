@@ -4,7 +4,7 @@ import { getPublicSiteData } from '../lib/data'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const { documents, events, news, recentGames, roster, sponsors, table } = await getPublicSiteData()
+  const { documents, news, recentGames, nextGame, roster, sponsors, table, dataErrors, dataFallbacks } = await getPublicSiteData()
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsTeam',
@@ -21,12 +21,13 @@ export default async function HomePage() {
       />
       <MegaHomeTemplate
         documents={documents}
-        events={events}
         news={news}
         recentGames={recentGames}
+        nextGame={nextGame}
         roster={roster}
         sponsors={sponsors}
         table={table}
+        hasDataWarning={dataErrors.length > 0 || dataFallbacks.length > 0}
       />
     </>
   )

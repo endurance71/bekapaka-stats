@@ -3,6 +3,8 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { getRecentGamesState, getSiteMetadataBase } from '../../lib/data'
 import { MatchesList } from './MatchesList'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Mecze | BeKaPaKa Bobolice',
@@ -18,6 +20,9 @@ export default async function MatchesPage() {
       title='Terminarz i wyniki'
       description='Przeglądaj harmonogram nadchodzących spotkań oraz pełne statystyki i analizy AI z rozegranych meczów.'
       hasItems={games.length > 0}
+      stateStatus={gamesState.status}
+      stateSource={gamesState.source}
+      stateMessage={gamesState.message}
       emptyTitle={gamesState.status === 'error' ? 'Błąd pobierania meczów' : 'Brak meczów'}
       emptyDescription={
         gamesState.status === 'error'
@@ -25,7 +30,9 @@ export default async function MatchesPage() {
           : 'Terminarz i wyniki pojawią się automatycznie po dodaniu danych.'
       }
     >
-      <MatchesList games={games} />
+      <div className='listing-panel'>
+        <MatchesList games={games} />
+      </div>
     </EditorialListingTemplate>
   )
 }
