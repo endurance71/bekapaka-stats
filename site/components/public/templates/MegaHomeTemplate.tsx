@@ -2,42 +2,11 @@ import Link from 'next/link'
 import type { DocumentItem, EventItem, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 
-const fallbackPlayers = [
-  {
-    firstName: 'Jan',
-    lastName: 'Kowalski',
-    position: 'Rozgrywajacy',
-    number: '07',
-    imageUrl: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=600&auto=format&fit=crop'
-  },
-  {
-    firstName: 'Michal',
-    lastName: 'Nowak',
-    position: 'Rzucajacy',
-    number: '13',
-    imageUrl: 'https://images.unsplash.com/photo-1627627256672-027a461b6932?q=80&w=600&auto=format&fit=crop'
-  },
-  {
-    firstName: 'Piotr',
-    lastName: 'Zielinski',
-    position: 'Srodkowy',
-    number: '15',
-    imageUrl: 'https://images.unsplash.com/photo-1508344928928-7151b67de15e?q=80&w=600&auto=format&fit=crop'
-  }
+const playerPhotos = [
+  'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1627627256672-027a461b6932?q=80&w=600&auto=format&fit=crop',
+  'https://images.unsplash.com/photo-1508344928928-7151b67de15e?q=80&w=600&auto=format&fit=crop'
 ]
-
-function getDisplayPlayer(roster: RosterPlayer[], index: number) {
-  const fallback = fallbackPlayers[index]
-  const real = roster[index]
-  if (!real) return fallback
-  return {
-    firstName: real.firstName || fallback.firstName,
-    lastName: real.lastName || fallback.lastName,
-    position: real.position || fallback.position,
-    number: real.number || fallback.number,
-    imageUrl: fallback.imageUrl
-  }
-}
 
 export function MegaHomeTemplate({
   news,
@@ -55,9 +24,8 @@ export function MegaHomeTemplate({
   documents: DocumentItem[]
 }) {
   const leadNews = news[0]
-  const p1 = getDisplayPlayer(roster, 0)
-  const p2 = getDisplayPlayer(roster, 1)
-  const mvp = getDisplayPlayer(roster, 2)
+  const topPlayers = roster.slice(0, 2)
+  const mvp = roster[2]
   const nextMatch = events[0]
   const topTable = table.slice(0, 5)
   const docs = documents.slice(0, 3)
@@ -95,15 +63,15 @@ export function MegaHomeTemplate({
           <div className='mega-overlay' />
           <div className='mega-content'>
             <span className='mega-pill mega-pill--red'>Najnowsze</span>
-            <h2>{leadNews?.title || 'BeKaPaKa rozbija rywali w derbach powiatu'}</h2>
-            <p>{leadNews?.excerpt || 'Niesamowita skutecznosc zza luku i zelazna obrona zapewnily kolejne zwyciestwo.'}</p>
+            <h2>{leadNews?.title || 'Brak aktualnosci do wyswietlenia'}</h2>
+            <p>{leadNews?.excerpt || 'Po dodaniu wpisow w CMS ta sekcja pokaze najnowszy artykul.'}</p>
             <Link href={leadNews ? `/aktualnosci/${leadNews.slug}` : '/aktualnosci'}>Czytaj artykul</Link>
           </div>
         </article>
 
-        {[p1, p2].map((player) => (
-          <article key={`${player.firstName}-${player.lastName}`} className='mega-card mega-card--delay-3 mega-player'>
-            <img src={player.imageUrl} alt={`${player.firstName} ${player.lastName}`} className='mega-bg-image' />
+        {topPlayers.map((player, index) => (
+          <article key={player.id} className='mega-card mega-card--delay-3 mega-player'>
+            <img src={playerPhotos[index] || playerPhotos[0]} alt={`${player.firstName} ${player.lastName}`} className='mega-bg-image' />
             <div className='mega-overlay' />
             <div className='mega-content'>
               <span className='mega-chip'>{player.position}</span>
@@ -112,6 +80,26 @@ export function MegaHomeTemplate({
             </div>
           </article>
         ))}
+        {topPlayers.length === 0 ? (
+          <article className='mega-card mega-card--delay-3 mega-player'>
+            <div className='mega-overlay' />
+            <div className='mega-content'>
+              <span className='mega-chip'>Sklad</span>
+              <h3>Brak danych skladu</h3>
+              <p className='mega-empty'>Backend nie zwrocil listy zawodnikow.</p>
+            </div>
+          </article>
+        ) : null}
+        {topPlayers.length < 2 ? (
+          <article className='mega-card mega-card--delay-3 mega-player'>
+            <div className='mega-overlay' />
+            <div className='mega-content'>
+              <span className='mega-chip'>Sklad</span>
+              <h3>Brak danych skladu</h3>
+              <p className='mega-empty'>Brakuje drugiego zawodnika do sekcji hero.</p>
+            </div>
+          </article>
+        ) : null}
 
         <article className='mega-card mega-card--delay-4 mega-table'>
           <div className='mega-content'>
@@ -141,7 +129,7 @@ export function MegaHomeTemplate({
         <article className='mega-card mega-card--delay-5 mega-next-match'>
           <div className='mega-content'>
             <span className='mega-pill'>Najblizszy mecz</span>
-            <h3>{nextMatch?.title || 'BKP vs Morsy'}</h3>
+            <h3>{nextMatch?.title || 'Brak zaplanowanego meczu'}</h3>
             <p>{nextMatch ? formatDateTime(nextMatch.startAt) : 'Data zostanie opublikowana'}</p>
             <Link href={nextMatch ? `/mecze/${nextMatch.slug}` : '/mecze'}>Szczegoly</Link>
           </div>
@@ -190,12 +178,12 @@ export function MegaHomeTemplate({
         </article>
 
         <article className='mega-card mega-card--delay-9 mega-mvp'>
-          <img src={mvp.imageUrl} alt='MVP miesiaca' className='mega-bg-image' />
+          {mvp ? <img src={playerPhotos[2]} alt='MVP miesiaca' className='mega-bg-image' /> : null}
           <div className='mega-overlay' />
           <div className='mega-content'>
             <span className='mega-pill'>MVP miesiaca</span>
-            <h3>{mvp.firstName} {mvp.lastName}</h3>
-            <p>{mvp.position}</p>
+            <h3>{mvp ? `${mvp.firstName} ${mvp.lastName}` : 'Brak danych MVP'}</h3>
+            <p>{mvp?.position || 'Dodaj dane skladu, aby wyznaczyc MVP'}</p>
           </div>
         </article>
 
