@@ -47,8 +47,9 @@ Internet :443 / :80
         │
         ├── moya-api.damianmotylinski.pl  → 127.0.0.1:3000   (MOYA API)
         │
-        ├── bekapaka.pl, www.bekapaka.pl  → 127.0.0.1:8081   (BeKaPaKa frontend)
-        └── panel.bekapaka.pl             → 127.0.0.1:8081   (ten sam frontend)
+        ├── bekapaka.pl, www.bekapaka.pl  → 127.0.0.1:8082   (BeKaPaKa strona publiczna)
+        ├── panel.bekapaka.pl             → 127.0.0.1:8081   (BeKaPaKa panel)
+        └── cms.bekapaka.pl               → 127.0.0.1:1337   (Strapi CMS)
 
 Docker — MOYA (osobny projekt):
   ~/apps/moya-native-app/
@@ -59,7 +60,9 @@ Docker — BeKaPaKa (ten projekt):
   docker compose -f docker-compose.prod.yml
     ├── bkpk-db-prod        (PostgreSQL, tylko sieć bkpk-network)
     ├── bkpk-backend-prod   (Node, port 4001 na hoście)
-    └── bkpk-frontend-prod    (Nginx, port 8081 na hoście)
+    ├── bkpk-frontend-prod  (Nginx, panel, port 8081 na hoście)
+    ├── bkpk-site-prod      (Next.js, strona publiczna, port 8082 na hoście)
+    └── bkpk-cms-prod       (Strapi CMS, port 1337 na hoście)
 ```
 
 ### Porty — nie zmieniać bez uzasadnienia
@@ -68,7 +71,9 @@ Docker — BeKaPaKa (ten projekt):
 |-------------|--------|---------|
 | `3000` | MOYA API | **moya-native-app** — nie dotykać |
 | `4001` | BeKaPaKa backend | bekapaka-stats |
-| `8081` | BeKaPaKa frontend | bekapaka-stats |
+| `8081` | BeKaPaKa panel frontend | bekapaka-stats |
+| `8082` | BeKaPaKa strona publiczna | bekapaka-stats |
+| `1337` | BeKaPaKa CMS (Strapi) | bekapaka-stats |
 | `80` / `443` | Caddy (reverse proxy) | host |
 
 Produkcja BeKaPaKa powinna nasłuchiwać na **localhost** (`127.0.0.1:8081`, `127.0.0.1:4001`), żeby nie kolidować z innymi usługami — ruch z zewnątrz tylko przez Caddy.
@@ -88,6 +93,7 @@ Rekordy **A** (wszystkie na `51.210.102.167`):
 - `bekapaka.pl`
 - `www.bekapaka.pl`
 - `panel.bekapaka.pl`
+- `cms.bekapaka.pl`
 
 Delegacja NS: `ns1.seohost.pl`, `ns2.seohost.pl`.
 

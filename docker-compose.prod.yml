@@ -49,6 +49,46 @@ services:
     networks:
       - bkpk-network
 
+  bkpk-site:
+    build:
+      context: ./site
+      dockerfile: Dockerfile.prod
+    container_name: bkpk-site-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      SITE_CMS_API_URL: ${SITE_CMS_API_URL:-http://bkpk-cms:1337}
+      SITE_BACKEND_API_URL: ${SITE_BACKEND_API_URL:-http://bkpk-backend:4001}
+      SITE_CMS_TOKEN: ${SITE_CMS_TOKEN:-}
+    ports:
+      - "8082:3000"
+    depends_on:
+      - bkpk-backend
+      - bkpk-cms
+    networks:
+      - bkpk-network
+
+  bkpk-cms:
+    build:
+      context: ./cms-app
+      dockerfile: Dockerfile.prod
+    container_name: bkpk-cms-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      APP_KEYS: ${CMS_APP_KEYS:-bkpkKey1,bkpkKey2,bkpkKey3,bkpkKey4}
+      API_TOKEN_SALT: ${CMS_API_TOKEN_SALT:-bkpk-cms-api-token-salt}
+      ADMIN_JWT_SECRET: ${CMS_ADMIN_JWT_SECRET:-bkpk-cms-admin-jwt-secret}
+      JWT_SECRET: ${CMS_JWT_SECRET:-bkpk-cms-jwt-secret}
+      TRANSFER_TOKEN_SALT: ${CMS_TRANSFER_TOKEN_SALT:-bkpk-cms-transfer-token-salt}
+    ports:
+      - "1337:1337"
+    networks:
+      - bkpk-network
+
 networks:
   bkpk-network:
     name: bkpk-network

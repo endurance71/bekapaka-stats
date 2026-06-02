@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "homepage_sections",
+  "info": {
+    "singularName": "homepage-section",
+    "pluralName": "homepage-sections",
+    "displayName": "Homepage Section"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "key": { "type": "string", "required": true },
+    "title": { "type": "string", "required": true },
+    "subtitle": { "type": "string" },
+    "body": { "type": "richtext" },
+    "isEnabled": { "type": "boolean", "default": true },
+    "order": { "type": "integer", "default": 0 }
+  }
+}

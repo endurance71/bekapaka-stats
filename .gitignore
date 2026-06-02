@@ -6,6 +6,9 @@ project.tar.gz
 
 # Node.js
 node_modules/
+site/node_modules/
+site/.next/
+cms/node_modules/
 dist/
 dist-ssr/
 *.local
