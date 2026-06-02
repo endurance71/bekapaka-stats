@@ -53,7 +53,11 @@ export function backendPath(path: string): string {
   return `${backendApiUrl}${path}`
 }
 
+export function hasCmsToken(): boolean {
+  return Boolean(cmsToken?.trim())
+}
+
 export function cmsHeaders(): HeadersInit {
-  if (!cmsToken) return {}
+  if (!hasCmsToken()) return {}
   return { Authorization: `Bearer ${cmsToken}` }
 }
