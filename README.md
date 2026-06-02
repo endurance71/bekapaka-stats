@@ -6,7 +6,7 @@ System do zarządzania statystykami i scoutingiem dla drużyny BeKaPaKa.
 
 Aplikacja działa na **OVH VPS** (`51.210.102.167`) obok backendu MOYA.
 
-Docelowe domeny: `bekapaka.pl`, `www.bekapaka.pl`, `panel.bekapaka.pl` (reverse proxy: Caddy).
+Docelowe domeny: `bekapaka.pl`, `www.bekapaka.pl`, `panel.bekapaka.pl`, `cms.bekapaka.pl` (reverse proxy: Caddy).
 
 **Dla agentów AI i deployu:** [docs/vps-runbook.md](docs/vps-runbook.md), [VPS-dane/README.md](VPS-dane/README.md) oraz [AGENTS.md](AGENTS.md).
 
@@ -26,7 +26,9 @@ Projekt korzysta z automatycznego wdrażania przez **GitHub Actions**.
 
 ## 📂 Struktura Projektu
 - `/backend`: API Express + Prisma ORM.
-- `/frontend`: SPA React + Vite + Tailwind CSS.
+- `/frontend`: SPA React + Vite + Tailwind CSS (panel).
+- `/site`: publiczna strona klubowa (Next.js).
+- `/cms`: modele i runtime self-hosted Strapi.
 - `/docs`: Dokumentacja techniczna projektu.
 
 ## 🤝 Autorzy

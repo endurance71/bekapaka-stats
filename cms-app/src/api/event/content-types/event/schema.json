@@ -1,0 +1,26 @@
+{
+  "kind": "collectionType",
+  "collectionName": "events",
+  "info": {
+    "singularName": "event",
+    "pluralName": "events",
+    "displayName": "Event"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "type": {
+      "type": "enumeration",
+      "enum": ["match", "tournament", "other"],
+      "default": "other"
+    },
+    "startAt": { "type": "datetime", "required": true },
+    "endAt": { "type": "datetime" },
+    "location": { "type": "string" },
+    "description": { "type": "text" },
+    "registrationUrl": { "type": "string" }
+  }
+}

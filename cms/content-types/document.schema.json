@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "documents",
+  "info": {
+    "singularName": "document",
+    "pluralName": "documents",
+    "displayName": "Document"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "slug": { "type": "uid", "targetField": "title", "required": true },
+    "file": { "type": "media", "multiple": false, "allowedTypes": ["files"] },
+    "category": {
+      "type": "enumeration",
+      "enum": ["regulation", "form", "other"],
+      "default": "other"
+    },
+    "effectiveDate": { "type": "date" }
+  }
+}
