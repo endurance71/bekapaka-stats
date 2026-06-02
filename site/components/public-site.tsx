@@ -10,6 +10,25 @@ import type {
 } from '../lib/data'
 import { formatDate, formatDateTime } from '../lib/format'
 
+type BentoTileProps = {
+  size?: 'S' | 'M' | 'L' | 'XL'
+  accent?: 'gold' | 'crimson' | 'slate' | 'none'
+  className?: string
+  children: React.ReactNode
+}
+
+export function BentoGrid({ children }: { children: React.ReactNode }) {
+  return <div className='bento-grid'>{children}</div>
+}
+
+export function BentoTile({ size = 'M', accent = 'none', className = '', children }: BentoTileProps) {
+  return (
+    <article className={`bento-tile bento-tile--${size.toLowerCase()} bento-accent--${accent} ${className}`.trim()}>
+      {children}
+    </article>
+  )
+}
+
 export function SiteHeader() {
   return (
     <header className='site-header'>
@@ -27,6 +46,8 @@ export function SiteHeader() {
           <ul className='main-nav'>
             <li><Link href='/aktualnosci'>Aktualnosci</Link></li>
             <li><Link href='/wydarzenia'>Wydarzenia</Link></li>
+            <li><Link href='/tabela'>Tabela</Link></li>
+            <li><Link href='/sklad'>Sklad</Link></li>
             <li><Link href='/sponsorzy'>Sponsorzy</Link></li>
             <li><Link href='/dokumenty'>Dokumenty</Link></li>
           </ul>
@@ -38,7 +59,7 @@ export function SiteHeader() {
 
 export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
   return (
-    <section className='hero section-card'>
+    <BentoTile size='XL' accent='gold' className='hero'>
       <p className='eyebrow'>Sezon 2026</p>
       <h1>Nowoczesna koszykowka. Lokalna duma Bobolic.</h1>
       <p>
@@ -57,15 +78,15 @@ export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
           Zobacz aktualnosci
         </Link>
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function HomepageCmsSections({ sections }: { sections: HomepageSection[] }) {
+export function HomepageCmsSectionsTile({ sections }: { sections: HomepageSection[] }) {
   if (sections.length === 0) return null
 
   return (
-    <section className='section-card'>
+    <BentoTile size='L' accent='slate'>
       <h2>Sekcje klubowe</h2>
       <div className='card-grid'>
         {sections.slice(0, 4).map((section) => (
@@ -76,33 +97,33 @@ export function HomepageCmsSections({ sections }: { sections: HomepageSection[] 
           </article>
         ))}
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function NewsSection({ news }: { news: NewsPost[] }) {
+export function NewsTile({ news }: { news: NewsPost[] }) {
   return (
-    <section className='section-card'>
+    <BentoTile size='L' accent='none'>
       <div className='section-head'>
         <h2>Aktualnosci</h2>
         <Link href='/aktualnosci'>Zobacz wszystkie</Link>
       </div>
-      <div className='card-grid'>
+      <div className='stack-list'>
         {news.map((item) => (
-          <article key={item.id} className='content-card'>
+          <article key={item.id} className='content-card content-card--compact'>
             <h3>{item.title}</h3>
             <p>{item.excerpt || 'Brak opisu.'}</p>
             <p className='muted'>{formatDateTime(item.publishedAt)}</p>
           </article>
         ))}
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function EventsSection({ events }: { events: EventItem[] }) {
+export function EventsTile({ events }: { events: EventItem[] }) {
   return (
-    <section className='section-card'>
+    <BentoTile size='M' accent='crimson'>
       <div className='section-head'>
         <h2>Nadchodzace wydarzenia</h2>
         <Link href='/wydarzenia'>Kalendarz</Link>
@@ -123,37 +144,58 @@ export function EventsSection({ events }: { events: EventItem[] }) {
           ))
         )}
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function RosterPreview({ roster }: { roster: RosterPlayer[] }) {
+export function StandingTile({ teamStanding }: { teamStanding?: TeamStanding }) {
   return (
-    <section className='section-card'>
-      <h2>Sklad druzyny</h2>
+    <BentoTile size='S' accent='gold' className='standing-tile'>
+      <p className='eyebrow'>Tabela ligi</p>
+      <h2>Pozycja BeKaPaKa</h2>
+      {teamStanding ? (
+        <>
+          <p className='standing-tile__rank'>#{teamStanding.position}</p>
+          <p>Bilans: <strong>{teamStanding.wins}-{teamStanding.losses}</strong></p>
+        </>
+      ) : (
+        <p>Brak danych tabeli.</p>
+      )}
+      <Link href='/tabela'>Pelna tabela</Link>
+    </BentoTile>
+  )
+}
+
+export function RosterTile({ roster }: { roster: RosterPlayer[] }) {
+  return (
+    <BentoTile size='M' accent='slate'>
+      <div className='section-head'>
+        <h2>Sklad druzyny</h2>
+        <Link href='/sklad'>Pelny sklad</Link>
+      </div>
       <div className='card-grid'>
-        {roster.slice(0, 12).map((player) => (
-          <article key={player.id} className='content-card'>
+        {roster.slice(0, 6).map((player) => (
+          <article key={player.id} className='content-card content-card--compact'>
             <h3>{player.firstName} {player.lastName}</h3>
             <p>Pozycja: {player.position}</p>
             <p>Numer: {player.number}</p>
           </article>
         ))}
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function SponsorsSection({ sponsors }: { sponsors: SponsorItem[] }) {
+export function SponsorsTile({ sponsors }: { sponsors: SponsorItem[] }) {
   return (
-    <section className='section-card sponsors'>
+    <BentoTile size='M' accent='none' className='sponsors'>
       <div className='section-head'>
         <h2>Partnerzy i sponsorzy</h2>
         <Link href='/sponsorzy'>Pelna lista</Link>
       </div>
       <div className='card-grid'>
-        {sponsors.map((sponsor) => (
-          <article key={sponsor.id} className='content-card sponsor-card'>
+        {sponsors.slice(0, 6).map((sponsor) => (
+          <article key={sponsor.id} className='content-card sponsor-card content-card--compact'>
             <h3>{sponsor.name}</h3>
             <p className='muted'>{sponsor.tier}</p>
             {sponsor.websiteUrl ? (
@@ -166,19 +208,19 @@ export function SponsorsSection({ sponsors }: { sponsors: SponsorItem[] }) {
           </article>
         ))}
       </div>
-    </section>
+    </BentoTile>
   )
 }
 
-export function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
+export function DocumentsTile({ documents }: { documents: DocumentItem[] }) {
   return (
-    <section className='section-card'>
+    <BentoTile size='M' accent='none'>
       <div className='section-head'>
         <h2>Dokumenty</h2>
         <Link href='/dokumenty'>Wszystkie dokumenty</Link>
       </div>
       <ul className='documents-list'>
-        {documents.slice(0, 8).map((document) => (
+        {documents.slice(0, 6).map((document) => (
           <li key={document.id}>
             <div>
               <strong>{document.title}</strong>
@@ -194,6 +236,25 @@ export function DocumentsSection({ documents }: { documents: DocumentItem[] }) {
           </li>
         ))}
       </ul>
+    </BentoTile>
+  )
+}
+
+export function SponsorsStrip({ sponsors }: { sponsors: SponsorItem[] }) {
+  if (sponsors.length === 0) return null
+
+  return (
+    <section className='sponsors-strip' aria-label='Strefa sponsorow'>
+      <div className='container'>
+        <p className='eyebrow'>Partnerzy</p>
+        <div className='sponsors-strip__grid'>
+          {sponsors.slice(0, 12).map((sponsor) => (
+            <div key={sponsor.id} className='sponsor-chip'>
+              {sponsor.name}
+            </div>
+          ))}
+        </div>
+      </div>
     </section>
   )
 }
@@ -204,6 +265,24 @@ export function PageHeader({ title, description }: { title: string; description:
       <h1>{title}</h1>
       <p>{description}</p>
     </header>
+  )
+}
+
+export function Breadcrumbs({
+  items
+}: {
+  items: Array<{ label: string; href?: string }>
+}) {
+  return (
+    <nav aria-label='Breadcrumb' className='breadcrumbs'>
+      <ol>
+        {items.map((item, index) => (
+          <li key={`${item.label}-${index}`}>
+            {item.href ? <Link href={item.href}>{item.label}</Link> : <span>{item.label}</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
   )
 }
 

@@ -15,6 +15,19 @@
    - `https://bekapaka.pl`
    - `https://bekapaka.pl/aktualnosci`
    - `https://bekapaka.pl/wydarzenia`
+   - `https://bekapaka.pl/tabela`
+   - `https://bekapaka.pl/sklad`
+
+## 1.1 Workflow tresci pod Bento Grid
+
+1. Priorytet 1 (hero): najwazniejsza aktualnosc i najblizsze wydarzenie.
+2. Priorytet 2 (kafle srednie): tabela mini, sklad highlight, dokumenty CTA.
+3. Priorytet 3 (kafle wspierajace): sekcje CMS i pozostale newsy.
+4. Sponsorzy zawsze utrzymani w dedykowanej strefie dolnej.
+5. Dlugosc zajawki:
+   - news: 140-220 znakow
+   - wydarzenie: 90-180 znakow
+   - dokument: tytul do 80 znakow
 
 ## 2. Smoke test po publikacji
 
@@ -22,8 +35,11 @@
 - Strona glowna laduje sie i ma widoczny hero.
 - Aktualnosci wyswietlaja ostatnie wpisy.
 - Wydarzenia wyswietlaja kalendarz i date.
+- Tabela wyswietla pozycje i bilans druzyn.
+- Sklad wyswietla zawodnikow.
 - Sponsorzy wyswietlaja nazwy i linki.
 - Dokumenty pozwalaja pobrac pliki.
+- Strony detail (`/aktualnosci/[slug]`, `/wydarzenia/[slug]`, `/dokumenty/[slug]`) zwracaja status 200 dla istniejacych slugow.
 
 ### Kontrole techniczne
 - `sitemap.xml` zwraca status 200.
@@ -38,14 +54,17 @@
   - SEO >= 95
 - Brak krytycznych bledow a11y (focus, kontrast, role landmarkow).
 - Wszystkie przyciski i linki klikalne na touch (min. 44 px wysokosci celu).
+- Polecenie quality gate przed deployem:
+  - `cd site && npm run quality`
 
 ## 4. Rollout produkcyjny
 
 1. Deploy `site` na staging.
-2. Wykonaj smoke test i szybki audyt Lighthouse mobile.
-3. Zatwierdz release.
-4. Deploy produkcyjny.
-5. Monitoruj przez 24h:
+2. Wykonaj `npm run quality`.
+3. Wykonaj smoke test i szybki audyt Lighthouse mobile.
+4. Zatwierdz release.
+5. Deploy produkcyjny.
+6. Monitoruj przez 24h:
    - błędy runtime
    - czas odpowiedzi
    - brakujace dane z CMS/backend
