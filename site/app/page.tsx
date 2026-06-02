@@ -1,26 +1,44 @@
 import {
-  DocumentsSection,
-  EventsSection,
+  BentoGrid,
+  DocumentsTile,
+  EventsTile,
   HeroSection,
-  HomepageCmsSections,
-  NewsSection,
-  RosterPreview,
-  SponsorsSection
+  HomepageCmsSectionsTile,
+  NewsTile,
+  RosterTile,
+  SponsorsStrip,
+  SponsorsTile,
+  StandingTile
 } from '../components/public-site'
 import { getPublicSiteData } from '../lib/data'
 
 export default async function HomePage() {
   const { documents, events, homepageSections, news, ourPosition, roster, sponsors } = await getPublicSiteData()
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsTeam',
+    name: 'BeKaPaKa Bobolice',
+    sport: 'Basketball',
+    url: 'https://bekapaka.pl'
+  }
 
   return (
     <>
-      <HeroSection teamStanding={ourPosition} />
-      <HomepageCmsSections sections={homepageSections} />
-      <NewsSection news={news.slice(0, 3)} />
-      <EventsSection events={events.slice(0, 4)} />
-      <RosterPreview roster={roster} />
-      <SponsorsSection sponsors={sponsors.slice(0, 8)} />
-      <DocumentsSection documents={documents} />
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <BentoGrid>
+        <HeroSection teamStanding={ourPosition} />
+        <StandingTile teamStanding={ourPosition} />
+        <EventsTile events={events.slice(0, 4)} />
+        <NewsTile news={news.slice(0, 4)} />
+        <RosterTile roster={roster} />
+        <SponsorsTile sponsors={sponsors.slice(0, 8)} />
+        <DocumentsTile documents={documents} />
+        <HomepageCmsSectionsTile sections={homepageSections} />
+      </BentoGrid>
+      <SponsorsStrip sponsors={sponsors} />
     </>
   )
 }

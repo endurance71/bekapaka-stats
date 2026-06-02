@@ -1,0 +1,45 @@
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import { Breadcrumbs } from '../../../components/public-site'
+import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
+import { formatDateTime } from '../../../lib/format'
+
+type Params = { slug: string }
+
+async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
+  const items = await getNewsPosts(200)
+  return items.find((item) => item.slug === slug) || null
+}
+
+export async function generateStaticParams() {
+  const items = await getNewsPosts(100)
+  return items.map((item) => ({ slug: item.slug }))
+}
+
+export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  const item = await getNewsBySlug(params.slug)
+  if (!item) return { title: 'Aktualnosc | BeKaPaKa Bobolice' }
+  return {
+    ...getSiteMetadataBase(),
+    title: `${item.title} | BeKaPaKa Bobolice`,
+    description: item.excerpt || 'Aktualnosc BeKaPaKa Bobolice'
+  }
+}
+
+export default async function NewsDetailPage({ params }: { params: Params }) {
+  const item = await getNewsBySlug(params.slug)
+  if (!item) notFound()
+
+  return (
+    <article className='section-card article-detail'>
+      <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Aktualnosci', href: '/aktualnosci' }, { label: item.title }]} />
+      <p className='eyebrow'>Aktualnosc</p>
+      <h1>{item.title}</h1>
+      <p className='muted'>{formatDateTime(item.publishedAt)}</p>
+      <p>{item.excerpt}</p>
+      <div className='article-content'>
+        <p>{item.content || 'Tresc artykulu zostanie uzupelniona przez redakcje.'}</p>
+      </div>
+    </article>
+  )
+}

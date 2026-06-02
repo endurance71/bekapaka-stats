@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { PageHeader } from '../../components/public-site'
 import { getEvents, getSiteMetadataBase } from '../../lib/data'
 import { formatDateTime } from '../../lib/format'
@@ -31,6 +32,9 @@ export default async function EventsPage() {
                     Rejestracja
                   </a>
                 ) : null}
+                <p>
+                  <Link href={`/wydarzenia/${event.slug}`}>Szczegoly wydarzenia</Link>
+                </p>
               </div>
             </article>
           ))

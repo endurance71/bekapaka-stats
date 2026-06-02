@@ -2,6 +2,12 @@
 
 Publiczna strona klubu oparta o Next.js (App Router), zaprojektowana mobile-first.
 
+## Standard UI
+
+- Bento Grid (premium dark sport)
+- Brandbook-first tokens (BKP Gold / Obsidian / Crimson / Amber / Slate)
+- WCAG 2.2 AA i quality gates przed deployem
+
 ## Lokalne uruchomienie
 
 ```bash
@@ -21,9 +27,20 @@ npm run dev
 - `/`
 - `/aktualnosci`
 - `/wydarzenia`
+- `/tabela`
+- `/sklad`
 - `/sponsorzy`
 - `/dokumenty`
 - `/o-klubie`
+- `/aktualnosci/[slug]`
+- `/wydarzenia/[slug]`
+- `/dokumenty/[slug]`
+
+## Quality gate
+
+```bash
+npm run quality
+```
 
 ## SEO
 
