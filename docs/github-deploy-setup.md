@@ -21,6 +21,7 @@ Strona publiczna **nie wymaga** `git pull` na serwerze.
 | `VPS_HOST` | IPv4 VPS, np. `51.210.102.167` |
 | `VPS_USER` | Użytkownik SSH, np. `debian` |
 | `VPS_SSH_KEY` | Klucz prywatny SSH (ten sam co do `ssh ovh-vps-cursor`) |
+| `VPS_SSH_PORT` | Opcjonalnie: port SSH (domyślnie **22**; nie używaj 10204, jeśli z Maca jest timeout) |
 
 ## Ręczne uruchomienie
 
