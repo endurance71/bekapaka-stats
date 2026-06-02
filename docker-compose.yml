@@ -4,6 +4,7 @@ services:
   db:
     image: postgres:15-alpine
     environment:
+      # DEV ONLY — do not use these credentials in production
       POSTGRES_USER: bekapaka
       POSTGRES_PASSWORD: bekapaka_pass
       POSTGRES_DB: bekapaka_stats
@@ -19,11 +20,13 @@ services:
       context: backend
       dockerfile: Dockerfile
     environment:
+      # DEV ONLY
       DATABASE_URL: postgres://bekapaka:bekapaka_pass@db:5432/bekapaka_stats
       DB_HOST: db
       DB_USER: bekapaka
       DB_PASSWORD: bekapaka_pass
       DB_NAME: bekapaka_stats
+      JWT_SECRET: ${JWT_SECRET:-dev-only-docker-compose-jwt-secret-min-32-chars}
       PORT: 4000
       TZ: Europe/Warsaw
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
