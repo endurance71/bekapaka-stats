@@ -1,0 +1,15 @@
+---
+description: Po zmianach w kodzie zawsze commituj i pushuj do origin
+alwaysApply: true
+---
+
+# Zawsze commituj
+
+Po zakończeniu **jakichkolwiek** zmian w kodzie w tym repozytorium:
+
+1. Uruchom `git status` i uwzględnij wszystkie istotne pliki (nie commituj artefaktów buildu, sekretów, `.env`).
+2. Utwórz commit(y) z jasną wiadomością w formacie **Conventional Commits** (`feat:`, `fix:`, `style:`, itd.).
+3. Wypchnij zmiany na `origin` (domyślnie gałąź bieżąca, zwykle `main`), chyba że użytkownik wyraźnie prosi o **nie pushować**.
+4. Nie zostawiaj ukończonej pracy tylko jako niezacommitowane zmiany w working tree.
+
+Wyjątki: użytkownik prosi o brak commita, brak pusha lub pracę wyłącznie lokalną / na osobnej gałęzi bez publikacji.
