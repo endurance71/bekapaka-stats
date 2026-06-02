@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import type {
-  DocumentItem,
   EventItem,
   HomepageSection,
   NewsPost,
@@ -8,7 +7,7 @@ import type {
   SponsorItem,
   TeamStanding
 } from '../lib/data'
-import { formatDate, formatDateTime } from '../lib/format'
+import { formatDateTime } from '../lib/format'
 
 type BentoTileProps = {
   size?: 'S' | 'M' | 'L' | 'XL'
@@ -39,7 +38,6 @@ export function SiteHeader() {
           </span>
           <span>
             <strong>BeKaPaKa Bobolice</strong>
-            <small>Koszykowka amatorska</small>
           </span>
         </Link>
         <nav aria-label='Nawigacja glowna'>
@@ -49,7 +47,6 @@ export function SiteHeader() {
             <li><Link href='/tabela'>Tabela</Link></li>
             <li><Link href='/sklad'>Sklad</Link></li>
             <li><Link href='/sponsorzy'>Sponsorzy</Link></li>
-            <li><Link href='/dokumenty'>Dokumenty</Link></li>
             <li><Link href='/klub'>Klub</Link></li>
           </ul>
         </nav>
@@ -243,33 +240,7 @@ export function SponsorsTile({ sponsors }: { sponsors: SponsorItem[] }) {
   )
 }
 
-export function DocumentsTile({ documents }: { documents: DocumentItem[] }) {
-  return (
-    <BentoTile size='M' accent='none'>
-      <div className='section-head'>
-        <h2>Dokumenty</h2>
-        <Link href='/dokumenty'>Wszystkie dokumenty</Link>
-      </div>
-      <ul className='documents-list'>
-        {documents.slice(0, 6).map((document) => (
-          <li key={document.id}>
-            <div>
-              <strong>{document.title}</strong>
-              <p className='muted'>{document.category} | {formatDate(document.effectiveDate)}</p>
-            </div>
-            {document.fileUrl ? (
-              <a href={document.fileUrl} target='_blank' rel='noreferrer'>
-                Pobierz
-              </a>
-            ) : (
-              <span className='muted'>Brak pliku</span>
-            )}
-          </li>
-        ))}
-      </ul>
-    </BentoTile>
-  )
-}
+
 
 export function SponsorsStrip({ sponsors }: { sponsors: SponsorItem[] }) {
   if (sponsors.length === 0) return null
