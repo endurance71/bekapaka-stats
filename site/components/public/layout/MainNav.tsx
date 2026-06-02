@@ -12,11 +12,17 @@ const navItems = [
   { href: '/klub', label: 'Klub' }
 ]
 
-export function MainNav({ onLinkClick }: { onLinkClick?: () => void }) {
+export function MainNav({
+  onLinkClick,
+  variant = 'inline'
+}: {
+  onLinkClick?: () => void
+  variant?: 'inline' | 'fullscreen'
+}) {
   const pathname = usePathname()
 
   return (
-    <nav aria-label='Nawigacja glowna'>
+    <nav aria-label='Nawigacja glowna' className={variant === 'fullscreen' ? 'main-nav--fullscreen' : undefined}>
       <ul className='main-nav'>
         {navItems.map((item) => (
           <li key={item.href}>

@@ -1,9 +1,11 @@
-"use client"
+'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { ClubLogo } from '../shared/ClubLogo'
 import { MainNav } from './MainNav'
 import { SiteFooter } from './SiteFooter'
+import { MenuIcon, MobileFullScreenMenu } from './MobileFullScreenMenu'
 
 export function PublicShell({
   children,
@@ -13,57 +15,19 @@ export function PublicShell({
   logoUrl?: string
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const toggleButtonRef = useRef<HTMLButtonElement | null>(null)
-  const drawerRef = useRef<HTMLDivElement | null>(null)
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null)
+  const pathname = usePathname()
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const openMenu = () => setIsMenuOpen(true)
   const closeMenu = () => setIsMenuOpen(false)
 
   useEffect(() => {
-    if (!isMenuOpen) return
-
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-
-    const firstFocusable = drawerRef.current?.querySelector<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])')
-    firstFocusable?.focus()
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        closeMenu()
-        return
-      }
-
-      if (event.key !== 'Tab' || !drawerRef.current) return
-      const focusableElements = Array.from(
-        drawerRef.current.querySelectorAll<HTMLElement>('a, button, [tabindex]:not([tabindex="-1"])')
-      ).filter((element) => !element.hasAttribute('disabled'))
-
-      if (focusableElements.length === 0) return
-      const first = focusableElements[0]
-      const last = focusableElements[focusableElements.length - 1]
-      const current = document.activeElement as HTMLElement | null
-
-      if (event.shiftKey && current === first) {
-        event.preventDefault()
-        last.focus()
-      } else if (!event.shiftKey && current === last) {
-        event.preventDefault()
-        first.focus()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isMenuOpen])
+    setIsMenuOpen(false)
+  }, [pathname])
 
   useEffect(() => {
     if (!isMenuOpen) {
-      toggleButtonRef.current?.focus()
+      menuButtonRef.current?.focus()
     }
   }, [isMenuOpen])
 
@@ -81,57 +45,25 @@ export function PublicShell({
           </div>
 
           <div className='header-actions-wrapper'>
-            <button className='ticket-cta' type='button' onClick={() => window.open('https://panel.bekapaka.pl', '_blank')}>
+            <button className='ticket-cta' type='button' onClick={() => window.open('https://panel.bekapaka.pl', '_blank', 'noopener,noreferrer')}>
               Panel Klubu
             </button>
           </div>
 
           <button
-            ref={toggleButtonRef}
-            className={`menu-toggle-btn ${isMenuOpen ? 'is-open' : ''}`} 
-            type='button' 
-            onClick={toggleMenu}
-            aria-label={isMenuOpen ? 'Zamknij menu' : 'Otwórz menu'}
+            ref={menuButtonRef}
+            className='mobile-menu-open-btn'
+            type='button'
+            onClick={openMenu}
+            aria-label='Otwórz menu nawigacji'
             aria-expanded={isMenuOpen}
-            aria-controls='mobile-menu-drawer'
           >
-            <span className='hamburger-line'></span>
-            <span className='hamburger-line'></span>
-            <span className='hamburger-line'></span>
+            <MenuIcon />
           </button>
         </div>
       </header>
 
-      <div
-        id='mobile-menu-drawer'
-        className={`mobile-menu-drawer ${isMenuOpen ? 'is-open' : ''}`}
-        aria-hidden={!isMenuOpen}
-      >
-        <button className='mobile-menu-drawer__backdrop' aria-label='Zamknij menu' onClick={closeMenu} />
-        <div
-          className='mobile-menu-drawer__content'
-          role='dialog'
-          aria-modal='true'
-          aria-label='Menu mobilne'
-          ref={drawerRef}
-        >
-          <div className='mobile-nav'>
-            <MainNav onLinkClick={closeMenu} />
-          </div>
-          <div className='mobile-menu-cta'>
-            <button
-              className='button button--primary'
-              type='button'
-              onClick={() => {
-                closeMenu()
-                window.open('https://panel.bekapaka.pl', '_blank')
-              }}
-            >
-              Zaloguj do Panelu
-            </button>
-          </div>
-        </div>
-      </div>
+      <MobileFullScreenMenu isOpen={isMenuOpen} onClose={closeMenu} />
 
       <main id='content' className='container'>
         {children}
