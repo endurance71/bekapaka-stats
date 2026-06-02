@@ -32,7 +32,7 @@ export function MegaHomeTemplate({
   return (
     <div className='dashboard-home'>
       <section className='dashboard-grid'>
-        {/* HERO SECTION */}
+        {/* ROW 1: HERO SECTION (7) & LATEST NEWS (5) */}
         <article className='surface-card dashboard-hero'>
           <div className='hero-grid-bg'></div>
           <div className='hero-content'>
@@ -69,7 +69,6 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {/* LATEST NEWS */}
         <article className='surface-card dashboard-news'>
           <div className='section-head'>
             <h2>Najnowsze aktualności</h2>
@@ -96,54 +95,7 @@ export function MegaHomeTemplate({
           )}
         </article>
 
-        {/* STAT LEADERS */}
-        <article className='surface-card dashboard-leaders'>
-          <p className='section-kicker'>Liderzy zespołu</p>
-          <div className='leaders-list-v2'>
-            {pointsLeader && (
-              <div className='leader-card-v2'>
-                <div className='leader-info'>
-                  <span className='leader-label'>Punkty</span>
-                  <strong className='leader-name'>{pointsLeader.firstName} {pointsLeader.lastName}</strong>
-                  <span className='leader-val'>{pointsLeader.ppg?.toFixed(1)} <small>PPG</small></span>
-                </div>
-                <div className='leader-progress-track'>
-                  <div className='leader-progress-fill fill-points' style={{ width: `${Math.min((pointsLeader.ppg || 0) * 4, 100)}%` }}></div>
-                </div>
-              </div>
-            )}
-
-            {reboundsLeader && (
-              <div className='leader-card-v2'>
-                <div className='leader-info'>
-                  <span className='leader-label'>Zbiórki</span>
-                  <strong className='leader-name'>{reboundsLeader.firstName} {reboundsLeader.lastName}</strong>
-                  <span className='leader-val'>{reboundsLeader.rpg?.toFixed(1)} <small>RPG</small></span>
-                </div>
-                <div className='leader-progress-track'>
-                  <div className='leader-progress-fill fill-rebounds' style={{ width: `${Math.min((reboundsLeader.rpg || 0) * 6, 100)}%` }}></div>
-                </div>
-              </div>
-            )}
-
-            {assistsLeader && (
-              <div className='leader-card-v2'>
-                <div className='leader-info'>
-                  <span className='leader-label'>Asysty</span>
-                  <strong className='leader-name'>{assistsLeader.firstName} {assistsLeader.lastName}</strong>
-                  <span className='leader-val'>{assistsLeader.apg?.toFixed(1)} <small>APG</small></span>
-                </div>
-                <div className='leader-progress-track'>
-                  <div className='leader-progress-fill fill-assists' style={{ width: `${Math.min((assistsLeader.apg || 0) * 10, 100)}%` }}></div>
-                </div>
-              </div>
-            )}
-
-            {!pointsLeader && <p className='muted'>Brak danych statystycznych.</p>}
-          </div>
-        </article>
-
-        {/* NEXT MATCH (TICKET CARD) */}
+        {/* ROW 2: NEXT MATCH (7) & STAT LEADERS (5) */}
         <article className='surface-card dashboard-next'>
           <p className='section-kicker'>Najbliższy mecz</p>
           {nextGame ? (
@@ -200,37 +152,53 @@ export function MegaHomeTemplate({
           )}
         </article>
 
-        {/* RECENT MATCHES RESULTS */}
-        <article className='surface-card dashboard-results'>
-          <div className='section-head'>
-            <h2>Ostatnie mecze</h2>
-            <Link href='/mecze'>Kalendarz</Link>
-          </div>
-          <div className='stack-list-v2'>
-            {latestGames.map((game) => {
-              const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
-              return (
-                <div key={game.id} className='list-row-v2'>
-                  <div className='result-row-left'>
-                    <span className={`result-outcome-badge ${isWin ? 'is-win-badge' : 'is-loss-badge'}`}>
-                      {isWin ? 'W' : 'L'}
-                    </span>
-                    <div className='result-opponent-info'>
-                      <strong>vs {game.opponent}</strong>
-                      <span className='muted'>{formatDateTime(game.date)}</span>
-                    </div>
-                  </div>
-                  <strong className='score-badge-premium'>
-                    {game.scoreUs ?? '-'}:{game.scoreThem ?? '-'}
-                  </strong>
+        <article className='surface-card dashboard-leaders'>
+          <p className='section-kicker'>Liderzy zespołu</p>
+          <div className='leaders-list-v2'>
+            {pointsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Punkty</span>
+                  <strong className='leader-name'>{pointsLeader.firstName} {pointsLeader.lastName}</strong>
+                  <span className='leader-val'>{pointsLeader.ppg?.toFixed(1)} <small>PPG</small></span>
                 </div>
-              )
-            })}
-            {latestGames.length === 0 ? <p className='muted'>Brak rozegranych meczów.</p> : null}
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-points' style={{ width: `${Math.min((pointsLeader.ppg || 0) * 4, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {reboundsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Zbiórki</span>
+                  <strong className='leader-name'>{reboundsLeader.firstName} {reboundsLeader.lastName}</strong>
+                  <span className='leader-val'>{reboundsLeader.rpg?.toFixed(1)} <small>RPG</small></span>
+                </div>
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-rebounds' style={{ width: `${Math.min((reboundsLeader.rpg || 0) * 6, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {assistsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Asysty</span>
+                  <strong className='leader-name'>{assistsLeader.firstName} {assistsLeader.lastName}</strong>
+                  <span className='leader-val'>{assistsLeader.apg?.toFixed(1)} <small>APG</small></span>
+                </div>
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-assists' style={{ width: `${Math.min((assistsLeader.apg || 0) * 10, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {!pointsLeader && <p className='muted'>Brak danych statystycznych.</p>}
           </div>
         </article>
 
-        {/* STANDINGS TABLE PREVIEW */}
+        {/* ROW 3: STANDINGS TABLE (7) & RECENT RESULTS (5) */}
         <article className='surface-card dashboard-table'>
           <div className='section-head'>
             <h2>Tabela ligowa</h2>
@@ -267,7 +235,36 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {/* JOIN US / PARTNER WIDGET */}
+        <article className='surface-card dashboard-results'>
+          <div className='section-head'>
+            <h2>Ostatnie mecze</h2>
+            <Link href='/mecze'>Kalendarz</Link>
+          </div>
+          <div className='stack-list-v2'>
+            {latestGames.map((game) => {
+              const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
+              return (
+                <div key={game.id} className='list-row-v2'>
+                  <div className='result-row-left'>
+                    <span className={`result-outcome-badge ${isWin ? 'is-win-badge' : 'is-loss-badge'}`}>
+                      {isWin ? 'W' : 'L'}
+                    </span>
+                    <div className='result-opponent-info'>
+                      <strong>vs {game.opponent}</strong>
+                      <span className='muted'>{formatDateTime(game.date)}</span>
+                    </div>
+                  </div>
+                  <strong className='score-badge-premium'>
+                    {game.scoreUs ?? '-'}:{game.scoreThem ?? '-'}
+                  </strong>
+                </div>
+              )
+            })}
+            {latestGames.length === 0 ? <p className='muted'>Brak rozegranych meczów.</p> : null}
+          </div>
+        </article>
+
+        {/* ROW 4: JOIN US / PARTNER WIDGET (12) */}
         <article className='surface-card dashboard-docs'>
           <p className='section-kicker'>Zbudujmy to razem</p>
           <div className='join-us-container-premium'>
@@ -295,7 +292,7 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {/* TEAM ROSTER SLIDER */}
+        {/* ROW 5: TEAM ROSTER SLIDER (12) - MANUAL SCROLL ONLY */}
         <article className='surface-card dashboard-roster'>
           <div className='section-head'>
             <h2>Skład drużyny</h2>
@@ -304,39 +301,11 @@ export function MegaHomeTemplate({
           {hasRoster ? (
             <div className='players-slider-wrap-premium'>
               <div className='players-slider-track-premium'>
-                {/* Loop 1 */}
                 {roster.map((player) => {
                   const hasPhoto = hasPlayerPhoto(player);
                   const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
                   return (
-                    <Link href='/sklad' key={`p1-${player.id}`} className='home-player-card-premium-slide'>
-                      <div className='home-player-card__image-wrap-premium'>
-                        {!hasPhoto ? (
-                          <div className='home-player-card__avatar-placeholder-premium'>
-                            <span>{initials}</span>
-                          </div>
-                        ) : (
-                          <img
-                            src={resolvePlayerPhoto(player)}
-                            alt={`${player.firstName} ${player.lastName}`}
-                            className='home-player-card__image-premium'
-                          />
-                        )}
-                        <div className='home-player-card__number-badge'>#{player.number}</div>
-                      </div>
-                      <div className='home-player-card__body-premium'>
-                        <strong>{player.firstName} {player.lastName}</strong>
-                        <span className='muted-gold'>{getPositionLabel(player.position)}</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-                {/* Loop 2 (Seamless loop duplication) */}
-                {roster.map((player) => {
-                  const hasPhoto = hasPlayerPhoto(player);
-                  const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
-                  return (
-                    <Link href='/sklad' key={`p2-${player.id}`} className='home-player-card-premium-slide'>
+                    <Link href='/sklad' key={player.id} className='home-player-card-premium-slide'>
                       <div className='home-player-card__image-wrap-premium'>
                         {!hasPhoto ? (
                           <div className='home-player-card__avatar-placeholder-premium'>
@@ -365,7 +334,7 @@ export function MegaHomeTemplate({
           )}
         </article>
 
-        {/* SPONSORS SLIDER */}
+        {/* ROW 6: SPONSORS SLIDER (12) */}
         <article className='surface-card dashboard-sponsors'>
           <div className='section-head'>
             <h2>Partnerzy i Sponsorzy</h2>

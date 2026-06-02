@@ -100,7 +100,7 @@ export function RosterList({ roster }: RosterListProps) {
               <div className='profile-avatar-wrap'>
                 {!hasPlayerPhoto(selectedPlayer) ? (
                   <div className='profile-avatar-fallback-initials'>
-                    {`${selectedPlayer.firstName[0] || ''}${selectedPlayer.lastName[0] || ''}`.toUpperCase()}
+                    <span>{`${selectedPlayer.firstName[0] || ''}${selectedPlayer.lastName[0] || ''}`.toUpperCase()}</span>
                   </div>
                 ) : (
                   <img
@@ -235,13 +235,13 @@ export function RosterList({ roster }: RosterListProps) {
                       <tr>
                         <th>Przeciwnik</th>
                         <th className='text-center'>MIN</th>
-                        <th className='text-center highlight-gold'>PTS</th>
+                        <th className='text-center'><span className='highlight-gold'>PTS</span></th>
                         <th className='text-center'>REB</th>
                         <th className='text-center'>AST</th>
                         <th className='text-center'>STL</th>
                         <th className='text-center'>BLK</th>
                         <th className='text-center'>+/-</th>
-                        <th className='text-center highlight-gold'>EVAL</th>
+                        <th className='text-center'><span className='highlight-gold'>EVAL</span></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -252,7 +252,7 @@ export function RosterList({ roster }: RosterListProps) {
                             <span className='block text-xs muted'>{g.date.split('T')[0]}</span>
                           </td>
                           <td className='text-center font-mono'>{g.min || '—'}</td>
-                          <td className='text-center font-bold font-mono'>{g.pts}</td>
+                          <td className='text-center font-bold font-mono'><span className='highlight-gold'>{g.pts}</span></td>
                           <td className='text-center font-mono'>{g.reb}</td>
                           <td className='text-center font-mono'>{g.ast}</td>
                           <td className='text-center font-mono'>{g.stl ?? '—'}</td>
@@ -260,7 +260,7 @@ export function RosterList({ roster }: RosterListProps) {
                           <td className={`text-center font-bold font-mono ${(g.plusMinus || 0) > 0 ? 'color-win' : (g.plusMinus || 0) < 0 ? 'color-loss' : ''}`}>
                             {g.plusMinus !== undefined ? (g.plusMinus > 0 ? `+${g.plusMinus}` : g.plusMinus) : '—'}
                           </td>
-                          <td className='text-center font-bold font-mono highlight-gold'>{g.eval ?? '—'}</td>
+                          <td className='text-center font-bold font-mono'><span className='highlight-gold'>{g.eval ?? '—'}</span></td>
                         </tr>
                       ))}
                     </tbody>

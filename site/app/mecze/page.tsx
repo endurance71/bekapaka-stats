@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Mecze | BeKaPaKa Bobolice',
-  description: 'Terminarz spotkań, wyniki meczów oraz taktyczne analizy AI drużyny BeKaPaKa Bobolice.'
+  description: 'Terminarz spotkań i wyniki meczów drużyny BeKaPaKa Bobolice.'
 }
 
 export default async function MatchesPage() {
@@ -18,7 +18,7 @@ export default async function MatchesPage() {
   return (
     <EditorialListingTemplate
       title='Terminarz i wyniki'
-      description='Przeglądaj harmonogram nadchodzących spotkań oraz pełne statystyki i analizy AI z rozegranych meczów.'
+      description='Przeglądaj harmonogram nadchodzących spotkań oraz pełne statystyki z rozegranych meczów.'
       hasItems={games.length > 0}
       stateStatus={gamesState.status}
       stateSource={gamesState.source}
