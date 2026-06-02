@@ -15,7 +15,10 @@ services:
       - bkpk-network
 
   bkpk-backend:
-    image: ghcr.io/endurance71/bekapaka-stats/backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: bkpk-backend:local
     container_name: bkpk-backend-prod
     restart: always
     environment:
