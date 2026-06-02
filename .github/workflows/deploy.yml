@@ -2,7 +2,7 @@ name: Deploy to VPS
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   workflow_dispatch:
 
 env:
@@ -18,17 +18,17 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.CR_PAT }}
 
       - name: Build and push Backend image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/Dockerfile
@@ -36,38 +36,57 @@ jobs:
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
 
       - name: Build and push Frontend image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile.prod
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
 
+      - name: Build and push public Site image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./site
+          file: ./site/Dockerfile.prod
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:latest
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v0.1.6
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload production compose file
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: 10204
+          source: docker-compose.prod.yml
+          target: /opt/bekapaka-stats/
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          CR_PAT: ${{ secrets.CR_PAT }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 10204
+          envs: CR_PAT,GITHUB_ACTOR,GITHUB_REPOSITORY
           script: |
-            # Zaloguj się do rejestru
-            echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            
-            # Przejdź do katalogu projektu
+            set -euo pipefail
+            echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
             cd /opt/bekapaka-stats
-            
-            # Pobierz najnowsze obrazy
-            docker pull ghcr.io/${{ github.repository }}/backend:latest
-            docker pull ghcr.io/${{ github.repository }}/frontend:latest
-            
-            # Zrestartuj kontenery
+            docker pull "ghcr.io/${GITHUB_REPOSITORY}/backend:latest"
+            docker pull "ghcr.io/${GITHUB_REPOSITORY}/frontend:latest"
+            docker pull "ghcr.io/${GITHUB_REPOSITORY}/site:latest"
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            
-            # Wyczyść nieużywane obrazy
             docker image prune -f
