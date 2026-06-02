@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { MainNav } from './MainNav'
+
+/** Must match `--mobile-menu-duration` in base.css */
+const MENU_ANIMATION_MS = 300
 
 interface MobileFullScreenMenuProps {
   isOpen: boolean
@@ -29,18 +32,93 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
   const [isMounted, setIsMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  const isClosingRef = useRef(false)
+  const closeCleanupRef = useRef<(() => void) | null>(null)
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsMounted(true)
-      const frame = requestAnimationFrame(() => setIsVisible(true))
-      return () => cancelAnimationFrame(frame)
+  const finishUnmount = useCallback(() => {
+    closeCleanupRef.current?.()
+    closeCleanupRef.current = null
+    isClosingRef.current = false
+    setIsMounted(false)
+    setIsVisible(false)
+  }, [])
+
+  const startCloseAnimation = useCallback(() => {
+    if (isClosingRef.current) return
+    isClosingRef.current = true
+
+    closeCleanupRef.current?.()
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsVisible(false)
+      })
+    })
+
+    const panel = panelRef.current
+    let completed = false
+
+    const complete = () => {
+      if (completed) return
+      completed = true
+      closeCleanupRef.current?.()
+      closeCleanupRef.current = null
+      finishUnmount()
     }
 
-    setIsVisible(false)
-    const timeout = window.setTimeout(() => setIsMounted(false), 280)
-    return () => window.clearTimeout(timeout)
+    const handleTransitionEnd = (event: TransitionEvent) => {
+      if (event.target !== panel || event.propertyName !== 'transform') return
+      complete()
+    }
+
+    panel?.addEventListener('transitionend', handleTransitionEnd)
+    const fallbackId = window.setTimeout(complete, MENU_ANIMATION_MS + 80)
+
+    closeCleanupRef.current = () => {
+      panel?.removeEventListener('transitionend', handleTransitionEnd)
+      window.clearTimeout(fallbackId)
+    }
+  }, [finishUnmount])
+
+  const handleRequestClose = useCallback(() => {
+    if (!isMounted || isClosingRef.current) return
+    startCloseAnimation()
+    window.setTimeout(() => {
+      onClose()
+    }, MENU_ANIMATION_MS)
+  }, [isMounted, onClose, startCloseAnimation])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    isClosingRef.current = false
+    setIsMounted(true)
+
+    let openFrame1 = 0
+    let openFrame2 = 0
+    openFrame1 = requestAnimationFrame(() => {
+      openFrame2 = requestAnimationFrame(() => {
+        setIsVisible(true)
+      })
+    })
+
+    return () => {
+      cancelAnimationFrame(openFrame1)
+      cancelAnimationFrame(openFrame2)
+    }
   }, [isOpen])
+
+  useEffect(() => {
+    if (isOpen || !isMounted) return
+    startCloseAnimation()
+  }, [isOpen, isMounted, startCloseAnimation])
+
+  useEffect(() => {
+    return () => {
+      closeCleanupRef.current?.()
+    }
+  }, [])
 
   useEffect(() => {
     if (!isMounted) return
@@ -51,21 +129,23 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
     document.documentElement.style.overflow = 'hidden'
 
     const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-      'button, a, [tabindex]:not([tabindex="-1"])'
+      'button:not(.mobile-fullscreen-menu__backdrop), a, [tabindex]:not([tabindex="-1"])'
     )
     firstFocusable?.focus()
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault()
-        onClose()
+        handleRequestClose()
         return
       }
 
       if (event.key !== 'Tab' || !dialogRef.current) return
 
       const focusableElements = Array.from(
-        dialogRef.current.querySelectorAll<HTMLElement>('button, a, [tabindex]:not([tabindex="-1"])')
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'button:not(.mobile-fullscreen-menu__backdrop), a, [tabindex]:not([tabindex="-1"])'
+        )
       ).filter((element) => !element.hasAttribute('disabled'))
 
       if (focusableElements.length === 0) return
@@ -89,7 +169,7 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
       document.documentElement.style.overflow = previousHtmlOverflow
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isMounted, onClose])
+  }, [isMounted, handleRequestClose])
 
   if (typeof document === 'undefined' || !isMounted) {
     return null
@@ -103,36 +183,48 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
       aria-label='Menu nawigacji'
       className={`mobile-fullscreen-menu ${isVisible ? 'is-visible' : ''}`}
     >
-      <header className='mobile-fullscreen-menu__header'>
-        <div>
-          <div className='mobile-fullscreen-menu__brand'>BeKaPaKa</div>
-          <div className='mobile-fullscreen-menu__subtitle'>Nawigacja</div>
+      <button
+        type='button'
+        className='mobile-fullscreen-menu__backdrop'
+        aria-label='Zamknij menu'
+        tabIndex={-1}
+        onClick={handleRequestClose}
+      />
+
+      <div ref={panelRef} className='mobile-fullscreen-menu__panel'>
+        <header className='mobile-fullscreen-menu__header'>
+          <div>
+            <div className='mobile-fullscreen-menu__brand'>BeKaPaKa</div>
+            <div className='mobile-fullscreen-menu__subtitle'>Nawigacja</div>
+          </div>
+          <button
+            type='button'
+            onClick={handleRequestClose}
+            className='mobile-fullscreen-menu__close'
+            aria-label='Zamknij menu'
+          >
+            <CloseIcon />
+          </button>
+        </header>
+
+        <nav className='mobile-fullscreen-menu__nav' aria-label='Sekcje strony'>
+          <MainNav onLinkClick={handleRequestClose} variant='fullscreen' />
+        </nav>
+
+        <div className='mobile-fullscreen-menu__footer'>
+          <button
+            className='button button--primary mobile-fullscreen-menu__cta'
+            type='button'
+            onClick={() => {
+              handleRequestClose()
+              window.setTimeout(() => {
+                window.open('https://panel.bekapaka.pl', '_blank', 'noopener,noreferrer')
+              }, MENU_ANIMATION_MS)
+            }}
+          >
+            Zaloguj do Panelu
+          </button>
         </div>
-        <button
-          type='button'
-          onClick={onClose}
-          className='mobile-fullscreen-menu__close'
-          aria-label='Zamknij menu'
-        >
-          <CloseIcon />
-        </button>
-      </header>
-
-      <nav className='mobile-fullscreen-menu__nav' aria-label='Sekcje strony'>
-        <MainNav onLinkClick={onClose} variant='fullscreen' />
-      </nav>
-
-      <div className='mobile-fullscreen-menu__footer'>
-        <button
-          className='button button--primary mobile-fullscreen-menu__cta'
-          type='button'
-          onClick={() => {
-            onClose()
-            window.open('https://panel.bekapaka.pl', '_blank', 'noopener,noreferrer')
-          }}
-        >
-          Zaloguj do Panelu
-        </button>
       </div>
     </div>,
     document.body
