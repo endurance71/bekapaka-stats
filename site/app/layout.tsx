@@ -23,7 +23,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: '#0B0B0C',
-  colorScheme: 'dark'
+  colorScheme: 'dark',
+  interactiveWidget: 'resizes-content'
 }
 
 export const metadata: Metadata = {
