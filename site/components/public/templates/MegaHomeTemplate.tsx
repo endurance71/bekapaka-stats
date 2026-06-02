@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
-import { getPositionLabel, resolvePlayerPhoto } from '../../../lib/data/utils'
+import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 
 export function MegaHomeTemplate({
   news,
@@ -19,7 +19,6 @@ export function MegaHomeTemplate({
   sponsors: SponsorItem[]
 }) {
   const leadNews = news[0]
-  const homePlayers = roster.slice(0, 5)
   const latestGames = recentGames.slice(0, 3)
   const hasRoster = roster.length > 0
   const pointsLeader = hasRoster ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
@@ -43,7 +42,7 @@ export function MegaHomeTemplate({
               <span className='highlight-gold'>BeKaPaKa Bobolice</span>
             </h1>
             <p className='hero-description'>
-              Oficjalny serwis klubu koszykarskiego z Bobolic. Śledź statystyki, czytaj analizy Gemini AI oraz bądź na bieżąco z wynikami spotkań.
+              Oficjalny serwis klubu koszykarskiego z Bobolic. Śledź statystyki zawodników, terminarz rozgrywek oraz bądź na bieżąco z wynikami spotkań.
             </p>
             
             {ourPosition && (
@@ -97,55 +96,6 @@ export function MegaHomeTemplate({
           )}
         </article>
 
-        {/* NEXT MATCH (TICKET CARD) */}
-        <article className='surface-card dashboard-next'>
-          <p className='section-kicker'>Najbliższy mecz</p>
-          {nextGame ? (
-            <div className='ticket-box'>
-              <div className='ticket-main'>
-                <span className='ticket-league'>Zmagania ligowe</span>
-                <h2 className='ticket-teams'>
-                  <span className='ticket-team-us'>BEKAPAKA</span>
-                  <span className='ticket-vs'>VS</span>
-                  <span className='ticket-team-them'>{nextGame.opponent.toUpperCase()}</span>
-                </h2>
-                <div className='ticket-details'>
-                  <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Data meczu</span>
-                    <strong className='ticket-detail-value'>{formatDateTime(nextGame.date)}</strong>
-                  </div>
-                  {nextGame.data?.venue && (
-                    <div className='ticket-detail-item'>
-                      <span className='ticket-detail-label'>Hala</span>
-                      <strong className='ticket-detail-value'>{nextGame.data.venue}</strong>
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className='ticket-divider'>
-                <span className='notch notch-top'></span>
-                <span className='dashed-line'></span>
-                <span className='notch notch-bottom'></span>
-              </div>
-              <div className='ticket-stub'>
-                <span className='ticket-badge-pill'>{nextGame.homeAway === 'home' ? 'Gospodarz' : 'Wyjazd'}</span>
-                <Link href='/mecze' className='button button--primary stub-button'>
-                  Szczegóły
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className='ticket-empty'>
-              <span className='ticket-empty-icon'>🏀</span>
-              <h3>Brak zaplanowanych meczów</h3>
-              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały rozegrane.</p>
-              <Link href='/mecze' className='button button--ghost stub-button'>
-                Zobacz kalendarz
-              </Link>
-            </div>
-          )}
-        </article>
-
         {/* STAT LEADERS */}
         <article className='surface-card dashboard-leaders'>
           <p className='section-kicker'>Liderzy zespołu</p>
@@ -193,6 +143,93 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
+        {/* NEXT MATCH (TICKET CARD) */}
+        <article className='surface-card dashboard-next'>
+          <p className='section-kicker'>Najbliższy mecz</p>
+          {nextGame ? (
+            <div className='ticket-box'>
+              <div className='ticket-main'>
+                <span className='ticket-league'>Zmagania ligowe</span>
+                <h2 className='ticket-teams'>
+                  <span className='ticket-team-us'>BEKAPAKA</span>
+                  <span className='ticket-vs'>VS</span>
+                  <span className='ticket-team-them'>{nextGame.opponent.toUpperCase()}</span>
+                </h2>
+                <div className='ticket-details'>
+                  <div className='ticket-detail-item'>
+                    <span className='ticket-detail-label'>Data meczu</span>
+                    <strong className='ticket-detail-value'>{formatDateTime(nextGame.date)}</strong>
+                  </div>
+                  {nextGame.data?.venue && (
+                    <div className='ticket-detail-item'>
+                      <span className='ticket-detail-label'>Hala</span>
+                      <strong className='ticket-detail-value'>{nextGame.data.venue}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className='ticket-divider'>
+                <span className='notch notch-top'></span>
+                <span className='dashed-line'></span>
+                <span className='notch notch-bottom'></span>
+              </div>
+              <div className='ticket-stub'>
+                <span className='ticket-badge-pill'>{nextGame.homeAway === 'home' ? 'Gospodarz' : 'Wyjazd'}</span>
+                <Link href='/mecze' className='button button--primary stub-button'>
+                  Szczegóły
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className='ticket-empty'>
+              <span className='ticket-empty-icon'>
+                <svg className='icon-basketball' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' style={{ width: '48px', height: '48px', color: 'var(--bkp-gold)', display: 'block', margin: '0 auto var(--space-3)' }}>
+                  <circle cx='12' cy='12' r='10'></circle>
+                  <path d='M6.2 6.2c2.4 2.4 2.4 6.4 0 8.8'></path>
+                  <path d='M17.8 6.2c-2.4 2.4-2.4 6.4 0 8.8'></path>
+                  <line x1='2' y1='12' x2='22' y2='12'></line>
+                  <line x1='12' y1='2' x2='12' y2='22'></line>
+                </svg>
+              </span>
+              <h3>Brak zaplanowanych meczów</h3>
+              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały rozegrane.</p>
+              <Link href='/mecze' className='button button--ghost stub-button'>
+                Zobacz kalendarz
+              </Link>
+            </div>
+          )}
+        </article>
+
+        {/* RECENT MATCHES RESULTS */}
+        <article className='surface-card dashboard-results'>
+          <div className='section-head'>
+            <h2>Ostatnie mecze</h2>
+            <Link href='/mecze'>Kalendarz</Link>
+          </div>
+          <div className='stack-list-v2'>
+            {latestGames.map((game) => {
+              const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
+              return (
+                <div key={game.id} className='list-row-v2'>
+                  <div className='result-row-left'>
+                    <span className={`result-outcome-badge ${isWin ? 'is-win-badge' : 'is-loss-badge'}`}>
+                      {isWin ? 'W' : 'L'}
+                    </span>
+                    <div className='result-opponent-info'>
+                      <strong>vs {game.opponent}</strong>
+                      <span className='muted'>{formatDateTime(game.date)}</span>
+                    </div>
+                  </div>
+                  <strong className='score-badge-premium'>
+                    {game.scoreUs ?? '-'}:{game.scoreThem ?? '-'}
+                  </strong>
+                </div>
+              )
+            })}
+            {latestGames.length === 0 ? <p className='muted'>Brak rozegranych meczów.</p> : null}
+          </div>
+        </article>
+
         {/* STANDINGS TABLE PREVIEW */}
         <article className='surface-card dashboard-table'>
           <div className='section-head'>
@@ -230,73 +267,6 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {/* RECENT MATCHES RESULTS */}
-        <article className='surface-card dashboard-results'>
-          <div className='section-head'>
-            <h2>Ostatnie mecze</h2>
-            <Link href='/mecze'>Kalendarz</Link>
-          </div>
-          <div className='stack-list-v2'>
-            {latestGames.map((game) => {
-              const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
-              return (
-                <div key={game.id} className='list-row-v2'>
-                  <div className='result-row-left'>
-                    <span className={`result-outcome-badge ${isWin ? 'is-win-badge' : 'is-loss-badge'}`}>
-                      {isWin ? 'W' : 'L'}
-                    </span>
-                    <div className='result-opponent-info'>
-                      <strong>vs {game.opponent}</strong>
-                      <span className='muted'>{formatDateTime(game.date)}</span>
-                    </div>
-                  </div>
-                  <strong className='score-badge-premium'>
-                    {game.scoreUs ?? '-'}:{game.scoreThem ?? '-'}
-                  </strong>
-                </div>
-              )
-            })}
-            {latestGames.length === 0 ? <p className='muted'>Brak rozegranych meczów.</p> : null}
-          </div>
-        </article>
-
-        {/* TEAM ROSTER */}
-        <article className='surface-card dashboard-roster'>
-          <div className='section-head'>
-            <h2>Skład drużyny</h2>
-            <Link href='/sklad'>Wszyscy zawodnicy</Link>
-          </div>
-          <div className='home-player-grid-premium'>
-            {homePlayers.map((player) => {
-              const hasPhoto = player.photo || player.photoUrl;
-              const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
-              return (
-                <Link href='/sklad' key={player.id} className='home-player-card-premium'>
-                  <div className='home-player-card__image-wrap-premium'>
-                    {!hasPhoto || resolvePlayerPhoto(player).includes('default.png') ? (
-                      <div className='home-player-card__avatar-placeholder-premium'>
-                        <span>{initials}</span>
-                      </div>
-                    ) : (
-                      <img
-                        src={resolvePlayerPhoto(player)}
-                        alt={`${player.firstName} ${player.lastName}`}
-                        className='home-player-card__image-premium'
-                      />
-                    )}
-                    <div className='home-player-card__number-badge'>#{player.number}</div>
-                  </div>
-                  <div className='home-player-card__body-premium'>
-                    <strong>{player.firstName} {player.lastName}</strong>
-                    <span className='muted-gold'>{getPositionLabel(player.position)}</span>
-                  </div>
-                </Link>
-              );
-            })}
-            {homePlayers.length === 0 ? <p className='muted'>Brak danych składu.</p> : null}
-          </div>
-        </article>
-
         {/* JOIN US / PARTNER WIDGET */}
         <article className='surface-card dashboard-docs'>
           <p className='section-kicker'>Zbudujmy to razem</p>
@@ -323,6 +293,76 @@ export function MegaHomeTemplate({
               </a>
             </div>
           </div>
+        </article>
+
+        {/* TEAM ROSTER SLIDER */}
+        <article className='surface-card dashboard-roster'>
+          <div className='section-head'>
+            <h2>Skład drużyny</h2>
+            <Link href='/sklad'>Wszyscy zawodnicy</Link>
+          </div>
+          {hasRoster ? (
+            <div className='players-slider-wrap-premium'>
+              <div className='players-slider-track-premium'>
+                {/* Loop 1 */}
+                {roster.map((player) => {
+                  const hasPhoto = hasPlayerPhoto(player);
+                  const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
+                  return (
+                    <Link href='/sklad' key={`p1-${player.id}`} className='home-player-card-premium-slide'>
+                      <div className='home-player-card__image-wrap-premium'>
+                        {!hasPhoto ? (
+                          <div className='home-player-card__avatar-placeholder-premium'>
+                            <span>{initials}</span>
+                          </div>
+                        ) : (
+                          <img
+                            src={resolvePlayerPhoto(player)}
+                            alt={`${player.firstName} ${player.lastName}`}
+                            className='home-player-card__image-premium'
+                          />
+                        )}
+                        <div className='home-player-card__number-badge'>#{player.number}</div>
+                      </div>
+                      <div className='home-player-card__body-premium'>
+                        <strong>{player.firstName} {player.lastName}</strong>
+                        <span className='muted-gold'>{getPositionLabel(player.position)}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+                {/* Loop 2 (Seamless loop duplication) */}
+                {roster.map((player) => {
+                  const hasPhoto = hasPlayerPhoto(player);
+                  const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
+                  return (
+                    <Link href='/sklad' key={`p2-${player.id}`} className='home-player-card-premium-slide'>
+                      <div className='home-player-card__image-wrap-premium'>
+                        {!hasPhoto ? (
+                          <div className='home-player-card__avatar-placeholder-premium'>
+                            <span>{initials}</span>
+                          </div>
+                        ) : (
+                          <img
+                            src={resolvePlayerPhoto(player)}
+                            alt={`${player.firstName} ${player.lastName}`}
+                            className='home-player-card__image-premium'
+                          />
+                        )}
+                        <div className='home-player-card__number-badge'>#{player.number}</div>
+                      </div>
+                      <div className='home-player-card__body-premium'>
+                        <strong>{player.firstName} {player.lastName}</strong>
+                        <span className='muted-gold'>{getPositionLabel(player.position)}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className='muted'>Brak danych składu.</p>
+          )}
         </article>
 
         {/* SPONSORS SLIDER */}

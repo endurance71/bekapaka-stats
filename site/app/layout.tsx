@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Montserrat, Bebas_Neue } from 'next/font/google'
 import './globals.css'
 import { PublicShell } from '../components/public/layout/PublicShell'
@@ -17,6 +17,13 @@ const bebasNeue = Bebas_Neue({
   weight: ['400'],
   display: 'swap'
 })
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#0B0B0C'
+}
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),

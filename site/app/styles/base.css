@@ -336,6 +336,7 @@ p {
   backdrop-filter: blur(8px);
   opacity: 0;
   transition: opacity var(--transition);
+  z-index: 1;
 }
 
 .mobile-menu-drawer__content {
@@ -354,6 +355,7 @@ p {
   gap: var(--space-5);
   overflow-y: auto;
   box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8);
+  z-index: 2;
 }
 
 .mobile-nav .main-nav {
