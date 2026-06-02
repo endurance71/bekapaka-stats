@@ -3,8 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
 import TopScorersModern from '../features/league/TopScorersModern';
-import SeasonSelector from '../components/SeasonSelector';
-import { useSeasonPreference } from '../hooks/useSeasonPreference';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { Trophy, Calendar, Target, Activity } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 
@@ -12,8 +11,7 @@ type Tab = 'table' | 'schedule' | 'scorers';
 
 export default function League() {
     const [activeTab, setActiveTab] = useState<Tab>('table');
-    const { seasons, seasonId, selectedSeason, loading: seasonsLoading, setSeasonId } =
-        useSeasonPreference('league-view');
+    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
     const tabs = [
         { id: 'table' as Tab, label: 'Tabela', icon: Trophy, color: 'text-bkpk-warning' },
@@ -22,11 +20,11 @@ export default function League() {
     ];
 
     return (
-        <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
+        <div className="bg-bkpk-bg p-4 md:p-8 lg:p-12">
             <div className="max-w-[1400px] mx-auto space-y-12">
 
                 {/* Header Section */}
-                <header className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <header className="space-y-2">
                     <div className="space-y-2">
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
@@ -54,13 +52,6 @@ export default function League() {
                                 : 'Oficjalna tabela i terminarz rozgrywek.'}
                         </motion.p>
                     </div>
-                    <SeasonSelector
-                        seasons={seasons}
-                        seasonId={seasonId}
-                        onChange={setSeasonId}
-                        loading={seasonsLoading}
-                        className="shrink-0"
-                    />
                 </header>
 
                 {/* Tab Navigation */}

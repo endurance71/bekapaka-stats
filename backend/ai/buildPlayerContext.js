@@ -6,6 +6,68 @@ import { AiValidationError } from './errors.js';
 
 const prisma = new PrismaClient();
 
+function getPositionProfile(positionRaw) {
+  const position = (positionRaw || '').toUpperCase().trim();
+
+  const profiles = {
+    PG: {
+      roleName: 'rozgrywający',
+      priorities: [
+        'kontrola tempa i decyzji w pick and rollu',
+        'ograniczenie strat przy presji na piłkę',
+        'kreowanie sytuacji dla partnerów'
+      ],
+      keyMetrics: ['AST', 'TOV', 'AST/TOV', 'eFG po koźle']
+    },
+    SG: {
+      roleName: 'rzucający obrońca',
+      priorities: [
+        'stabilność rzutu po koźle i po zasłonie',
+        'decyzje 0.5 sekundy po złapaniu piłki',
+        'obrona obwodowa na pierwszym kroku'
+      ],
+      keyMetrics: ['3PT%', 'eFG', 'PPG', 'straty']
+    },
+    SF: {
+      roleName: 'niski skrzydłowy',
+      priorities: [
+        'gra 1 na 1 z półdystansu i wejścia',
+        'wszechstronność po obu stronach boiska',
+        'zbiórki i doskok z pomocy'
+      ],
+      keyMetrics: ['PPG', 'RPG', 'eFG', 'plusMinus']
+    },
+    PF: {
+      roleName: 'silny skrzydłowy',
+      priorities: [
+        'fizyczność pod koszem i zastawienie',
+        'finishing spod kosza i po short rollu',
+        'obrona pick and rolla i rotacje'
+      ],
+      keyMetrics: ['RPG', 'ORB', 'TS%', 'PF']
+    },
+    C: {
+      roleName: 'center',
+      priorities: [
+        'ochrona obręczy i timing bloku',
+        'zbiórka defensywna i ograniczenie drugich szans',
+        'skuteczne wykończenie pod koszem'
+      ],
+      keyMetrics: ['RPG', 'BLK', 'TS%', 'plusMinus']
+    }
+  };
+
+  return profiles[position] || {
+    roleName: 'uniwersalny zawodnik',
+    priorities: [
+      'stabilność decyzji pod presją',
+      'selekcja rzutowa i skuteczność',
+      'wpływ po obu stronach boiska'
+    ],
+    keyMetrics: ['PPG', 'RPG', 'APG', 'eFG']
+  };
+}
+
 /**
  * @param {string} playerId
  */
@@ -41,6 +103,7 @@ export async function buildPlayerContext(playerId) {
 
   const payload = {
     player: stats.player,
+    positionProfile: getPositionProfile(stats.player?.position),
     averages: stats.averages,
     goals: roster?.goals || null,
     gameLog: stats.gameLog.slice(0, 15),

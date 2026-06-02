@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ header, hero, main, sidebar }: DashboardLayoutProps) {
     return (
-        <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-10">
+        <div className="bg-bkpk-bg p-4 md:p-8 lg:p-10 lg:min-h-screen">
             <div className="max-w-[1600px] mx-auto space-y-8">
                 {/* Header Section */}
                 <header className="flex flex-col gap-2">

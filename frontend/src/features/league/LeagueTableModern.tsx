@@ -4,7 +4,9 @@ import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
-import { MobileDataCard, MobileDataList, DesktopTableShell } from '../../shared/ui/MobileDataCard';
+import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
+import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
+import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 
 interface Team {
     name: string;
@@ -26,6 +28,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
     const [table, setTable] = useState<Team[]>([]);
     const [phase, setPhase] = useState<TablePhase>('regular');
     const [loading, setLoading] = useState(true);
+    const showCards = usePortraitMobile();
+    const isNarrow = useIsMobile(1024);
 
     const fetchTable = useCallback(async () => {
         if (!seasonId) return;
@@ -89,6 +93,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                 <KalkEmptyState title="Tabela Ligowa jest pusta" />
             ) : (
                 <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
+            {showCards ? (
             <MobileDataList>
                 {table.map((team, index) => {
                     const isBkpk = team.name.toLowerCase().includes('bekapaka');
@@ -123,9 +128,9 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                     );
                 })}
             </MobileDataList>
-
-            <DesktopTableShell>
-                <table className="w-full text-sm text-left border-collapse">
+            ) : (
+            <ScrollableTableShell compact={isNarrow} className="border-0 rounded-none">
+                <table className="w-full text-sm text-left border-collapse min-w-[560px]">
                     <thead>
                         <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-10 sm:w-12 text-center">#</th>
@@ -134,9 +139,9 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-danger">P</th>
-                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">RZ</th>
-                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">ST</th>
-                            <th className="hidden sm:table-cell px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">+/-</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">RZ</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">ST</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">+/-</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-bkpk-border-subtle">
@@ -171,10 +176,10 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg">{team.points}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-success/80 font-bold tabular-nums">{team.wins}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-danger/80 font-bold tabular-nums">{team.losses}</td>
-                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
-                                    <td className="hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
                                     <td className={cn(
-                                        "hidden sm:table-cell px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold tabular-nums",
+                                        'px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold tabular-nums',
                                         (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-danger"
                                     )}>
                                         {(team.pointsFor - team.pointsAgainst) > 0 ? `+${team.pointsFor - team.pointsAgainst}` : team.pointsFor - team.pointsAgainst}
@@ -184,7 +189,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                         })}
                     </tbody>
                 </table>
-            </DesktopTableShell>
+            </ScrollableTableShell>
+            )}
         </BkpkCard>
       )}
     </div>

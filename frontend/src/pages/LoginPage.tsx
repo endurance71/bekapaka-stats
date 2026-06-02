@@ -31,7 +31,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-bkpk-bg p-4">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-bkpk-bg p-4 safe-area-top safe-area-bottom safe-area-x">
             <div className="w-full max-w-md">
                 <BkpkCard className="p-8 space-y-8 relative overflow-hidden">
                     {/* Interior Card Glow */}

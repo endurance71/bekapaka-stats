@@ -9,14 +9,11 @@ import {
   Calendar,
   MapPin,
   Trophy,
-  Download,
   Zap,
   BarChart2,
-  Users
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
-import BkpkButton from '../shared/ui/BkpkButton';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import TeamStats from '../components/games/TeamStats';
 import DashboardMomentum from '../components/games/DashboardMomentum';
@@ -55,12 +52,15 @@ export default function GameDetail() {
       const result = await postJSON<{
         aiSummary: string;
         aiSummaryAt: string;
+        model?: string;
         cached?: boolean;
       }>(`/api/games/${id}/analyze`, { force });
       setGame((prev: any) => ({
         ...prev,
         aiSummary: result.aiSummary,
-        aiSummaryAt: result.aiSummaryAt
+        aiSummaryAt: result.aiSummaryAt,
+        aiSummaryModel: result.model ?? prev?.aiSummaryModel,
+        aiSummaryStale: false
       }));
     } catch (error: any) {
       alert(error?.message || 'Nie udało się wygenerować analizy AI');
@@ -86,24 +86,14 @@ export default function GameDetail() {
   if (!game) return null;
 
   return (
-    <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-12">
+    <div className="bg-bkpk-bg p-4 md:p-8 lg:p-12">
       <div className="max-w-[1400px] mx-auto space-y-12">
-        {/* Navigation & Actions */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <Link to="/games" className="group flex items-center gap-2 text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
-            <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
-              <ChevronLeft className="w-4 h-4" />
-            </div>
-            <span className="font-bold uppercase tracking-wider text-xs">Powrót do Meczy</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <BkpkButton variant="ghost" size="sm" className="gap-2">
-              <Download className="w-4 h-4" />
-              Eksportuj JSON
-            </BkpkButton>
+        <Link to="/games" className="group flex items-center gap-2 text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
+          <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
+            <ChevronLeft className="w-4 h-4" />
           </div>
-        </div>
+          <span className="font-bold uppercase tracking-wider text-xs">Powrót do Meczy</span>
+        </Link>
 
         {/* Immersive Scoreboard Header */}
         <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-5 sm:p-8 md:p-12 lg:p-16">
@@ -221,9 +211,14 @@ export default function GameDetail() {
               content={game.aiSummary}
               generatedAt={game.aiSummaryAt}
               model={game.aiSummaryModel}
-              isAdmin={isAdmin}
+              canGenerate={isAdmin}
               loading={aiLoading}
               onGenerate={handleGenerateAi}
+              staleHint={
+                game.aiSummaryStale
+                  ? 'Analiza może być nieaktualna (zmieniły się statystyki meczu). Admin: użyj Odśwież lub wymuszenia.'
+                  : null
+              }
             />
 
             {/* Box Score Section */}

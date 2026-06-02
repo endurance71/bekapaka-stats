@@ -14,9 +14,9 @@ import { NextChallengeWidget } from '../features/dashboard/NextChallengeWidget';
 
 // Temporary Legacy Components (until refactored)
 import TopPlayersCard from '../components/dashboard/TopPlayersCard';
-import TrainingPrioritiesCard from '../components/dashboard/TrainingPrioritiesCard';
 import ScoutingCard from '../components/dashboard/ScoutingCard';
 import DashboardMomentum from '../components/games/DashboardMomentum';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 type Game = {
   id: string;
@@ -35,6 +35,9 @@ type Player = {
   firstName: string;
   lastName: string;
   ppg: number;
+  rpg?: number;
+  apg?: number;
+  eval?: number | null;
   photo?: string | null;
   data?: any;
   kalkPlayer?: any;
@@ -46,24 +49,25 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [recordStats, setRecordStats] = useState({ wins: 0, losses: 0, total: 0, remaining: 0 });
   const [nextMatch, setNextMatch] = useState<any>(null);
-  const [trainingStats, setTrainingStats] = useState<any>(null);
   const [scoutingData, setScoutingData] = useState<any>(null);
   const [lastGameFull, setLastGameFull] = useState<any>(null);
   const [teamStats, setTeamStats] = useState<any>(null);
-  const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string } | null>(null);
+  const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
+  const { seasonId } = useSeasonPreferenceContext();
 
   const fetchDashboardData = useCallback(async () => {
+    if (!seasonId) return;
     setLoading(true);
     try {
-      const [gamesData, playersData, scheduleData, trainingData, scouting, tStats, briefingData] = await Promise.all([
+      const scoutingQ = new URLSearchParams({ seasonId });
+      const [gamesData, playersData, scheduleData, scouting, tStats, briefingData] = await Promise.all([
         fetchJSON<Game[]>('/api/games'),
         fetchJSON<Player[]>('/api/players'),
-        fetchJSON<any[]>('/api/league/schedule'),
-        fetchJSON<any>('/api/training/priorities'),
-        fetchJSON<any>('/api/scouting/next'),
+        fetchJSON<any[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`),
+        fetchJSON<any>(`/api/scouting/next?${scoutingQ.toString()}`),
         fetchJSON<any>('/api/team/stats'),
         fetchJSON<any>('/api/ai/briefing').catch(() => null)
       ]);
@@ -74,7 +78,6 @@ export default function Dashboard() {
 
       setGames(gamesData || []);
       setPlayers(playersData || []);
-      setTrainingStats(trainingData);
       setScoutingData(scouting);
       setTeamStats(tStats);
       setBriefing(briefingData);
@@ -106,7 +109,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [seasonId]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -122,7 +125,8 @@ export default function Dashboard() {
       setBriefing({
         contentMd: result.contentMd,
         generatedAt: result.generatedAt,
-        model: result.model
+        model: result.model,
+        stale: false
       });
     } catch (error: any) {
       alert(error?.message || 'Nie udało się wygenerować briefingu');
@@ -169,9 +173,14 @@ export default function Dashboard() {
             content={briefing?.contentMd}
             generatedAt={briefing?.generatedAt}
             model={briefing?.model}
-            isAdmin={isAdmin}
+            canGenerate={isAdmin}
             loading={briefingLoading}
             onGenerate={handleGenerateBriefing}
+            staleHint={
+              briefing?.stale
+                ? 'Briefing może być nieaktualny (nowy mecz, scrape KALK). Admin: wygeneruj ponownie.'
+                : null
+            }
             emptyHint="Brak briefingu. Administrator może wygenerować podsumowanie tygodnia dla drużyny."
           />
 
@@ -209,16 +218,7 @@ export default function Dashboard() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <ScoutingCard data={scoutingData} loading={loading} />
-            {trainingStats && (
-              <TrainingPrioritiesCard
-                teamStats={trainingStats.team}
-                leagueAverage={trainingStats.league}
-                loading={loading}
-              />
-            )}
-          </div>
+          <ScoutingCard data={scoutingData} loading={loading} />
         </div>
       }
       sidebar={

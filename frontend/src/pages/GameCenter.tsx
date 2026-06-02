@@ -24,7 +24,7 @@ export default function GameCenter() {
   }, [fetchGames]);
 
   return (
-    <div className="min-h-screen bg-bkpk-bg p-4 md:p-8 lg:p-10">
+    <div className="bg-bkpk-bg p-4 md:p-8 lg:p-10">
       <div className="max-w-[1200px] mx-auto space-y-12">
         {/* Header Section */}
         <header className="flex flex-col gap-2">

@@ -18,10 +18,10 @@ function getClient() {
 }
 
 /**
- * @param {{ system: string, user: string, jsonMode?: boolean }} params
+ * @param {{ system: string, user: string, jsonMode?: boolean, maxOutputTokens?: number }} params
  * @returns {Promise<string>}
  */
-export async function generateText({ system, user, jsonMode = false }) {
+export async function generateText({ system, user, jsonMode = false, maxOutputTokens }) {
   if (process.env.AI_ANALYSIS_ENABLED === 'false') {
     throw new AiConfigError('Analiza AI jest wyłączona (AI_ANALYSIS_ENABLED=false)');
   }
@@ -35,7 +35,7 @@ export async function generateText({ system, user, jsonMode = false }) {
       config: {
         systemInstruction: system,
         temperature: 0.35,
-        maxOutputTokens: 2048,
+        maxOutputTokens: maxOutputTokens ?? 2048,
         ...(jsonMode ? { responseMimeType: 'application/json' } : {})
       }
     });

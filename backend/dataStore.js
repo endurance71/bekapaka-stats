@@ -1,5 +1,15 @@
 import { PrismaClient } from '@prisma/client';
+import { hashGameForAi } from './ai/buildMatchContext.js';
+import { hashPayload } from './ai/hash.js';
 import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
+import { buildPersonnelMdFromAnalysis } from './ai/scoutingPersonnel.js';
+import {
+  analysisFromSummaryMdField,
+  buildScoutingSummaryMd,
+  isScoutingAnalysisSparse,
+  mergeScoutingAnalysis,
+  normalizeScoutingAnalysis
+} from './ai/scoutingMarkdown.js';
 import { withShootingMetrics } from './metrics.js';
 import { generateGameInsights } from './insights.js';
 import {
@@ -14,6 +24,10 @@ import {
   buildKalkPlayerDbId
 } from './seasonService.js';
 import { resolveSeasonIdForDate } from './lib/kalkSeason.js';
+import {
+  LEAGUE_TABLE_ORDER_BY,
+  resolveLeagueTeamFromList
+} from './lib/leagueTeamResolve.js';
 
 export {
   ensureDefaultSeason,
@@ -265,6 +279,15 @@ export async function getRoster() {
       }
     }
 
+    let evalAvg = r.kalkPlayer?.eval ?? null;
+    if (evalAvg == null) {
+      const gamesWithEval = playerGames.filter((g) => g.eval != null && g.eval !== 0);
+      if (gamesWithEval.length > 0) {
+        evalAvg =
+          gamesWithEval.reduce((sum, g) => sum + g.eval, 0) / gamesWithEval.length;
+      }
+    }
+
     return {
       ...base,
       id: r.id,
@@ -276,6 +299,7 @@ export async function getRoster() {
       ppg: r.ppg,
       rpg: r.rpg,
       apg: r.apg,
+      eval: evalAvg,
       fgPercentage: r.fgPercentage,
       threePercentage: r.threePercentage,
       ftPercentage: r.ftPercentage,
@@ -330,6 +354,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
   let totalFtm = 0;
   let totalFta = 0;
   let totalPlusMinus = 0;
+  let totalMinutesSeconds = 0;
   let gamesCount = 0;
 
   for (const game of gamesInSeason) {
@@ -357,6 +382,10 @@ export async function getPlayerStats(playerId, seasonIdParam) {
       const fta = parseStat(stats.fta) || 0;
       const pm = parseStat(stats.plusMinus) || 0;
       const min = stats.min || "00:00";
+      const minParts = String(min).split(':');
+      const minutesPart = Number(minParts[0]) || 0;
+      const secondsPart = Number(minParts[1]) || 0;
+      totalMinutesSeconds += (minutesPart * 60) + secondsPart;
 
       totalPoints += pts;
       totalRebounds += reb;
@@ -406,7 +435,8 @@ export async function getPlayerStats(playerId, seasonIdParam) {
     efg: totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : 0,
     ts: (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : 0,
     plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : 0,
-    gamesPlayed: gamesCount
+    gamesPlayed: gamesCount,
+    minutesPlayed: Math.round(totalMinutesSeconds / 60)
   };
 
   return {
@@ -954,6 +984,14 @@ export async function getGameById(id) {
     if (game.teamStats && !game.teams) {
       game.teams = game.teamStats;
     }
+
+    if (game.aiSummary && game.aiSummaryHash) {
+      const currentHash = hashGameForAi(game);
+      game.aiSummaryStale = Boolean(currentHash && currentHash !== game.aiSummaryHash);
+    } else {
+      game.aiSummaryStale = false;
+    }
+
     return game;
   }
 
@@ -1013,6 +1051,11 @@ export async function updateGame(id, gameData) {
   });
 }
 
+const stripDiacritics = (str) => {
+  if (!str) return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+};
+
 export async function ingestKalkPlayers(entries) {
   await ensureSeeded();
   await ensureDefaultSeason();
@@ -1034,14 +1077,10 @@ export async function ingestKalkPlayers(entries) {
   });
   const existingIds = new Set(existing.map((p) => p.id));
   const newPlayers = [];
-  let savedCount = 0;
 
-  for (const entry of normalizedEntries) {
-    if (normalizedEntries.indexOf(entry) === 0) {
-      console.log('[DEBUG Ingest] First entry:', JSON.stringify(entry));
-    }
+  const upsertPromises = normalizedEntries.map((entry) => {
     const playerId = buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika);
-    if (!playerId) continue;
+    if (!playerId) return null;
     const matchesValue = parseStat(entry.mecze_rozegrane);
     const record = {
       id: playerId,
@@ -1070,19 +1109,29 @@ export async function ingestKalkPlayers(entries) {
       seasonId: activeSeason.id,
       raw: entry
     };
-    await prisma.kalkPlayer.upsert({
+
+    if (normalizedEntries.indexOf(entry) === 0) {
+      console.log('[DEBUG Ingest] First entry:', JSON.stringify(entry));
+    }
+
+    return prisma.kalkPlayer.upsert({
       where: { id: playerId },
       create: record,
       update: record
     });
-    savedCount += 1;
-    if (!existingIds.has(playerId)) {
+  }).filter(Boolean);
+
+  await prisma.$transaction(upsertPromises);
+
+  for (const entry of normalizedEntries) {
+    const playerId = buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika);
+    if (playerId && !existingIds.has(playerId)) {
       existingIds.add(playerId);
-      newPlayers.push(record.name);
+      newPlayers.push(entry.imie_nazwisko || playerId);
     }
   }
 
-  return { newPlayers, total: savedCount };
+  return { newPlayers, total: normalizedEntries.length };
 }
 
 export async function ingestLeagueTable(tableData, phase = 'regular') {
@@ -1126,7 +1175,7 @@ export async function ingestLeagueSchedule(scheduleData) {
   const activeSeason = await getActiveSeason();
   if (!activeSeason || !Array.isArray(scheduleData)) return;
 
-  await prisma.leagueMatch.deleteMany({ where: { seasonId: activeSeason.id } });
+  const processedIds = [];
 
   const parseScheduleDate = (dateStr) => {
     if (!dateStr) return new Date();
@@ -1174,18 +1223,57 @@ export async function ingestLeagueSchedule(scheduleData) {
   };
 
   for (const match of scheduleData) {
-    await prisma.leagueMatch.create({
-      data: {
+    const matchDate = parseScheduleDate(match.date);
+    
+    // Compare dates ignoring time for matching stability
+    const startOfCurrentDay = new Date(matchDate);
+    startOfCurrentDay.setHours(0,0,0,0);
+    const endOfCurrentDay = new Date(matchDate);
+    endOfCurrentDay.setHours(23,59,59,999);
+
+    const existingMatch = await prisma.leagueMatch.findFirst({
+      where: {
         seasonId: activeSeason.id,
-        date: parseScheduleDate(match.date),
         homeTeam: match.homeTeam,
         guestTeam: match.guestTeam,
-        scoreHome: match.scoreHome,
-        scoreAway: match.scoreAway,
-        isFinished: !!match.isFinished
+        date: {
+          gte: startOfCurrentDay,
+          lte: endOfCurrentDay
+        }
       }
     });
+
+    const data = {
+      seasonId: activeSeason.id,
+      date: matchDate,
+      homeTeam: match.homeTeam,
+      guestTeam: match.guestTeam,
+      scoreHome: match.scoreHome,
+      scoreAway: match.scoreAway,
+      isFinished: !!match.isFinished
+    };
+
+    if (existingMatch) {
+      await prisma.leagueMatch.update({
+        where: { id: existingMatch.id },
+        data
+      });
+      processedIds.push(existingMatch.id);
+    } else {
+      const created = await prisma.leagueMatch.create({
+        data
+      });
+      processedIds.push(created.id);
+    }
   }
+
+  // Usuń tylko te mecze dla bieżącego sezonu, które nie zostały przetworzone (nie ma ich w nowo pobranym terminarzu)
+  await prisma.leagueMatch.deleteMany({
+    where: {
+      seasonId: activeSeason.id,
+      id: { notIn: processedIds }
+    }
+  });
 }
 
 export async function logKalkScrapeRun(run) {
@@ -1220,7 +1308,7 @@ export async function syncPlayersFromKalk() {
   const synced = [];
   const errors = [];
 
-  // 1. USUWANIE: Usuń z RosterPlayer wszystkich, którzy nie są w naszej drużynie (a mają kalkPlayerId)
+  // 1. SYNCHRONIZACJA: Odłącz zawodników z RosterPlayer, którzy nie są już w naszej drużynie na KALK (zamiast usuwać konto)
   try {
     const allRosterWithKalk = await prisma.rosterPlayer.findMany({
       where: { NOT: { kalkPlayerId: null } }
@@ -1228,20 +1316,18 @@ export async function syncPlayersFromKalk() {
 
     for (const rp of allRosterWithKalk) {
       if (!ourKalkIds.has(rp.kalkPlayerId)) {
-        await prisma.rosterPlayer.delete({ where: { id: rp.id } });
+        await prisma.rosterPlayer.update({
+          where: { id: rp.id },
+          data: { kalkPlayerId: null }
+        });
       }
     }
   } catch (error) {
-    console.error('Error cleaning roster:', error);
+    console.error('Error unlinking roster players:', error);
   }
 
   // Pobierz wszystkich aktualnych roster graczy, żeby móc wyszukiwać ich w pamięci
   const allRoster = await prisma.rosterPlayer.findMany();
-
-  const stripDiacritics = (str) => {
-    if (!str) return '';
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-  };
 
   const findRosterMatch = (fName, lName) => {
     const cleanFirst = stripDiacritics(fName);
@@ -1348,10 +1434,24 @@ export async function updateRosterStats() {
 
     for (const game of allGames) {
       const boxScore = Array.isArray(game.playerStats) ? game.playerStats : [];
-      // Try to find player in box score
+      // Try to find player in box score using robust name matching
       const pStats = boxScore.find(p => {
         if (!p.name) return false;
-        return p.name.includes(player.lastName) && (p.name.includes(player.firstName) || p.name.includes(player.firstName.charAt(0)));
+        
+        const cleanBoxName = stripDiacritics(p.name);
+        const playerLast = stripDiacritics(player.lastName);
+        const playerFirst = stripDiacritics(player.firstName);
+        const playerInitial = playerFirst.charAt(0);
+
+        if (!cleanBoxName.includes(playerLast)) return false;
+
+        const remaining = cleanBoxName.replace(playerLast, '').trim();
+
+        if (remaining === '') return true;
+        if (remaining.includes(playerFirst)) return true;
+
+        const regex = new RegExp(`\\b${playerInitial}\\b`);
+        return regex.test(remaining);
       });
 
       if (pStats) {
@@ -1487,43 +1587,6 @@ export async function createGame(gameData) {
 }
 
 
-// TRENINGI - Lista wszystkich treningów
-export async function listAllTrainings() {
-  await ensureSeeded();
-  return await prisma.training.findMany({
-    orderBy: { date: 'desc' }
-  });
-}
-
-// TRENINGI - Utwórz nowy trening
-export async function createTraining(trainingData) {
-  await ensureSeeded();
-  return await prisma.training.create({
-    data: {
-      date: new Date(trainingData.date),
-      focus: trainingData.focus || [],
-      attendance: trainingData.attendance || null,
-      notes: trainingData.notes || null,
-      duration: trainingData.duration || null
-    }
-  });
-}
-
-// TRENINGI - Aktualizuj trening
-export async function updateTraining(id, trainingData) {
-  await ensureSeeded();
-  return await prisma.training.update({
-    where: { id },
-    data: {
-      ...(trainingData.date && { date: new Date(trainingData.date) }),
-      ...(trainingData.focus !== undefined && { focus: trainingData.focus }),
-      ...(trainingData.attendance !== undefined && { attendance: trainingData.attendance }),
-      ...(trainingData.notes !== undefined && { notes: trainingData.notes }),
-      ...(trainingData.duration !== undefined && { duration: trainingData.duration })
-    }
-  });
-}
-
 // PLAYBOOK - Lista wszystkich zagrywek
 export async function listAllPlays(category = null) {
   await ensureSeeded();
@@ -1541,12 +1604,7 @@ export async function getLeagueTable(phase = 'regular', seasonIdParam) {
   const seasonId = await resolveSeasonId(seasonIdParam);
   return await prisma.leagueTeam.findMany({
     where: { phase, seasonId },
-    orderBy: [
-      { points: 'desc' },
-      { wins: 'desc' },
-      { matches: 'asc' },
-      { pointsFor: 'desc' }
-    ]
+    orderBy: LEAGUE_TABLE_ORDER_BY
   });
 }
 
@@ -1557,7 +1615,7 @@ export async function getLeagueSchedule(seasonIdParam) {
   const seasonId = await resolveSeasonId(seasonIdParam);
   return await prisma.leagueMatch.findMany({
     where: { seasonId },
-    orderBy: { date: 'asc' }
+    orderBy: { date: 'desc' }
   });
 }
 
@@ -1680,35 +1738,70 @@ export async function getLeagueTrends() {
   }];
 }
 
-export async function getNextOpponentScouting() {
+const BEKAPAKA_MATCH_OR = [
+  { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { guestTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { homeTeam: { contains: 'BOBOLICE', mode: 'insensitive' } },
+  { guestTeam: { contains: 'BOBOLICE', mode: 'insensitive' } }
+];
+
+function extractOpponentFromLeagueMatch(match) {
+  const isHome =
+    match.homeTeam.toLowerCase().includes('bekapaka') ||
+    match.homeTeam.toLowerCase().includes('bobolice');
+  return isHome ? match.guestTeam : match.homeTeam;
+}
+
+/** Nadchodzący mecz BeKaPaKa lub — gdy brak — ostatni rozegrany (fallback scoutingu). */
+async function findBekapakaLeagueMatchContext(seasonIdParam) {
   await ensureSeeded();
-  const now = new Date();
+  const seasonId = await resolveSeasonId(seasonIdParam);
 
-  const nextMatch = await prisma.leagueMatch.findFirst({
-    where: {
-      OR: [
-        { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-        { guestTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-        { homeTeam: { contains: 'BOBOLICE', mode: 'insensitive' } },
-        { guestTeam: { contains: 'BOBOLICE', mode: 'insensitive' } }
-      ],
-      isFinished: false,
-      date: { gt: now }
-    },
-    orderBy: { date: 'asc' }
+  const tryFind = async (whereExtra) => {
+    const upcoming = await prisma.leagueMatch.findFirst({
+      where: { OR: BEKAPAKA_MATCH_OR, isFinished: false, ...whereExtra },
+      orderBy: { date: 'asc' }
+    });
+    if (upcoming) {
+      return {
+        match: upcoming,
+        scoutingMode: 'upcoming',
+        opponentName: extractOpponentFromLeagueMatch(upcoming),
+        seasonId: upcoming.seasonId
+      };
+    }
+
+    const lastFinished = await prisma.leagueMatch.findFirst({
+      where: { OR: BEKAPAKA_MATCH_OR, isFinished: true, ...whereExtra },
+      orderBy: { date: 'desc' }
+    });
+    if (lastFinished) {
+      return {
+        match: lastFinished,
+        scoutingMode: 'lastFinished',
+        opponentName: extractOpponentFromLeagueMatch(lastFinished),
+        seasonId: lastFinished.seasonId
+      };
+    }
+    return null;
+  };
+
+  return (await tryFind({ seasonId })) ?? (await tryFind({}));
+}
+
+async function buildOpponentScoutingCard(opponentName, seasonId, meta = {}) {
+  const leagueTableTeams = await prisma.leagueTeam.findMany({
+    where: { seasonId, phase: 'regular' },
+    orderBy: LEAGUE_TABLE_ORDER_BY
   });
-
-  if (!nextMatch) return null;
-
-  const isHome = nextMatch.homeTeam.toLowerCase().includes('bekapaka') || nextMatch.homeTeam.toLowerCase().includes('bobolice');
-  const opponentName = isHome ? nextMatch.guestTeam : nextMatch.homeTeam;
-
-  const opponentTableData = await prisma.leagueTeam.findFirst({
-    where: { name: { contains: opponentName, mode: 'insensitive' } }
-  });
+  const { team: opponentTableData, rank } = resolveLeagueTeamFromList(
+    leagueTableTeams,
+    opponentName
+  );
 
   const oppMatches = await prisma.leagueMatch.findMany({
     where: {
+      seasonId,
       OR: [
         { homeTeam: { contains: opponentName, mode: 'insensitive' } },
         { guestTeam: { contains: opponentName, mode: 'insensitive' } }
@@ -1719,16 +1812,7 @@ export async function getNextOpponentScouting() {
     take: 3
   });
 
-  // Calculate rank
-  const allTeams = await prisma.leagueTeam.findMany({
-    orderBy: [
-      { points: 'desc' },
-      { matches: 'asc' }
-    ]
-  });
-  const rank = allTeams.findIndex(t => t.name.toLowerCase().includes(opponentName.toLowerCase())) + 1;
-
-  const resForm = oppMatches.map(m => {
+  const resForm = oppMatches.map((m) => {
     const isOppHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
     const scoreUs = isOppHome ? m.scoreHome : m.scoreAway;
     const scoreThem = isOppHome ? m.scoreAway : m.scoreHome;
@@ -1746,6 +1830,7 @@ export async function getNextOpponentScouting() {
 
   const keyPlayers = await prisma.kalkPlayer.findMany({
     where: {
+      seasonId,
       team: { contains: opponentName, mode: 'insensitive' },
       name: { not: '' }
     },
@@ -1758,23 +1843,45 @@ export async function getNextOpponentScouting() {
     rank: rank > 0 ? rank : null,
     wins: opponentTableData?.wins || 0,
     losses: opponentTableData?.losses || 0,
-    ppg: opponentTableData && opponentTableData.matches > 0 ? (opponentTableData.pointsFor / opponentTableData.matches) : 0,
-    oppg: opponentTableData && opponentTableData.matches > 0 ? (opponentTableData.pointsAgainst / opponentTableData.matches) : 0,
+    ppg:
+      opponentTableData && opponentTableData.matches > 0
+        ? opponentTableData.pointsFor / opponentTableData.matches
+        : 0,
+    oppg:
+      opponentTableData && opponentTableData.matches > 0
+        ? opponentTableData.pointsAgainst / opponentTableData.matches
+        : 0,
     form: resForm,
     keyPlayers: keyPlayers
-      .map(p => {
+      .map((p) => {
         const name = (() => {
           const trimmed = (p.name || '').trim();
           if (!trimmed) return null;
           const parts = trimmed.split(/\s+/);
-          if (parts.length === 2) return `${parts[1]} ${parts[0]}`; // Surname Name -> Name Surname
+          if (parts.length === 2) return `${parts[1]} ${parts[0]}`;
           return trimmed;
         })();
-
         return name ? { name, ppg: p.pointsAverage } : null;
       })
-      .filter(Boolean)
+      .filter(Boolean),
+    ...meta
   };
+}
+
+export async function getNextOpponentScouting(seasonIdParam) {
+  const ctx = await findBekapakaLeagueMatchContext(seasonIdParam);
+  if (!ctx) return null;
+
+  const matchDate =
+    ctx.match.date && !isNaN(ctx.match.date.getTime())
+      ? ctx.match.date.toISOString().split('T')[0]
+      : null;
+
+  return buildOpponentScoutingCard(ctx.opponentName, ctx.seasonId, {
+    scoutingMode: ctx.scoutingMode,
+    matchDate,
+    usingLastMatchFallback: ctx.scoutingMode === 'lastFinished'
+  });
 }
 
 
@@ -1812,11 +1919,26 @@ async function getOpponentAdvancedStats(opponentName) {
   });
 
   const matchesWithDetails = matches.filter(hasValidLeagueMatchDetails);
+  const latestFinished = matches[0];
+
   if (!matchesWithDetails.length) {
-    return null;
+    if (!latestFinished) return null;
+    return {
+      matchesScraped: 0,
+      pace: 0,
+      shotProfile: { two: 0, three: 0, ft: 0 },
+      fourFactors: { efg: 0, tov: 0, orb: 0, ftr: 0 },
+      situational: { fourthQuarterDiff: 0, clutchPlay: '?' },
+      personnel: { shooters: [], paintProtectors: [], playmakers: [] },
+      fallbackFromPreviousMatch: true,
+      fallbackBasicOnly: true,
+      sourceMatchDate: latestFinished.date
+        ? latestFinished.date.toISOString().split('T')[0]
+        : null,
+      sourceMatchLabel: `${latestFinished.homeTeam} — ${latestFinished.guestTeam} (${latestFinished.scoreHome ?? '–'}:${latestFinished.scoreAway ?? '–'})`
+    };
   }
 
-  const latestFinished = matches[0];
   const fallbackFromPreviousMatch = Boolean(
     latestFinished && !hasValidLeagueMatchDetails(latestFinished)
   );
@@ -1975,28 +2097,28 @@ async function getOpponentAdvancedStats(opponentName) {
 export async function getDetailedScouting(opponentName) {
   await ensureSeeded();
 
+  let seasonId = await resolveSeasonId();
+
   if (!opponentName) {
-    const nextMatch = await getNextOpponentScouting();
-    if (!nextMatch) return null;
-    opponentName = nextMatch.opponent;
+    const ctx = await findBekapakaLeagueMatchContext(seasonId);
+    if (!ctx) return null;
+    opponentName = ctx.opponentName;
+    seasonId = ctx.seasonId;
   }
 
-  // 1. Team Data
-  const [opponent, bekapaka, allTeams] = await Promise.all([
-    prisma.leagueTeam.findFirst({ where: { name: { contains: opponentName, mode: 'insensitive' } } }),
-    prisma.leagueTeam.findFirst({ where: { name: { contains: 'BeKaPaKa', mode: 'insensitive' } } }) ||
-    prisma.leagueTeam.findFirst({ where: { name: { contains: 'BOBOLICE', mode: 'insensitive' } } }),
-    prisma.leagueTeam.findMany({ orderBy: [{ points: 'desc' }, { matches: 'asc' }] })
-  ]);
+  const leagueTableTeams = await prisma.leagueTeam.findMany({
+    where: { seasonId, phase: 'regular' },
+    orderBy: LEAGUE_TABLE_ORDER_BY
+  });
 
-  const getRank = (name) => {
-    if (!name) return null;
-    const idx = allTeams.findIndex(t => t.name.toLowerCase().includes(name.toLowerCase()));
-    return idx >= 0 ? idx + 1 : null;
-  };
-
-  const oppRank = getRank(opponentName);
-  const bkRank = bekapaka ? getRank(bekapaka.name) : null;
+  const { team: opponent, rank: oppRank } = resolveLeagueTeamFromList(
+    leagueTableTeams,
+    opponentName
+  );
+  const { team: bekapaka, rank: bkRank } = resolveLeagueTeamFromList(
+    leagueTableTeams,
+    'BeKaPaKa BOBOLICE'
+  );
 
   // 2. Opponent Players (Top 5)
   const keyPlayers = await prisma.kalkPlayer.findMany({
@@ -2027,36 +2149,11 @@ export async function getDetailedScouting(opponentName) {
     getOpponentAdvancedStats(bekapaka?.name || 'BeKaPaKa')
   ]);
 
-  // 4. AI Analysis — Gemini cache or fallback templates
-  let aiAnalysis = {
-    summary: '',
-    offense: '',
-    defense: '',
-    verdict: ''
-  };
-  let aiMeta = { fromGemini: false };
-
-  const opponentKey = normalizeOpponentKey(opponentName);
-  const cachedReport = await prisma.scoutingAiReport.findUnique({
-    where: { opponentKey }
-  });
-
-  if (cachedReport?.analysisJson) {
-    aiAnalysis = cachedReport.analysisJson;
-    aiMeta = {
-      fromGemini: true,
-      generatedAt: cachedReport.generatedAt,
-      model: cachedReport.model,
-      stale: cachedReport.sourceHash !== null // refined on generate endpoint
-    };
-  }
-
   const oppPpg = opponent?.matches > 0 ? (opponent.pointsFor / opponent.matches) : 0;
   const oppOppg = opponent?.matches > 0 ? (opponent.pointsAgainst / opponent.matches) : 0;
   const bkPpg = bekapaka?.matches > 0 ? (bekapaka.pointsFor / bekapaka.matches) : 0;
   const bkOppg = bekapaka?.matches > 0 ? (bekapaka.pointsAgainst / bekapaka.matches) : 0;
 
-  // Basic Identity
   const pace = advancedStats?.pace || 0;
   const paceDesc = pace > 84 ? 'grająca bardzo szybko (run & gun)' : (pace < 78 ? 'preferująca wolne, pozycyjne tempo' : 'grająca w zrównoważonym tempie');
 
@@ -2072,20 +2169,58 @@ export async function getDetailedScouting(opponentName) {
 
   const formDesc = recentWins >= 3 ? 'Są obecnie na fali wznoszącej (seria zwycięstw).' : (recentWins === 0 ? 'Przeżywają obecnie kryzys formy.' : 'Grają w kratkę, przeplatając dobre mecze słabymi.');
 
-  if (!cachedReport?.analysisJson) {
-    aiAnalysis.summary = `Zespół ${opponentName} to drużyna ${paceDesc} ${styleDesc}. ${formDesc}`;
+  const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
+  const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
+  const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
+  const weakPoint = advancedStats?.fourFactors?.tov > 20 ? 'Często gubią piłkę pod presją' : (advancedStats?.fourFactors?.orb < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
 
-    const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
-    const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
-    aiAnalysis.offense = `${offenseStrength}. Głównym motorem napędowym są ${keyPlayerNames}. Generują średnio ${oppPpg.toFixed(1)} pkt/mecz.`;
+  /** Szablon z danych ligi — gdy brak cache lub uzupełnienie ubogiego raportu Gemini */
+  const templateAnalysis = {
+    summary: `Zespół ${opponentName} to drużyna ${paceDesc} ${styleDesc}. ${formDesc} BeKaPaKa: ${bkPpg.toFixed(1)} PPG przy ${bkOppg.toFixed(1)} straconych — porównaj tempo (${pace.toFixed(0)} vs nasze).`,
+    offense: `${offenseStrength}. Głównym motorem są ${keyPlayerNames || 'rotacja bez wyraźnej gwiazdy'}. Średnio ${oppPpg.toFixed(1)} pkt/mecz; profil rzutów i forma w JSON.`,
+    defense: `${defenseStrength} (śr. ${oppOppg.toFixed(1)} straconych). Słabość: ${weakPoint.toLowerCase()}. Szukaj kontrataku po zbiórce lub presji na piłce.`,
+    verdict: pace > 84
+      ? 'KLUCZ: Zwolnić grę, nie wdawać się w wymianę ciosów.\n- Zamknąć trójki i przejścia\n- Kontrolować tablicę po obronie'
+      : 'KLUCZ: Narzucić własne tempo i wymusić błędy.\n- Agresywny pick and roll\n- Szybkie wyjścia po zbiórce',
+    personnel: {
+      keyPlayers: keyPlayers.length
+        ? keyPlayers.map((p) => `${p.name}: ${(p.pointsAverage || 0).toFixed(1)} PPG`).join('; ')
+        : 'Brak szczegółowych statystyk zawodników w imporcie — uzupełnij scraper KALK.',
+      threats: keyPlayerNames ? `Priorytet: ${keyPlayerNames} — ograniczyć swobodę rzutów i wejścia.` : '',
+      matchups: 'Dopasuj najlepszego obrońcę do ich lidera punktowego; reszta pomaga przy pick and roll.',
+      bench: 'Obserwuj drugą piątkę po pierwszej zmianie — często spadek intensywności obrony.'
+    }
+  };
 
-    const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
-    const weakPoint = advancedStats?.fourFactors?.tov > 20 ? 'Często gubią piłkę pod presją' : (advancedStats?.fourFactors?.orb < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
-    aiAnalysis.defense = `${defenseStrength} (śr. ${oppOppg.toFixed(1)} straconych). Ich słabością może być to, że ${weakPoint.toLowerCase()}.`;
+  // 4. AI Analysis — Gemini cache (+ merge z szablonem gdy ubogi) lub sam szablon
+  let aiAnalysis = templateAnalysis;
+  let aiMeta = { fromGemini: false, needsRegeneration: false };
 
-    aiAnalysis.verdict = pace > 84
-      ? 'KLUCZ: Zwolnić grę, nie wdawać się w wymianę ciosów, zamknąć trumnę.'
-      : 'KLUCZ: Narzucić własne, szybkie tempo i zmusić ich do błędów w kozłowaniu.';
+  const opponentKey = normalizeOpponentKey(opponentName);
+  const cachedReport = await prisma.scoutingAiReport.findUnique({
+    where: { opponentKey }
+  });
+
+  if (cachedReport?.analysisJson || cachedReport?.summaryMd) {
+    let fromCache = cachedReport.analysisJson
+      ? normalizeScoutingAnalysis(cachedReport.analysisJson)
+      : analysisFromSummaryMdField(cachedReport.summaryMd);
+
+    if (!fromCache && cachedReport.summaryMd) {
+      fromCache = normalizeScoutingAnalysis({ summary: cachedReport.summaryMd });
+    }
+
+    if (fromCache) {
+      const sparse = isScoutingAnalysisSparse(fromCache);
+      aiAnalysis = sparse ? mergeScoutingAnalysis(fromCache, templateAnalysis) : fromCache;
+      aiMeta = {
+        fromGemini: true,
+        generatedAt: cachedReport.generatedAt,
+        model: cachedReport.model,
+        needsRegeneration: sparse,
+        mergedWithTemplate: sparse
+      };
+    }
   }
 
   // Use only data available from imported scraping payload.
@@ -2101,7 +2236,47 @@ export async function getDetailedScouting(opponentName) {
     };
   }));
 
-  // Get Advanced Stats (Moved UP)
+  const scoutingPayloadForHash = {
+    teamInfo: {
+      opponent: {
+        name: opponentName,
+        rank: oppRank,
+        record: `${opponent?.wins || 0}-${opponent?.losses || 0}`,
+        ppg: oppPpg,
+        oppg: oppOppg
+      },
+      bekapaka: {
+        name: bekapaka?.name || 'BeKaPaKa',
+        rank: bkRank,
+        record: `${bekapaka?.wins || 0}-${bekapaka?.losses || 0}`,
+        ppg: bkPpg,
+        oppg: bekapaka?.matches > 0 ? (bekapaka.pointsAgainst / bekapaka.matches) : 0
+      }
+    },
+    keyPlayers: enrichedKeyPlayers,
+    form: oppMatches.map((m) => {
+      const isHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
+      return {
+        opponent: isHome ? m.guestTeam : m.homeTeam,
+        score: `${m.scoreHome}:${m.scoreAway}`,
+        result: (isHome ? m.scoreHome : m.scoreAway) > (isHome ? m.scoreAway : m.scoreHome) ? 'W' : 'L',
+        date: m.date.toISOString().split('T')[0]
+      };
+    }),
+    advancedStats,
+    bekapakaAdvancedStats
+  };
+  const scoutingCurrentHash = hashPayload(scoutingPayloadForHash);
+
+  if (cachedReport?.sourceHash && cachedReport.sourceHash !== scoutingCurrentHash) {
+    aiMeta = {
+      ...aiMeta,
+      stale: true,
+      needsRegeneration: true
+    };
+  } else if (cachedReport?.sourceHash) {
+    aiMeta = { ...aiMeta, stale: false };
+  }
 
   return {
     advancedStats, // Opponent Data
@@ -2134,7 +2309,8 @@ export async function getDetailedScouting(opponentName) {
     }),
     aiAnalysis,
     aiMeta,
-    scoutingSummaryMd: cachedReport?.summaryMd || null
+    scoutingSummaryMd: buildScoutingSummaryMd(aiAnalysis),
+    personnelMd: buildPersonnelMdFromAnalysis(aiAnalysis)
   };
 }
 

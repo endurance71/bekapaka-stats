@@ -12,6 +12,7 @@ interface Player {
     ppg: number;
     rpg?: number;
     apg?: number;
+    eval?: number | null;
     photo?: string | null;
     data?: any;
     kalkPlayer?: any;
@@ -20,6 +21,12 @@ interface Player {
 interface TopPlayersCardProps {
     players: Player[];
     loading?: boolean;
+}
+
+function resolvePlayerEval(player: Player): number | null | undefined {
+    if (player.eval != null) return player.eval;
+    const fromKalk = player.kalkPlayer?.eval;
+    return fromKalk != null ? fromKalk : null;
 }
 
 export default function TopPlayersCard({ players, loading }: TopPlayersCardProps) {
@@ -59,6 +66,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
             <div className="space-y-4">
                 {topPlayers.map((player, index) => {
                     const isFirst = index === 0;
+                    const evalVal = resolvePlayerEval(player);
                     return (
                         <motion.div
                             key={player.id}
@@ -107,6 +115,12 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                             {player.rpg?.toFixed(1)} <span className="text-xs opacity-50">REB</span>
                                         </div>
                                     )}
+                                    <div className="text-xs font-bold text-bkpk-text-muted">
+                                        {evalVal != null && evalVal > 0
+                                            ? evalVal.toFixed(1)
+                                            : '—'}{' '}
+                                        <span className="text-xs opacity-50">EVAL</span>
+                                    </div>
                                 </div>
                             </div>
 

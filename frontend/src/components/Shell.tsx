@@ -1,23 +1,24 @@
-import { ReactNode, useState } from 'react';
-import { NavLink, useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ReactNode, useState, useEffect } from 'react';
+import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import MobileFullScreenMenu from './MobileFullScreenMenu';
 import {
   LayoutDashboard,
   CalendarRange,
   Trophy,
   Users,
-  Target,
   ShieldCheck,
   Activity,
   LogOut,
-  MoreHorizontal,
-  X,
   User,
+  Menu,
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
 import SidebarProfile from './SidebarProfile';
-import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import SeasonSelector from './SeasonSelector';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 const allLinks = [
   { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
@@ -25,35 +26,89 @@ const allLinks = [
   { to: '/league', label: 'Liga KALK', icon: Trophy, public: true },
   { to: '/roster', label: 'Skład', icon: Users, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
-  { to: '/training', label: 'Trening', icon: Target, public: true },
   { to: '/profile', label: 'Mój Profil', icon: User, public: true },
   { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
 ];
 
-// Primary tabs shown in the bottom bar (max 5 for ergonomics)
-const PRIMARY_TAB_COUNT = 5;
+function NavItems({
+  links,
+  onNavigate
+}: {
+  links: typeof allLinks;
+  onNavigate?: () => void;
+}) {
+  return (
+    <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
+      {links.map((link) => {
+        const Icon = link.icon;
+        return (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            onClick={onNavigate}
+            className={({ isActive }) => cn(
+              'group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 font-bold text-sm tracking-tight min-h-[48px]',
+              isActive
+                ? 'bg-bkpk-primary/15 text-bkpk-primary'
+                : 'text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1'
+            )}
+          >
+            {({ isActive }) => (
+              <>
+                <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-bkpk-primary' : '')} />
+                <span className="flex-1">{link.label}</span>
+                {isActive && (
+                  <span className="w-1.5 h-6 bg-bkpk-primary rounded-full shadow-bkpk-glow shrink-0" />
+                )}
+              </>
+            )}
+          </NavLink>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function Shell({ children }: { children: ReactNode }) {
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+    };
+  }, [isMenuOpen]);
 
   const handleLogout = () => {
+    setIsMenuOpen(false);
     logout();
     navigate('/login');
   };
 
-  const links = allLinks.filter(link => !link.adminOnly || user?.role === 'ADMIN');
-  const primaryLinks = links.slice(0, PRIMARY_TAB_COUNT);
-  const secondaryLinks = links.slice(PRIMARY_TAB_COUNT);
-  const hasMore = secondaryLinks.length > 0;
+  const links = allLinks.filter((link) => !link.adminOnly || user?.role === 'ADMIN');
+  const { seasons, seasonId, loading: seasonsLoading, setSeasonId } = useSeasonPreferenceContext();
 
   return (
-    <div className="flex h-screen bg-bkpk-bg overflow-hidden font-inter text-bkpk-text-primary">
+    <div
+      className={cn(
+        'flex flex-col min-h-[100dvh] min-h-[100svh] bg-bkpk-bg font-inter text-bkpk-text-primary',
+        'lg:flex-row lg:fixed lg:inset-0 lg:z-0 lg:max-h-[100dvh] lg:overflow-hidden'
+      )}
+    >
 
-      {/* ═══════════════════════════════════════════════
-          SIDEBAR — Desktop (lg+)
-          ═══════════════════════════════════════════════ */}
+      {/* Desktop sidebar */}
       <aside
         role="navigation"
         aria-label="Nawigacja główna"
@@ -70,46 +125,28 @@ export default function Shell({ children }: { children: ReactNode }) {
         </div>
 
         {user && (
-          <Link to="/profile" className="block cursor-pointer">
+          <Link to="/profile" className="block cursor-pointer mb-6">
             <SidebarProfile user={user} />
           </Link>
         )}
 
-        <nav className="flex-1 space-y-2">
-          {links.map((link) => {
-            const Icon = link.icon;
-            return (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                className={({ isActive }) => cn(
-                  "group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 font-bold text-sm tracking-tight",
-                  isActive
-                    ? "bg-bkpk-surface-tint-2 text-bkpk-primary shadow-sm"
-                    : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
-                )}
-              >
-                {({ isActive }) => (
-                  <>
-                    <Icon className={cn("w-5 h-5 transition-colors", isActive ? "text-bkpk-primary" : "group-hover:text-bkpk-text-primary")} />
-                    <span>{link.label}</span>
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active"
-                        className="ml-auto w-1 h-4 bg-bkpk-primary rounded-full shadow-bkpk-glow"
-                      />
-                    )}
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
+        <NavItems links={links} />
 
-        <div className="mt-auto pt-8 border-t border-bkpk-border-strong">
+        <div className="mt-6 pt-6 border-t border-bkpk-border-strong">
+          <SeasonSelector
+            seasons={seasons}
+            seasonId={seasonId}
+            onChange={setSeasonId}
+            loading={seasonsLoading}
+            variant="block"
+          />
+        </div>
+
+        <div className="mt-auto pt-6 border-t border-bkpk-border-strong">
           <button
+            type="button"
             onClick={handleLogout}
-            className="flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-danger transition-colors font-bold text-sm tracking-tight w-full text-left"
+            className="flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-danger transition-colors font-bold text-sm tracking-tight w-full text-left min-h-[48px]"
             aria-label="Wyloguj się"
           >
             <LogOut className="w-5 h-5" />
@@ -118,163 +155,69 @@ export default function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      {/* ═══════════════════════════════════════════════
-          MAIN CONTENT AREA
-          ═══════════════════════════════════════════════ */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-        {/* Mobile Header — compact top bar */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-3 bg-bkpk-surface/80 backdrop-blur-xl border-b border-bkpk-border-strong z-40">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-bkpk-surface flex items-center justify-center border border-bkpk-border-strong shadow-bkpk-glow overflow-hidden p-0.5">
-              <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain" />
+        {/* Mobile — belka u góry (OK); dół bez osobnej belki — treść pod paskiem Safari */}
+        <header className="lg:hidden sticky top-0 z-40 shrink-0 flex items-center justify-between gap-3 px-3 py-2.5 bg-bkpk-bg/95 backdrop-blur-md border-b border-bkpk-border-strong mobile-header-safe-top">
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(true)}
+            className="flex items-center justify-center w-11 h-11 rounded-xl bg-bkpk-surface-tint-1 border border-bkpk-border-strong text-bkpk-text-primary active:bg-bkpk-surface-tint-2"
+            aria-label="Otwórz menu nawigacji"
+            aria-expanded={isMenuOpen}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
+            <div className="w-7 h-7 rounded-lg bg-bkpk-surface flex items-center justify-center border border-bkpk-border-strong overflow-hidden p-0.5 shrink-0">
+              <img src="/logo.png" alt="" className="w-full h-full object-contain" />
             </div>
-            <span className="font-black font-outfit text-base tracking-tight text-bkpk-text-primary">BeKaPaKa</span>
+            <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate">BeKaPaKa</span>
           </div>
-          {user && (
-            <Link to="/profile" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2">
-                <img
-                  src={resolvePlayerPhoto(user)}
-                  onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                  className="w-full h-full object-cover grayscale"
-                  alt=""
-                />
-              </div>
+
+          {user ? (
+            <Link
+              to="/profile"
+              className="flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
+              aria-label="Mój profil"
+            >
+              <img
+                src={resolvePlayerPhoto(user)}
+                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                className="w-full h-full object-cover"
+                alt=""
+              />
             </Link>
+          ) : (
+            <div className="w-11 h-11 shrink-0" aria-hidden />
           )}
         </header>
 
-        {/* Content Viewport — extra bottom padding on mobile for tab bar */}
-        <main className="flex-1 overflow-y-auto no-scrollbar relative z-10 scroll-smooth lg:pb-0 pb-20">
+        <main
+          className={cn(
+            'flex-1 w-full relative z-10',
+            'lg:min-h-0 lg:overflow-y-auto lg:overflow-x-hidden lg:no-scrollbar lg:scroll-smooth lg:bg-bkpk-bg'
+          )}
+        >
           {children}
+          {/* Przezroczysty „oddech” na dole — bez belki, tylko miejsce pod paskiem Safari */}
+          <div
+            className="lg:hidden min-h-[calc(env(safe-area-inset-bottom,0px)+4.25rem)] pointer-events-none"
+            aria-hidden
+          />
         </main>
 
-        {/* ═══════════════════════════════════════════════
-            BOTTOM TAB BAR — Mobile (<lg)
-            ═══════════════════════════════════════════════ */}
-        <nav
-          role="navigation"
-          aria-label="Nawigacja mobilna"
-          className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-bkpk-surface/90 backdrop-blur-2xl border-t border-bkpk-border-strong"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-        >
-          <div className="flex items-stretch justify-around h-16">
-            {primaryLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  className={({ isActive }) => cn(
-                    "flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors duration-200 relative",
-                    isActive ? "text-bkpk-primary" : "text-bkpk-text-muted active:text-bkpk-text-primary"
-                  )}
-                  aria-current={undefined} // React Router handles this
-                >
-                  {({ isActive }) => (
-                    <>
-                      {isActive && (
-                        <motion.div
-                          layoutId="bottom-tab-active"
-                          className="absolute top-0 inset-x-3 h-0.5 bg-bkpk-primary rounded-full"
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                        />
-                      )}
-                      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
-                      <span className={cn(
-                        "text-[10px] leading-none",
-                        isActive ? "font-bold" : "font-medium"
-                      )}>
-                        {link.label}
-                      </span>
-                    </>
-                  )}
-                </NavLink>
-              );
-            })}
+        <MobileFullScreenMenu
+          isOpen={isMenuOpen}
+          onClose={() => setIsMenuOpen(false)}
+          user={user}
+          links={links}
+          onLogout={handleLogout}
+        />
 
-            {/* "More" tab for secondary links */}
-            {hasMore && (
-              <button
-                onClick={() => setIsMoreOpen(!isMoreOpen)}
-                className={cn(
-                  "flex flex-col items-center justify-center flex-1 gap-0.5 transition-colors duration-200",
-                  isMoreOpen ? "text-bkpk-primary" : "text-bkpk-text-muted active:text-bkpk-text-primary"
-                )}
-                aria-expanded={isMoreOpen}
-                aria-label="Więcej opcji nawigacji"
-              >
-                {isMoreOpen ? <X className="w-5 h-5" /> : <MoreHorizontal className="w-5 h-5" />}
-                <span className="text-[10px] font-medium leading-none">Więcej</span>
-              </button>
-            )}
-          </div>
-        </nav>
-
-        {/* ═══════════════════════════════════════════════
-            "More" Sheet — Slides up from bottom tab bar
-            ═══════════════════════════════════════════════ */}
-        <AnimatePresence>
-          {isMoreOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="lg:hidden fixed inset-0 bg-bkpk-overlay-medium z-40"
-                onClick={() => setIsMoreOpen(false)}
-              />
-              {/* Sheet */}
-              <motion.div
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-                className="lg:hidden fixed bottom-16 inset-x-0 z-40 bg-bkpk-surface border-t border-bkpk-border-strong rounded-t-2xl overflow-hidden"
-                style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
-              >
-                <div className="p-4 space-y-1">
-                  {/* Drag handle */}
-                  <div className="flex justify-center mb-3">
-                    <div className="w-10 h-1 rounded-full bg-bkpk-border-strong" />
-                  </div>
-
-                  {secondaryLinks.map((link) => {
-                    const Icon = link.icon;
-                    return (
-                      <NavLink
-                        key={link.to}
-                        to={link.to}
-                        onClick={() => setIsMoreOpen(false)}
-                        className={({ isActive }) => cn(
-                          "flex items-center gap-4 p-4 rounded-xl transition-all font-bold text-sm",
-                          isActive ? "bg-bkpk-primary/10 text-bkpk-primary" : "text-bkpk-text-secondary hover:bg-bkpk-surface-tint-1"
-                        )}
-                      >
-                        <Icon className="w-5 h-5" />
-                        {link.label}
-                      </NavLink>
-                    );
-                  })}
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-4 p-4 rounded-xl transition-all font-bold text-sm text-bkpk-danger w-full text-left mt-2 border-t border-bkpk-border-strong pt-4"
-                  >
-                    <LogOut className="w-5 h-5" />
-                    Wyloguj
-                  </button>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        {/* Global Ambient Glow */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-bkpk-primary/5 blur-[120px] rounded-full pointer-events-none -mr-48 -mt-48" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-bkpk-success/5 blur-[120px] rounded-full pointer-events-none -ml-48 -mb-48" />
+        <div className="hidden lg:block absolute bottom-0 left-0 w-[500px] h-[500px] bg-bkpk-success/5 blur-[120px] rounded-full pointer-events-none -ml-48 -mb-48" />
       </div>
     </div>
   );

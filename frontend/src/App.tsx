@@ -3,6 +3,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import Shell from './components/Shell';
 import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
+import { SeasonPreferenceProvider } from './context/SeasonPreferenceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Eager-loaded: pages the user lands on first
@@ -16,9 +17,8 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Administration = lazy(() => import('./pages/Administration'));
 const GameCenter = lazy(() => import('./pages/GameCenter'));
 const GameDetail = lazy(() => import('./pages/GameDetail'));
-const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
+import PlayerProfile from './pages/PlayerProfile';
 const Protocols = lazy(() => import('./pages/Protocols'));
-const Training = lazy(() => import('./pages/Training'));
 const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 
@@ -43,6 +43,7 @@ export default function App() {
             path="/*"
             element={
               <ProtectedRoute>
+                <SeasonPreferenceProvider>
                 <Shell>
                   <Suspense fallback={<PageLoader />}>
                     <Routes>
@@ -52,7 +53,6 @@ export default function App() {
                       <Route path="/scouting" element={<ScoutingPage />} />
                       <Route path="/roster" element={<Roster />} />
                       <Route path="/profile" element={<Profile />} />
-                      <Route path="/training" element={<Training />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route path="/trends" element={<Trends />} />
                       <Route
@@ -69,6 +69,7 @@ export default function App() {
                     </Routes>
                   </Suspense>
                 </Shell>
+                </SeasonPreferenceProvider>
               </ProtectedRoute>
             }
           />

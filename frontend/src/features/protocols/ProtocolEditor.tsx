@@ -5,7 +5,7 @@ import { computeValidation, normalizeFiveMinute, sumTeamTotals } from './utils';
 import ValidationPanel from './ValidationPanel';
 import BoxScoreEditor from './BoxScoreEditor';
 import QuarterScoreEditor from './QuarterScoreEditor';
-import { Settings, ChevronDown, ChevronUp, ArrowLeft, Save, Copy } from 'lucide-react';
+import { Settings, ChevronDown, ChevronUp, ArrowLeft, Save } from 'lucide-react';
 
 interface ProtocolEditorProps {
   draft: Game;
@@ -23,7 +23,6 @@ interface ProtocolEditorProps {
   onRemovePlayer: (teamIndex: number, playerIndex: number) => void;
   onRecalcFiveMinuteFromQuarters: () => void;
   onSave: () => void;
-  onCopyJson: () => void;
 }
 
 export default function ProtocolEditor({
@@ -42,7 +41,6 @@ export default function ProtocolEditor({
   onRemovePlayer,
   onRecalcFiveMinuteFromQuarters,
   onSave,
-  onCopyJson,
 }: ProtocolEditorProps) {
   const [showTools, setShowTools] = useState(false);
   // Memoize validation so it doesn't re-compute on every render
@@ -184,14 +182,6 @@ export default function ProtocolEditor({
                   </div>
                 )}
               </div>
-
-              <button
-                className="px-3 py-1.5 bg-transparent border border-bkpk-border-strong text-bkpk-text-secondary text-xs font-bold rounded-lg hover:bg-bkpk-surface-tint-2 hover:text-bkpk-text-primary transition-colors flex items-center gap-1 cursor-pointer"
-                onClick={onCopyJson}
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">JSON</span>
-              </button>
 
               <button
                 className="px-3 py-1.5 bg-bkpk-primary text-white text-xs font-bold rounded-lg hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"

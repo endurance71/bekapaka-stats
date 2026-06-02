@@ -27,6 +27,9 @@ interface ScoutingData {
     ppg: number;
     oppg: number;
     keyPlayers: ScoutingPlayer[];
+    scoutingMode?: 'upcoming' | 'lastFinished';
+    usingLastMatchFallback?: boolean;
+    matchDate?: string | null;
 }
 
 interface ScoutingCardProps {
@@ -64,6 +67,12 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
             className="h-full flex flex-col"
         >
             <div className="flex-1 space-y-6">
+                {data.usingLastMatchFallback ? (
+                    <p className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-1">
+                        Brak nadchodzącego meczu — dane z ostatniego spotkania
+                        {data.matchDate ? ` (${data.matchDate})` : ''}
+                    </p>
+                ) : null}
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                         <h4 className="text-xl font-black font-outfit text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">

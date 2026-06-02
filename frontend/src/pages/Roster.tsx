@@ -53,7 +53,7 @@ export default function Roster() {
   );
 
   return (
-    <div className="min-h-screen bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
+    <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
       <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-12">
 
         {/* Header & Controls */}

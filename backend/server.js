@@ -32,9 +32,6 @@ import {
   createGame,
   updateGame,
   deleteGame,
-  listAllTrainings,
-  createTraining,
-  updateTraining,
   listAllPlays,
   createPlay,
   updatePlay,
@@ -42,7 +39,6 @@ import {
   getLeagueSchedule,
   getTopScorers,
   getLeagueLeaders,
-  getTrainingPriorities,
   getNextOpponentScouting,
   getDetailedScouting,
   getLeagueTrends,
@@ -387,18 +383,9 @@ app.get(['/api/team/stats', '/team/stats'], async (req, res) => {
   }
 });
 
-app.get(['/api/training/priorities', '/training/priorities'], async (req, res) => {
-  try {
-    const priorities = await getTrainingPriorities();
-    res.json(priorities);
-  } catch (err) {
-    res.status(500).json({ error: 'Błąd priorytetów' });
-  }
-});
-
 app.get(['/api/scouting/next', '/scouting/next'], async (req, res) => {
   try {
-    const scouting = await getNextOpponentScouting();
+    const scouting = await getNextOpponentScouting(req.query.seasonId);
     res.json(scouting);
   } catch (err) {
     res.status(500).json({ error: 'Błąd scoutingu' });
@@ -441,10 +428,17 @@ app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
 app.get(['/api/ai/briefing', '/ai/briefing'], authenticateToken, async (req, res) => {
   try {
     const briefing = await getTeamBriefingCached();
+    let stale = false;
+    if (briefing?.contentMd && briefing.sourceHash) {
+      const { buildBriefingContext } = await import('./ai/buildBriefingContext.js');
+      const ctx = await buildBriefingContext();
+      stale = briefing.sourceHash !== ctx.hash;
+    }
     res.json({
       contentMd: briefing?.contentMd || null,
       generatedAt: briefing?.generatedAt || null,
-      model: briefing?.model || null
+      model: briefing?.model || null,
+      stale
     });
   } catch (err) {
     handleAiRouteError(err, res);
@@ -510,10 +504,12 @@ const updateScraperLog = (msg) => {
 };
 
 app.get(['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'], authenticateToken, requireAdmin, (req, res) => res.json(scraperState));
+/**
+ * Ensures default admin account exists. Never overwrites password on existing users
+ * (password reset on scrape/restart was causing intermittent login failures).
+ */
 async function ensureDefaultAdminUser() {
   const username = (process.env.ADMIN_USERNAME || 'motylinski').toLowerCase().trim();
-  const password = process.env.ADMIN_PASSWORD || 'BeKaPaKa!2026';
-  const passwordHash = await bcrypt.hash(password, 10);
 
   const existing = await prisma.rosterPlayer.findFirst({
     where: { username }
@@ -525,12 +521,14 @@ async function ensureDefaultAdminUser() {
       data: {
         firstName: existing.firstName || 'Damian',
         lastName: existing.lastName || 'Motylinski',
-        role: 'ADMIN',
-        password: passwordHash
+        role: 'ADMIN'
       }
     });
     return;
   }
+
+  const password = process.env.ADMIN_PASSWORD || 'BeKaPaKa!2026';
+  const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.rosterPlayer.create({
     data: {
@@ -556,33 +554,41 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
   scraperState.message = 'Uruchamianie scrapera...';
 
   updateScraperLog('Rozpoczynanie pełnego importu danych...');
-  const originalLog = console.log;
-  const originalError = console.error;
 
   try {
-    // Intercept console.log temporarily
-    console.log = (...args) => {
-      updateScraperLog(args.join(' '));
-      originalLog.apply(console, args);
-    };
-    console.error = (...args) => {
-      updateScraperLog(`ERROR: ${args.join(' ')}`);
-      originalError.apply(console, args);
-    };
-
     scraperState.step = 'pobieranie';
     scraperState.message = 'Pobieranie danych przez Scrapling...';
     updateScraperLog(`Trigger: ${triggerLabel}`);
     updateScraperLog('Uruchamiam scrapling script (Python)...');
 
-    const { stdout, stderr } = await execFile('python3', [KALK_SCRAPLING_SCRIPT], {
+    const child = execFileCb('python3', [KALK_SCRAPLING_SCRIPT], {
       cwd: __dirname,
       timeout: 15 * 60 * 1000,
       maxBuffer: 10 * 1024 * 1024
     });
 
-    if (stdout?.trim()) updateScraperLog(stdout.trim());
-    if (stderr?.trim()) updateScraperLog(`STDERR: ${stderr.trim()}`);
+    child.stdout.on('data', (data) => {
+      const text = data.toString().trim();
+      if (text) updateScraperLog(text);
+    });
+
+    child.stderr.on('data', (data) => {
+      const text = data.toString().trim();
+      if (text) updateScraperLog(`STDERR: ${text}`);
+    });
+
+    await new Promise((resolve, reject) => {
+      child.on('close', (code) => {
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Proces zakończył się kodem: ${code}`));
+        }
+      });
+      child.on('error', (err) => {
+        reject(err);
+      });
+    });
 
     scraperState.step = 'import-bazy';
     scraperState.message = 'Import danych ze scrapingu do bazy...';
@@ -600,10 +606,6 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     scraperState.message = 'Synchronizacja zawodników...';
     await syncPlayersFromKalk();
     await ensureDefaultAdminUser();
-
-    // Restore console
-    console.log = originalLog;
-    console.error = originalError;
 
     scraperRunning = false;
     scraperState.running = false;
@@ -626,9 +628,6 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     scraperState.message = `Błąd: ${err.message}`;
     updateScraperLog(`FATAL ERROR: ${err.message}`);
     throw err;
-  } finally {
-    console.log = originalLog;
-    console.error = originalError;
   }
 }
 
@@ -881,7 +880,6 @@ app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requ
 });
 
 // --- REMAINING ROUTES ---
-app.get(['/api/trainings', '/trainings'], async (req, res) => res.json(await listAllTrainings()));
 app.get(['/api/plays', '/plays'], async (req, res) => res.json(await listAllPlays(req.query.category)));
 app.get(['/api/league/table', '/league/table'], async (req, res) => {
   const phase = req.query.phase || 'regular';
@@ -946,7 +944,6 @@ async function bootstrapScrapingIfEmpty() {
     ]);
 
     if (teamsCount > 0 && matchesCount > 0 && playersCount > 0) {
-      await ensureDefaultAdminUser();
       console.log('[Bootstrap] Scraping bootstrap skipped - data already present.');
       return;
     }

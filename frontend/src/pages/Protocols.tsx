@@ -9,7 +9,6 @@ export default function Protocols() {
   const [draft, setDraft] = useState<Game | null>(null);
   const [mode, setMode] = useState<'view' | 'edit'>('view');
   const [showAdd, setShowAdd] = useState(false);
-  const [importFormat, setImportFormat] = useState<'markdown' | 'json'>('markdown');
   const [importContent, setImportContent] = useState('');
   const [importPreview, setImportPreview] = useState<Game | null>(null);
   const [importMeta, setImportMeta] = useState<{ date: string; opponent: string }>({ date: '', opponent: '' });
@@ -56,18 +55,11 @@ export default function Protocols() {
 
   // ── Import handlers ────────────────────────────────────────────────
 
-  const handleImportParse = useCallback(async (overrideContent?: string, overrideFormat?: 'markdown' | 'json') => {
+  const handleImportParse = useCallback(async (overrideContent?: string) => {
     try {
       setImportError('');
       const content = overrideContent ?? importContent;
-      const format = overrideFormat ?? importFormat;
-      const res = await postJSON<{ preview: Game }>(`/import`, { format, content });
-      if (format === 'json') {
-        setImportPreview(null);
-        const refreshed = await fetchJSON<Game[]>('/games');
-        setGames(refreshed);
-        return;
-      }
+      const res = await postJSON<{ preview: Game }>(`/import`, { format: 'markdown', content });
       setImportPreview(res.preview);
       if (res.preview?.warning) {
         setImportError(res.preview.warning);
@@ -78,7 +70,7 @@ export default function Protocols() {
       setImportPreview(null);
       setImportError(err.message || 'Nie udało się sparsować protokołu.');
     }
-  }, [importContent, importFormat]);
+  }, [importContent]);
 
   const handleImportSave = useCallback(async () => {
     if (!importPreview) return;
@@ -98,11 +90,10 @@ export default function Protocols() {
   const handleFileUpload = useCallback(async (file: File) => {
     const text = await file.text();
     setImportContent(text);
-    setImportFormat('markdown');
     setFileName(file.name);
     setImportPreview(null);
     setImportError('');
-    await handleImportParse(text, 'markdown');
+    await handleImportParse(text);
   }, [handleImportParse]);
 
   // ── Draft update handlers (immutable — no JSON.parse deep clone) ──
@@ -274,12 +265,6 @@ export default function Protocols() {
     setSaveState('saved');
   }, [draft]);
 
-  const copyAsJson = useCallback(async () => {
-    if (!draft) return;
-    const text = JSON.stringify(draft, null, 2);
-    await navigator.clipboard.writeText(text);
-  }, [draft]);
-
   useEffect(() => {
     if (!draft || mode !== 'edit') return;
     if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
@@ -336,7 +321,6 @@ export default function Protocols() {
           onRemovePlayer={removePlayer}
           onRecalcFiveMinuteFromQuarters={recalcFiveMinuteFromQuarters}
           onSave={handleSave}
-          onCopyJson={copyAsJson}
         />
       )}
 
@@ -345,8 +329,6 @@ export default function Protocols() {
           onClose={() => setShowAdd(false)}
           onImportParse={handleImportParse}
           onImportSave={handleImportSave}
-          importFormat={importFormat}
-          setImportFormat={setImportFormat}
           importContent={importContent}
           setImportContent={setImportContent}
           importPreview={importPreview}

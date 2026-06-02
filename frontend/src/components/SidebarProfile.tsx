@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { cn } from '../shared/lib/utils';
+import { getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
 interface User {
     firstName: string;
@@ -14,15 +15,15 @@ interface User {
 
 interface SidebarProfileProps {
     user: User;
+    variant?: 'sidebar' | 'menu';
 }
 
-export default function SidebarProfile({ user }: SidebarProfileProps) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative mb-8 group"
-        >
+export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarProfileProps) {
+    const isMenu = variant === 'menu';
+    const wrapperClass = cn('relative group', isMenu ? 'mb-0' : 'mb-8');
+
+    const content = (
+        <>
             <div className="relative overflow-hidden rounded-2xl border border-bkpk-border-strong bg-bkpk-surface-tint-1 shadow-bkpk-glow transition-all duration-300 group-hover:border-bkpk-primary/50">
 
                 {/* Profile Card Header with Number */}
@@ -71,6 +72,20 @@ export default function SidebarProfile({ user }: SidebarProfileProps) {
 
             {/* Hover Ambient Glow */}
             <div className="absolute inset-0 -z-10 bg-bkpk-primary/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </>
+    );
+
+    if (isMenu) {
+        return <div className={wrapperClass}>{content}</div>;
+    }
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className={wrapperClass}
+        >
+            {content}
         </motion.div>
     );
 }

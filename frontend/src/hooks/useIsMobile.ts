@@ -19,6 +19,36 @@ export default function useIsMobile(breakpoint = 768): boolean {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
+/** Portrait orientation (typowy telefon trzymany pionowo). */
+export function useIsPortrait(): boolean {
+  const query = '(orientation: portrait)';
+
+  const subscribe = (callback: () => void) => {
+    const mql = window.matchMedia(query);
+    mql.addEventListener('change', callback);
+    return () => mql.removeEventListener('change', callback);
+  };
+
+  const getSnapshot = () => window.matchMedia(query).matches;
+  const getServerSnapshot = () => true;
+
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+/** Wąski ekran (< lg) w pionie — karty zamiast szerokich tabel. */
+export function usePortraitMobile(breakpoint = 1024): boolean {
+  const isNarrow = useIsMobile(breakpoint);
+  const isPortrait = useIsPortrait();
+  return isNarrow && isPortrait;
+}
+
+/** Wąski ekran w poziomie lub tablet — lepiej pokazać tabelę z przewijaniem. */
+export function useLandscapeTableLayout(breakpoint = 1024): boolean {
+  const isNarrow = useIsMobile(breakpoint);
+  const isPortrait = useIsPortrait();
+  return isNarrow && !isPortrait;
+}
+
 /** Returns the current Tailwind breakpoint name */
 export type Breakpoint = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 
