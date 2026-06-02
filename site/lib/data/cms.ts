@@ -12,6 +12,7 @@ import {
   type NewsPost,
   type SponsorItem
 } from './schemas'
+import { normalizeSponsorTier } from './sponsor-tiers'
 import { sanitizeNumber, sanitizeText, toNormalizedArray } from './utils'
 
 function mapMediaUrl(value: unknown): string | undefined {
@@ -98,7 +99,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-1',
     name: 'Gmina Bobolice',
     slug: 'gmina-bobolice',
-    tier: 'gold',
+    tier: 'main',
     websiteUrl: 'https://bobolice.pl',
     order: 1
   },
@@ -106,7 +107,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-2',
     name: 'Majster Plus Koszalin',
     slug: 'majster-plus-koszalin',
-    tier: 'gold',
+    tier: 'main',
     websiteUrl: 'https://majsterplus.pl',
     order: 2
   },
@@ -114,7 +115,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-3',
     name: 'Fem-Tech Tychowo',
     slug: 'fem-tech-tychowo',
-    tier: 'gold',
+    tier: 'main',
     websiteUrl: '',
     order: 3
   },
@@ -122,7 +123,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-4',
     name: 'Contema Bobolice',
     slug: 'contema-bobolice',
-    tier: 'silver',
+    tier: 'partner',
     websiteUrl: '',
     order: 4
   },
@@ -130,7 +131,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-5',
     name: 'CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak',
     slug: 'certe-inez-szczesniak',
-    tier: 'silver',
+    tier: 'partner',
     websiteUrl: '',
     order: 5
   },
@@ -138,7 +139,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-6',
     name: 'PST Sped-Trans Bobolice',
     slug: 'pst-sped-trans',
-    tier: 'silver',
+    tier: 'partner',
     websiteUrl: '',
     order: 6
   },
@@ -146,7 +147,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-7',
     name: 'Nadleśnictwo Bobolice, Lasy Państwowe',
     slug: 'nadlesnictwo-bobolice',
-    tier: 'silver',
+    tier: 'partner',
     websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
     order: 7
   },
@@ -154,7 +155,7 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-8',
     name: 'ALAB laboratoria',
     slug: 'alab-laboratoria',
-    tier: 'silver',
+    tier: 'partner',
     websiteUrl: 'https://www.alab-laboratoria.pl',
     order: 8
   },
@@ -347,7 +348,7 @@ export async function getSponsorsState(limit = 12): Promise<DataState<SponsorIte
         id: sanitizeText(item.id, String(index)),
         name: sanitizeText(item.name, 'Sponsor'),
         slug: sanitizeText(item.slug, `sponsor-${index}`),
-        tier: sanitizeText(item.tier, 'support'),
+        tier: normalizeSponsorTier(sanitizeText(item.tier, 'support')),
         websiteUrl: sanitizeText(item.websiteUrl, ''),
         order: sanitizeNumber(item.order, index),
         logoUrl: mapMediaUrl(item.logo)
