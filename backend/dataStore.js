@@ -307,6 +307,9 @@ export async function getRoster() {
       eFgPercentage: r.eFgPercentage,
       plusMinus: r.plusMinus,
       gamesPlayed: r.gamesPlayed,
+      birthDate: r.birthDate,
+      heightCm: r.heightCm,
+      aiDevelopmentSummary: r.aiDevelopmentSummary,
 
       // Raw stats for Shot Selection
       twoPm: (r.fgm || 0) - (r.threePm || 0),
