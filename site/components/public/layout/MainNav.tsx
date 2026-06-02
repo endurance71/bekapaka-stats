@@ -9,7 +9,6 @@ const navItems = [
   { href: '/tabela', label: 'Tabela' },
   { href: '/sklad', label: 'Skład' },
   { href: '/sponsorzy', label: 'Sponsorzy' },
-  { href: '/dokumenty', label: 'Dokumenty' },
   { href: '/klub', label: 'Klub' }
 ]
 

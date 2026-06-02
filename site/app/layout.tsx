@@ -28,11 +28,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'BeKaPaKa Bobolice',
-  description: 'Oficjalna strona BeKaPaKa Bobolice: aktualnosci, wydarzenia, sponsorzy, sklad i dokumenty.',
+  description: 'Oficjalna strona BeKaPaKa Bobolice: aktualności, terminarz, tabela, skład oraz sponsorzy.',
   alternates: {
     canonical: '/'
   },
-  keywords: ['BeKaPaKa', 'Bobolice', 'koszykowka', 'klub sportowy', 'wydarzenia', 'sponsorzy']
+  keywords: ['BeKaPaKa', 'Bobolice', 'koszykówka', 'klub sportowy', 'terminarz', 'tabela', 'skład', 'sponsorzy']
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

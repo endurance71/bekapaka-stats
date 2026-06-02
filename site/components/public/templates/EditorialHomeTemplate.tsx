@@ -1,7 +1,6 @@
-import type { DocumentItem, EventItem, HomepageSection, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type { EventItem, HomepageSection, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import {
   BentoGrid,
-  DocumentsTile,
   EventsTile,
   HeroSection,
   HomepageCmsSectionsTile,
@@ -13,7 +12,6 @@ import {
 import { SponsorsStrip } from '../sponsors/SponsorsStrip'
 
 export function EditorialHomeTemplate({
-  documents,
   events,
   homepageSections,
   news,
@@ -21,7 +19,6 @@ export function EditorialHomeTemplate({
   sponsors,
   ourPosition
 }: {
-  documents: DocumentItem[]
   events: EventItem[]
   homepageSections: HomepageSection[]
   news: NewsPost[]
@@ -38,7 +35,6 @@ export function EditorialHomeTemplate({
         <NewsTile news={news.slice(0, 4)} />
         <RosterTile roster={roster} />
         <SponsorsTile sponsors={sponsors.slice(0, 8)} />
-        <DocumentsTile documents={documents} />
         <HomepageCmsSectionsTile sections={homepageSections} />
       </BentoGrid>
       <SponsorsStrip sponsors={sponsors} />
