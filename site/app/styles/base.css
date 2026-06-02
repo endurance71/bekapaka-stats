@@ -6,6 +6,8 @@
 
 html {
   scroll-behavior: smooth;
+  min-height: 100%;
+  background-color: var(--bg-app);
 }
 
 html,
@@ -14,7 +16,6 @@ body {
   padding: 0;
   width: 100%;
   overflow-x: clip;
-  background-color: var(--bg-app);
 }
 
 body {
@@ -22,8 +23,25 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--text-primary);
-  background: var(--bg-app);
+  background-color: var(--bg-app);
   min-height: 100dvh;
+}
+
+body.site-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+body.is-scroll-locked {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  touch-action: none;
+}
+
+body.site-body #content {
+  flex: 1;
 }
 
 /* Custom premium scrollbar */
@@ -115,7 +133,8 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  padding-block: var(--space-5) var(--space-8);
+  padding-block: var(--space-5) calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+  flex: 1;
 }
 
 .site-header {
@@ -391,9 +410,9 @@ p {
 .site-footer {
   margin-top: var(--space-8);
   border-top: 1px solid var(--border);
-  background: var(--bg-surface-muted);
+  background: transparent;
   position: relative;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .site-footer::before {

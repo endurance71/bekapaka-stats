@@ -1,5 +1,6 @@
 import type { GameSummary } from '../../lib/data'
 import { formatDateTime } from '../../lib/format'
+import { formatVenue } from '../../lib/venue'
 
 function getTeamsFromGame(game: GameSummary) {
   const teams = game.teams || game.data?.teams
@@ -53,13 +54,12 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
       {/* Scoreboard Header */}
       <div className='drawer-match-header'>
         <p className='drawer-match-meta'>
-          {formatDateTime(game.date)} {game.data?.venue ? ` · 📍 ${game.data.venue}` : ''}
+          {formatDateTime(game.date)} · 📍 {formatVenue(game.data?.venue)}
         </p>
         
         <div className='drawer-match-scoreboard'>
           <div className='scoreboard-team'>
             <span className='scoreboard-team-name'>BeKaPaKa</span>
-            <span className='scoreboard-team-role'>GOSPODARZ</span>
           </div>
           <div className='scoreboard-score-numbers' aria-label={`Wynik ${game.scoreUs} do ${game.scoreThem}`}>
             <span className={isWin ? 'color-win' : undefined}>{game.scoreUs}</span>
@@ -68,7 +68,6 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
           </div>
           <div className='scoreboard-team text-right'>
             <span className='scoreboard-team-name'>{game.opponent}</span>
-            <span className='scoreboard-team-role'>GOŚĆ</span>
           </div>
         </div>
         

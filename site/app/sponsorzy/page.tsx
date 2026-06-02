@@ -7,20 +7,21 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Sponsorzy | BeKaPaKa Bobolice',
-  description: 'Poznaj partnerow i sponsorow wspierajacych BeKaPaKa Bobolice.'
+  description: 'Poznaj partnerów i sponsorów wspierających BeKaPaKa Bobolice.'
 }
 
 export default async function SponsorsPage() {
   const sponsorsState = await getSponsorsState(60)
   const sponsors = sponsorsState.data
 
-  const goldSponsors = sponsors.filter(s => s.tier?.toLowerCase() === 'gold')
-  const silverSponsors = sponsors.filter(s => s.tier?.toLowerCase() === 'silver' || s.tier?.toLowerCase() === 'srebrny' || s.tier?.toLowerCase() === 'main')
+  const goldSponsors = sponsors.filter(s => s.tier?.toLowerCase() === 'gold' || s.tier?.toLowerCase() === 'main' || s.tier?.toLowerCase() === 'glowny')
+  const silverSponsors = sponsors.filter(s => s.tier?.toLowerCase() === 'silver' || s.tier?.toLowerCase() === 'srebrny')
   const otherSponsors = sponsors.filter(s => 
     s.tier?.toLowerCase() !== 'gold' && 
+    s.tier?.toLowerCase() !== 'main' && 
+    s.tier?.toLowerCase() !== 'glowny' && 
     s.tier?.toLowerCase() !== 'silver' && 
-    s.tier?.toLowerCase() !== 'srebrny' && 
-    s.tier?.toLowerCase() !== 'main'
+    s.tier?.toLowerCase() !== 'srebrny'
   )
 
   const hasTiers = goldSponsors.length > 0 || silverSponsors.length > 0
@@ -28,25 +29,25 @@ export default async function SponsorsPage() {
   return (
     <EditorialListingTemplate
       title='Sponsorzy i partnerzy'
-      description='Dziekujemy firmom i osobom wspierajacym rozwoj klubu.'
+      description='Dziękujemy firmom i osobom wspierającym rozwój klubu.'
       hasItems={sponsors.length > 0}
       stateStatus={sponsorsState.status}
       stateSource={sponsorsState.source}
       stateMessage={sponsorsState.message}
-      emptyTitle={sponsorsState.status === 'error' ? 'Nie mozna pobrac sponsorow' : 'Brak sponsorow'}
+      emptyTitle={sponsorsState.status === 'error' ? 'Nie można pobrać sponsorów' : 'Brak sponsorów'}
       emptyDescription={
         sponsorsState.status === 'error'
-          ? 'Sprawdz polaczenie z CMS lub token dostepu.'
-          : 'Po uzupelnieniu sekcji sponsorow w CMS dane pojawia sie automatycznie.'
+          ? 'Sprawdź połączenie z CMS lub token dostępu.'
+          : 'Po uzupełnieniu sekcji sponsorów w CMS dane pojawią się automatycznie.'
       }
     >
-      <div style={{ display: 'grid', gap: '40px' }}>
+      <div style={{ display: 'grid', gap: '50px' }}>
         {goldSponsors.length > 0 && (
           <div>
-            <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '2.2rem', color: 'var(--bkp-gold)', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
+            <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '2.4rem', color: 'var(--bkp-gold)', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '24px', letterSpacing: '0.04em' }}>
               Sponsorzy Główni
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '24px' }}>
               {goldSponsors.map((sponsor) => (
                 <SponsorCard key={sponsor.id} sponsor={sponsor} isGold />
               ))}
@@ -56,12 +57,12 @@ export default async function SponsorsPage() {
 
         {silverSponsors.length > 0 && (
           <div>
-            <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.8rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
+            <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '2rem', color: '#fff', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '24px', letterSpacing: '0.04em' }}>
               Sponsorzy Wspierający
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '20px' }}>
               {silverSponsors.map((sponsor) => (
-                <SponsorCard key={sponsor.id} sponsor={sponsor} />
+                <SponsorCard key={sponsor.id} sponsor={sponsor} isSilver />
               ))}
             </div>
           </div>
@@ -70,7 +71,7 @@ export default async function SponsorsPage() {
         {otherSponsors.length > 0 && (
           <div>
             {hasTiers && (
-              <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.8rem', color: '#aaa', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
+              <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.8rem', color: '#888', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
                 Partnerzy Klubu
               </h2>
             )}
@@ -94,7 +95,35 @@ export default async function SponsorsPage() {
   )
 }
 
-function SponsorCard({ sponsor, isGold = false, isCompact = false }: { sponsor: SponsorItem; isGold?: boolean; isCompact?: boolean }) {
+function SponsorCard({ 
+  sponsor, 
+  isGold = false, 
+  isSilver = false,
+  isCompact = false 
+}: { 
+  sponsor: SponsorItem
+  isGold?: boolean
+  isSilver?: boolean
+  isCompact?: boolean 
+}) {
+  const borderStyle = isGold 
+    ? '2px solid var(--bkp-gold)' 
+    : isSilver 
+      ? '1px solid rgba(255, 255, 255, 0.15)' 
+      : '1px solid rgba(255, 255, 255, 0.06)'
+      
+  const bgStyle = isGold
+    ? 'linear-gradient(135deg, rgba(236, 167, 44, 0.08) 0%, rgba(20, 20, 22, 0.95) 100%)'
+    : isSilver
+      ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(20, 20, 22, 0.95) 100%)'
+      : 'rgba(255, 255, 255, 0.02)'
+
+  const shadowStyle = isGold
+    ? '0 12px 32px rgba(236, 167, 44, 0.15), 0 0 15px rgba(236, 167, 44, 0.05)'
+    : isSilver
+      ? '0 8px 24px rgba(0, 0, 0, 0.3)'
+      : '0 4px 12px rgba(0, 0, 0, 0.2)'
+
   return (
     <article 
       className='content-card' 
@@ -103,14 +132,49 @@ function SponsorCard({ sponsor, isGold = false, isCompact = false }: { sponsor: 
         flexDirection: 'column', 
         alignItems: 'center', 
         justifyContent: 'center', 
-        padding: isGold ? '32px' : '20px',
+        padding: isGold ? '32px 24px' : '20px 16px',
         textAlign: 'center',
-        border: isGold ? '1px solid rgba(236, 167, 44, 0.25)' : '1px solid rgba(255, 255, 255, 0.06)',
-        background: isGold ? 'linear-gradient(145deg, rgba(236, 167, 44, 0.05), rgba(10, 10, 10, 0.95))' : 'rgba(255, 255, 255, 0.02)',
-        borderRadius: '16px',
-        minHeight: isGold ? '220px' : '160px'
+        border: borderStyle,
+        background: bgStyle,
+        boxShadow: shadowStyle,
+        borderRadius: '20px',
+        minHeight: isGold ? '240px' : isSilver ? '200px' : '150px',
+        position: 'relative',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease'
       }}
     >
+      {isGold && (
+        <span style={{ 
+          background: 'var(--gold-gradient)', 
+          color: '#000', 
+          fontSize: '9px', 
+          fontWeight: 800, 
+          padding: '4px 10px', 
+          borderRadius: '999px', 
+          textTransform: 'uppercase', 
+          letterSpacing: '0.08em', 
+          marginBottom: '16px' 
+        }}>
+          Sponsor Główny
+        </span>
+      )}
+      {isSilver && (
+        <span style={{ 
+          background: 'rgba(255, 255, 255, 0.08)', 
+          color: 'rgba(255,255,255,0.9)', 
+          fontSize: '9px', 
+          fontWeight: 700, 
+          padding: '4px 10px', 
+          borderRadius: '999px', 
+          textTransform: 'uppercase', 
+          letterSpacing: '0.08em', 
+          marginBottom: '16px',
+          border: '1px solid rgba(255, 255, 255, 0.12)'
+        }}>
+          Sponsor Wspierający
+        </span>
+      )}
+      
       {sponsor.logoUrl ? (
         <div style={{ 
           width: '100%', 
@@ -137,16 +201,17 @@ function SponsorCard({ sponsor, isGold = false, isCompact = false }: { sponsor: 
         </div>
       ) : (
         <div style={{ 
-          width: '60px', 
-          height: '60px', 
-          borderRadius: '12px', 
-          background: 'rgba(255, 255, 255, 0.04)', 
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          width: '64px', 
+          height: '64px', 
+          borderRadius: '16px', 
+          background: 'rgba(255, 255, 255, 0.03)', 
+          border: isGold ? '1.5px solid var(--bkp-gold)' : '1px solid rgba(255, 255, 255, 0.08)',
           display: 'grid', 
           placeItems: 'center',
           fontFamily: 'var(--font-bebas-neue), sans-serif',
-          fontSize: '1.5rem',
-          color: 'var(--bkp-gold)',
+          fontSize: '1.6rem',
+          color: isGold ? 'var(--bkp-gold)' : 'var(--text-muted)',
+          textShadow: isGold ? '0 0 10px rgba(236, 167, 44, 0.2)' : 'none',
           marginBottom: '12px'
         }}>
           {sponsor.name.slice(0, 2).toUpperCase()}
@@ -154,14 +219,18 @@ function SponsorCard({ sponsor, isGold = false, isCompact = false }: { sponsor: 
       )}
       <h3 style={{ 
         fontFamily: isCompact ? 'inherit' : 'var(--font-bebas-neue), sans-serif', 
-        fontSize: isGold ? '1.8rem' : isCompact ? '1rem' : '1.4rem', 
+        fontSize: isGold ? '1.9rem' : isCompact ? '1rem' : '1.4rem', 
         margin: '0 0 6px',
         letterSpacing: isCompact ? 'normal' : '0.02em',
         color: '#fff'
       }}>
         {sponsor.name}
       </h3>
-      {!isCompact && <p className='muted' style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px' }}>{sponsor.tier}</p>}
+      {!isCompact && (
+        <p className='muted' style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 12px', color: isGold ? 'var(--bkp-gold)' : 'var(--text-muted)' }}>
+          {sponsor.tier}
+        </p>
+      )}
       {sponsor.websiteUrl ? (
         <a 
           href={sponsor.websiteUrl} 
@@ -173,7 +242,7 @@ function SponsorCard({ sponsor, isGold = false, isCompact = false }: { sponsor: 
             textTransform: 'uppercase', 
             letterSpacing: '0.08em', 
             minHeight: '32px', 
-            padding: '6px 12px',
+            padding: '6px 14px',
             marginTop: 'auto'
           }}
         >
