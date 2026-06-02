@@ -68,7 +68,7 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
     }
 
     const handleTransitionEnd = (event: TransitionEvent) => {
-      if (event.target !== panel || event.propertyName !== 'transform') return
+      if (!panel || event.target !== panel || event.propertyName !== 'transform') return
       complete()
     }
 
