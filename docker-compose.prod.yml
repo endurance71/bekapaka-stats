@@ -15,10 +15,8 @@ services:
       - bkpk-network
 
   bkpk-backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    image: bkpk-backend:local
+    image: ghcr.io/endurance71/bekapaka-stats/backend:latest
+    pull_policy: always
     container_name: bkpk-backend-prod
     restart: always
     environment:
@@ -53,9 +51,8 @@ services:
       - bkpk-network
 
   bkpk-site:
-    build:
-      context: ./site
-      dockerfile: Dockerfile.prod
+    image: ghcr.io/endurance71/bekapaka-stats/site:latest
+    pull_policy: always
     container_name: bkpk-site-prod
     restart: always
     environment:
@@ -87,6 +84,9 @@ services:
       ADMIN_JWT_SECRET: ${CMS_ADMIN_JWT_SECRET:-bkpk-cms-admin-jwt-secret}
       JWT_SECRET: ${CMS_JWT_SECRET:-bkpk-cms-jwt-secret}
       TRANSFER_TOKEN_SALT: ${CMS_TRANSFER_TOKEN_SALT:-bkpk-cms-transfer-token-salt}
+    volumes:
+      - ./data/cms-data:/opt/app/.tmp
+      - ./data/cms-uploads:/opt/app/public/uploads
     ports:
       - "1337:1337"
     networks:
