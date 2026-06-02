@@ -52,5 +52,17 @@
   --glow-card: 0 0 40px rgba(0, 0, 0, 0.8);
   --glass-bg: rgba(18, 18, 20, 0.7);
   --glass-border: rgba(255, 255, 255, 0.05);
+
+  /* Panel roster cards (panel.bekapaka.pl) */
+  --panel-primary: #FF6B35;
+  --panel-primary-muted: rgba(255, 107, 53, 0.3);
+  --panel-primary-soft: rgba(255, 107, 53, 0.8);
+  --panel-bg: #0B0B0E;
+  --panel-glass: rgba(11, 11, 14, 0.7);
+  --panel-border: #4B5563;
+  --panel-text-muted: #9CA3AF;
+  --panel-text-primary: #F5F7FA;
+  --panel-overlay-weak: rgba(0, 0, 0, 0.2);
+  --panel-radius-lg: 24px;
 }
 
