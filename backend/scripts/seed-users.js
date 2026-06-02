@@ -1,14 +1,16 @@
 
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { requireEnv } from '../lib/requireEnv.js';
 
 const prisma = new PrismaClient();
 
 async function seedUsers() {
+    const plainPassword = requireEnv('SEED_DEFAULT_PASSWORD', { minLength: 8 });
     console.log('Seeding users...');
 
     const players = await prisma.rosterPlayer.findMany();
-    const passwordHash = await bcrypt.hash('bekapaka2026', 10);
+    const passwordHash = await bcrypt.hash(plainPassword, 10);
 
     if (players.length === 0) {
         await prisma.rosterPlayer.create({
@@ -27,8 +29,6 @@ async function seedUsers() {
     }
 
     for (const player of players) {
-        // Normalize last name to create username
-        // Remove diacritics and convert to lowercase
         const username = player.lastName
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()

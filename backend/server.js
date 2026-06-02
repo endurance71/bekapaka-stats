@@ -60,6 +60,7 @@ import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '@prisma/client';
+import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 
 const prisma = new PrismaClient();
 const execFile = promisify(execFileCb);
@@ -93,7 +94,7 @@ app.get('/ping', (req, res) => res.send('pong'));
 // --- AUTHENTICATION ---
 // Imports moved to top
 
-const SECRET_KEY = process.env.JWT_SECRET || 'bekapaka-secret-key-2026';
+const SECRET_KEY = getJwtSecret();
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -527,7 +528,14 @@ async function ensureDefaultAdminUser() {
     return;
   }
 
-  const password = process.env.ADMIN_PASSWORD || 'BeKaPaKa!2026';
+  const password = getEnvMinLength('ADMIN_PASSWORD', 12);
+  if (!password) {
+    console.warn(
+      `[AUTH] Admin user "${username}" does not exist and ADMIN_PASSWORD is not set (min 12 chars). Skipping account creation.`
+    );
+    return;
+  }
+
   const passwordHash = await bcrypt.hash(password, 10);
 
   await prisma.rosterPlayer.create({
@@ -540,6 +548,7 @@ async function ensureDefaultAdminUser() {
       starter: false
     }
   });
+  console.log(`[AUTH] Created default admin user: ${username}`);
 }
 
 async function runScrapeImportPipeline(triggerLabel = 'manual') {
