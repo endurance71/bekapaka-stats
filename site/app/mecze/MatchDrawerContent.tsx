@@ -144,7 +144,7 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
                 <tr>
                   <th>Zawodnik</th>
                   <th className='text-center'>MIN</th>
-                  <th className='text-center highlight-gold'>PTS</th>
+                  <th className='text-center'><span className='highlight-gold'>PTS</span></th>
                   <th className='text-center'>AST</th>
                   <th className='text-center'>STL</th>
                   <th className='text-center'>BLK</th>
@@ -171,7 +171,7 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
                         <strong>{p.name}</strong> <span className='muted text-xs'>#{p.number}</span>
                       </td>
                       <td className='text-center font-mono'>{p.min}</td>
-                      <td className='text-center font-bold font-mono highlight-gold'>{p.pts}</td>
+                      <td className='text-center font-bold font-mono'><span className='highlight-gold'>{p.pts}</span></td>
                       <td className='text-center font-mono'>{p.ast}</td>
                       <td className='text-center font-mono'>{p.stl ?? 0}</td>
                       <td className='text-center font-mono'>{p.blk ?? 0}</td>

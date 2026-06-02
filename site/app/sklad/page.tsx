@@ -18,7 +18,7 @@ export default async function RosterPage() {
   return (
     <EditorialListingTemplate
       title='Skład drużyny'
-      description='Kliknij na dowolnego zawodnika, aby zobaczyć zaawansowane statystyki oraz analizę rozwoju AI.'
+      description='Kliknij na dowolnego zawodnika, aby zobaczyć zaawansowane i szczegółowe statystyki sezonowe.'
       hasItems={roster.length > 0}
       stateStatus={rosterState.status}
       stateSource={rosterState.source}

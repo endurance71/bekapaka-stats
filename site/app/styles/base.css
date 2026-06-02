@@ -14,6 +14,7 @@ body {
   padding: 0;
   width: 100%;
   overflow-x: clip;
+  background-color: var(--bg-app);
 }
 
 body {
@@ -347,7 +348,7 @@ p {
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--border-strong);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  padding: var(--space-6) var(--space-4) var(--space-5);
+  padding: var(--space-6) var(--space-4) calc(var(--space-6) + env(safe-area-inset-bottom));
   transform: translateY(100%);
   transition: transform var(--transition);
   display: flex;
@@ -392,6 +393,7 @@ p {
   border-top: 1px solid var(--border);
   background: var(--bg-surface-muted);
   position: relative;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .site-footer::before {
