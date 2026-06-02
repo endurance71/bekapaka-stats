@@ -18,7 +18,7 @@ npm run dev
 ## Zmienne srodowiskowe
 
 - `SITE_CMS_API_URL` - URL API Strapi
-- `SITE_CMS_TOKEN` - token read-only do CMS
+- `SITE_CMS_TOKEN` - token read-only do CMS (Strapi API Token z uprawnieniem `find` do kolekcji redakcyjnych). Po `HTTP_401` wygeneruj nowy token w panelu CMS — patrz `docs/public-site-operations.md` §6.
 - `SITE_BACKEND_API_URL` - URL backendu sportowego
 - `SITE_BASE_URL` - kanoniczny URL strony publicznej
 
