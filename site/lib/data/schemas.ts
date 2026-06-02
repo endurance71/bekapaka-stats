@@ -72,7 +72,18 @@ export const rosterPlayerSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   position: z.string(),
-  number: z.string()
+  number: z.string(),
+  photo: z.string().nullable().optional(),
+  photoUrl: z.string().nullable().optional()
+})
+
+export const gameSummarySchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  opponent: z.string(),
+  result: z.string(),
+  scoreUs: z.number(),
+  scoreThem: z.number()
 })
 
 export type NewsPost = z.infer<typeof newsPostSchema>
@@ -82,6 +93,7 @@ export type DocumentItem = z.infer<typeof documentSchema>
 export type HomepageSection = z.infer<typeof homepageSectionSchema>
 export type TeamStanding = z.infer<typeof teamStandingSchema>
 export type RosterPlayer = z.infer<typeof rosterPlayerSchema>
+export type GameSummary = z.infer<typeof gameSummarySchema>
 
 export type DataStateStatus = 'ok' | 'empty' | 'error'
 

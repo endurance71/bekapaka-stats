@@ -1,15 +1,11 @@
 import Link from 'next/link'
-import type { DocumentItem, EventItem, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type { DocumentItem, EventItem, GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
-
-const playerPhotos = [
-  'https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1627627256672-027a461b6932?q=80&w=600&auto=format&fit=crop',
-  'https://images.unsplash.com/photo-1508344928928-7151b67de15e?q=80&w=600&auto=format&fit=crop'
-]
+import { resolvePlayerPhoto, getPositionLabel } from '../../../lib/data/utils'
 
 export function MegaHomeTemplate({
   news,
+  recentGames,
   events,
   table,
   roster,
@@ -17,6 +13,7 @@ export function MegaHomeTemplate({
   documents
 }: {
   news: NewsPost[]
+  recentGames: GameSummary[]
   events: EventItem[]
   table: TeamStanding[]
   roster: RosterPlayer[]
@@ -69,12 +66,12 @@ export function MegaHomeTemplate({
           </div>
         </article>
 
-        {topPlayers.map((player, index) => (
+        {topPlayers.map((player) => (
           <article key={player.id} className='mega-card mega-card--delay-3 mega-player'>
-            <img src={playerPhotos[index] || playerPhotos[0]} alt={`${player.firstName} ${player.lastName}`} className='mega-bg-image' />
+            <img src={resolvePlayerPhoto(player)} alt={`${player.firstName} ${player.lastName}`} className='mega-bg-image' />
             <div className='mega-overlay' />
             <div className='mega-content'>
-              <span className='mega-chip'>{player.position}</span>
+              <span className='mega-chip'>{getPositionLabel(player.position)}</span>
               <h3>{player.firstName}<br />{player.lastName}</h3>
               <p>#{player.number}</p>
             </div>
@@ -166,24 +163,24 @@ export function MegaHomeTemplate({
           <div className='mega-content'>
             <h3>Ostatnie mecze</h3>
             <div className='mega-results-list'>
-              {events.slice(0, 3).map((event) => (
-                <div key={event.id} className='mega-results-item'>
-                  <span>{event.title}</span>
-                  <span>{event.type}</span>
+              {recentGames.slice(0, 3).map((game) => (
+                <div key={game.id} className='mega-results-item'>
+                  <span>{game.opponent}</span>
+                  <span>{game.scoreUs} - {game.scoreThem} ({game.result})</span>
                 </div>
               ))}
-              {events.length === 0 ? <p className='mega-empty'>Brak rozegranych meczow.</p> : null}
+              {recentGames.length === 0 ? <p className='mega-empty'>Brak rozegranych meczow.</p> : null}
             </div>
           </div>
         </article>
 
         <article className='mega-card mega-card--delay-9 mega-mvp'>
-          {mvp ? <img src={playerPhotos[2]} alt='MVP miesiaca' className='mega-bg-image' /> : null}
+          {mvp ? <img src={resolvePlayerPhoto(mvp)} alt='MVP miesiaca' className='mega-bg-image' /> : null}
           <div className='mega-overlay' />
           <div className='mega-content'>
             <span className='mega-pill'>MVP miesiaca</span>
             <h3>{mvp ? `${mvp.firstName} ${mvp.lastName}` : 'Brak danych MVP'}</h3>
-            <p>{mvp?.position || 'Dodaj dane skladu, aby wyznaczyc MVP'}</p>
+            <p>{mvp ? `#${mvp.number} · ${getPositionLabel(mvp.position)}` : 'Dodaj dane skladu, aby wyznaczyc MVP'}</p>
           </div>
         </article>
 

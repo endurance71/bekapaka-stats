@@ -1,4 +1,4 @@
-import { getLeagueTable, getLeagueTableState, getRoster, getRosterState } from './backend'
+import { getLeagueTable, getLeagueTableState, getRecentGamesState, getRoster, getRosterState } from './backend'
 import {
   getDocuments,
   getDocumentsState,
@@ -23,6 +23,7 @@ export {
   getHomepageSectionsState,
   getLeagueTable,
   getLeagueTableState,
+  getRecentGamesState,
   getNewsPosts,
   getNewsPostsState,
   getRoster,
@@ -32,9 +33,10 @@ export {
 }
 
 export async function getPublicSiteData() {
-  const [tableState, rosterState, newsState, eventsState, sponsorsState, documentsState, homepageSectionsState] = await Promise.all([
+  const [tableState, rosterState, recentGamesState, newsState, eventsState, sponsorsState, documentsState, homepageSectionsState] = await Promise.all([
     getLeagueTableState(),
     getRosterState(),
+    getRecentGamesState(6),
     getNewsPostsState(6),
     getEventsState(8),
     getSponsorsState(18),
@@ -44,6 +46,7 @@ export async function getPublicSiteData() {
 
   const table = tableState.data
   const roster = rosterState.data
+  const recentGames = recentGamesState.data
   const news = newsState.data
   const events = eventsState.data
   const sponsors = sponsorsState.data
@@ -54,6 +57,7 @@ export async function getPublicSiteData() {
   const dataErrors = [
     tableState,
     rosterState,
+    recentGamesState,
     newsState,
     eventsState,
     sponsorsState,
@@ -64,6 +68,7 @@ export async function getPublicSiteData() {
   return {
     table,
     roster,
+    recentGames,
     news,
     events,
     sponsors,

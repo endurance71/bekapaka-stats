@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import { getRosterState, getSiteMetadataBase } from '../../lib/data'
-import { slugify } from '../../lib/content'
+import { resolvePlayerPhoto, getPositionLabel } from '../../lib/data/utils'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
@@ -27,11 +27,20 @@ export default async function RosterPage() {
     >
       <div className='card-grid'>
         {roster.map((player) => (
-          <article key={player.id} className='content-card'>
-            <h2>{player.firstName} {player.lastName}</h2>
-            <p className='muted'>Slug: {slugify(`${player.firstName}-${player.lastName}`)}</p>
-            <p>Pozycja: {player.position}</p>
-            <p>Numer: {player.number}</p>
+          <article key={player.id} className='player-card'>
+            <div className='player-card__image-wrap'>
+              <img
+                src={resolvePlayerPhoto(player)}
+                alt={`${player.firstName} ${player.lastName}`}
+                className='player-card__image'
+              />
+              <div className='player-card__overlay' />
+              <div className='player-card__number'>{player.number}</div>
+            </div>
+            <div className='player-card__info'>
+              <h2 className='player-card__name'>{player.firstName} {player.lastName}</h2>
+              <p className='player-card__position'>{getPositionLabel(player.position)}</p>
+            </div>
           </article>
         ))}
       </div>

@@ -24,12 +24,22 @@ export default async function MatchesPage() {
       <div className='stack-list'>
         {events.map((event) => (
           <article key={event.id} className='list-row'>
-            <span className='pill'>{event.type}</span>
+            <span className='pill' style={{ display: 'inline-flex', alignSelf: 'center', background: event.type === 'match' ? 'var(--bkp-crimson)' : 'var(--bkp-slate)' }}>
+              {event.type}
+            </span>
             <div>
-              <h2>{event.title}</h2>
-              <p className='muted'>{formatDateTime(event.startAt)}{event.location ? ` | ${event.location}` : ''}</p>
-              {event.description ? <p>{event.description}</p> : null}
-              <p><Link href={`/mecze/${event.slug}`}>Szczegoly meczu</Link></p>
+              <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.8rem', margin: '0 0 6px', letterSpacing: '0.02em' }}>
+                {event.title}
+              </h2>
+              <p className='muted' style={{ margin: '0 0 8px', fontSize: '0.9rem' }}>
+                📅 {formatDateTime(event.startAt)} {event.location ? ` | 📍 ${event.location}` : ''}
+              </p>
+              {event.description ? <p style={{ margin: '8px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>{event.description}</p> : null}
+              <div style={{ marginTop: '12px' }}>
+                <Link href={`/mecze/${event.slug}`} className='button button--ghost' style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', minHeight: '36px', padding: '8px 16px', display: 'inline-flex' }}>
+                  Szczegóły
+                </Link>
+              </div>
             </div>
           </article>
         ))}

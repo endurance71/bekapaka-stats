@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export function ClubLogo({
   compact = false,
-  logoUrl = '/favicon.ico'
+  logoUrl = '/logo.png'
 }: {
   compact?: boolean
   logoUrl?: string
