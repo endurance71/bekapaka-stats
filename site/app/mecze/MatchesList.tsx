@@ -6,6 +6,13 @@ import { formatDateTime } from '../../lib/format'
 import { SlideoutPanel } from '../../components/public/shared/SlideoutPanel'
 import { formatVenue } from '../../lib/venue'
 import { MatchDrawerContent } from './MatchDrawerContent'
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  IconLabel,
+  MapPinIcon,
+  MetaWithIcons,
+} from '../../components/public/shared/PublicIcons'
 
 interface MatchesListProps {
   games: GameSummary[]
@@ -83,7 +90,8 @@ export function MatchesList({ games }: MatchesListProps) {
                   </div>
                   <h2 className='pm-card-opponent'>vs {game.opponent}</h2>
                   <span className='pm-card-location'>
-                    KALK · 📍 {formatVenue(game.data?.venue)}
+                    KALK ·{' '}
+                    <IconLabel icon={<MapPinIcon size={14} />}>{formatVenue(game.data?.venue)}</IconLabel>
                   </span>
                 </div>
                 
@@ -93,7 +101,10 @@ export function MatchesList({ games }: MatchesListProps) {
                     <span className='score-separator'>:</span>
                     <span className={!isWin ? 'color-win' : undefined}>{game.scoreThem}</span>
                   </div>
-                  <span className='pm-card-action-btn'>Szczegóły ➔</span>
+                  <span className='pm-card-action-btn'>
+                    Szczegóły
+                    <ArrowRightIcon size={12} />
+                  </span>
                 </div>
               </button>
             )
@@ -108,7 +119,13 @@ export function MatchesList({ games }: MatchesListProps) {
                 <span className='upcoming-pill'>Termin</span>
                 <h2 className='pm-card-opponent'>vs {game.opponent}</h2>
                 <p className='muted pm-card-location'>
-                  📅 {formatDateTime(game.date)} · 📍 {formatVenue(game.data?.venue)}
+                  <MetaWithIcons>
+                    <IconLabel icon={<CalendarIcon size={14} />}>{formatDateTime(game.date)}</IconLabel>
+                    <span className='meta-with-icons__sep' aria-hidden>
+                      ·
+                    </span>
+                    <IconLabel icon={<MapPinIcon size={14} />}>{formatVenue(game.data?.venue)}</IconLabel>
+                  </MetaWithIcons>
                 </p>
               </div>
               <div className='pm-card-right'>

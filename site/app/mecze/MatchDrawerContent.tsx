@@ -1,6 +1,13 @@
 import type { GameSummary } from '../../lib/data'
 import { formatDateTime } from '../../lib/format'
 import { formatVenue } from '../../lib/venue'
+import {
+  CalendarIcon,
+  IconLabel,
+  MapPinIcon,
+  MetaWithIcons,
+  VideoIcon,
+} from '../../components/public/shared/PublicIcons'
 
 function getTeamsFromGame(game: GameSummary) {
   const teams = game.teams || game.data?.teams
@@ -54,7 +61,13 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
       {/* Scoreboard Header */}
       <div className='drawer-match-header'>
         <p className='drawer-match-meta'>
-          {formatDateTime(game.date)} · 📍 {formatVenue(game.data?.venue)}
+          <MetaWithIcons>
+            <IconLabel icon={<CalendarIcon size={14} />}>{formatDateTime(game.date)}</IconLabel>
+            <span className='meta-with-icons__sep' aria-hidden>
+              ·
+            </span>
+            <IconLabel icon={<MapPinIcon size={14} />}>{formatVenue(game.data?.venue)}</IconLabel>
+          </MetaWithIcons>
         </p>
         
         <div className='drawer-match-scoreboard'>
@@ -192,10 +205,11 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
           href={game.videoUrl} 
           target='_blank' 
           rel='noopener noreferrer' 
-          className='button button--primary stub-button' 
-          style={{ width: '100%', justifyContent: 'center', marginTop: '8px' }}
+          className='button button--primary stub-button button-with-icon'
+          style={{ width: '100%', marginTop: '8px' }}
         >
-          🎥 Oglądaj skrót wideo z meczu
+          <VideoIcon size={18} />
+          Oglądaj skrót wideo z meczu
         </a>
       ) : null}
     </div>

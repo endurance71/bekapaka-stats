@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { CloseIcon } from './PublicIcons'
 
 export function SlideoutPanel({
   isOpen,
@@ -126,7 +127,7 @@ export function SlideoutPanel({
             aria-label="Zamknij panel szczegółów"
             type="button"
           >
-            ✕
+            <CloseIcon size={18} />
           </button>
         </div>
         <div className="stats-drawer__panel-body">{children}</div>

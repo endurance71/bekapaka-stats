@@ -3,6 +3,7 @@ import type { GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } f
 import { formatDateTime } from '../../../lib/format'
 import { formatVenue } from '../../../lib/venue'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
+import { ArrowRightIcon } from '../shared/PublicIcons'
 
 export function MegaHomeTemplate({
   news,
@@ -271,8 +272,9 @@ export function MegaHomeTemplate({
             <p className='muted'>
               Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
             </p>
-            <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
-              Zagraj z nami ➔
+            <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+              Zagraj z nami
+              <ArrowRightIcon size={14} />
             </a>
           </div>
         </article>
@@ -284,8 +286,9 @@ export function MegaHomeTemplate({
             <p className='muted'>
               Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
             </p>
-            <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
-              Zostań Partnerem ➔
+            <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+              Zostań Partnerem
+              <ArrowRightIcon size={14} />
             </a>
           </div>
         </article>

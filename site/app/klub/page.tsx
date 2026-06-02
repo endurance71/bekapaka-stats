@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { MailIcon, MonitorIcon } from '../../components/public/shared/PublicIcons'
 import { getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
@@ -53,11 +54,23 @@ export default function ClubPage() {
           <p style={{ lineHeight: '1.7', marginBottom: 'var(--space-2)' }}>
             Chcesz do nas dołożyć cegiełkę, wesprzeć klub lub nawiązać współpracę sponsorską? Skontaktuj się z nami:
           </p>
-          <p style={{ lineHeight: '1.7', marginBottom: 'var(--space-1)' }}>
-            📧 Email: <a href='mailto:kontakt@bekapaka.pl' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>kontakt@bekapaka.pl</a>
+          <p className='club-contact-line' style={{ marginBottom: 'var(--space-1)' }}>
+            <MailIcon size={18} />
+            <span>
+              Email:{' '}
+              <a href='mailto:kontakt@bekapaka.pl' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>
+                kontakt@bekapaka.pl
+              </a>
+            </span>
           </p>
-          <p style={{ lineHeight: '1.7' }}>
-            💻 Panel administracyjny drużyny: <a href='https://panel.bekapaka.pl' target='_blank' rel='noreferrer' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>panel.bekapaka.pl</a>
+          <p className='club-contact-line'>
+            <MonitorIcon size={18} />
+            <span>
+              Panel administracyjny drużyny:{' '}
+              <a href='https://panel.bekapaka.pl' target='_blank' rel='noreferrer' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>
+                panel.bekapaka.pl
+              </a>
+            </span>
           </p>
         </article>
       </div>
