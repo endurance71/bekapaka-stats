@@ -18,7 +18,7 @@ Strona publiczna **nie wymaga** `git pull` na serwerze.
 | Sekret | Opis |
 |--------|------|
 | `CR_PAT` | PAT z uprawnieniem `write:packages` (oraz `read:packages`) |
-| `VPS_HOST` | IPv4 VPS, np. `51.210.102.167` |
+| `VPS_HOST` | IPv4 VPS — **musi** być `51.210.102.167` (OVH BeKaPaKa). Stary IP `135.181.138.249` powoduje `connection refused` w jobie deploy. |
 | `VPS_USER` | Użytkownik SSH, np. `debian` |
 | `VPS_SSH_KEY` | Klucz prywatny SSH (ten sam co do `ssh ovh-vps-cursor`) |
 | `VPS_SSH_PORT` | Opcjonalnie: port SSH (domyślnie **22**; nie używaj 10204, jeśli z Maca jest timeout) |
@@ -41,6 +41,16 @@ Aby naprawić (opcjonalnie, deploy i tak działa przez GHCR):
    git remote set-url origin git@github.com:endurance71/bekapaka-stats.git
    GIT_SSH_COMMAND='ssh -i ~/.ssh/id_ed25519_github_deploy -o IdentitiesOnly=yes' git pull origin main
    ```
+
+## Deploy failed: `connection refused` na porcie 22
+
+Jeśli job **deploy** pada na kroku **Upload production compose file** z komunikatem:
+
+`dial tcp 135.181.138.249:22: connect: connection refused`
+
+to sekret **`VPS_HOST`** w GitHub Actions wskazuje zły adres. Popraw na `51.210.102.167`, zapisz i uruchom ponownie workflow (**Re-run failed jobs**).
+
+Job **build-and-push** mógł się udać — obrazy są w GHCR, ale VPS nie dostał aktualizacji.
 
 ## Weryfikacja po deployu
 

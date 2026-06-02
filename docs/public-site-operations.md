@@ -76,3 +76,41 @@
 2. Zweryfikuj status `200` dla stron krytycznych.
 3. Sprawdz integralnosc danych CMS.
 4. Oznacz incydent i przygotuj poprawke hotfix.
+
+## 6. Token CMS (`SITE_CMS_TOKEN`) — baner „dane zastępcze” / `HTTP_401`
+
+Strona publiczna (`bkpk-site`) pobiera treści redakcyjne ze Strapi z nagłówkiem `Authorization: Bearer <SITE_CMS_TOKEN>`.
+
+### Objawy
+
+- Baner: „widzisz dane zastępcze…” z kodem `HTTP_401`
+- `/sponsorzy` (i inne sekcje CMS) pokazują fallback zamiast danych z panelu
+
+### Diagnostyka na VPS
+
+```bash
+ssh ovh-vps-cursor
+grep -E '^SITE_CMS_' /opt/bekapaka-stats/.env   # nie loguj wartości tokena
+docker exec bkpk-site-prod sh -c 'wget -qO- --header="Authorization: Bearer $SITE_CMS_TOKEN" "$SITE_CMS_API_URL/api/sponsors?pagination[limit]=1" | head -c 120'
+```
+
+Oczekiwany wynik: JSON z `data`, nie `401 Unauthorized`.
+
+### Naprawa
+
+1. Zaloguj się do Strapi: `https://cms.bekapaka.pl/admin`
+2. **Settings → API Tokens → Create new API Token**
+   - Typ: Read-only (lub Custom z `find` / `findOne` dla: sponsors, news-posts, events, documents, homepage-sections)
+3. Skopiuj token **jednorazowo** i ustaw w `/opt/bekapaka-stats/.env`:
+
+   `SITE_CMS_TOKEN=<nowy_token>`
+
+4. Przeładuj kontener site (bez rebuild CMS):
+
+   `cd /opt/bekapaka-stats && docker compose -f docker-compose.prod.yml up -d bkpk-site`
+
+Uwaga: po zmianie `CMS_API_TOKEN_SALT` wszystkie stare tokeny API przestają działać — trzeba wygenerować nowy token i zaktualizować `.env`.
+
+### Poziomy sponsorów w CMS
+
+Pole `tier` w kolekcji Sponsor (enum): `main` (główny), `partner` (wspierający), `support` (partner klubu).
