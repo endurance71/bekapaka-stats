@@ -6,6 +6,11 @@ import { buildScoutingContext } from './buildScoutingContext.js';
 import { generateText, getGeminiModelName } from './geminiClient.js';
 import { withAiLock } from './locks.js';
 import { MATCH_ANALYSIS_SYSTEM, buildMatchAnalysisUser } from './prompts/matchAnalysis.pl.js';
+import {
+  buildPlayerDevelopmentMarkdown,
+  hasDetailedPlayerPlanMarkdown,
+  parsePlayerDevelopmentJson
+} from './playerDevelopmentMarkdown.js';
 import { PLAYER_DEVELOPMENT_SYSTEM, buildPlayerDevelopmentUser } from './prompts/playerDevelopment.pl.js';
 import { SCOUTING_SYSTEM, buildScoutingUser } from './prompts/scoutingOpponent.pl.js';
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
@@ -17,72 +22,109 @@ import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js
 
 const prisma = new PrismaClient();
 
-function hasDetailedPlayerPlan(text) {
-  if (!text) return false;
-  const sections = [
-    '## Profil',
-    '## Priorytety pozycyjne',
-    '## Mocne strony',
-    '## Do poprawy',
-    '## Propozycje treningowe',
-    '## Trend',
-    '## Fokus na najbliższy trening',
-    '## Cele sezonu'
-  ];
-  const sectionCount = sections.reduce((acc, section) => acc + (text.includes(section) ? 1 : 0), 0);
-  const endsCleanly = /[.!?)\]]\s*$/.test(text);
-  return sectionCount === sections.length && text.length >= 1800 && endsCleanly;
-}
-
 function formatStat(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return '0.0';
   return value.toFixed(1);
 }
 
+/**
+ * @param {object} payload
+ * @returns {string}
+ */
 function buildFallbackPlayerPlan(payload) {
   const player = payload?.player || {};
   const positionProfile = payload?.positionProfile || {};
   const averages = payload?.averages || {};
+  const derived = payload?.derived || {};
   const signals = Array.isArray(payload?.signals) ? payload.signals : [];
   const recentGames = Array.isArray(payload?.gameLog) ? payload.gameLog.slice(0, 3) : [];
+  const mpg = derived.mpg ?? (averages.gamesPlayed ? averages.minutesPlayed / averages.gamesPlayed : 0);
+  const per36 = derived.per36;
 
   const improvements = signals
     .filter((signal) => signal?.severity === 'high' || signal?.severity === 'medium')
     .slice(0, 3)
     .map((signal) => `- ${signal.message}`);
 
+  const efgPct = derived.efgPct ?? (averages.efg || 0) * 100;
+  const tsPct = derived.tsPct ?? (averages.ts || 0) * 100;
+
   const strengths = [
-    `- Średnie sezonowe: ${formatStat(averages.ppg)} PPG, ${formatStat(averages.rpg)} RPG, ${formatStat(averages.apg)} APG.`,
-    `- eFG ${formatStat((averages.efg || 0) * 100)}% i TS ${formatStat((averages.ts || 0) * 100)}% wskazują, jakiej selekcji rzutów trzymać się najczęściej.`,
-    `- Rozegrał ${Math.round(averages.gamesPlayed || 0)} meczów i ${Math.round(averages.minutesPlayed || 0)} minut, więc mamy reprezentatywną próbkę danych.`
+    `- Sezon: **${formatStat(averages.ppg)} PPG**, **${formatStat(averages.rpg)} RPG**, **${formatStat(averages.apg)} APG** przy **${Math.round(averages.gamesPlayed || 0)}** meczach i **${Math.round(averages.minutesPlayed || 0)}** min łącznie (~${formatStat(mpg)} min/mecz).`,
+    `- eFG **${formatStat(efgPct)}%** i TS **${formatStat(tsPct)}%** opisują aktualną selekcję rzutów.`,
+    per36
+      ? `- W skali per 36 min: **${formatStat(per36.ppg)}** pkt, **${formatStat(per36.rpg)}** zb, **${formatStat(per36.apg)}** as — punkt odniesienia do pełnego czasu gry.`
+      : `- Plus/minus średnio **${formatStat(averages.plusMinusAvg)}** na mecz.`
   ];
 
+  const recentPts = recentGames.map((g) => g.pts || 0);
+  const ptsTrend =
+    recentPts.length >= 2
+      ? recentPts[0] > recentPts[recentPts.length - 1]
+        ? `ostatni mecz **${recentPts[0]}** pkt vs **${recentPts[recentPts.length - 1]}** pkt kilka meczów wcześniej`
+        : `punkty w ostatnich meczach: ${recentPts.join(' → ')}`
+      : 'za mało meczów do pełnego trendu';
+
   const recentTrend = recentGames.length
-    ? recentGames.map((game) => `- ${game.date}: ${game.pts || 0} pkt, ${game.reb || 0} zb, ${game.ast || 0} as.`).join('\n')
+    ? recentGames.map((game) => `- ${game.date} vs ${game.opponent}: **${game.pts || 0}** pkt, **${game.reb || 0}** zb, **${game.ast || 0}** as, eFG **${formatStat((game.efg || 0) * 100)}%**.`).join('\n')
     : '- Brak szczegółowych danych z ostatnich meczów.';
 
   const focusPoints = improvements.length
     ? improvements
-    : ['- Utrzymaj stabilną liczbę strat i selekcję rzutową pod presją.'];
+    : [`- Utrzymać straty na poziomie ≤ **${formatStat(derived.tovPerGame ?? 2)}** na mecz i poprawić pierwszą decyzję po odbiorze piłki.`];
 
   const positionalPriorities = Array.isArray(positionProfile?.priorities) && positionProfile.priorities.length
     ? positionProfile.priorities.map((item) => `- ${item}`)
-    : ['- Dopasuj zadania treningowe do aktualnej roli w rotacji zespołu.'];
+    : ['- Dopasować zadania treningowe do roli **' + (player.position || 'uniwersalnej') + '**.'];
 
   const keyMetrics = Array.isArray(positionProfile?.keyMetrics) && positionProfile.keyMetrics.length
     ? positionProfile.keyMetrics.join(', ')
     : 'PPG, RPG, APG, eFG';
 
-  return [
-    `## Profil\n\n${player.firstName || 'Zawodnik'} ${player.lastName || ''} to ważny element rotacji BeKaPaKa. Plan opiera się na realnych statystykach meczowych i ma przełożyć się na szybką poprawę jakości decyzji boiskowych.`,
-    `## Priorytety pozycyjne\n\nPozycja: **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\nKluczowe zadania na tej roli:\n${positionalPriorities.join('\n')}\n\nNajważniejsze metryki do monitorowania: **${keyMetrics}**.`,
-    `## Mocne strony\n\n${strengths.join('\n')}`,
-    `## Do poprawy\n\n${focusPoints.join('\n')}\n- Priorytet: ograniczyć błędy po koźle i poprawić jakość pierwszej decyzji po otrzymaniu piłki.`,
-    `## Propozycje treningowe\n\n- **Seria 5x5 rzutów po wyjściu z zasłony**: po każdym niecelnym rzucie natychmiastowa korekta ustawienia stóp.\n- **2x6 min gry 1v1 z limitem 2 kozłów**: nacisk na szybki atak przewagi i decyzję w 2 sekundy.\n- **Obwód podań pod presją (4 stacje x 90 s)**: podanie po zmianie kierunku i kontakcie z obrońcą.\n- **Finishing pod kontaktem (3 serie po 8 wejść)**: kończenie z lewej/prawej strony + wymuszony faul.\n- **Rzuty wolne pod zmęczeniem (5 serii po 4)**: każda seria po sprincie, notujemy skuteczność.`,
-    `## Trend\n\n${recentTrend}\n\nW ostatnich występach celem jest utrzymanie stabilności decyzji i ograniczenie pustych posiadań.`,
-    `## Fokus na najbliższy trening\n\n1. **Rozgrzewka (10 min):** kozioł + podanie po zmianie tempa.\n2. **Część główna (25 min):** wejścia spod zasłony i decyzje rzut/podanie w pierwszym tempie.\n3. **Cel końcowy (10 min):** 20 rzutów wolnych i minimum 85% skuteczności po obciążeniu.`,
-    `## Cele sezonu\n\n- Podnieść stabilność meczową: trzymać wpływ na grę przez pełen mecz.\n- Utrzymać regularny progres w selekcji rzutów i ograniczyć straty.\n- Przełożyć jakość treningu na powtarzalny wkład punktowy i defensywny.`
-  ].join('\n\n');
+  const ftLine =
+    derived.ftPct != null && derived.ftPct < 60
+      ? '\n- **Rzuty wolne pod zmęczeniem (5×4 po sprincie):** cel minimum **65%** w ostatniej serii.'
+      : '';
+
+  const trainingBase = [
+    '- **Decyzja 2v2 z obrońcą na piłce (6×90 s):** max **2** sekundy na pass/rzut, min. **70%** udanych akcji.',
+    '- **Finishing pod kontaktem (3×8 wejść):** minimum **6/8** celnych kończeń z obu stron.',
+    '- **Obwód podań pod presją (4 stacje ×90 s):** max **1** strata na stację.',
+    '- **1v1 z limitem 2 kozłów (4×2 min):** minimum **50%** wygranych akcji ofensywnych.',
+    '- **Catch-and-shoot (5 pozycji ×10 rzutów):** minimum **55%** skuteczności łącznie.'
+  ];
+
+  const sections = {
+    profile: `${player.firstName || 'Zawodnik'} ${player.lastName || ''} (${player.position || 'N/D'}, #${player.number ?? '—'}) — **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach sezonu. Plan oparty na protokołach z KOSiR Koszalin; priorytet to przełożenie danych na jeden konkretny trening.`,
+    positionPriorities: `Pozycja **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\n\n${positionalPriorities.join('\n')}\n\nMonitoruj: **${keyMetrics}**.`,
+    strengths: strengths.join('\n'),
+    improvements: focusPoints.join('\n'),
+    trainingProposals: trainingBase.join('\n') + ftLine,
+    trend: `${recentTrend}\n\nTrend punktowy: ${ptsTrend}.`,
+    sessionFocus:
+      '1. **Rozgrzewka (10 min):** kozioł + podanie po zmianie tempa.\n2. **Część główna (25 min):** ćwiczenia powiązane z priorytetem z sekcji „Do poprawy” (decyzje / finishing).\n3. **Zakończenie (10 min):** rzuty wolne lub contested shots — cel liczbowy zapisany po treningu.',
+    seasonGoals: `- Podnieść PPG z **${formatStat(averages.ppg)}** do **${formatStat(averages.ppg + 1.5)}** do końca sezonu przy podobnych minutach.\n- Utrzymać eFG ≥ **${formatStat(efgPct)}%** przy większej liczbie asyst (**${formatStat(averages.apg)}** APG).\n- Ograniczyć straty do ≤ **${formatStat(derived.tovPerGame ?? 2.5)}** na mecz.`
+  };
+
+  return buildPlayerDevelopmentMarkdown(sections);
+}
+
+/**
+ * @param {string} raw
+ * @param {object} payload
+ * @returns {string}
+ */
+function resolvePlayerDevelopmentText(raw, payload) {
+  try {
+    const sections = parsePlayerDevelopmentJson(raw);
+    const markdown = buildPlayerDevelopmentMarkdown(sections);
+    if (hasDetailedPlayerPlanMarkdown(markdown)) return markdown;
+  } catch {
+    // fallback poniżej
+  }
+  const fallback = buildFallbackPlayerPlan(payload);
+  if (hasDetailedPlayerPlanMarkdown(fallback)) return fallback;
+  return fallback;
 }
 
 /**
@@ -152,7 +194,7 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
       !options.force &&
       existing?.aiDevelopmentSummary &&
       existing.aiDevelopmentHash === ctx.hash &&
-      hasDetailedPlayerPlan(existing.aiDevelopmentSummary)
+      hasDetailedPlayerPlanMarkdown(existing.aiDevelopmentSummary)
     ) {
       return {
         cached: true,
@@ -162,12 +204,13 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
       };
     }
 
-    const text = await generateText({
+    const raw = await generateText({
       system: PLAYER_DEVELOPMENT_SYSTEM,
       user: buildPlayerDevelopmentUser(ctx.payload),
-      maxOutputTokens: 3072
+      jsonMode: true,
+      maxOutputTokens: 4096
     });
-    const finalText = hasDetailedPlayerPlan(text) ? text : buildFallbackPlayerPlan(ctx.payload);
+    const finalText = resolvePlayerDevelopmentText(raw, ctx.payload);
 
     const model = getGeminiModelName();
     const now = new Date();
