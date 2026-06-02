@@ -73,10 +73,6 @@ function buildFallbackPlayerPlan(payload) {
     ? improvements
     : [`- Utrzymać straty na poziomie ≤ **${formatStat(derived.tovPerGame ?? 2)}** na mecz i poprawić pierwszą decyzję po odbiorze piłki.`];
 
-  const positionalPriorities = Array.isArray(positionProfile?.priorities) && positionProfile.priorities.length
-    ? positionProfile.priorities.map((item) => `- ${item}`)
-    : ['- Dopasować zadania treningowe do roli **' + (player.position || 'uniwersalnej') + '**.'];
-
   const keyMetrics = Array.isArray(positionProfile?.keyMetrics) && positionProfile.keyMetrics.length
     ? positionProfile.keyMetrics.join(', ')
     : 'PPG, RPG, APG, eFG';
@@ -94,16 +90,32 @@ function buildFallbackPlayerPlan(payload) {
     '- **Catch-and-shoot (5 pozycji ×10 rzutów):** minimum **55%** skuteczności łącznie.'
   ];
 
+  const firstName = player.firstName || 'Zawodniku';
+  const positionalPrioritiesTu = Array.isArray(positionProfile?.priorities) && positionProfile.priorities.length
+    ? positionProfile.priorities.map((item) => `- Na pozycji ${player.position || 'Twojej'}: ${item.charAt(0).toLowerCase() + item.slice(1)}`)
+    : [`- Dopasujemy trening do Twojej roli **${player.position || 'uniwersalnej'}**.`];
+
+  const improvementsTu = focusPoints.length
+    ? focusPoints.map((line) => line.replace(/^-\s*/, '- ').replace(/Średnio/g, 'Masz średnio').replace(/Utrzymać/g, 'Utrzymuj'))
+  : [`- Utrzymuj straty na poziomie ≤ **${formatStat(derived.tovPerGame ?? 2)}** na mecz i popraw pierwszą decyzję po odbiorze piłki.`];
+
   const sections = {
-    profile: `${player.firstName || 'Zawodnik'} ${player.lastName || ''} (${player.position || 'N/D'}, #${player.number ?? '—'}) — **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach sezonu. Plan oparty na protokołach z KOSiR Koszalin; priorytet to przełożenie danych na jeden konkretny trening.`,
-    positionPriorities: `Pozycja **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\n\n${positionalPriorities.join('\n')}\n\nMonitoruj: **${keyMetrics}**.`,
-    strengths: strengths.join('\n'),
-    improvements: focusPoints.join('\n'),
+    profile: `${firstName}, jestem Twoim Trenerem AI BeKaPaKa. W tym sezonie masz **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach (~**${formatStat(mpg)}** min/mecz) — bazuję na protokołach z KOSiR Koszalin i układam plan pod Twój najbliższy trening.`,
+    positionPriorities: `Grasz jako **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\n\n${positionalPrioritiesTu.join('\n')}\n\nBędę monitorował u Ciebie: **${keyMetrics}**.`,
+    strengths: strengths
+      .map((line) =>
+        line
+          .replace('Sezon:', 'Masz w sezonie:')
+          .replace('opisują aktualną', 'to Twoja aktualna')
+          .replace('punkt odniesienia', 'Twój punkt odniesienia')
+      )
+      .join('\n'),
+    improvements: improvementsTu.join('\n'),
     trainingProposals: trainingBase.join('\n') + ftLine,
-    trend: `${recentTrend}\n\nTrend punktowy: ${ptsTrend}.`,
+    trend: `${recentTrend}\n\nWidzę u Ciebie trend punktowy: ${ptsTrend}.`,
     sessionFocus:
-      '1. **Rozgrzewka (10 min):** kozioł + podanie po zmianie tempa.\n2. **Część główna (25 min):** ćwiczenia powiązane z priorytetem z sekcji „Do poprawy” (decyzje / finishing).\n3. **Zakończenie (10 min):** rzuty wolne lub contested shots — cel liczbowy zapisany po treningu.',
-    seasonGoals: `- Podnieść PPG z **${formatStat(averages.ppg)}** do **${formatStat(averages.ppg + 1.5)}** do końca sezonu przy podobnych minutach.\n- Utrzymać eFG ≥ **${formatStat(efgPct)}%** przy większej liczbie asyst (**${formatStat(averages.apg)}** APG).\n- Ograniczyć straty do ≤ **${formatStat(derived.tovPerGame ?? 2.5)}** na mecz.`
+      'Na najbliższym treningu:\n1. **Rozgrzewka (10 min):** kozioł + podanie po zmianie tempa.\n2. **Część główna (25 min):** ćwiczenia z sekcji „Do poprawy” (decyzje / finishing).\n3. **Zakończenie (10 min):** rzuty wolne lub contested shots — zapisz swój cel liczbowy po treningu.',
+    seasonGoals: `- Podnosisz PPG z **${formatStat(averages.ppg)}** do **${formatStat(averages.ppg + 1.5)}** do końca sezonu przy podobnych minutach.\n- Utrzymujesz eFG ≥ **${formatStat(efgPct)}%** przy większej liczbie asyst (**${formatStat(averages.apg)}** APG).\n- Ograniczasz straty do ≤ **${formatStat(derived.tovPerGame ?? 2.5)}** na mecz.`
   };
 
   return buildPlayerDevelopmentMarkdown(sections);
