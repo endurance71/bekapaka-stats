@@ -13,17 +13,38 @@
   }
 
   .stats-drawer__panel {
+    height: 100dvh;
     max-height: 100dvh;
     min-height: 100dvh;
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-radius: 0;
+    border-top: 0;
+    box-shadow: none;
+  }
+
+  .stats-drawer__panel-header {
+    min-height: calc(48px + env(safe-area-inset-top, 0px));
   }
 
   .stats-drawer__panel-body {
-    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
   }
 
   .drawer-profile-panel {
-    padding-top: var(--space-6);
+    padding-top: 0;
+    gap: var(--space-4);
+  }
+
+  .profile-header {
+    padding-bottom: var(--space-3);
+  }
+
+  .profile-avatar-wrap {
+    width: 88px;
+    height: 88px;
+  }
+
+  .dashboard-stat-box {
+    min-height: 68px;
   }
 
   .drawer-match-header {
