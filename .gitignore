@@ -1,6 +1,7 @@
 
-# Data
+# Data — never commit raw Postgres directories or backups
 data/pgdata/
+data/pgdata_backup*/
 project.tar.gz
 *.tar.gz
 

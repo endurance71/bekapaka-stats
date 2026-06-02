@@ -3,10 +3,11 @@
 Przed pracą na VPS lub deployem produkcyjnym **przeczytaj**:
 
 1. **[docs/vps-runbook.md](docs/vps-runbook.md)** — SSH, struktura VPS, porty, Caddy, DNS, **zakazy dotyczące MOYA**
-2. **[docs/scraping.md](docs/scraping.md)** — Scrapling, `kalk_scraper.py`, import do DB, walidacja
-3. **[docs/ai-match-analysis-plan.md](docs/ai-match-analysis-plan.md)** — plan analizy meczów (Gemini, tekst, cache w DB)
-4. **[VPS-dane/README.md](VPS-dane/README.md)** — skrót dostępu i mapa folderów na serwerze
-5. **[docs/docker-deploy.md](docs/docker-deploy.md)** — CI/CD i obrazy Docker
+2. **[docs/security-rotation.md](docs/security-rotation.md)** — rotacja sekretów po wycieku (JWT, DB, CMS, cron)
+3. **[docs/scraping.md](docs/scraping.md)** — Scrapling, `kalk_scraper.py`, import do DB, walidacja
+4. **[docs/ai-match-analysis-plan.md](docs/ai-match-analysis-plan.md)** — plan analizy meczów (Gemini, tekst, cache w DB)
+5. **[VPS-dane/README.md](VPS-dane/README.md)** — skrót dostępu i mapa folderów na serwerze
+6. **[docs/docker-deploy.md](docs/docker-deploy.md)** — CI/CD i obrazy Docker
 
 Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 
