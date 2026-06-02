@@ -1,0 +1,56 @@
+:root {
+  color-scheme: dark;
+  --font-body: var(--font-montserrat), Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --bg-app: #0B0B0C;
+  --bg-elevated: #1C1C1F;
+  --bg-surface: #121214;
+  --bg-surface-muted: #18181B;
+  --bg-hero: #121214;
+  --bg-header: #070708;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text-primary: #FFFFFF;
+  --text-muted: #9A9AA6;
+  --text-soft: #6B6B76;
+  --text-on-dark: #FFFFFF;
+  --text-muted-on-dark: rgba(255, 255, 255, 0.72);
+  --accent: #ECA72C;
+  --accent-strong: #F0B849;
+  --success: #10B981;
+  --danger: #D32F2F;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 40px;
+  --space-8: 56px;
+  --container-max: 1200px;
+  --header-h: 80px;
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Brand-specific tokens */
+  --bkp-gold: #ECA72C;
+  --bkp-obsidian: #1A1A1A;
+  --bkp-crimson: #D32F2F;
+  --bkp-copper: #D97736;
+  --bkp-navy: #3B465E;
+  
+  /* Modern premium gradients & glows */
+  --gold-gradient: linear-gradient(135deg, #ECA72C 0%, #D97736 100%);
+  --crimson-gradient: linear-gradient(135deg, #D32F2F 0%, #A82323 100%);
+  --slate-gradient: linear-gradient(135deg, #3B465E 0%, #20293A 100%);
+  --dark-gradient: linear-gradient(135deg, #1C1C1F 0%, #121214 100%);
+  --glow-gold: 0 0 25px rgba(236, 167, 44, 0.18);
+  --glow-crimson: 0 0 25px rgba(211, 47, 47, 0.18);
+  --glow-card: 0 0 40px rgba(0, 0, 0, 0.8);
+  --glass-bg: rgba(18, 18, 20, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+}
+

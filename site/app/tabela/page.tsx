@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { StandingsBoard } from '../../components/public/shared/StandingsBoard'
 import { getLeagueTableState, getSiteMetadataBase } from '../../lib/data'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
@@ -17,6 +20,9 @@ export default async function LeagueTablePage() {
       title='Tabela ligi'
       description='Aktualna pozycja zespolow i bilans sezonu.'
       hasItems={table.length > 0}
+      stateStatus={tableState.status}
+      stateSource={tableState.source}
+      stateMessage={tableState.message}
       emptyTitle={tableState.status === 'error' ? 'Nie mozna pobrac tabeli' : 'Brak danych tabeli'}
       emptyDescription={
         tableState.status === 'error'
@@ -24,35 +30,7 @@ export default async function LeagueTablePage() {
           : 'Tabela pojawi sie po imporcie danych sezonu.'
       }
     >
-      <div className='table-shell'>
-        <table className='data-table'>
-          <thead>
-            <tr>
-              <th scope='col' style={{ width: '60px' }}>Poz.</th>
-              <th scope='col'>Druzyna</th>
-              <th scope='col' style={{ width: '80px' }}>Mecze</th>
-              <th scope='col' style={{ width: '120px' }}>Bilans</th>
-              <th scope='col' style={{ width: '80px' }}>Pkt</th>
-            </tr>
-          </thead>
-          <tbody>
-            {table.map((row) => {
-              const isBkp = row.name.toLowerCase().includes('bekapaka')
-              return (
-                <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight' : ''}>
-                  <td><strong>{row.position}</strong></td>
-                  <td>
-                    {isBkp ? <span style={{ color: 'var(--bkp-gold)', fontWeight: 700 }}>{row.name}</span> : row.name}
-                  </td>
-                  <td>{row.wins + row.losses}</td>
-                  <td>{row.wins} - {row.losses}</td>
-                  <td><strong>{row.wins * 2 + row.losses}</strong></td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+      <StandingsBoard table={table} />
     </EditorialListingTemplate>
   )
 }

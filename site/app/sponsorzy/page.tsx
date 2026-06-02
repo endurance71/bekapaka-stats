@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import { getSiteMetadataBase, getSponsorsState, type SponsorItem } from '../../lib/data'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Sponsorzy | BeKaPaKa Bobolice',
@@ -28,6 +30,9 @@ export default async function SponsorsPage() {
       title='Sponsorzy i partnerzy'
       description='Dziekujemy firmom i osobom wspierajacym rozwoj klubu.'
       hasItems={sponsors.length > 0}
+      stateStatus={sponsorsState.status}
+      stateSource={sponsorsState.source}
+      stateMessage={sponsorsState.message}
       emptyTitle={sponsorsState.status === 'error' ? 'Nie mozna pobrac sponsorow' : 'Brak sponsorow'}
       emptyDescription={
         sponsorsState.status === 'error'

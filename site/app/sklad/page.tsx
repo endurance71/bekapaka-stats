@@ -3,6 +3,8 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { getRosterState, getSiteMetadataBase } from '../../lib/data'
 import { RosterList } from './RosterList'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Skład | BeKaPaKa Bobolice',
@@ -18,6 +20,9 @@ export default async function RosterPage() {
       title='Skład drużyny'
       description='Kliknij na dowolnego zawodnika, aby zobaczyć zaawansowane statystyki oraz analizę rozwoju AI.'
       hasItems={roster.length > 0}
+      stateStatus={rosterState.status}
+      stateSource={rosterState.source}
+      stateMessage={rosterState.message}
       emptyTitle={rosterState.status === 'error' ? 'Nie można pobrać składu' : 'Brak składu'}
       emptyDescription={
         rosterState.status === 'error'
@@ -25,7 +30,9 @@ export default async function RosterPage() {
           : 'Po imporcie składu dane pojawią się automatycznie.'
       }
     >
-      <RosterList roster={roster} />
+      <div className='listing-panel'>
+        <RosterList roster={roster} />
+      </div>
     </EditorialListingTemplate>
   )
 }

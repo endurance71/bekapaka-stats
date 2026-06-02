@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Breadcrumbs } from '../../public-site'
-import { ClubLogo } from '../shared/ClubLogo'
+import { PageScaffold } from './PageScaffold'
 
 export function EditorialDetailTemplate({
   sectionLabel,
@@ -16,20 +15,13 @@ export function EditorialDetailTemplate({
   parentHref: string
 }) {
   return (
-    <article className='section-card article-detail'>
-      <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: sectionLabel, href: parentHref }, { label: title }]} />
-      <div className='detail-header'>
-        <div>
-          <p className='eyebrow'>{sectionLabel}</p>
-          <h1>{title}</h1>
-          {meta ? <p className='muted'>{meta}</p> : null}
-        </div>
-        <ClubLogo compact />
-      </div>
-      <p className='listing-quick-links'>
-        <Link href='/tabela'>Tabela</Link> · <Link href='/sklad'>Sklad</Link> · <Link href='/sponsorzy'>Sponsorzy</Link>
-      </p>
-      {content}
+    <article className='article-detail'>
+      <PageScaffold title={title} description={meta} eyebrow={sectionLabel}>
+        <p className='article-detail__back'>
+          <Link href={parentHref}>← Wróć do listy</Link>
+        </p>
+        <div className='article-detail__content'>{content}</div>
+      </PageScaffold>
     </article>
   )
 }

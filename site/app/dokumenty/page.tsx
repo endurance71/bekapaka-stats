@@ -4,6 +4,8 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { getDocumentsState, getSiteMetadataBase } from '../../lib/data'
 import { formatDate } from '../../lib/format'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'Dokumenty | BeKaPaKa Bobolice',
@@ -19,6 +21,9 @@ export default async function DocumentsPage() {
       title='Dokumenty klubowe'
       description='Regulaminy, formularze i materialy do pobrania.'
       hasItems={documents.length > 0}
+      stateStatus={documentsState.status}
+      stateSource={documentsState.source}
+      stateMessage={documentsState.message}
       emptyTitle={documentsState.status === 'error' ? 'Nie mozna pobrac dokumentow' : 'Brak dokumentow'}
       emptyDescription={
         documentsState.status === 'error'
@@ -32,9 +37,9 @@ export default async function DocumentsPage() {
             <div>
               <strong>{document.title}</strong>
               <p className='muted'>{document.category} | {formatDate(document.effectiveDate)}</p>
-              <p><Link href={`/dokumenty/${document.slug}`}>Szczegoly dokumentu</Link></p>
+              <p><Link href={`/dokumenty/${document.slug}`}>Szczegóły dokumentu</Link></p>
             </div>
-            {document.fileUrl ? (
+            {document.fileUrl && document.fileUrl !== '#' ? (
               <a href={document.fileUrl} target='_blank' rel='noreferrer'>
                 Pobierz
               </a>

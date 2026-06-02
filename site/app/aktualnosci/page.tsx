@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
-import { getNewsPosts, getSiteMetadataBase } from '../../lib/data'
-import { formatDateTime } from '../../lib/format'
+import { NewsCard } from '../../components/public/shared/NewsCard'
+import { getNewsPostsState, getSiteMetadataBase } from '../../lib/data'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
@@ -11,25 +12,23 @@ export const metadata: Metadata = {
 }
 
 export default async function NewsPage() {
-  const news = await getNewsPosts(20)
+  const newsState = await getNewsPostsState(20)
+  const news = newsState.data
 
   return (
     <EditorialListingTemplate
-      title='Aktualnosci'
-      description='Najnowsze informacje, relacje i ogloszenia klubowe.'
+      title='Aktualności'
+      description='Najnowsze informacje, relacje i ogłoszenia klubowe.'
       hasItems={news.length > 0}
-      emptyTitle='Brak aktualnosci'
-      emptyDescription='Po publikacji artykulow w CMS pojawia sie tutaj automatycznie.'
+      stateStatus={newsState.status}
+      stateSource={newsState.source}
+      stateMessage={newsState.message}
+      emptyTitle={newsState.status === 'error' ? 'Nie można pobrać aktualności' : 'Brak aktualności'}
+      emptyDescription={newsState.status === 'error' ? 'Sprawdź konfigurację CMS i połączenie z API.' : 'Po publikacji artykułów w CMS pojawią się tutaj automatycznie.'}
     >
-      <div className='card-grid'>
-        {news.map((item) => (
-          <article key={item.id} className='content-card'>
-            {item.coverImageUrl ? <img className='story-cover' src={item.coverImageUrl} alt={item.title} /> : null}
-            <h2>{item.title}</h2>
-            <p>{item.excerpt || 'Brak opisu.'}</p>
-            <p className='muted'>{formatDateTime(item.publishedAt)}</p>
-            <Link href={`/aktualnosci/${item.slug}`}>Czytaj wiecej</Link>
-          </article>
+      <div className='news-grid'>
+        {news.map((item, index) => (
+          <NewsCard key={item.id} item={item} featured={index === 0} />
         ))}
       </div>
     </EditorialListingTemplate>

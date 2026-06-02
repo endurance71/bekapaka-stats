@@ -1,0 +1,21 @@
+@media (max-width: 480px) {
+  .surface-card {
+    padding: var(--space-4);
+  }
+
+  .match-card__score {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .compact-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .quarters-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

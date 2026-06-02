@@ -1,298 +1,352 @@
 import Link from 'next/link'
-import type { DocumentItem, EventItem, GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type { DocumentItem, GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
-import { resolvePlayerPhoto, getPositionLabel } from '../../../lib/data/utils'
+import { getPositionLabel, resolvePlayerPhoto } from '../../../lib/data/utils'
 
 export function MegaHomeTemplate({
   news,
   recentGames,
-  events,
+  nextGame,
   table,
   roster,
   sponsors,
-  documents
+  documents,
+  hasDataWarning = false,
 }: {
   news: NewsPost[]
   recentGames: GameSummary[]
-  events: EventItem[]
+  nextGame?: GameSummary | null
   table: TeamStanding[]
   roster: RosterPlayer[]
   sponsors: SponsorItem[]
   documents: DocumentItem[]
+  hasDataWarning?: boolean
 }) {
   const leadNews = news[0]
-  const topPlayers = roster.slice(0, 2)
-  const mvp = roster.length > 0 ? [...roster].sort((a, b) => (b.eval || 0) - (a.eval || 0))[0] : null
-  const nextMatch = events[0]
-  const topTable = table.slice(0, 5)
+  const homePlayers = roster.slice(0, 5)
   const docs = documents.slice(0, 3)
-
-  const hasRoster = roster && roster.length > 0
+  const tablePreview = table.slice(0, 8)
+  const latestGames = recentGames.slice(0, 3)
+  const hasRoster = roster.length > 0
   const pointsLeader = hasRoster ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
   const reboundsLeader = hasRoster ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
   const assistsLeader = hasRoster ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
+  const normalizedSponsors = [...sponsors].sort((a, b) => (a.order || 999) - (b.order || 999))
+
+  const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka'))
 
   return (
-    <div className='mega-home'>
-      <section className='mega-grid'>
-        <article className='mega-card mega-card--delay-1 mega-hero'>
-          <img
-            src='https://images.unsplash.com/photo-1504450758481-7338eba7524a?q=80&w=1200&auto=format&fit=crop'
-            alt='Parkiet koszykarski'
-            className='mega-bg-image'
-          />
-          <div className='mega-overlay' />
-          <div className='mega-content'>
-            <span className='mega-pill'>Oficjalny Portal</span>
+    <div className='dashboard-home'>
+      {hasDataWarning ? (
+        <div className='data-state-notice data-state-notice--fallback'>
+          <span className='notice-pulse'></span>
+          <strong>Informacja:</strong> Trwa synchronizacja danych z kalkulatora rozgrywek. Część informacji może pochodzić z pamięci podręcznej.
+        </div>
+      ) : null}
+
+      <section className='dashboard-grid'>
+        {/* HERO SECTION */}
+        <article className='surface-card dashboard-hero'>
+          <div className='hero-grid-bg'></div>
+          <div className='hero-content'>
+            <p className='section-kicker'>Amatorska Liga Koszykówki</p>
             <h1>
-              BEKAPAKA
-              <br />
-              <span>BOBOLICE</span>
+              Pasja. Emocje. <br />
+              <span className='highlight-gold'>BeKaPaKa Bobolice</span>
             </h1>
-            <p>
-              Amatorska druzyna koszykowki. Nasza gra opiera sie na twardej defensywie, nieustepliwosci i zelaznej
-              dyscyplinie taktycznej.
+            <p className='hero-description'>
+              Oficjalna platforma statystyk i analiz klubu BeKaPaKa. Śledź wyniki, analizuj raporty meczowe opracowane przez sztuczną inteligencję Gemini i poznaj bliżej naszą drużynę.
             </p>
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-2 mega-news'>
-          <img
-            src={leadNews?.coverImageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000&auto=format&fit=crop'}
-            alt='Aktualnosc'
-            className='mega-bg-image'
-          />
-          <div className='mega-overlay' />
-          <div className='mega-content'>
-            <span className='mega-pill mega-pill--red'>Najnowsze</span>
-            <h2>{leadNews?.title || 'Brak aktualnosci do wyswietlenia'}</h2>
-            <p>{leadNews?.excerpt || 'Po dodaniu wpisow w CMS ta sekcja pokaze najnowszy artykul.'}</p>
-            <Link href={leadNews ? `/aktualnosci/${leadNews.slug}` : '/aktualnosci'}>Czytaj artykul</Link>
-          </div>
-        </article>
-
-        {topPlayers.map((player) => (
-          <article key={player.id} className='mega-card mega-card--delay-3 mega-player'>
-            <img src={resolvePlayerPhoto(player)} alt={`${player.firstName} ${player.lastName}`} className='mega-bg-image' />
-            <div className='mega-overlay' />
-            <div className='mega-content'>
-              <span className='mega-chip'>{getPositionLabel(player.position)}</span>
-              <h3>{player.firstName}<br />{player.lastName}</h3>
-              <p>#{player.number}</p>
-            </div>
-          </article>
-        ))}
-        {topPlayers.length === 0 ? (
-          <article className='mega-card mega-card--delay-3 mega-player'>
-            <div className='mega-overlay' />
-            <div className='mega-content'>
-              <span className='mega-chip'>Sklad</span>
-              <h3>Brak danych skladu</h3>
-              <p className='mega-empty'>Backend nie zwrocil listy zawodnikow.</p>
-            </div>
-          </article>
-        ) : null}
-        {topPlayers.length < 2 ? (
-          <article className='mega-card mega-card--delay-3 mega-player'>
-            <div className='mega-overlay' />
-            <div className='mega-content'>
-              <span className='mega-chip'>Sklad</span>
-              <h3>Brak danych skladu</h3>
-              <p className='mega-empty'>Brakuje drugiego zawodnika do sekcji hero.</p>
-            </div>
-          </article>
-        ) : null}
-
-        <article className='mega-card mega-card--delay-4 mega-table'>
-          <div className='mega-content'>
-            <div className='mega-row-head'>
-              <h3>Tabela ligowa</h3>
-              <Link href='/tabela'>Pelna tabela</Link>
-            </div>
-            <div className='mega-table-head'>
-              <span>#</span><span>Druzyna</span><span>W-L</span><span>Pkt</span>
-            </div>
-            <div className='mega-table-body'>
-              {topTable.length > 0 ? topTable.map((row) => {
-                const isBkp = row.name.toLowerCase().includes('bekapaka')
-                return (
-                  <div key={`${row.name}-${row.position}`} className={`mega-table-row ${isBkp ? 'is-bkp' : ''}`}>
-                    <span>{row.position}</span>
-                    <span>{row.name}</span>
-                    <span>{row.wins}-{row.losses}</span>
-                    <span>{row.wins * 2 + row.losses}</span>
-                  </div>
-                )
-              }) : <p className='mega-empty'>Brak danych tabeli.</p>}
-            </div>
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-5 mega-next-match'>
-          <div className='mega-content'>
-            <span className='mega-pill'>Najblizszy mecz</span>
-            <h3>{nextMatch?.title || 'Brak zaplanowanego meczu'}</h3>
-            <p>{nextMatch ? formatDateTime(nextMatch.startAt) : 'Data zostanie opublikowana'}</p>
-            <Link href={nextMatch ? `/mecze/${nextMatch.slug}` : '/mecze'}>Szczegoly</Link>
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-6 mega-sponsors'>
-          <div className='mega-content'>
-            <h3>Partnerzy</h3>
-            <div className='mega-sponsor-list'>
-              {sponsors.slice(0, 4).map((sponsor) => (
-                <div key={sponsor.id} className='mega-sponsor-item'>
-                  {sponsor.logoUrl ? <img src={sponsor.logoUrl} alt={sponsor.name} /> : <span>{sponsor.name}</span>}
-                </div>
-              ))}
-            </div>
-            <Link href='/sponsorzy'>Wszyscy sponsorzy</Link>
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-7 mega-video'>
-          <div className='mega-content' style={{ height: '100%', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.3rem', textTransform: 'uppercase', fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.04em' }}>
-                Liderzy statystyk
-              </h3>
-              <span className='mega-pill'>Sezon 2026</span>
-            </div>
             
-            {hasRoster ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', flex: 1, marginTop: '10px' }}>
-                {/* Points Leader */}
-                {pointsLeader && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--bkp-gold)', background: '#141822', marginBottom: '8px' }}>
-                      <img src={resolvePlayerPhoto(pointsLeader)} alt={`${pointsLeader.firstName} ${pointsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {pointsLeader.lastName}
-                    </span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Punkty</span>
-                    <strong style={{ fontSize: '1rem', color: 'var(--bkp-gold)', marginTop: '2px' }}>{pointsLeader.ppg?.toFixed(1)} PPG</strong>
-                  </div>
-                )}
-
-                {/* Rebounds Leader */}
-                {reboundsLeader && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--text-main)', background: '#141822', marginBottom: '8px' }}>
-                      <img src={resolvePlayerPhoto(reboundsLeader)} alt={`${reboundsLeader.firstName} ${reboundsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {reboundsLeader.lastName}
-                    </span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Zbiórki</span>
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '2px' }}>{reboundsLeader.rpg?.toFixed(1)} RPG</strong>
-                  </div>
-                )}
-
-                {/* Assists Leader */}
-                {assistsLeader && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
-                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--text-main)', background: '#141822', marginBottom: '8px' }}>
-                      <img src={resolvePlayerPhoto(assistsLeader)} alt={`${assistsLeader.firstName} ${assistsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {assistsLeader.lastName}
-                    </span>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Asysty</span>
-                    <strong style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '2px' }}>{assistsLeader.apg?.toFixed(1)} APG</strong>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className='mega-empty'>Brak danych liderów.</p>
-            )}
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-8 mega-results'>
-          <div className='mega-content'>
-            <h3>Ostatnie mecze</h3>
-            <div className='mega-results-list' style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
-              {recentGames.slice(0, 3).map((game) => {
-                const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
-                return (
-                  <div
-                    key={game.id}
-                    className='mega-results-item'
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      background: 'rgba(255,255,255,0.01)',
-                      border: '1px solid rgba(255,255,255,0.03)',
-                      borderRadius: '10px',
-                      padding: '8px 12px'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span
-                        style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          background: isWin ? '#10b981' : '#ef4444',
-                          display: 'inline-block'
-                        }}
-                      />
-                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{game.opponent}</span>
-                    </div>
-                    <span style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.25rem', color: 'var(--text-main)' }}>
-                      {game.scoreUs} - {game.scoreThem}
-                    </span>
-                  </div>
-                )
-              })}
-              {recentGames.length === 0 ? <p className='mega-empty'>Brak rozegranych meczów.</p> : null}
-            </div>
-          </div>
-        </article>
-
-        <article className='mega-card mega-card--delay-9 mega-mvp'>
-          {mvp ? <img src={resolvePlayerPhoto(mvp)} alt='MVP miesiąca' className='mega-bg-image' /> : null}
-          <div className='mega-overlay' />
-          <div className='mega-content'>
-            <span className='mega-pill'>Lider zespołu (MVP)</span>
-            <h3 style={{ fontSize: '1.8rem', lineHeight: '1.1', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{mvp ? `${mvp.firstName} ${mvp.lastName}` : 'Brak danych MVP'}</h3>
-            <p style={{ margin: '2px 0 6px 0' }}>{mvp ? `#${mvp.number} · ${getPositionLabel(mvp.position)}` : 'Dodaj dane składu'}</p>
-            {mvp && mvp.ppg !== undefined && (
-              <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem', marginTop: 'auto' }}>
-                <span className='mega-pill' style={{ background: 'rgba(0,0,0,0.6)', borderColor: 'rgba(236,167,44,0.3)', color: 'var(--bkp-gold)', textTransform: 'none', fontWeight: 'bold' }}>
-                  {mvp.ppg.toFixed(1)} PPG
-                </span>
-                <span className='mega-pill' style={{ background: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', textTransform: 'none' }}>
-                  EVAL {mvp.eval?.toFixed(1) || '0.0'}
-                </span>
+            {ourPosition && (
+              <div className='hero-stats-row'>
+                <div className='hero-stat-badge'>
+                  <span className='hero-stat-badge__label'>Tabela</span>
+                  <span className='hero-stat-badge__value'>#{ourPosition.position}</span>
+                </div>
+                <div className='hero-stat-badge'>
+                  <span className='hero-stat-badge__label'>Bilans</span>
+                  <span className='hero-stat-badge__value'>{ourPosition.wins} - {ourPosition.losses}</span>
+                </div>
               </div>
             )}
-          </div>
-        </article>
 
-        <article className='mega-card mega-card--delay-10 mega-newsletter'>
-          <div className='mega-content'>
-            <h3>Strefa kibica BKP</h3>
-            <p>Dolacz do newslettera. Znizki na merch i bilety.</p>
-            <div className='mega-newsletter-form'>
-              <input type='email' placeholder='Twoj adres e-mail' />
-              <button type='button'>Dolacz</button>
+            <div className='hero-actions'>
+              <Link href='/aktualnosci' className='button button--primary'>
+                Aktualności
+              </Link>
+              <Link href='/mecze' className='button button--ghost'>
+                Terminarz
+              </Link>
             </div>
           </div>
         </article>
 
-        <article className='mega-card mega-card--delay-10 mega-docs'>
-          <div className='mega-content'>
-            <h3>Dokumenty klubowe</h3>
-            <div className='mega-docs-list'>
-              {docs.map((doc) => (
-                <Link key={doc.id} href={`/dokumenty/${doc.slug}`}>{doc.title}</Link>
-              ))}
-              {docs.length === 0 ? <p className='mega-empty'>Brak dokumentow.</p> : null}
+        {/* LATEST NEWS */}
+        <article className='surface-card dashboard-news'>
+          <div className='section-head'>
+            <h2>Najnowsze aktualności</h2>
+            <Link href='/aktualnosci'>Zobacz wszystkie</Link>
+          </div>
+          {leadNews ? (
+            <div className='news-feature'>
+              {leadNews.coverImageUrl && (
+                <div className='news-feature__image-wrap'>
+                  <img src={leadNews.coverImageUrl} alt='' />
+                </div>
+              )}
+              <div className='news-feature__content'>
+                <span className='news-date'>{formatDateTime(leadNews.publishedAt)}</span>
+                <h3>{leadNews.title}</h3>
+                <p className='muted'>{leadNews.excerpt || 'Przejdź do wpisu, aby przeczytać pełną treść.'}</p>
+                <Link href={`/aktualnosci/${leadNews.slug}`} className='button button--ghost card-action-btn'>
+                  Czytaj artykuł
+                </Link>
+              </div>
             </div>
+          ) : (
+            <p className='muted'>Brak aktualności do wyświetlenia.</p>
+          )}
+        </article>
+
+        {/* NEXT MATCH (TICKET CARD) */}
+        <article className='surface-card dashboard-next'>
+          <p className='section-kicker'>Najbliższy mecz</p>
+          {nextGame ? (
+            <div className='ticket-box'>
+              <div className='ticket-main'>
+                <span className='ticket-league'>Sezon 2026</span>
+                <h2 className='ticket-teams'>
+                  <span className='ticket-team-us'>BEKAPAKA</span>
+                  <span className='ticket-vs'>VS</span>
+                  <span className='ticket-team-them'>{nextGame.opponent.toUpperCase()}</span>
+                </h2>
+                <div className='ticket-details'>
+                  <div className='ticket-detail-item'>
+                    <span className='ticket-detail-label'>Data meczu</span>
+                    <strong className='ticket-detail-value'>{formatDateTime(nextGame.date)}</strong>
+                  </div>
+                  {nextGame.data?.venue && (
+                    <div className='ticket-detail-item'>
+                      <span className='ticket-detail-label'>Hala</span>
+                      <strong className='ticket-detail-value'>{nextGame.data.venue}</strong>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className='ticket-divider'>
+                <span className='notch notch-top'></span>
+                <span className='dashed-line'></span>
+                <span className='notch notch-bottom'></span>
+              </div>
+              <div className='ticket-stub'>
+                <span className='ticket-badge-pill'>{nextGame.homeAway === 'home' ? 'Gospodarz' : 'Wyjazd'}</span>
+                <Link href='/mecze' className='button button--primary stub-button'>
+                  Szczegóły
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className='ticket-empty'>
+              <span className='ticket-empty-icon'>🏀</span>
+              <h3>Brak zaplanowanych meczów</h3>
+              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały już rozegrane.</p>
+              <Link href='/mecze' className='button button--ghost stub-button'>
+                Zobacz kalendarz
+              </Link>
+            </div>
+          )}
+        </article>
+
+        {/* STAT LEADERS */}
+        <article className='surface-card dashboard-leaders'>
+          <p className='section-kicker'>Liderzy zespołu</p>
+          <div className='leaders-list-v2'>
+            {pointsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Punkty</span>
+                  <strong className='leader-name'>{pointsLeader.firstName} {pointsLeader.lastName}</strong>
+                  <span className='leader-val'>{pointsLeader.ppg?.toFixed(1)} <small>PPG</small></span>
+                </div>
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-points' style={{ width: `${Math.min((pointsLeader.ppg || 0) * 4, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {reboundsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Zbiórki</span>
+                  <strong className='leader-name'>{reboundsLeader.firstName} {reboundsLeader.lastName}</strong>
+                  <span className='leader-val'>{reboundsLeader.rpg?.toFixed(1)} <small>RPG</small></span>
+                </div>
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-rebounds' style={{ width: `${Math.min((reboundsLeader.rpg || 0) * 6, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {assistsLeader && (
+              <div className='leader-card-v2'>
+                <div className='leader-info'>
+                  <span className='leader-label'>Asysty</span>
+                  <strong className='leader-name'>{assistsLeader.firstName} {assistsLeader.lastName}</strong>
+                  <span className='leader-val'>{assistsLeader.apg?.toFixed(1)} <small>APG</small></span>
+                </div>
+                <div className='leader-progress-track'>
+                  <div className='leader-progress-fill fill-assists' style={{ width: `${Math.min((assistsLeader.apg || 0) * 10, 100)}%` }}></div>
+                </div>
+              </div>
+            )}
+
+            {!pointsLeader && <p className='muted'>Brak danych statystycznych.</p>}
+          </div>
+        </article>
+
+        {/* STANDINGS TABLE PREVIEW */}
+        <article className='surface-card dashboard-table'>
+          <div className='section-head'>
+            <h2>Tabela ligowa</h2>
+            <Link href='/tabela'>Pełna tabela</Link>
+          </div>
+          <div className='table-shell-v2'>
+            <table className='data-table-v2'>
+              <thead>
+                <tr>
+                  <th className='th-pos'>#</th>
+                  <th>Drużyna</th>
+                  <th className='th-wl'>W - L</th>
+                  <th className='th-pts'>PKT</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tablePreview.map((row) => {
+                  const isBkp = row.name.toLowerCase().includes('bekapaka')
+                  return (
+                    <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight-row' : undefined}>
+                      <td className='td-pos'>
+                        <span className='pos-num'>{row.position}</span>
+                      </td>
+                      <td className='td-name'>
+                        <strong>{row.name}</strong>
+                      </td>
+                      <td className='td-wl'>{row.wins} - {row.losses}</td>
+                      <td className='td-pts'>{row.wins * 2 + row.losses}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        {/* RECENT MATCHES RESULTS */}
+        <article className='surface-card dashboard-results'>
+          <div className='section-head'>
+            <h2>Ostatnie mecze</h2>
+            <Link href='/mecze'>Kalendarz</Link>
+          </div>
+          <div className='stack-list-v2'>
+            {latestGames.map((game) => {
+              const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
+              return (
+                <div key={game.id} className='list-row-v2'>
+                  <div className='result-row-left'>
+                    <span className={`result-outcome-badge ${isWin ? 'is-win-badge' : 'is-loss-badge'}`}>
+                      {isWin ? 'W' : 'L'}
+                    </span>
+                    <div className='result-opponent-info'>
+                      <strong>vs {game.opponent}</strong>
+                      <span className='muted'>{formatDateTime(game.date)}</span>
+                    </div>
+                  </div>
+                  <strong className='score-badge-premium'>
+                    {game.scoreUs ?? '-'}:{game.scoreThem ?? '-'}
+                  </strong>
+                </div>
+              )
+            })}
+            {latestGames.length === 0 ? <p className='muted'>Brak rozegranych meczów.</p> : null}
+          </div>
+        </article>
+
+        {/* TEAM ROSTER */}
+        <article className='surface-card dashboard-roster'>
+          <div className='section-head'>
+            <h2>Skład drużyny</h2>
+            <Link href='/sklad'>Wszyscy zawodnicy</Link>
+          </div>
+          <div className='home-player-grid-premium'>
+            {homePlayers.map((player) => (
+              <Link href='/sklad' key={player.id} className='home-player-card-premium'>
+                <div className='home-player-card__image-wrap-premium'>
+                  {resolvePlayerPhoto(player).includes('default.png') ? (
+                    <div className='home-player-card__jersey-graphic'>
+                      <div className='jersey-back-mini'>
+                        <span className='j-num-mini'>{player.number}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={resolvePlayerPhoto(player)}
+                      alt={`${player.firstName} ${player.lastName}`}
+                      className='home-player-card__image-premium'
+                    />
+                  )}
+                  <div className='home-player-card__number-badge'>#{player.number}</div>
+                </div>
+                <div className='home-player-card__body-premium'>
+                  <strong>{player.firstName} {player.lastName}</strong>
+                  <span className='muted-gold'>{getPositionLabel(player.position)}</span>
+                </div>
+              </Link>
+            ))}
+            {homePlayers.length === 0 ? <p className='muted'>Brak danych składu.</p> : null}
+          </div>
+        </article>
+
+        {/* DOCUMENTS */}
+        <article className='surface-card dashboard-docs'>
+          <div className='section-head'>
+            <h2>Pliki i dokumenty</h2>
+            <Link href='/dokumenty'>Wszystkie</Link>
+          </div>
+          <ul className='documents-list-premium'>
+            {docs.map((doc) => (
+              <li key={doc.id} className='doc-item-premium'>
+                <div className='doc-icon-wrap'>📄</div>
+                <div className='doc-info-wrap'>
+                  <strong>{doc.title}</strong>
+                  <span className='muted'>{doc.category}</span>
+                </div>
+                <Link href={`/dokumenty/${doc.slug}`} className='doc-download-btn'>
+                  Pobierz
+                </Link>
+              </li>
+            ))}
+            {docs.length === 0 ? <li className='muted'>Brak dokumentów do pobrania.</li> : null}
+          </ul>
+        </article>
+
+        {/* SPONSORS */}
+        <article className='surface-card dashboard-sponsors'>
+          <div className='section-head'>
+            <h2>Partnerzy i Sponsorzy</h2>
+            <Link href='/sponsorzy'>Wszyscy partnerzy</Link>
+          </div>
+          <div className='sponsors-grid-premium'>
+            {normalizedSponsors.map((sponsor) => (
+              <div key={sponsor.id} className='sponsor-tile-premium'>
+                {sponsor.logoUrl ? (
+                  <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
+                ) : (
+                  <span className='sponsor-logo-text'>{sponsor.name}</span>
+                )}
+              </div>
+            ))}
+            {normalizedSponsors.length === 0 ? <p className='muted'>Brak sponsorów.</p> : null}
           </div>
         </article>
       </section>
