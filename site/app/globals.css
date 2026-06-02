@@ -1,7 +1,5 @@
 :root {
   color-scheme: dark;
-  --font-montserrat: var(--font-montserrat, 'Montserrat', sans-serif);
-  --font-bebas-neue: var(--font-bebas-neue, 'Bebas Neue', sans-serif);
   --bkp-gold: #eca72c;
   --bkp-obsidian: #1a1a1a;
   --bkp-black: #000000;
