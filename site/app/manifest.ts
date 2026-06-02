@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Oficjalna strona BeKaPaKa Bobolice',
     start_url: '/',
     display: 'standalone',
-    background_color: '#101010',
-    theme_color: '#ECA72C',
+    background_color: '#0B0B0C',
+    theme_color: '#0B0B0C',
     lang: 'pl-PL'
   }
 }

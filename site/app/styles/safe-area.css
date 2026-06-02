@@ -1,0 +1,50 @@
+/**
+ * Safe area + status bar (Safari iOS, Chrome Android, PWA).
+ * Wzorzec jak panel.bekapaka.pl: viewport-fit=cover, black-translucent,
+ * rozmyty header, przezroczysty dół bez osobnej belki.
+ *
+ * @see https://muffinman.io/blog/pwa-ios-status-bar-blur/
+ * @see https://danielpietzsch.com/articles/how-to-create-a-blurry-status-bar-for-pwas-on-ios
+ */
+
+@supports (padding: env(safe-area-inset-top)) {
+  /* Rozmycie obszaru status bara (notch / Dynamic Island) — treść przewija się pod spodem */
+  body.site-body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 48;
+    pointer-events: none;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    background-color: rgba(11, 11, 12, 0.72);
+    mask: linear-gradient(
+      to bottom,
+      #000 0%,
+      #000 50%,
+      rgba(0, 0, 0, 0.7) 75%,
+      transparent 100%
+    );
+  }
+}
+
+/* Dolny „oddech” — bez belki, tylko miejsce pod paskiem Safari / home indicator */
+.page-bottom-safe-spacer {
+  display: block;
+  min-height: max(var(--space-5), env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+@media (min-width: 900px) {
+  body.site-body::before {
+    display: none;
+  }
+
+  .page-bottom-safe-spacer {
+    display: none;
+  }
+}
