@@ -41,7 +41,10 @@ body {
 }
 
 body {
-  background: radial-gradient(circle at 10% 0%, #232323, var(--surface-main) 40%);
+  background:
+    radial-gradient(1200px 520px at 18% -5%, color-mix(in srgb, var(--bkp-amber) 18%, transparent), transparent 72%),
+    radial-gradient(900px 420px at 80% -2%, color-mix(in srgb, var(--bkp-crimson) 12%, transparent), transparent 72%),
+    linear-gradient(180deg, #0f0f10, #080808 40%, #090909 100%);
   color: var(--text-main);
   min-height: 100vh;
 }
@@ -83,7 +86,7 @@ button:focus-visible {
 
 .site-header,
 .site-footer {
-  background: color-mix(in srgb, var(--bkp-black) 88%, var(--bkp-slate) 12%);
+  background: color-mix(in srgb, var(--bkp-black) 92%, var(--bkp-slate) 8%);
   border-bottom: 1px solid var(--border);
 }
 
@@ -99,6 +102,13 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  backdrop-filter: blur(10px);
 }
 
 .brand-mark {
@@ -144,6 +154,13 @@ button:focus-visible {
 .main-nav a {
   font-weight: 600;
   white-space: nowrap;
+  color: color-mix(in srgb, var(--bkp-gold) 84%, #fff 16%);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.main-nav a:hover {
+  border-color: color-mix(in srgb, var(--bkp-gold) 78%, #fff 22%);
 }
 
 #content {
@@ -158,11 +175,22 @@ button:focus-visible {
 }
 
 .bento-tile {
-  background: color-mix(in srgb, var(--surface-raised) 90%, #2d2d2d 10%);
+  background: linear-gradient(165deg, color-mix(in srgb, var(--surface-raised) 92%, #2d2d2d 8%), color-mix(in srgb, var(--surface-main) 88%, #1f1f1f 12%));
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: var(--space-5);
   overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+  position: relative;
+}
+
+.bento-tile::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.4;
+  background: linear-gradient(125deg, transparent 15%, rgba(255, 255, 255, 0.06), transparent 70%);
 }
 
 .bento-accent--gold {
@@ -193,8 +221,9 @@ button:focus-visible {
   margin-bottom: var(--space-2);
   font-family: 'Bebas Neue', Montserrat, sans-serif;
   letter-spacing: 0.04em;
-  line-height: 1.05;
-  font-size: clamp(2rem, 9vw, 3.5rem);
+  line-height: 0.96;
+  font-size: clamp(2.2rem, 9vw, 4.5rem);
+  max-width: 14ch;
 }
 
 .hero p {
@@ -203,6 +232,7 @@ button:focus-visible {
 
 .hero__position {
   color: var(--text-main);
+  font-size: 1.05rem;
 }
 
 .hero__actions {
@@ -210,6 +240,24 @@ button:focus-visible {
   flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-4);
+}
+
+.hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.hero-badge {
+  border: 1px solid color-mix(in srgb, var(--bkp-gold) 40%, var(--border) 60%);
+  background: color-mix(in srgb, var(--surface-soft) 80%, var(--bkp-black) 20%);
+  color: color-mix(in srgb, var(--bkp-white) 85%, var(--bkp-gold) 15%);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .button {
@@ -230,9 +278,9 @@ button:focus-visible {
 }
 
 .button--ghost {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text-main);
+  background: color-mix(in srgb, var(--surface-main) 62%, #0e0e0e 38%);
+  border-color: color-mix(in srgb, var(--border) 70%, var(--bkp-gold) 30%);
+  color: color-mix(in srgb, var(--bkp-gold) 70%, #fff 30%);
 }
 
 .eyebrow {
@@ -260,6 +308,23 @@ button:focus-visible {
 
 .content-card {
   padding: var(--space-4);
+  background: color-mix(in srgb, var(--surface-soft) 76%, var(--bkp-black) 24%);
+}
+
+.news-editorial {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.news-featured {
+  border-color: color-mix(in srgb, var(--bkp-gold) 34%, var(--border) 66%);
+}
+
+.news-empty {
+  display: grid;
+  place-content: center;
+  min-height: 160px;
+  text-align: left;
 }
 
 .content-card--compact {
@@ -275,6 +340,7 @@ button:focus-visible {
   padding: var(--space-4);
   display: grid;
   gap: var(--space-3);
+  background: color-mix(in srgb, var(--surface-soft) 78%, var(--bkp-black) 22%);
 }
 
 .pill {
@@ -317,6 +383,32 @@ button:focus-visible {
   line-height: 1;
 }
 
+.player-chip {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--bkp-black);
+  background: linear-gradient(145deg, var(--bkp-gold), var(--bkp-amber));
+}
+
+.sponsor-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--bkp-white);
+  border: 1px solid color-mix(in srgb, var(--bkp-gold) 35%, var(--border) 65%);
+  background: color-mix(in srgb, var(--surface-main) 74%, var(--bkp-slate) 26%);
+}
+
 .sponsors-strip {
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -337,7 +429,7 @@ button:focus-visible {
   display: grid;
   place-items: center;
   color: var(--bkp-white);
-  background: color-mix(in srgb, var(--surface-main) 75%, var(--bkp-slate) 25%);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--surface-main) 75%, var(--bkp-slate) 25%), color-mix(in srgb, var(--surface-soft) 72%, var(--bkp-black) 28%));
   font-size: 0.85rem;
 }
 
@@ -379,6 +471,11 @@ button:focus-visible {
 .table-shell {
   width: 100%;
   overflow-x: auto;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.6vw, 1.8rem);
 }
 
 .data-table {
@@ -430,6 +527,24 @@ button:focus-visible {
   .list-row {
     grid-template-columns: auto 1fr;
   }
+
+  .news-editorial {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 900px) {
+  .site-header__inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-nav {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -443,18 +558,22 @@ button:focus-visible {
 
   .bento-tile--s {
     grid-column: span 3;
+    min-height: 240px;
   }
 
   .bento-tile--m {
     grid-column: span 6;
+    min-height: 260px;
   }
 
   .bento-tile--l {
     grid-column: span 8;
+    min-height: 320px;
   }
 
   .bento-tile--xl {
     grid-column: span 12;
+    min-height: 380px;
   }
 
   .card-grid {

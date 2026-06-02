@@ -60,11 +60,16 @@ export function SiteHeader() {
 export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
   return (
     <BentoTile size='XL' accent='gold' className='hero'>
-      <p className='eyebrow'>Sezon 2026</p>
+      <p className='eyebrow'>Sezon 2026 / BeKaPaKa Bobolice</p>
       <h1>Nowoczesna koszykowka. Lokalna duma Bobolic.</h1>
       <p>
-        Oficjalna strona BeKaPaKa: aktualnosci, wydarzenia klubowe, sklad druzyny i strefa sponsorow.
+        Oficjalna strona klubu w wydaniu premium: aktualnosci, wydarzenia, tabela, sklad i strefa partnerow.
       </p>
+      <div className='hero__meta'>
+        <span className='hero-badge'>Liga amatorska</span>
+        <span className='hero-badge'>System Bento 2026</span>
+        <span className='hero-badge'>Mobile first</span>
+      </div>
       {teamStanding ? (
         <p className='hero__position'>
           Aktualna pozycja: <strong>#{teamStanding.position}</strong> | Bilans: <strong>{teamStanding.wins}-{teamStanding.losses}</strong>
@@ -102,20 +107,38 @@ export function HomepageCmsSectionsTile({ sections }: { sections: HomepageSectio
 }
 
 export function NewsTile({ news }: { news: NewsPost[] }) {
+  const featured = news[0]
+  const rest = news.slice(1, 4)
+
   return (
     <BentoTile size='L' accent='none'>
       <div className='section-head'>
         <h2>Aktualnosci</h2>
         <Link href='/aktualnosci'>Zobacz wszystkie</Link>
       </div>
-      <div className='stack-list'>
-        {news.map((item) => (
-          <article key={item.id} className='content-card content-card--compact'>
-            <h3>{item.title}</h3>
-            <p>{item.excerpt || 'Brak opisu.'}</p>
-            <p className='muted'>{formatDateTime(item.publishedAt)}</p>
+      <div className='news-editorial'>
+        {featured ? (
+          <article className='content-card news-featured' key={featured.id}>
+            <p className='eyebrow'>Wyróżnione</p>
+            <h3>{featured.title}</h3>
+            <p>{featured.excerpt || 'Brak opisu.'}</p>
+            <p className='muted'>{formatDateTime(featured.publishedAt)}</p>
           </article>
-        ))}
+        ) : (
+          <article className='content-card news-featured news-empty'>
+            <h3>Redakcja przygotowuje nowe materiały</h3>
+            <p>Dodaj pierwszą aktualność w CMS, aby wypełnić sekcję główną.</p>
+          </article>
+        )}
+        <div className='stack-list'>
+          {rest.map((item) => (
+            <article key={item.id} className='content-card content-card--compact'>
+              <h3>{item.title}</h3>
+              <p>{item.excerpt || 'Brak opisu.'}</p>
+              <p className='muted'>{formatDateTime(item.publishedAt)}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </BentoTile>
   )
@@ -130,7 +153,10 @@ export function EventsTile({ events }: { events: EventItem[] }) {
       </div>
       <div className='stack-list'>
         {events.length === 0 ? (
-          <p>Brak nadchodzacych wydarzen.</p>
+          <article className='content-card news-empty'>
+            <h3>Brak nadchodzących wydarzeń</h3>
+            <p>Uzupełnij sekcję wydarzeń w CMS, aby pojawił się kalendarz meczowy.</p>
+          </article>
         ) : (
           events.map((event) => (
             <article key={event.id} className='list-row'>
@@ -174,8 +200,9 @@ export function RosterTile({ roster }: { roster: RosterPlayer[] }) {
         <Link href='/sklad'>Pelny sklad</Link>
       </div>
       <div className='card-grid'>
-        {roster.slice(0, 6).map((player) => (
+        {roster.slice(0, 6).map((player, index) => (
           <article key={player.id} className='content-card content-card--compact'>
+            <span className='player-chip'>{index + 1}</span>
             <h3>{player.firstName} {player.lastName}</h3>
             <p>Pozycja: {player.position}</p>
             <p>Numer: {player.number}</p>
@@ -196,6 +223,9 @@ export function SponsorsTile({ sponsors }: { sponsors: SponsorItem[] }) {
       <div className='card-grid'>
         {sponsors.slice(0, 6).map((sponsor) => (
           <article key={sponsor.id} className='content-card sponsor-card content-card--compact'>
+            <span className='sponsor-mark' aria-hidden='true'>
+              {sponsor.name.slice(0, 2).toUpperCase()}
+            </span>
             <h3>{sponsor.name}</h3>
             <p className='muted'>{sponsor.tier}</p>
             {sponsor.websiteUrl ? (
