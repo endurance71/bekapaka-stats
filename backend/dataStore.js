@@ -42,8 +42,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { getJwtSecret } from './lib/requireEnv.js';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'bekapaka-secret-key-2026';
+const SECRET_KEY = getJwtSecret();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
