@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import type { DocumentItem, GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type { GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 import { getPositionLabel, resolvePlayerPhoto } from '../../../lib/data/utils'
 
@@ -10,8 +10,6 @@ export function MegaHomeTemplate({
   table,
   roster,
   sponsors,
-  documents,
-  hasDataWarning = false,
 }: {
   news: NewsPost[]
   recentGames: GameSummary[]
@@ -19,49 +17,39 @@ export function MegaHomeTemplate({
   table: TeamStanding[]
   roster: RosterPlayer[]
   sponsors: SponsorItem[]
-  documents: DocumentItem[]
-  hasDataWarning?: boolean
 }) {
   const leadNews = news[0]
   const homePlayers = roster.slice(0, 5)
-  const docs = documents.slice(0, 3)
-  const tablePreview = table.slice(0, 8)
   const latestGames = recentGames.slice(0, 3)
   const hasRoster = roster.length > 0
   const pointsLeader = hasRoster ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
   const reboundsLeader = hasRoster ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
   const assistsLeader = hasRoster ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
   const normalizedSponsors = [...sponsors].sort((a, b) => (a.order || 999) - (b.order || 999))
+  const tablePreview = table.slice(0, 5)
 
   const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka'))
 
   return (
     <div className='dashboard-home'>
-      {hasDataWarning ? (
-        <div className='data-state-notice data-state-notice--fallback'>
-          <span className='notice-pulse'></span>
-          <strong>Informacja:</strong> Trwa synchronizacja danych z kalkulatora rozgrywek. Część informacji może pochodzić z pamięci podręcznej.
-        </div>
-      ) : null}
-
       <section className='dashboard-grid'>
         {/* HERO SECTION */}
         <article className='surface-card dashboard-hero'>
           <div className='hero-grid-bg'></div>
           <div className='hero-content'>
-            <p className='section-kicker'>Amatorska Liga Koszykówki</p>
+            <p className='section-kicker'>Klub Sportowy</p>
             <h1>
               Pasja. Emocje. <br />
               <span className='highlight-gold'>BeKaPaKa Bobolice</span>
             </h1>
             <p className='hero-description'>
-              Oficjalna platforma statystyk i analiz klubu BeKaPaKa. Śledź wyniki, analizuj raporty meczowe opracowane przez sztuczną inteligencję Gemini i poznaj bliżej naszą drużynę.
+              Oficjalny serwis klubu koszykarskiego z Bobolic. Śledź statystyki, czytaj analizy Gemini AI oraz bądź na bieżąco z wynikami spotkań.
             </p>
             
             {ourPosition && (
               <div className='hero-stats-row'>
                 <div className='hero-stat-badge'>
-                  <span className='hero-stat-badge__label'>Tabela</span>
+                  <span className='hero-stat-badge__label'>Pozycja</span>
                   <span className='hero-stat-badge__value'>#{ourPosition.position}</span>
                 </div>
                 <div className='hero-stat-badge'>
@@ -115,7 +103,7 @@ export function MegaHomeTemplate({
           {nextGame ? (
             <div className='ticket-box'>
               <div className='ticket-main'>
-                <span className='ticket-league'>Sezon 2026</span>
+                <span className='ticket-league'>Zmagania ligowe</span>
                 <h2 className='ticket-teams'>
                   <span className='ticket-team-us'>BEKAPAKA</span>
                   <span className='ticket-vs'>VS</span>
@@ -150,7 +138,7 @@ export function MegaHomeTemplate({
             <div className='ticket-empty'>
               <span className='ticket-empty-icon'>🏀</span>
               <h3>Brak zaplanowanych meczów</h3>
-              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały już rozegrane.</p>
+              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały rozegrane.</p>
               <Link href='/mecze' className='button button--ghost stub-button'>
                 Zobacz kalendarz
               </Link>
@@ -279,74 +267,94 @@ export function MegaHomeTemplate({
             <Link href='/sklad'>Wszyscy zawodnicy</Link>
           </div>
           <div className='home-player-grid-premium'>
-            {homePlayers.map((player) => (
-              <Link href='/sklad' key={player.id} className='home-player-card-premium'>
-                <div className='home-player-card__image-wrap-premium'>
-                  {resolvePlayerPhoto(player).includes('default.png') ? (
-                    <div className='home-player-card__jersey-graphic'>
-                      <div className='jersey-back-mini'>
-                        <span className='j-num-mini'>{player.number}</span>
+            {homePlayers.map((player) => {
+              const hasPhoto = player.photo || player.photoUrl;
+              const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
+              return (
+                <Link href='/sklad' key={player.id} className='home-player-card-premium'>
+                  <div className='home-player-card__image-wrap-premium'>
+                    {!hasPhoto || resolvePlayerPhoto(player).includes('default.png') ? (
+                      <div className='home-player-card__avatar-placeholder-premium'>
+                        <span>{initials}</span>
                       </div>
-                    </div>
-                  ) : (
-                    <img
-                      src={resolvePlayerPhoto(player)}
-                      alt={`${player.firstName} ${player.lastName}`}
-                      className='home-player-card__image-premium'
-                    />
-                  )}
-                  <div className='home-player-card__number-badge'>#{player.number}</div>
-                </div>
-                <div className='home-player-card__body-premium'>
-                  <strong>{player.firstName} {player.lastName}</strong>
-                  <span className='muted-gold'>{getPositionLabel(player.position)}</span>
-                </div>
-              </Link>
-            ))}
+                    ) : (
+                      <img
+                        src={resolvePlayerPhoto(player)}
+                        alt={`${player.firstName} ${player.lastName}`}
+                        className='home-player-card__image-premium'
+                      />
+                    )}
+                    <div className='home-player-card__number-badge'>#{player.number}</div>
+                  </div>
+                  <div className='home-player-card__body-premium'>
+                    <strong>{player.firstName} {player.lastName}</strong>
+                    <span className='muted-gold'>{getPositionLabel(player.position)}</span>
+                  </div>
+                </Link>
+              );
+            })}
             {homePlayers.length === 0 ? <p className='muted'>Brak danych składu.</p> : null}
           </div>
         </article>
 
-        {/* DOCUMENTS */}
+        {/* JOIN US / PARTNER WIDGET */}
         <article className='surface-card dashboard-docs'>
-          <div className='section-head'>
-            <h2>Pliki i dokumenty</h2>
-            <Link href='/dokumenty'>Wszystkie</Link>
+          <p className='section-kicker'>Zbudujmy to razem</p>
+          <div className='join-us-container-premium'>
+            <div className='join-us-section'>
+              <h3>Dołącz do drużyny</h3>
+              <p className='muted'>
+                Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
+              </p>
+              <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium'>
+                Zagraj z nami ➔
+              </a>
+            </div>
+            
+            <div className='join-us-divider-premium'></div>
+
+            <div className='join-us-section'>
+              <h3>Zostań naszym sponsorem</h3>
+              <p className='muted'>
+                Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
+              </p>
+              <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium'>
+                Zostań Partnerem ➔
+              </a>
+            </div>
           </div>
-          <ul className='documents-list-premium'>
-            {docs.map((doc) => (
-              <li key={doc.id} className='doc-item-premium'>
-                <div className='doc-icon-wrap'>📄</div>
-                <div className='doc-info-wrap'>
-                  <strong>{doc.title}</strong>
-                  <span className='muted'>{doc.category}</span>
-                </div>
-                <Link href={`/dokumenty/${doc.slug}`} className='doc-download-btn'>
-                  Pobierz
-                </Link>
-              </li>
-            ))}
-            {docs.length === 0 ? <li className='muted'>Brak dokumentów do pobrania.</li> : null}
-          </ul>
         </article>
 
-        {/* SPONSORS */}
+        {/* SPONSORS SLIDER */}
         <article className='surface-card dashboard-sponsors'>
           <div className='section-head'>
             <h2>Partnerzy i Sponsorzy</h2>
             <Link href='/sponsorzy'>Wszyscy partnerzy</Link>
           </div>
-          <div className='sponsors-grid-premium'>
-            {normalizedSponsors.map((sponsor) => (
-              <div key={sponsor.id} className='sponsor-tile-premium'>
-                {sponsor.logoUrl ? (
-                  <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
-                ) : (
-                  <span className='sponsor-logo-text'>{sponsor.name}</span>
-                )}
-              </div>
-            ))}
-            {normalizedSponsors.length === 0 ? <p className='muted'>Brak sponsorów.</p> : null}
+          
+          <div className='sponsors-slider-wrap-premium'>
+            <div className='sponsors-slider-track-premium'>
+              {/* Loop 1 */}
+              {normalizedSponsors.map((sponsor) => (
+                <div key={`s1-${sponsor.id}`} className='sponsor-tile-premium-slide'>
+                  {sponsor.logoUrl ? (
+                    <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
+                  ) : (
+                    <span className='sponsor-logo-text'>{sponsor.name}</span>
+                  )}
+                </div>
+              ))}
+              {/* Loop 2 (Seamless loop duplication) */}
+              {normalizedSponsors.map((sponsor) => (
+                <div key={`s2-${sponsor.id}`} className='sponsor-tile-premium-slide'>
+                  {sponsor.logoUrl ? (
+                    <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
+                  ) : (
+                    <span className='sponsor-logo-text'>{sponsor.name}</span>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </article>
       </section>
