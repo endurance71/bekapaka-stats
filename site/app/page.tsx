@@ -1,9 +1,9 @@
-import { EditorialHomeTemplate } from '../components/public/templates/EditorialHomeTemplate'
+import { MegaHomeTemplate } from '../components/public/templates/MegaHomeTemplate'
 import { EmptyState } from '../components/public/shared/EmptyState'
 import { getPublicSiteData } from '../lib/data'
 
 export default async function HomePage() {
-  const { dataErrors, documents, events, homepageSections, news, ourPosition, roster, sponsors } = await getPublicSiteData()
+  const { dataErrors, documents, events, news, roster, sponsors, table } = await getPublicSiteData()
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsTeam',
@@ -25,14 +25,13 @@ export default async function HomePage() {
           description='Pokazujemy dostepne sekcje i fallbacki. Sprobuj odswiezyc strone za chwile.'
         />
       ) : null}
-      <EditorialHomeTemplate
+      <MegaHomeTemplate
         documents={documents}
         events={events}
-        homepageSections={homepageSections}
         news={news}
-        ourPosition={ourPosition}
         roster={roster}
         sponsors={sponsors}
+        table={table}
       />
     </>
   )
