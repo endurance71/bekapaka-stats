@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { PageHeader } from '../../components/public-site'
-import { getLeagueTable, getSiteMetadataBase } from '../../lib/data'
+import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { getLeagueTableState, getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
@@ -9,11 +9,21 @@ export const metadata: Metadata = {
 }
 
 export default async function LeagueTablePage() {
-  const table = await getLeagueTable()
+  const tableState = await getLeagueTableState()
+  const table = tableState.data
 
   return (
-    <section className='section-card'>
-      <PageHeader title='Tabela ligi' description='Aktualna pozycja zespolow i bilans sezonu.' />
+    <EditorialListingTemplate
+      title='Tabela ligi'
+      description='Aktualna pozycja zespolow i bilans sezonu.'
+      hasItems={table.length > 0}
+      emptyTitle={tableState.status === 'error' ? 'Nie mozna pobrac tabeli' : 'Brak danych tabeli'}
+      emptyDescription={
+        tableState.status === 'error'
+          ? 'Sprawdz backend i endpoint /api/league/table.'
+          : 'Tabela pojawi sie po imporcie danych sezonu.'
+      }
+    >
       <div className='table-shell'>
         <table className='data-table'>
           <thead>
@@ -37,6 +47,6 @@ export default async function LeagueTablePage() {
           </tbody>
         </table>
       </div>
-    </section>
+    </EditorialListingTemplate>
   )
 }

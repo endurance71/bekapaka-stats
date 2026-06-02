@@ -15,7 +15,8 @@ export const newsPostSchema = z.object({
   slug: z.string(),
   excerpt: z.string(),
   content: z.string(),
-  publishedAt: z.string()
+  publishedAt: z.string(),
+  coverImageUrl: z.string().optional()
 })
 
 export const eventSchema = z.object({
@@ -36,7 +37,8 @@ export const sponsorSchema = z.object({
   slug: z.string(),
   tier: z.string(),
   websiteUrl: z.string(),
-  order: z.number()
+  order: z.number(),
+  logoUrl: z.string().optional()
 })
 
 export const documentSchema = z.object({
@@ -80,3 +82,11 @@ export type DocumentItem = z.infer<typeof documentSchema>
 export type HomepageSection = z.infer<typeof homepageSectionSchema>
 export type TeamStanding = z.infer<typeof teamStandingSchema>
 export type RosterPlayer = z.infer<typeof rosterPlayerSchema>
+
+export type DataStateStatus = 'ok' | 'empty' | 'error'
+
+export type DataState<T> = {
+  status: DataStateStatus
+  data: T
+  message?: string
+}

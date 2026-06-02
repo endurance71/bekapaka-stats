@@ -1,22 +1,65 @@
-import { getRoster, getLeagueTable } from './backend'
-import { getDocuments, getEvents, getHomepageSections, getNewsPosts, getSponsors } from './cms'
+import { getLeagueTable, getLeagueTableState, getRoster, getRosterState } from './backend'
+import {
+  getDocuments,
+  getDocumentsState,
+  getEvents,
+  getEventsState,
+  getHomepageSections,
+  getHomepageSectionsState,
+  getNewsPosts,
+  getNewsPostsState,
+  getSponsors,
+  getSponsorsState
+} from './cms'
 import { siteBaseUrl } from './client'
 
 export * from './schemas'
-export { getDocuments, getEvents, getHomepageSections, getLeagueTable, getNewsPosts, getRoster, getSponsors }
+export {
+  getDocuments,
+  getDocumentsState,
+  getEvents,
+  getEventsState,
+  getHomepageSections,
+  getHomepageSectionsState,
+  getLeagueTable,
+  getLeagueTableState,
+  getNewsPosts,
+  getNewsPostsState,
+  getRoster,
+  getRosterState,
+  getSponsors,
+  getSponsorsState
+}
 
 export async function getPublicSiteData() {
-  const [table, roster, news, events, sponsors, documents, homepageSections] = await Promise.all([
-    getLeagueTable(),
-    getRoster(),
-    getNewsPosts(6),
-    getEvents(8),
-    getSponsors(18),
-    getDocuments(24),
-    getHomepageSections()
+  const [tableState, rosterState, newsState, eventsState, sponsorsState, documentsState, homepageSectionsState] = await Promise.all([
+    getLeagueTableState(),
+    getRosterState(),
+    getNewsPostsState(6),
+    getEventsState(8),
+    getSponsorsState(18),
+    getDocumentsState(24),
+    getHomepageSectionsState()
   ])
 
+  const table = tableState.data
+  const roster = rosterState.data
+  const news = newsState.data
+  const events = eventsState.data
+  const sponsors = sponsorsState.data
+  const documents = documentsState.data
+  const homepageSections = homepageSectionsState.data
+
   const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka'))
+  const dataErrors = [
+    tableState,
+    rosterState,
+    newsState,
+    eventsState,
+    sponsorsState,
+    documentsState,
+    homepageSectionsState
+  ].filter((state) => state.status === 'error')
 
   return {
     table,
@@ -26,7 +69,9 @@ export async function getPublicSiteData() {
     sponsors,
     documents,
     homepageSections,
-    ourPosition
+    ourPosition,
+    clubLogoUrl: '/favicon.ico',
+    dataErrors
   }
 }
 

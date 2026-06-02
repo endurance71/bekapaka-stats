@@ -27,6 +27,24 @@ export async function fetchJson<T>(
   }
 }
 
+export async function fetchJsonState<T>(
+  url: string,
+  options?: { headers?: HeadersInit; revalidate?: number }
+): Promise<{ status: 'ok'; payload: T } | { status: 'error'; message: string }> {
+  try {
+    const response = await fetch(url, {
+      headers: options?.headers,
+      next: { revalidate: options?.revalidate ?? 300 }
+    })
+    if (!response.ok) {
+      return { status: 'error', message: `HTTP_${response.status}` }
+    }
+    return { status: 'ok', payload: (await response.json()) as T }
+  } catch {
+    return { status: 'error', message: 'NETWORK_ERROR' }
+  }
+}
+
 export function cmsPath(path: string): string {
   return `${cmsApiUrl}${path}`
 }
