@@ -1065,6 +1065,30 @@
   margin-block: 2px;
 }
 
+.public-icon-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.public-icon-label__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--bkp-gold);
+  opacity: 0.9;
+}
+
+.meta-with-icons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35em 0.5em;
+}
+
+.meta-with-icons__sep {
+  opacity: 0.5;
+}
+
 .pm-card-location {
   font-size: 0.82rem;
   color: var(--text-muted);
@@ -1101,11 +1125,32 @@
 }
 
 .pm-card-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--bkp-gold);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+.button-with-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+}
+
+.club-contact-line {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  line-height: 1.7;
+}
+
+.club-contact-line .public-icon-label__icon {
+  margin-top: 0.15em;
 }
 
 .premium-match-card-upcoming {
