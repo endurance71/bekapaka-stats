@@ -1,4 +1,4 @@
-import { cmsHeaders, cmsPath, fetchJsonState, toAbsoluteCmsUrl } from './client'
+import { cmsHeaders, cmsPath, fetchJsonState, hasCmsToken, toAbsoluteCmsUrl } from './client'
 import {
   type DataState,
   documentSchema,
@@ -334,6 +334,15 @@ export async function getSponsors(limit = 12): Promise<SponsorItem[]> {
 }
 
 export async function getSponsorsState(limit = 12): Promise<DataState<SponsorItem[]>> {
+  if (!hasCmsToken()) {
+    return {
+      status: 'error',
+      data: fallbackSponsors.slice(0, limit),
+      source: 'fallback',
+      message: 'CMS_TOKEN_MISSING'
+    }
+  }
+
   try {
     const response = await fetchJsonState<unknown>(
       cmsPath(`/api/sponsors?sort=order:asc&pagination[limit]=${limit}&populate=logo`),

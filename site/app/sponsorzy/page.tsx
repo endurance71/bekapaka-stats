@@ -70,11 +70,9 @@ export default async function SponsorsPage() {
 
         {supportSponsors.length > 0 && (
           <div>
-            {hasTierSections && (
-              <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.8rem', color: '#888', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
-                Partnerzy Klubu
-              </h2>
-            )}
+            <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: hasTierSections ? '1.8rem' : '2rem', color: hasTierSections ? '#888' : '#fff', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '8px', marginBottom: '20px', letterSpacing: '0.04em' }}>
+              {hasTierSections ? 'Partnerzy Klubu' : 'Nasi partnerzy i sponsorzy'}
+            </h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
               {supportSponsors.map((sponsor) => (
                 <SponsorCard key={sponsor.id} sponsor={sponsor} displayTier='support' isCompact />
