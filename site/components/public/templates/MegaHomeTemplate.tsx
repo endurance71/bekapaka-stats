@@ -22,10 +22,15 @@ export function MegaHomeTemplate({
 }) {
   const leadNews = news[0]
   const topPlayers = roster.slice(0, 2)
-  const mvp = roster[2]
+  const mvp = roster.length > 0 ? [...roster].sort((a, b) => (b.eval || 0) - (a.eval || 0))[0] : null
   const nextMatch = events[0]
   const topTable = table.slice(0, 5)
   const docs = documents.slice(0, 3)
+
+  const hasRoster = roster && roster.length > 0
+  const pointsLeader = hasRoster ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
+  const reboundsLeader = hasRoster ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
+  const assistsLeader = hasRoster ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
 
   return (
     <div className='mega-home'>
@@ -147,40 +152,124 @@ export function MegaHomeTemplate({
         </article>
 
         <article className='mega-card mega-card--delay-7 mega-video'>
-          <img
-            src='https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=1000&auto=format&fit=crop'
-            alt='Akcja tygodnia'
-            className='mega-bg-image'
-          />
-          <div className='mega-overlay' />
-          <div className='mega-content'>
-            <span className='mega-pill mega-pill--red'>Wideo</span>
-            <h3>Akcja tygodnia: potezny dunk</h3>
+          <div className='mega-content' style={{ height: '100%', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.3rem', textTransform: 'uppercase', fontFamily: 'var(--font-bebas-neue), sans-serif', letterSpacing: '0.04em' }}>
+                Liderzy statystyk
+              </h3>
+              <span className='mega-pill'>Sezon 2026</span>
+            </div>
+            
+            {hasRoster ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', flex: 1, marginTop: '10px' }}>
+                {/* Points Leader */}
+                {pointsLeader && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--bkp-gold)', background: '#141822', marginBottom: '8px' }}>
+                      <img src={resolvePlayerPhoto(pointsLeader)} alt={`${pointsLeader.firstName} ${pointsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {pointsLeader.lastName}
+                    </span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Punkty</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--bkp-gold)', marginTop: '2px' }}>{pointsLeader.ppg?.toFixed(1)} PPG</strong>
+                  </div>
+                )}
+
+                {/* Rebounds Leader */}
+                {reboundsLeader && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--text-main)', background: '#141822', marginBottom: '8px' }}>
+                      <img src={resolvePlayerPhoto(reboundsLeader)} alt={`${reboundsLeader.firstName} ${reboundsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {reboundsLeader.lastName}
+                    </span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Zbiórki</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '2px' }}>{reboundsLeader.rpg?.toFixed(1)} RPG</strong>
+                  </div>
+                )}
+
+                {/* Assists Leader */}
+                {assistsLeader && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '12px', padding: '10px 5px' }}>
+                    <div style={{ position: 'relative', width: '50px', height: '50px', borderRadius: '50%', overflow: 'hidden', border: '1.5px solid var(--text-main)', background: '#141822', marginBottom: '8px' }}>
+                      <img src={resolvePlayerPhoto(assistsLeader)} alt={`${assistsLeader.firstName} ${assistsLeader.lastName}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', display: 'block', maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {assistsLeader.lastName}
+                    </span>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Asysty</span>
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-main)', marginTop: '2px' }}>{assistsLeader.apg?.toFixed(1)} APG</strong>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className='mega-empty'>Brak danych liderów.</p>
+            )}
           </div>
         </article>
 
         <article className='mega-card mega-card--delay-8 mega-results'>
           <div className='mega-content'>
             <h3>Ostatnie mecze</h3>
-            <div className='mega-results-list'>
-              {recentGames.slice(0, 3).map((game) => (
-                <div key={game.id} className='mega-results-item'>
-                  <span>{game.opponent}</span>
-                  <span>{game.scoreUs} - {game.scoreThem} ({game.result})</span>
-                </div>
-              ))}
-              {recentGames.length === 0 ? <p className='mega-empty'>Brak rozegranych meczow.</p> : null}
+            <div className='mega-results-list' style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+              {recentGames.slice(0, 3).map((game) => {
+                const isWin = game.result === 'W' || (game.scoreUs || 0) > (game.scoreThem || 0)
+                return (
+                  <div
+                    key={game.id}
+                    className='mega-results-item'
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: 'rgba(255,255,255,0.01)',
+                      border: '1px solid rgba(255,255,255,0.03)',
+                      borderRadius: '10px',
+                      padding: '8px 12px'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: isWin ? '#10b981' : '#ef4444',
+                          display: 'inline-block'
+                        }}
+                      />
+                      <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{game.opponent}</span>
+                    </div>
+                    <span style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '1.25rem', color: 'var(--text-main)' }}>
+                      {game.scoreUs} - {game.scoreThem}
+                    </span>
+                  </div>
+                )
+              })}
+              {recentGames.length === 0 ? <p className='mega-empty'>Brak rozegranych meczów.</p> : null}
             </div>
           </div>
         </article>
 
         <article className='mega-card mega-card--delay-9 mega-mvp'>
-          {mvp ? <img src={resolvePlayerPhoto(mvp)} alt='MVP miesiaca' className='mega-bg-image' /> : null}
+          {mvp ? <img src={resolvePlayerPhoto(mvp)} alt='MVP miesiąca' className='mega-bg-image' /> : null}
           <div className='mega-overlay' />
           <div className='mega-content'>
-            <span className='mega-pill'>MVP miesiaca</span>
-            <h3>{mvp ? `${mvp.firstName} ${mvp.lastName}` : 'Brak danych MVP'}</h3>
-            <p>{mvp ? `#${mvp.number} · ${getPositionLabel(mvp.position)}` : 'Dodaj dane skladu, aby wyznaczyc MVP'}</p>
+            <span className='mega-pill'>Lider zespołu (MVP)</span>
+            <h3 style={{ fontSize: '1.8rem', lineHeight: '1.1', textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>{mvp ? `${mvp.firstName} ${mvp.lastName}` : 'Brak danych MVP'}</h3>
+            <p style={{ margin: '2px 0 6px 0' }}>{mvp ? `#${mvp.number} · ${getPositionLabel(mvp.position)}` : 'Dodaj dane składu'}</p>
+            {mvp && mvp.ppg !== undefined && (
+              <div style={{ display: 'flex', gap: '8px', fontSize: '0.75rem', marginTop: 'auto' }}>
+                <span className='mega-pill' style={{ background: 'rgba(0,0,0,0.6)', borderColor: 'rgba(236,167,44,0.3)', color: 'var(--bkp-gold)', textTransform: 'none', fontWeight: 'bold' }}>
+                  {mvp.ppg.toFixed(1)} PPG
+                </span>
+                <span className='mega-pill' style={{ background: 'rgba(0,0,0,0.6)', borderColor: 'rgba(255,255,255,0.1)', color: 'var(--text-main)', textTransform: 'none' }}>
+                  EVAL {mvp.eval?.toFixed(1) || '0.0'}
+                </span>
+              </div>
+            )}
           </div>
         </article>
 

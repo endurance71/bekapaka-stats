@@ -67,6 +67,29 @@ export const teamStandingSchema = z.object({
   losses: z.number()
 })
 
+export const playerGameLogSchema = z.object({
+  date: z.string(),
+  opponent: z.string(),
+  min: z.union([z.string(), z.number()]).optional(),
+  pts: z.number(),
+  reb: z.number(),
+  ast: z.number(),
+  stl: z.number().optional(),
+  blk: z.number().optional(),
+  tov: z.number().optional(),
+  pf: z.number().optional(),
+  fgm: z.number().optional(),
+  fga: z.number().optional(),
+  threePm: z.number().optional(),
+  threePa: z.number().optional(),
+  ftm: z.number().optional(),
+  fta: z.number().optional(),
+  eval: z.number().optional(),
+  eFgPercentage: z.number().optional(),
+  tsPercentage: z.number().optional(),
+  plusMinus: z.number().optional()
+})
+
 export const rosterPlayerSchema = z.object({
   id: z.string(),
   firstName: z.string(),
@@ -74,16 +97,38 @@ export const rosterPlayerSchema = z.object({
   position: z.string(),
   number: z.string(),
   photo: z.string().nullable().optional(),
-  photoUrl: z.string().nullable().optional()
+  photoUrl: z.string().nullable().optional(),
+  ppg: z.number().optional(),
+  rpg: z.number().optional(),
+  apg: z.number().optional(),
+  eval: z.number().nullable().optional(),
+  fgPercentage: z.number().optional(),
+  threePercentage: z.number().optional(),
+  ftPercentage: z.number().optional(),
+  tsPercentage: z.number().optional(),
+  eFgPercentage: z.number().optional(),
+  plusMinus: z.number().optional(),
+  gamesPlayed: z.number().optional(),
+  birthDate: z.string().nullable().optional(),
+  heightCm: z.number().nullable().optional(),
+  aiDevelopmentSummary: z.string().nullable().optional(),
+  games: z.array(playerGameLogSchema).optional()
 })
 
 export const gameSummarySchema = z.object({
   id: z.string(),
   date: z.string(),
   opponent: z.string(),
-  result: z.string(),
-  scoreUs: z.number(),
-  scoreThem: z.number()
+  result: z.string().nullable().optional(),
+  scoreUs: z.number().nullable().optional(),
+  scoreThem: z.number().nullable().optional(),
+  homeAway: z.string().optional(),
+  coachNotes: z.string().nullable().optional(),
+  aiSummary: z.string().nullable().optional(),
+  videoUrl: z.string().nullable().optional(),
+  teams: z.array(z.any()).optional(),
+  playerStats: z.array(z.any()).optional(),
+  data: z.any().optional()
 })
 
 export type NewsPost = z.infer<typeof newsPostSchema>
