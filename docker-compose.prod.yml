@@ -79,11 +79,11 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 1337
-      APP_KEYS: ${CMS_APP_KEYS:-bkpkKey1,bkpkKey2,bkpkKey3,bkpkKey4}
-      API_TOKEN_SALT: ${CMS_API_TOKEN_SALT:-bkpk-cms-api-token-salt}
-      ADMIN_JWT_SECRET: ${CMS_ADMIN_JWT_SECRET:-bkpk-cms-admin-jwt-secret}
-      JWT_SECRET: ${CMS_JWT_SECRET:-bkpk-cms-jwt-secret}
-      TRANSFER_TOKEN_SALT: ${CMS_TRANSFER_TOKEN_SALT:-bkpk-cms-transfer-token-salt}
+      APP_KEYS: ${CMS_APP_KEYS:?CMS_APP_KEYS required}
+      API_TOKEN_SALT: ${CMS_API_TOKEN_SALT:?CMS_API_TOKEN_SALT required}
+      ADMIN_JWT_SECRET: ${CMS_ADMIN_JWT_SECRET:?CMS_ADMIN_JWT_SECRET required}
+      JWT_SECRET: ${CMS_JWT_SECRET:?CMS_JWT_SECRET required}
+      TRANSFER_TOKEN_SALT: ${CMS_TRANSFER_TOKEN_SALT:?CMS_TRANSFER_TOKEN_SALT required}
     volumes:
       - ./data/cms-data:/opt/app/.tmp
       - ./data/cms-uploads:/opt/app/public/uploads
