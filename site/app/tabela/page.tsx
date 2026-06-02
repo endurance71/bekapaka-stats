@@ -28,9 +28,11 @@ export default async function LeagueTablePage() {
         <table className='data-table'>
           <thead>
             <tr>
-              <th scope='col'>Poz.</th>
+              <th scope='col' style={{ width: '60px' }}>Poz.</th>
               <th scope='col'>Druzyna</th>
-              <th scope='col'>Bilans</th>
+              <th scope='col' style={{ width: '80px' }}>Mecze</th>
+              <th scope='col' style={{ width: '120px' }}>Bilans</th>
+              <th scope='col' style={{ width: '80px' }}>Pkt</th>
             </tr>
           </thead>
           <tbody>
@@ -38,9 +40,13 @@ export default async function LeagueTablePage() {
               const isBkp = row.name.toLowerCase().includes('bekapaka')
               return (
                 <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight' : ''}>
-                  <td>{row.position}</td>
-                  <td>{row.name}</td>
-                  <td>{row.wins}-{row.losses}</td>
+                  <td><strong>{row.position}</strong></td>
+                  <td>
+                    {isBkp ? <span style={{ color: 'var(--bkp-gold)', fontWeight: 700 }}>{row.name}</span> : row.name}
+                  </td>
+                  <td>{row.wins + row.losses}</td>
+                  <td>{row.wins} - {row.losses}</td>
+                  <td><strong>{row.wins * 2 + row.losses}</strong></td>
                 </tr>
               )
             })}
