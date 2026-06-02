@@ -18,6 +18,7 @@ export function PublicShell({
         <div className='container site-header__inner'>
           <ClubLogo logoUrl={logoUrl} />
           <MainNav />
+          <button className='ticket-cta' type='button'>Kup bilet</button>
         </div>
       </header>
       <main id='content' className='container'>
