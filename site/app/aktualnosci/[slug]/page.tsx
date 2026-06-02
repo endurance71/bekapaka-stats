@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Breadcrumbs } from '../../../components/public-site'
+import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 
@@ -31,15 +31,19 @@ export default async function NewsDetailPage({ params }: { params: Params }) {
   if (!item) notFound()
 
   return (
-    <article className='section-card article-detail'>
-      <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Aktualnosci', href: '/aktualnosci' }, { label: item.title }]} />
-      <p className='eyebrow'>Aktualnosc</p>
-      <h1>{item.title}</h1>
-      <p className='muted'>{formatDateTime(item.publishedAt)}</p>
-      <p>{item.excerpt}</p>
-      <div className='article-content'>
-        <p>{item.content || 'Tresc artykulu zostanie uzupelniona przez redakcje.'}</p>
-      </div>
-    </article>
+    <EditorialDetailTemplate
+      sectionLabel='Aktualnosci'
+      title={item.title}
+      meta={formatDateTime(item.publishedAt)}
+      parentHref='/aktualnosci'
+      content={
+        <>
+          <p>{item.excerpt}</p>
+          <div className='article-content'>
+            <p>{item.content || 'Tresc artykulu zostanie uzupelniona przez redakcje.'}</p>
+          </div>
+        </>
+      }
+    />
   )
 }

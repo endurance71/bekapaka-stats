@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { Breadcrumbs } from '../../../components/public-site'
+import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getDocuments, getSiteMetadataBase, type DocumentItem } from '../../../lib/data'
 import { formatDate } from '../../../lib/format'
 
@@ -31,20 +31,22 @@ export default async function DocumentDetailPage({ params }: { params: Params })
   if (!item) notFound()
 
   return (
-    <article className='section-card article-detail'>
-      <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Dokumenty', href: '/dokumenty' }, { label: item.title }]} />
-      <p className='eyebrow'>Dokument</p>
-      <h1>{item.title}</h1>
-      <p className='muted'>{item.category} | {formatDate(item.effectiveDate)}</p>
-      {item.fileUrl ? (
-        <p>
-          <a className='button button--primary' href={item.fileUrl} target='_blank' rel='noreferrer'>
-            Pobierz dokument
-          </a>
-        </p>
-      ) : (
-        <p>Plik nie jest dostepny.</p>
-      )}
-    </article>
+    <EditorialDetailTemplate
+      sectionLabel='Dokumenty'
+      title={item.title}
+      meta={`${item.category} | ${formatDate(item.effectiveDate)}`}
+      parentHref='/dokumenty'
+      content={
+        item.fileUrl ? (
+          <p>
+            <a className='button button--primary' href={item.fileUrl} target='_blank' rel='noreferrer'>
+              Pobierz dokument
+            </a>
+          </p>
+        ) : (
+          <p>Plik nie jest dostepny.</p>
+        )
+      }
+    />
   )
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import { SiteFooter, SiteHeader } from '../components/public-site'
+import { PublicShell } from '../components/public/layout/PublicShell'
 import { getSiteMetadataBase } from '../lib/data'
 
 export const metadata: Metadata = {
@@ -16,16 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang='pl'>
-      <body>
-        <a href='#content' className='skip-link'>
-          Przejdz do tresci
-        </a>
-        <SiteHeader />
-        <main id='content' className='container'>
-          {children}
-        </main>
-        <SiteFooter />
-      </body>
+      <body><PublicShell>{children}</PublicShell></body>
     </html>
   )
 }

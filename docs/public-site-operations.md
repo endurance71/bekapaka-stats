@@ -14,9 +14,10 @@
 4. Po publikacji wykonuje szybka walidacje na stronie:
    - `https://bekapaka.pl`
    - `https://bekapaka.pl/aktualnosci`
-   - `https://bekapaka.pl/wydarzenia`
+   - `https://bekapaka.pl/mecze`
    - `https://bekapaka.pl/tabela`
    - `https://bekapaka.pl/sklad`
+   - `https://bekapaka.pl/sponsorzy`
 
 ## 1.1 Workflow tresci pod Bento Grid
 
@@ -34,12 +35,12 @@
 ### Krytyczne sciezki
 - Strona glowna laduje sie i ma widoczny hero.
 - Aktualnosci wyswietlaja ostatnie wpisy.
-- Wydarzenia wyswietlaja kalendarz i date.
+- Mecze wyswietlaja kalendarz i date.
 - Tabela wyswietla pozycje i bilans druzyn.
 - Sklad wyswietla zawodnikow.
 - Sponsorzy wyswietlaja nazwy i linki.
 - Dokumenty pozwalaja pobrac pliki.
-- Strony detail (`/aktualnosci/[slug]`, `/wydarzenia/[slug]`, `/dokumenty/[slug]`) zwracaja status 200 dla istniejacych slugow.
+- Strony detail (`/aktualnosci/[slug]`, `/mecze/[slug]`, `/dokumenty/[slug]`) zwracaja status 200 dla istniejacych slugow.
 
 ### Kontrole techniczne
 - `sitemap.xml` zwraca status 200.

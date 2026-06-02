@@ -1,19 +1,9 @@
-import {
-  BentoGrid,
-  DocumentsTile,
-  EventsTile,
-  HeroSection,
-  HomepageCmsSectionsTile,
-  NewsTile,
-  RosterTile,
-  SponsorsStrip,
-  SponsorsTile,
-  StandingTile
-} from '../components/public-site'
+import { EditorialHomeTemplate } from '../components/public/templates/EditorialHomeTemplate'
+import { EmptyState } from '../components/public/shared/EmptyState'
 import { getPublicSiteData } from '../lib/data'
 
 export default async function HomePage() {
-  const { documents, events, homepageSections, news, ourPosition, roster, sponsors } = await getPublicSiteData()
+  const { dataErrors, documents, events, homepageSections, news, ourPosition, roster, sponsors } = await getPublicSiteData()
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsTeam',
@@ -28,17 +18,22 @@ export default async function HomePage() {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <BentoGrid>
-        <HeroSection teamStanding={ourPosition} />
-        <StandingTile teamStanding={ourPosition} />
-        <EventsTile events={events.slice(0, 4)} />
-        <NewsTile news={news.slice(0, 4)} />
-        <RosterTile roster={roster} />
-        <SponsorsTile sponsors={sponsors.slice(0, 8)} />
-        <DocumentsTile documents={documents} />
-        <HomepageCmsSectionsTile sections={homepageSections} />
-      </BentoGrid>
-      <SponsorsStrip sponsors={sponsors} />
+      {dataErrors.length > 0 ? (
+        <EmptyState
+          mode='error'
+          title='Czesc danych jest chwilowo niedostepna'
+          description='Pokazujemy dostepne sekcje i fallbacki. Sprobuj odswiezyc strone za chwile.'
+        />
+      ) : null}
+      <EditorialHomeTemplate
+        documents={documents}
+        events={events}
+        homepageSections={homepageSections}
+        news={news}
+        ourPosition={ourPosition}
+        roster={roster}
+        sponsors={sponsors}
+      />
     </>
   )
 }

@@ -26,15 +26,21 @@ npm run dev
 
 - `/`
 - `/aktualnosci`
-- `/wydarzenia`
+- `/mecze`
 - `/tabela`
 - `/sklad`
 - `/sponsorzy`
 - `/dokumenty`
-- `/o-klubie`
+- `/klub`
 - `/aktualnosci/[slug]`
-- `/wydarzenia/[slug]`
+- `/mecze/[slug]`
 - `/dokumenty/[slug]`
+
+## Kompatybilnosc adresow
+
+- `/wydarzenia` -> `/mecze`
+- `/wydarzenia/[slug]` -> `/mecze/[slug]`
+- `/o-klubie` -> `/klub`
 
 ## Quality gate
 

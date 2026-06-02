@@ -45,11 +45,12 @@ export function SiteHeader() {
         <nav aria-label='Nawigacja glowna'>
           <ul className='main-nav'>
             <li><Link href='/aktualnosci'>Aktualnosci</Link></li>
-            <li><Link href='/wydarzenia'>Wydarzenia</Link></li>
+            <li><Link href='/mecze'>Mecze</Link></li>
             <li><Link href='/tabela'>Tabela</Link></li>
             <li><Link href='/sklad'>Sklad</Link></li>
             <li><Link href='/sponsorzy'>Sponsorzy</Link></li>
             <li><Link href='/dokumenty'>Dokumenty</Link></li>
+            <li><Link href='/klub'>Klub</Link></li>
           </ul>
         </nav>
       </div>
@@ -148,8 +149,8 @@ export function EventsTile({ events }: { events: EventItem[] }) {
   return (
     <BentoTile size='M' accent='crimson'>
       <div className='section-head'>
-        <h2>Nadchodzace wydarzenia</h2>
-        <Link href='/wydarzenia'>Kalendarz</Link>
+        <h2>Nadchodzace mecze</h2>
+        <Link href='/mecze'>Kalendarz</Link>
       </div>
       <div className='stack-list'>
         {events.length === 0 ? (

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
-import { PageHeader } from '../../components/public-site'
-import { getRoster, getSiteMetadataBase } from '../../lib/data'
+import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { getRosterState, getSiteMetadataBase } from '../../lib/data'
 import { slugify } from '../../lib/content'
 
 export const metadata: Metadata = {
@@ -10,11 +10,21 @@ export const metadata: Metadata = {
 }
 
 export default async function RosterPage() {
-  const roster = await getRoster()
+  const rosterState = await getRosterState()
+  const roster = rosterState.data
 
   return (
-    <section className='section-card'>
-      <PageHeader title='Sklad druzyny' description='Pelna lista zawodnikow i podstawowe informacje meczowe.' />
+    <EditorialListingTemplate
+      title='Sklad druzyny'
+      description='Pelna lista zawodnikow i podstawowe informacje meczowe.'
+      hasItems={roster.length > 0}
+      emptyTitle={rosterState.status === 'error' ? 'Nie mozna pobrac skladu' : 'Brak skladu'}
+      emptyDescription={
+        rosterState.status === 'error'
+          ? 'Sprawdz backend i endpoint /api/roster.'
+          : 'Po imporcie skladu dane pojawia sie automatycznie.'
+      }
+    >
       <div className='card-grid'>
         {roster.map((player) => (
           <article key={player.id} className='content-card'>
@@ -25,6 +35,6 @@ export default async function RosterPage() {
           </article>
         ))}
       </div>
-    </section>
+    </EditorialListingTemplate>
   )
 }
