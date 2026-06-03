@@ -153,7 +153,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                 "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
                                 isActive
                                     ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                                    : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                                    : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
                             )}
                         >
                             <Icon className={cn("w-3.5 h-3.5", isActive && "text-bkpk-primary")} />
@@ -195,7 +195,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                     <BkpkCard
                                         variant="glass"
                                         className={cn(
-                                            "relative overflow-hidden border-bkpk-border-strong group transition-all duration-500",
+                                            "relative overflow-hidden border-bkpk-border-strong group transition-all duration-300",
                                             idx === 0 && "border-bkpk-warning/30 bg-bkpk-warning/5",
                                             isBkpk && "border-bkpk-primary/30"
                                         )}
@@ -317,7 +317,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                     animate={{ opacity: 1 }}
                                                     transition={{ delay: index * 0.02 }}
                                                     className={cn(
-                                                        "group transition-all hover:bg-bkpk-surface-tint-1",
+                                                        "group transition-all hover:bg-bkpk-surface-tint-2",
                                                         isBkpk && "bg-bkpk-primary/5 hover:bg-bkpk-primary/10"
                                                     )}
                                                 >

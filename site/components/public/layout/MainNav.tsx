@@ -7,6 +7,7 @@ import {
   BuildingIcon,
   CalendarIcon,
   HandshakeIcon,
+  HomeIcon,
   NewspaperIcon,
   TrophyIcon,
   UsersIcon,
@@ -14,6 +15,8 @@ import {
 } from '../shared/PublicIcons'
 
 type NavIcon = ComponentType<PublicIconProps>
+
+const homeNavItem = { href: '/', label: 'Strona główna', Icon: HomeIcon }
 
 const navItems: { href: string; label: string; Icon: NavIcon }[] = [
   { href: '/aktualnosci', label: 'Aktualności', Icon: NewspaperIcon },
@@ -24,6 +27,13 @@ const navItems: { href: string; label: string; Icon: NavIcon }[] = [
   { href: '/klub', label: 'Klub', Icon: BuildingIcon }
 ]
 
+function isNavItemActive(pathname: string, href: string): boolean {
+  if (href === '/') {
+    return pathname === '/'
+  }
+  return pathname === href || pathname.startsWith(`${href}/`)
+}
+
 export function MainNav({
   onLinkClick,
   variant = 'inline'
@@ -33,13 +43,13 @@ export function MainNav({
 }) {
   const pathname = usePathname()
   const isFullscreen = variant === 'fullscreen'
+  const items = isFullscreen ? [homeNavItem, ...navItems] : navItems
 
   return (
     <nav aria-label='Nawigacja glowna' className={isFullscreen ? 'main-nav--fullscreen' : undefined}>
       <ul className='main-nav'>
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`)
+        {items.map((item) => {
+          const isActive = isNavItemActive(pathname, item.href)
           const Icon = item.Icon
 
           return (

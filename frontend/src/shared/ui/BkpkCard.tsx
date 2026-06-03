@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import { ReactNode } from 'react';
 
@@ -41,6 +41,7 @@ export function BkpkCard({
     overflowVisible = false,
     animateEntrance = true,
 }: BkpkCardProps) {
+    const prefersReducedMotion = useReducedMotion();
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (onClick && (e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
@@ -55,7 +56,7 @@ export function BkpkCard({
             role={onClick ? 'button' : undefined}
             tabIndex={onClick ? 0 : undefined}
             className={cn(
-                'rounded-bkpk-lg transition-all duration-300',
+                'rounded-bkpk-lg transition-[transform,box-shadow,border-color] duration-200',
                 !overflowVisible && 'overflow-hidden',
                 variants[variant],
                 paddings[padding],
@@ -63,16 +64,16 @@ export function BkpkCard({
                 onClick && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
                 className
             )}
-            whileHover={hoverEffect || onClick ? {
-                y: -4,
-                scale: 1.01,
+            whileHover={!prefersReducedMotion && (hoverEffect || onClick) ? {
+                y: -2,
+                scale: 1.005,
                 borderColor: 'rgba(236, 167, 44, 0.3)',
-                boxShadow: '0 0 30px rgba(236, 167, 44, 0.2)'
+                boxShadow: '0 0 15px rgba(236, 167, 44, 0.1)'
             } : undefined}
-            whileTap={onClick ? { scale: 0.98 } : undefined}
-            initial={animateEntrance ? { opacity: 0, y: 10 } : false}
-            animate={animateEntrance ? { opacity: 1, y: 0 } : undefined}
-            transition={animateEntrance ? { duration: 0.4, ease: [0.16, 1, 0.3, 1] } : undefined}
+            whileTap={!prefersReducedMotion && onClick ? { scale: 0.995 } : undefined}
+            initial={animateEntrance && !prefersReducedMotion ? { opacity: 0, y: 6 } : false}
+            animate={animateEntrance && !prefersReducedMotion ? { opacity: 1, y: 0 } : undefined}
+            transition={animateEntrance && !prefersReducedMotion ? { duration: 0.25, ease: [0.16, 1, 0.3, 1] } : undefined}
         >
             {(title || icon) && (
                 <div className="flex items-center gap-3 mb-6 pb-4 border-b border-bkpk-border-strong">

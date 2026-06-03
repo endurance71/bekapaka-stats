@@ -198,7 +198,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.efg, 'efg')}`} style={{ width: getWidth(fourFactors.efg) }} />
                                 </div>
-                                <div className="text-[11px] text-bkpk-text-secondary mt-1.5 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity italic">{getFactorAdvice('efg', fourFactors.efg)}</div>
+                                <div className="text-[11px] text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('efg', fourFactors.efg)}</div>
                             </div>
 
                             {/* TOV% */}
@@ -213,7 +213,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.tov, 'tov')}`} style={{ width: getTovWidth(fourFactors.tov) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity italic">{getFactorAdvice('tov', fourFactors.tov)}</div>
+                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('tov', fourFactors.tov)}</div>
                             </div>
 
                             {/* ORB% */}
@@ -228,7 +228,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.orb, 'orb')}`} style={{ width: getWidth(fourFactors.orb * 2) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity italic">{getFactorAdvice('orb', fourFactors.orb)}</div>
+                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('orb', fourFactors.orb)}</div>
                             </div>
 
                             {/* FTR */}
@@ -243,7 +243,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.ftr, 'ftr')}`} style={{ width: getWidth(fourFactors.ftr * 2) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium opacity-80 group-hover:opacity-100 transition-opacity italic">{getFactorAdvice('ftr', fourFactors.ftr)}</div>
+                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('ftr', fourFactors.ftr)}</div>
                             </div>
                         </div>
                     </div>

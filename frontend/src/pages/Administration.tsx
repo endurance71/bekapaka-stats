@@ -442,7 +442,7 @@ function LoginLogs() {
                     </thead>
                     <tbody className="divide-y divide-bkpk-border-subtle">
                         {logs.map((log) => (
-                            <tr key={log.id} className="hover:bg-bkpk-surface-tint-1">
+                            <tr key={log.id} className="hover:bg-bkpk-surface-tint-2 transition-colors">
                                 <td className="py-2.5 px-4 font-bold text-bkpk-text-primary">{log.username}</td>
                                 <td className="py-2.5 px-4 text-bkpk-text-muted">{new Date(log.timestamp).toLocaleString()}</td>
                                 <td className="py-2.5 px-4">
@@ -807,7 +807,7 @@ function UserManagement() {
                                             type="button"
                                             onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                             disabled={currentUser?.id === user.id}
-                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-30"
+                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-50 disabled:text-bkpk-text-muted"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             Usuń
@@ -837,7 +837,7 @@ function UserManagement() {
                         </thead>
                         <tbody className="divide-y divide-bkpk-border-subtle">
                             {filteredUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-bkpk-surface-tint-1 transition-colors">
+                                <tr key={user.id} className="hover:bg-bkpk-surface-tint-2 transition-colors">
                                     <td className="py-3 px-4 font-bold text-bkpk-text-primary flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
                                             <img
@@ -892,7 +892,7 @@ function UserManagement() {
                                                 type="button"
                                                 onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                                 disabled={currentUser?.id === user.id}
-                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-text-danger hover:bg-bkpk-danger/10 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-text-danger hover:bg-bkpk-danger/10 rounded-lg transition-colors disabled:opacity-50 disabled:text-bkpk-text-muted disabled:hover:bg-transparent"
                                                 title={currentUser?.id === user.id ? "Nie możesz usunąć samego siebie" : "Usuń zawodnika"}
                                             >
                                                 <Trash2 className="w-4 h-4" />

@@ -57,29 +57,37 @@ export function SiteHeader() {
 
 export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
   return (
-    <BentoTile size='XL' accent='gold' className='hero'>
-      <p className='eyebrow'>Sezon 2026 / BeKaPaKa Bobolice</p>
-      <h1>Nowoczesna koszykowka. Lokalna duma Bobolic.</h1>
-      <p>
-        Oficjalna strona klubu w wydaniu premium: aktualnosci, wydarzenia, tabela, sklad i strefa sponsorow.
-      </p>
-      <div className='hero__meta'>
-        <span className='hero-badge'>Liga amatorska</span>
-        <span className='hero-badge'>System Bento 2026</span>
-        <span className='hero-badge'>Mobile first</span>
-      </div>
-      {teamStanding ? (
-        <p className='hero__position'>
-          Aktualna pozycja: <strong>#{teamStanding.position}</strong> | Bilans: <strong>{teamStanding.wins}-{teamStanding.losses}</strong>
+    <BentoTile size='XL' accent='gold' className='hero dashboard-hero'>
+      <div
+        className='hero-photo-bg'
+        aria-hidden='true'
+        style={{ backgroundImage: "url('/images/hero-basketball.jpg')" }}
+      />
+      <div className='hero-grid-bg' aria-hidden='true' />
+      <div className='hero-content'>
+        <p className='eyebrow'>Sezon 2026 / BeKaPaKa Bobolice</p>
+        <h1>Nowoczesna koszykowka. Lokalna duma Bobolic.</h1>
+        <p>
+          Oficjalna strona klubu w wydaniu premium: aktualnosci, wydarzenia, tabela, sklad i strefa sponsorow.
         </p>
-      ) : null}
-      <div className='hero__actions'>
-        <a className='button button--primary' href='https://panel.bekapaka.pl'>
-          Przejdz do panelu druzyny
-        </a>
-        <Link className='button button--ghost' href='/aktualnosci'>
-          Zobacz aktualnosci
-        </Link>
+        <div className='hero__meta'>
+          <span className='hero-badge'>Liga amatorska</span>
+          <span className='hero-badge'>System Bento 2026</span>
+          <span className='hero-badge'>Mobile first</span>
+        </div>
+        {teamStanding ? (
+          <p className='hero__position'>
+            Aktualna pozycja: <strong>#{teamStanding.position}</strong> | Bilans: <strong>{teamStanding.wins}-{teamStanding.losses}</strong>
+          </p>
+        ) : null}
+        <div className='hero__actions hero-actions'>
+          <a className='button button--primary' href='https://panel.bekapaka.pl'>
+            Przejdz do panelu druzyny
+          </a>
+          <Link className='button button--ghost' href='/aktualnosci'>
+            Zobacz aktualnosci
+          </Link>
+        </div>
       </div>
     </BentoTile>
   )

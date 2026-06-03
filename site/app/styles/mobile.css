@@ -1,6 +1,27 @@
 /* Mobile — modale, hero, karty zawodników, safe area */
 
 @media (max-width: 899px) {
+  .dashboard-hero {
+    min-height: 340px;
+  }
+
+  .hero-photo-bg {
+    background-position: center 22%;
+    opacity: 0.34;
+    filter: saturate(0.5) brightness(0.65) sepia(0.18);
+  }
+
+  .hero-photo-bg::after {
+    background:
+      linear-gradient(
+        180deg,
+        #121214 0%,
+        rgba(18, 18, 20, 0.9) 42%,
+        rgba(18, 18, 20, 0.78) 100%
+      ),
+      radial-gradient(ellipse 90% 55% at 50% 100%, rgba(236, 167, 44, 0.14) 0%, transparent 70%);
+  }
+
   .hero-actions {
     flex-direction: column;
     align-items: stretch;

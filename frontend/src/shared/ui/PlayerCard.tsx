@@ -114,7 +114,7 @@ export default function PlayerCard({
                     <motion.img
                         src={resolvedPhotoUrl}
                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700"
+                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                         style={{ transform: "translateZ(-20px) scale(1.1)" }}
                     />
                 </div>

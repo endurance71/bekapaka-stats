@@ -71,7 +71,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                         "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
                         phase === 'regular'
                             ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
                     )}
                 >
                     Runda Zasadnicza
@@ -82,7 +82,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                         "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
                         phase === 'playout'
                             ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
                     )}
                 >
                     Tabela Play-out
@@ -154,7 +154,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
                                     className={cn(
-                                        "group transition-all hover:bg-bkpk-surface-tint-1",
+                                        "group transition-all hover:bg-bkpk-surface-tint-2",
                                         isBkpk && "bg-bkpk-primary/5 hover:bg-bkpk-primary/10"
                                     )}
                                 >

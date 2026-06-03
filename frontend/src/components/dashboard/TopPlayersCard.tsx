@@ -74,7 +74,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 }}
                             className={cn(
-                                "group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-500",
+                                "group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-300",
                                 isFirst
                                     ? "bg-bkpk-primary/10 border border-bkpk-primary/20"
                                     : "bg-bkpk-surface-tint-1 border border-bkpk-border-strong hover:bg-bkpk-surface-tint-2"
@@ -85,7 +85,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                      <img
                                          src={resolvePlayerPhoto(player)}
                                          onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
                                          alt=""
                                      />
                                      <div className={cn(
@@ -108,23 +108,23 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="text-xl font-black font-outfit text-bkpk-primary">
-                                        {player.ppg.toFixed(1)} <span className="text-xs uppercase tracking-tighter opacity-50">PPG</span>
+                                        {player.ppg.toFixed(1)} <span className="text-2xs uppercase tracking-tighter text-bkpk-text-muted">PPG</span>
                                     </div>
                                     {(player.rpg ?? 0) > 0 && (
                                         <div className="text-xs font-bold text-bkpk-text-muted">
-                                            {player.rpg?.toFixed(1)} <span className="text-xs opacity-50">REB</span>
+                                            {player.rpg?.toFixed(1)} <span className="text-2xs text-bkpk-text-muted">REB</span>
                                         </div>
                                     )}
                                     <div className="text-xs font-bold text-bkpk-text-muted">
                                         {evalVal != null && evalVal > 0
                                             ? evalVal.toFixed(1)
                                             : '—'}{' '}
-                                        <span className="text-xs opacity-50">EVAL</span>
+                                        <span className="text-2xs text-bkpk-text-muted">EVAL</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col items-end gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
+                            <div className="flex flex-col items-end gap-1 opacity-40">
                                 <div className="w-8 h-1 bg-bkpk-primary/40 rounded-full" />
                                 <div className="w-12 h-1 bg-bkpk-primary/20 rounded-full" />
                             </div>

@@ -87,25 +87,73 @@ export function buildIcsDocument(payload: CalendarEventPayload): string {
   ].join('\r\n')
 }
 
-export function downloadIcsFile(payload: CalendarEventPayload, filename = 'bekapaka-wydarzenie.ics'): void {
-  const ics = buildIcsDocument(payload)
-  if (!ics) return
+const ICS_FILENAME = 'bekapaka-wydarzenie.ics'
+
+function isIosDevice(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return /Android|webOS|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+}
+
+/** Safari / iOS — otwiera import w aplikacji Kalendarz (Apple). */
+function openAppleCalendarFromIcs(ics: string): void {
+  const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
+  window.location.assign(dataUrl)
+}
+
+async function shareIcsOnMobile(ics: string, payload: CalendarEventPayload): Promise<boolean> {
+  if (!isMobileDevice() || typeof navigator.share !== 'function') return false
+
+  const file = new File([ics], ICS_FILENAME, { type: 'text/calendar' })
+  if (navigator.canShare && !navigator.canShare({ files: [file] })) return false
+
+  try {
+    await navigator.share({
+      files: [file],
+      title: payload.title,
+      text: payload.description
+    })
+    return true
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') return true
+    return false
+  }
+}
+
+function openIcsBlob(ics: string, forceDownload: boolean): void {
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const anchor = document.createElement('a')
   anchor.href = url
-  anchor.download = filename
   anchor.rel = 'noopener'
+  if (forceDownload) anchor.download = ICS_FILENAME
   document.body.appendChild(anchor)
   anchor.click()
   document.body.removeChild(anchor)
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
-/** Safari / iOS — otwiera import w aplikacji Kalendarz (Apple). */
-export function openAppleCalendar(payload: CalendarEventPayload): void {
+/**
+ * Jedna akcja „Dodaj do kalendarza”: iOS → Kalendarz Apple,
+ * Android → udostępnienie pliku .ics (wybór aplikacji kalendarza),
+ * desktop → pobranie .ics.
+ */
+export async function addToCalendar(payload: CalendarEventPayload): Promise<void> {
   const ics = buildIcsDocument(payload)
   if (!ics) return
-  const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
-  window.location.assign(dataUrl)
+
+  if (isIosDevice()) {
+    openAppleCalendarFromIcs(ics)
+    return
+  }
+
+  const shared = await shareIcsOnMobile(ics, payload)
+  if (shared) return
+
+  openIcsBlob(ics, !isMobileDevice())
 }

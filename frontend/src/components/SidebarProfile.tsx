@@ -42,7 +42,7 @@ export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarPro
                         src={resolvePlayerPhoto(user)}
                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                         alt={user.lastName}
-                        className="w-full h-full object-cover object-top grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-70 transition-all duration-700"
+                        className="w-full h-full object-cover object-top grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-80 transition-all duration-300"
                     />
                 </div>
 
@@ -71,7 +71,7 @@ export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarPro
             </div>
 
             {/* Hover Ambient Glow */}
-            <div className="absolute inset-0 -z-10 bg-bkpk-primary/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 -z-10 bg-bkpk-primary/5 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </>
     );
 

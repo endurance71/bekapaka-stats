@@ -48,7 +48,7 @@ export default function LeagueTable() {
                             <tr
                                 key={team.name}
                                 className={clsx(
-                                    "border-b border-bkpk-border-strong last:border-0 transition-colors hover:bg-bkpk-surface-tint-1",
+                                    "border-b border-bkpk-border-strong last:border-0 transition-colors hover:bg-bkpk-surface-tint-2",
                                     isUs ? "bg-bkpk-primary/10" : ""
                                 )}
                             >

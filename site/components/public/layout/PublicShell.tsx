@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ClubLogo } from '../shared/ClubLogo'
 import { MainNav } from './MainNav'
@@ -49,7 +50,9 @@ export function PublicShell({
             <MenuIcon />
           </button>
 
-          <span className='site-header__mobile-brand'>BeKaPaKa</span>
+          <Link href='/' className='site-header__mobile-brand' aria-label='Strona główna'>
+            BeKaPaKa
+          </Link>
 
           <ClubLogo logoUrl={logoUrl} />
 
