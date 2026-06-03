@@ -5,6 +5,7 @@
 
 :root {
   --overlay-vh: 100dvh;
+  --overlay-vt: 0px;
 }
 
 @supports (height: 100svh) {
@@ -13,11 +14,9 @@
   }
 }
 
-@media (max-width: 1023px) {
-  html.is-overlay-open,
-  html.is-overlay-open body {
-    background: transparent;
-  }
+html.is-overlay-open,
+html.is-overlay-open body {
+  background-color: var(--bkpk-color-bg, #0b0b0c);
 }
 
 html {
@@ -333,6 +332,7 @@ body.is-scroll-locked {
   }
 
   .overlay-viewport-fill {
+    top: var(--overlay-vt, 0px);
     height: var(--overlay-vh);
     min-height: var(--overlay-vh);
     max-height: var(--overlay-vh);

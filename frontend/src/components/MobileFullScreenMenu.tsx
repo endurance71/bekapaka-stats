@@ -232,7 +232,7 @@ export default function MobileFullScreenMenu({
             aria-modal="true"
             aria-label="Menu nawigacji"
             className={cn(
-                'mobile-fullscreen-menu-root lg:hidden fixed inset-0 z-[9999] w-full min-h-[100lvh] max-h-none bg-bkpk-bg overlay-viewport-fill',
+                'mobile-fullscreen-menu-root lg:hidden fixed left-0 right-0 z-[9999] w-full min-h-[100lvh] max-h-none bg-bkpk-bg overlay-viewport-fill',
                 isVisible ? 'pointer-events-auto' : 'pointer-events-none'
             )}
         >
