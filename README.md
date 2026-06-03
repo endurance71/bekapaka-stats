@@ -8,7 +8,7 @@ Aplikacja działa na **OVH VPS** (`51.210.102.167`) obok backendu MOYA.
 
 Docelowe domeny: `bekapaka.pl`, `www.bekapaka.pl`, `panel.bekapaka.pl`, `cms.bekapaka.pl` (reverse proxy: Caddy).
 
-**Dla agentów AI i deployu:** [docs/vps-runbook.md](docs/vps-runbook.md), [VPS-dane/README.md](VPS-dane/README.md) oraz [AGENTS.md](AGENTS.md).
+**Dla agentów AI i deployu:** [docs/vps-runbook.md](docs/vps-runbook.md), [docs/vps-optimization.md](docs/vps-optimization.md), [VPS-dane/README.md](VPS-dane/README.md) oraz [AGENTS.md](AGENTS.md).
 
 ## 🛠 Deployment & CI/CD
 
@@ -20,6 +20,7 @@ Projekt korzysta z automatycznego wdrażania przez **GitHub Actions**.
 ### Dokumentacja techniczna:
 - [Instrukcja Deploymentu](docs/docker-deploy.md)
 - [VPS i MOYA (runbook)](docs/vps-runbook.md)
+- [VPS — optymalizacja i monitor RAM](docs/vps-optimization.md)
 - [Scraping KALK (Scrapling)](docs/scraping.md)
 - [Architektura Systemu](docs/architecture.md)
 - [API Reference](docs/api.md)
@@ -36,4 +37,4 @@ Projekt korzysta z automatycznego wdrażania przez **GitHub Actions**.
 - BeKaPaKa Team
 
 ---
-*Ostatnia weryfikacja systemu: 9 Luty 2026*
+*Ostatnia weryfikacja systemu: 3 Czerwiec 2026*

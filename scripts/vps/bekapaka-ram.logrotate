@@ -1,0 +1,9 @@
+/var/log/bekapaka-ram.log /var/log/bekapaka-ram-alerts.log {
+    weekly
+    rotate 8
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+}

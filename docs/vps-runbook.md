@@ -70,10 +70,10 @@ Docker — BeKaPaKa (ten projekt):
 | Port (host) | Usługa | Projekt |
 |-------------|--------|---------|
 | `3000` | MOYA API | **moya-native-app** — nie dotykać |
-| `4001` | BeKaPaKa backend | bekapaka-stats |
-| `8081` | BeKaPaKa panel frontend | bekapaka-stats |
-| `8082` | BeKaPaKa strona publiczna | bekapaka-stats |
-| `1337` | BeKaPaKa CMS (Strapi) | bekapaka-stats |
+| `127.0.0.1:4001` | BeKaPaKa backend | bekapaka-stats |
+| `127.0.0.1:8081` | BeKaPaKa panel frontend | bekapaka-stats |
+| `127.0.0.1:8082` | BeKaPaKa strona publiczna | bekapaka-stats |
+| `127.0.0.1:1337` | BeKaPaKa CMS (Strapi) | bekapaka-stats |
 | `80` / `443` | Caddy (reverse proxy) | host |
 
 Produkcja BeKaPaKa powinna nasłuchiwać na **localhost** (`127.0.0.1:8081`, `127.0.0.1:4001`), żeby nie kolidować z innymi usługami — ruch z zewnątrz tylko przez Caddy.
@@ -202,8 +202,62 @@ curl -s http://127.0.0.1:3000/api/v1/health 2>/dev/null || echo "sprawdź dokume
 - Osobna baza: `bekapaka_stats` (nie współdzielona z MOYA).
 - CMS na produkcji wymaga w `.env`: `CMS_APP_KEYS`, `CMS_API_TOKEN_SALT`, `CMS_ADMIN_JWT_SECRET`, `CMS_JWT_SECRET`, `CMS_TRANSFER_TOKEN_SALT` (patrz `backend/.env.production.example`).
 
+## Monitorowanie RAM i optymalizacja
+
+Na współdzielonym VPS **RAM jest wąskim gardłem** przy deployach Docker, buildach Strapi/CMS i agentach AI (Hermes na hoście). Dysk bywa drugim problemem (cache buildów Docker).
+
+**Pełny przewodnik:** [vps-optimization.md](./vps-optimization.md) (checklist deploy, swap, prune, zużycie RAM po procesach).
+
+### Skrypty w repo
+
+| Plik | Rola |
+|------|------|
+| `scripts/vps/ram-monitor.sh` | Co 5 min: log dostępnej RAM, load, `docker stats`, top RSS; alert do syslog przy progach |
+| `scripts/vps/install-ram-monitor.sh` | Instalacja na VPS (`/usr/local/bin`, cron `/etc/cron.d/bekapaka-ram-monitor`) |
+| `scripts/vps/vps-optimize.sh` | Jednorazowa optymalizacja: swap, prune cache/obrazów, journal, apt (bez `docker compose down` MOYA) |
+
+### Instalacja / aktualizacja monitora (na VPS)
+
+```bash
+cd /opt/bekapaka-stats
+sudo bash scripts/vps/install-ram-monitor.sh
+```
+
+### Odczyt logów
+
+```bash
+tail -f /var/log/bekapaka-ram.log
+tail -20 /var/log/bekapaka-ram-alerts.log
+journalctl -t bekapaka-ram --since "1 hour ago"
+```
+
+### Progi domyślne (zmienne środowiskowe w cronie, opcjonalnie)
+
+| Zmienna | Domyślnie | Znaczenie |
+|---------|-----------|-----------|
+| `BKP_RAM_WARN_AVAIL_MIB` | 1024 | Ostrzeżenie: mniej wolnej RAM |
+| `BKP_RAM_CRIT_AVAIL_MIB` | 512 | Krytyczne |
+| `BKP_RAM_WARN_USED_PCT` | 85 | Ostrzeżenie: % zajętej RAM |
+| `BKP_RAM_CRIT_USED_PCT` | 92 | Krytyczne |
+
+### Optymalizacja (bezpieczna dla MOYA)
+
+```bash
+sudo bash /opt/bekapaka-stats/scripts/vps/vps-optimize.sh
+```
+
+Nie używaj `docker system prune -a` na całym hoście — runbook MOYA. Skrypt używa `docker builder prune` i `docker image prune -a` (tylko obrazy **bez** działającego kontenera).
+
+### Praktyka przy deployu / AI
+
+1. Przed `docker compose ... --build` sprawdź: `free -h` i ostatni wpis w `bekapaka-ram.log`.
+2. Swap 2 GiB (`/swapfile`) — bufor przy skokach pamięci; `vm.swappiness=10`.
+3. Porty BeKaPaKa w `docker-compose.prod.yml` mapowane na **`127.0.0.1`** (jak MOYA `:3000`).
+4. Po deployu usuń stare obrazy: `docker image prune -a -f` (gdy kontenery `bkpk-*` już działają na nowych tagach).
+
 ## Powiązana dokumentacja w tym repo
 
+- [vps-optimization.md](./vps-optimization.md) — optymalizacja dysku/RAM, skrypty, checklist deploy
 - [docker-deploy.md](./docker-deploy.md) — CI/CD i GHCR
 - [architecture.md](./architecture.md) — architektura aplikacji
 - [api.md](./api.md) — endpointy API
