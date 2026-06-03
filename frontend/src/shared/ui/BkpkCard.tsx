@@ -66,8 +66,8 @@ export function BkpkCard({
             whileHover={hoverEffect || onClick ? {
                 y: -4,
                 scale: 1.01,
-                borderColor: 'rgba(255, 107, 53, 0.3)',
-                boxShadow: '0 0 30px rgba(255, 107, 53, 0.2)'
+                borderColor: 'rgba(236, 167, 44, 0.3)',
+                boxShadow: '0 0 30px rgba(236, 167, 44, 0.2)'
             } : undefined}
             whileTap={onClick ? { scale: 0.98 } : undefined}
             initial={animateEntrance ? { opacity: 0, y: 10 } : false}

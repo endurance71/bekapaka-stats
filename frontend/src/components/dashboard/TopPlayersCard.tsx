@@ -90,15 +90,15 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                      />
                                      <div className={cn(
                                          "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-outfit text-[10px] shadow-md border border-bkpk-border-strong",
-                                         index === 0 ? "bg-bkpk-primary text-black" :
-                                             index === 1 ? "bg-slate-300 text-slate-900" :
-                                                 "bg-orange-800 text-orange-200"
+                                         index === 0 ? "bg-bkpk-medal-gold text-black" :
+                                             index === 1 ? "bg-bkpk-medal-silver text-black" :
+                                                 "bg-bkpk-medal-bronze text-black"
                                      )}>
                                          {index + 1}
                                      </div>
                                  </div>
                                  {isFirst && (
-                                     <Medal className="absolute -top-1.5 -left-1.5 w-5 h-5 text-bkpk-primary drop-shadow-[0_0_8px_rgba(255,107,53,0.5)] z-20" />
+                                     <Medal className="absolute -top-1.5 -left-1.5 w-5 h-5 text-bkpk-primary drop-shadow-[0_0_8px_rgba(236,167,44,0.45)] z-20" />
                                  )}
                              </div>
 

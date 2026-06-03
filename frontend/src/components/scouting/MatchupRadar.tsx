@@ -125,7 +125,7 @@ export function MatchupRadar({ opponent, bekapaka }: Props) {
                 }}
                 itemStyle={{ color: 'var(--bkpk-text-primary)', fontSize: '12px', fontWeight: 'bold' }}
                 labelStyle={{
-                  color: '#94a3b8',
+                  color: 'var(--bkpk-text-muted)',
                   fontSize: '10px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.05em'

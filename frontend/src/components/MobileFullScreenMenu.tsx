@@ -183,8 +183,8 @@ export default function MobileFullScreenMenu({
                                         cn(
                                             'flex items-center gap-3 px-3 py-3 rounded-xl font-bold text-sm transition-colors min-h-[44px]',
                                             isActive
-                                                ? 'bg-bkpk-primary/15 text-bkpk-primary'
-                                                : 'text-bkpk-text-secondary active:bg-bkpk-surface-tint-2'
+                                                ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25'
+                                                : 'text-bkpk-text-secondary active:bg-bkpk-primary/5 border border-transparent'
                                         )
                                     }
                                 >

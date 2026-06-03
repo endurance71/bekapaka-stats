@@ -120,7 +120,7 @@ export default function ImportModal({
           {/* Parse button if content but no preview */}
           {!importPreview && importContent && (
             <button
-              className="px-4 py-2 bg-bkpk-accent text-white text-sm font-bold rounded-xl hover:bg-bkpk-accent-hover transition-colors shadow-sm"
+              className="px-4 py-2 bkpk-btn-primary text-sm font-bold rounded-xl transition-colors shadow-sm"
               onClick={() => onImportParse()}
             >
               Sprawdź poprawność
@@ -134,7 +134,7 @@ export default function ImportModal({
             Anuluj
           </button>
           <button
-            className="px-4 py-2 bg-bkpk-primary text-white text-sm font-bold rounded-xl hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-4 py-2 bkpk-btn-primary text-sm font-bold rounded-xl transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             onClick={onImportSave}
             disabled={!importPreview}
           >

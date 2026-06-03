@@ -38,7 +38,7 @@ jobs:
       - name: Build and push Frontend image
         uses: docker/build-push-action@v6
         with:
-          context: ./frontend
+          context: .
           file: ./frontend/Dockerfile.prod
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
@@ -46,7 +46,7 @@ jobs:
       - name: Build and push public Site image
         uses: docker/build-push-action@v6
         with:
-          context: ./site
+          context: .
           file: ./site/Dockerfile.prod
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:latest

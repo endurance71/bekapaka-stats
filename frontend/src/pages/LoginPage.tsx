@@ -53,7 +53,7 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="p-3 bg-red-500/10 border border-red-500 text-red-500 rounded-md text-sm text-center font-bold">
+                            <div className="p-3 bg-bkpk-danger/10 border border-bkpk-danger text-bkpk-danger rounded-md text-sm text-center font-bold">
                                 {error}
                             </div>
                         )}
@@ -100,8 +100,9 @@ export default function LoginPage() {
                         <BkpkButton
                             type="submit"
                             loading={loading}
-                            className="w-full h-16 text-xl mt-6 shadow-[0_0_30px_rgba(255,107,53,0.3)] hover:shadow-[0_0_40px_rgba(255,107,53,0.5)] bg-bkpk-primary border-none text-bkpk-bg"
+                            className="w-full h-16 text-xl mt-6"
                             variant="primary"
+                            size="lg"
                         >
                             Zaloguj się do systemu
                         </BkpkButton>
