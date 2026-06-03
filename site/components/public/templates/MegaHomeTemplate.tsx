@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import type { GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
-import { cmsEventCategoryLabel } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
-import { formatVenue } from '../../../lib/venue'
+import { NearestEventCard, NearestEventEmpty } from '../home/NearestEventCard'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 import { ArrowRightIcon } from '../shared/PublicIcons'
 import { FsmmSupportSection } from '../support/FsmmSupportSection'
@@ -100,104 +99,9 @@ export function MegaHomeTemplate({
         </article>
 
         {/* ROW 2: NEXT MATCH (7) & STAT LEADERS (5) */}
-        <article className='surface-card dashboard-next'>
+        <article className='surface-card dashboard-next dashboard-next--highlight'>
           <p className='section-kicker'>Najbliższe wydarzenie</p>
-          {nearestEvent?.source === 'kalk' ? (
-            <div className='ticket-box'>
-              <div className='ticket-main'>
-                <span className='ticket-league'>Zmagania ligowe · KALK</span>
-                <h2 className='ticket-teams'>
-                  <span className='ticket-team-us'>BEKAPAKA</span>
-                  <span className='ticket-vs'>VS</span>
-                  <span className='ticket-team-them'>{nearestEvent.game.opponent.toUpperCase()}</span>
-                </h2>
-                <div className='ticket-details'>
-                  <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Termin</span>
-                    <strong className='ticket-detail-value'>{formatDateTime(nearestEvent.game.date)}</strong>
-                  </div>
-                  <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Miejsce</span>
-                    <strong className='ticket-detail-value'>{formatVenue(nearestEvent.game.data?.venue)}</strong>
-                  </div>
-                </div>
-              </div>
-              <div className='ticket-divider'>
-                <span className='notch notch-top'></span>
-                <span className='dashed-line'></span>
-                <span className='notch notch-bottom'></span>
-              </div>
-              <div className='ticket-stub'>
-                <span className='ticket-badge-pill'>Liga KALK</span>
-                <Link href='/mecze' className='button button--primary stub-button'>
-                  Terminarz
-                </Link>
-              </div>
-            </div>
-          ) : nearestEvent?.source === 'cms' ? (
-            <div className='ticket-box'>
-              <div className='ticket-main'>
-                <span className='ticket-league'>{cmsEventCategoryLabel(nearestEvent.event.type)} · CMS</span>
-                <h2 className='ticket-teams ticket-teams--cms'>
-                  <span className='ticket-team-them ticket-team-them--cms'>{nearestEvent.event.title}</span>
-                </h2>
-                {nearestEvent.event.description ? (
-                  <p className='ticket-event-lead muted'>{nearestEvent.event.description}</p>
-                ) : null}
-                <div className='ticket-details'>
-                  <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Termin</span>
-                    <strong className='ticket-detail-value'>{formatDateTime(nearestEvent.event.startAt)}</strong>
-                  </div>
-                  <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Miejsce</span>
-                    <strong className='ticket-detail-value'>
-                      {nearestEvent.event.location || 'Do potwierdzenia'}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-              <div className='ticket-divider'>
-                <span className='notch notch-top'></span>
-                <span className='dashed-line'></span>
-                <span className='notch notch-bottom'></span>
-              </div>
-              <div className='ticket-stub'>
-                <span className='ticket-badge-pill'>Wydarzenie</span>
-                {nearestEvent.event.registrationUrl ? (
-                  <a
-                    href={nearestEvent.event.registrationUrl}
-                    className='button button--primary stub-button'
-                    target='_blank'
-                    rel='noopener noreferrer'
-                  >
-                    Zapisz się
-                  </a>
-                ) : (
-                  <Link href={`/mecze/${nearestEvent.event.slug}`} className='button button--primary stub-button'>
-                    Szczegóły
-                  </Link>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className='ticket-empty'>
-              <span className='ticket-empty-icon'>
-                <svg className='icon-basketball' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round' style={{ width: '48px', height: '48px', color: 'var(--bkp-gold)', display: 'block', margin: '0 auto var(--space-3)' }}>
-                  <circle cx='12' cy='12' r='10'></circle>
-                  <path d='M6.2 6.2c2.4 2.4 2.4 6.4 0 8.8'></path>
-                  <path d='M17.8 6.2c-2.4 2.4-2.4 6.4 0 8.8'></path>
-                  <line x1='2' y1='12' x2='22' y2='12'></line>
-                  <line x1='12' y1='2' x2='12' y2='22'></line>
-                </svg>
-              </span>
-              <h3>Brak zaplanowanych wydarzeń</h3>
-              <p className='muted'>Nie ma nadchodzących meczów w KALK ani wydarzeń w kalendarzu klubu.</p>
-              <Link href='/mecze' className='button button--ghost stub-button'>
-                Zobacz kalendarz
-              </Link>
-            </div>
-          )}
+          {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 
         <article className='surface-card dashboard-leaders'>

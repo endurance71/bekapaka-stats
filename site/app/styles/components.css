@@ -273,8 +273,176 @@
   color: var(--text-primary);
 }
 
-/* Match Ticket Component */
+/* Najbliższe wydarzenie — kafelek hero */
 .dashboard-next { order: 3; }
+
+.dashboard-next--highlight {
+  padding: 0;
+  overflow: hidden;
+  border-color: rgba(236, 167, 44, 0.22);
+  background: #121214;
+}
+
+.dashboard-next--highlight .section-kicker {
+  position: relative;
+  z-index: 2;
+  padding: var(--space-4) var(--space-4) 0;
+  margin: 0;
+}
+
+.next-event-hero {
+  position: relative;
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: radial-gradient(ellipse at top left, rgba(236, 167, 44, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(236, 167, 44, 0.1) 0%, #121214 65%), #121214;
+}
+
+.next-event-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 22px 22px;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, #000 85%);
+}
+
+.next-event-hero__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.next-event-hero__eyebrow {
+  font-size: 0.72rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.next-event-hero__match-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.next-event-hero__team {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: clamp(1.6rem, 4.5vw, 2.4rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.next-event-hero__team--gold {
+  color: var(--bkp-gold);
+}
+
+.next-event-hero__vs {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1rem;
+  color: var(--bkp-gold);
+  background: rgba(236, 167, 44, 0.12);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.next-event-hero__event-title {
+  margin: 0;
+  font-size: clamp(1.35rem, 3.5vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+
+.next-event-hero__lead {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.next-event-hero__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.next-event-hero__meta-label {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-soft);
+  margin-bottom: 2px;
+}
+
+.next-event-hero__meta-item strong {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.next-event-hero__countdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(236, 167, 44, 0.25);
+  background: rgba(236, 167, 44, 0.06);
+  align-self: flex-start;
+}
+
+.next-event-hero__countdown-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bkp-gold);
+  font-weight: 600;
+}
+
+.next-event-hero__countdown-value {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+}
+
+.next-event-hero__badge {
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--bkp-gold);
+  border: 1px solid rgba(236, 167, 44, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: rgba(236, 167, 44, 0.08);
+}
+
+.next-event-hero--empty .next-event-hero__content {
+  min-height: 180px;
+  justify-content: center;
+}
+
+.next-event-hero__empty-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+/* Match Ticket Component (legacy / inne widoki) */
 
 .ticket-box {
   background: linear-gradient(145deg, #18181C 0%, #121214 100%);

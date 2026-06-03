@@ -1,10 +1,13 @@
+import { SITE_TIMEZONE } from './timezone'
+
 export function formatDateTime(value?: string): string {
   if (!value) return 'Nieznana data'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Nieznana data'
   return new Intl.DateTimeFormat('pl-PL', {
     dateStyle: 'medium',
-    timeStyle: 'short'
+    timeStyle: 'short',
+    timeZone: SITE_TIMEZONE
   }).format(date)
 }
 
@@ -13,7 +16,8 @@ export function formatDate(value?: string): string {
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Nieznana data'
   return new Intl.DateTimeFormat('pl-PL', {
-    dateStyle: 'medium'
+    dateStyle: 'medium',
+    timeZone: SITE_TIMEZONE
   }).format(date)
 }
 
