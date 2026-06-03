@@ -212,14 +212,17 @@ export default function MobileFullScreenMenu({
     useEffect(() => {
         if (!isMounted) return;
 
-        const previousBodyOverflow = document.body.style.overflow;
-        const previousHtmlOverflow = document.documentElement.style.overflow;
-        document.body.style.overflow = 'hidden';
-        document.documentElement.style.overflow = 'hidden';
+        const scrollY = window.scrollY;
+        const root = document.documentElement;
+        root.classList.add('is-scroll-locked');
+        document.body.classList.add('is-scroll-locked');
+        document.body.style.top = `-${scrollY}px`;
 
         return () => {
-            document.body.style.overflow = previousBodyOverflow;
-            document.documentElement.style.overflow = previousHtmlOverflow;
+            root.classList.remove('is-scroll-locked');
+            document.body.classList.remove('is-scroll-locked');
+            document.body.style.top = '';
+            window.scrollTo(0, scrollY);
         };
     }, [isMounted]);
 
@@ -240,14 +243,15 @@ export default function MobileFullScreenMenu({
             aria-modal="true"
             aria-label="Menu nawigacji"
             className={cn(
-                'lg:hidden fixed inset-0 z-[9999]',
+                'mobile-fullscreen-menu-root lg:hidden fixed inset-0 z-[9999] w-full h-[100dvh] min-h-[100lvh] max-h-none bg-bkpk-bg',
                 isVisible ? 'pointer-events-auto' : 'pointer-events-none'
             )}
         >
             <div
                 ref={panelRef}
                 className={cn(
-                    'absolute inset-0 flex flex-col bg-bkpk-bg text-bkpk-text-primary',
+                    'mobile-fullscreen-menu-panel absolute inset-0 flex flex-col bg-bkpk-bg text-bkpk-text-primary',
+                    'h-[100dvh] min-h-[100lvh] max-h-none',
                     'transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform',
                     isVisible ? 'translate-x-0' : '-translate-x-full'
                 )}
@@ -255,8 +259,7 @@ export default function MobileFullScreenMenu({
                     paddingTop: 'env(safe-area-inset-top, 0px)',
                     paddingLeft: 'env(safe-area-inset-left, 0px)',
                     paddingRight: 'env(safe-area-inset-right, 0px)',
-                    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-                    minHeight: '100dvh'
+                    paddingBottom: 'env(safe-area-inset-bottom, 0px)'
                 }}
             >
                 <header className="relative flex items-center px-4 py-3 shrink-0">

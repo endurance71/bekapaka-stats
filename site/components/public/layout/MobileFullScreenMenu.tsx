@@ -118,10 +118,11 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   useEffect(() => {
     if (!isMounted) return
 
-    const previousBodyOverflow = document.body.style.overflow
-    const previousHtmlOverflow = document.documentElement.style.overflow
-    document.body.style.overflow = 'hidden'
-    document.documentElement.style.overflow = 'hidden'
+    const scrollY = window.scrollY
+    const root = document.documentElement
+    root.classList.add('is-scroll-locked')
+    document.body.classList.add('is-scroll-locked')
+    document.body.style.top = `-${scrollY}px`
 
     const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
       'button, a, [tabindex]:not([tabindex="-1"])'
@@ -160,8 +161,10 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
 
     document.addEventListener('keydown', handleKeyDown)
     return () => {
-      document.body.style.overflow = previousBodyOverflow
-      document.documentElement.style.overflow = previousHtmlOverflow
+      root.classList.remove('is-scroll-locked')
+      document.body.classList.remove('is-scroll-locked')
+      document.body.style.top = ''
+      window.scrollTo(0, scrollY)
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isMounted, handleRequestClose])
