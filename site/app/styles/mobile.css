@@ -39,20 +39,20 @@
 
   .next-event-photo-bg {
     background-position: center 30%;
-    opacity: 0.62;
-    filter: saturate(0.9) contrast(1) brightness(0.68);
+    opacity: 0.54;
+    filter: saturate(0.84) contrast(1) brightness(0.62);
   }
 
   .next-event-photo-bg::after {
     background:
       linear-gradient(
         180deg,
-        rgba(11, 11, 12, 0.9) 0%,
-        rgba(18, 18, 20, 0.4) 40%,
-        rgba(18, 18, 20, 0.06) 52%,
-        rgba(11, 11, 12, 0.04) 100%
+        rgba(11, 11, 12, 0.82) 0%,
+        rgba(18, 18, 20, 0.5) 38%,
+        rgba(11, 11, 12, 0.32) 52%,
+        rgba(11, 11, 12, 0.34) 100%
       ),
-      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(230, 57, 70, 0.1) 0%, transparent 65%);
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(230, 57, 70, 0.08) 0%, transparent 65%);
   }
 
   .hero-actions {
@@ -66,22 +66,41 @@
     justify-content: center;
   }
 
-  .stats-drawer__backdrop {
+  /* Pełny ekran jak mobile-fullscreen-menu — bez czarnych szczelin (Safari) */
+  .stats-drawer.is-open {
+    position: fixed;
     inset: 0;
     width: 100%;
-    height: auto;
+    height: 100%;
     min-height: 100dvh;
     min-height: 100lvh;
+    max-height: none;
+    background: var(--bg-app);
   }
 
-  .stats-drawer__panel {
+  .stats-drawer.is-open .stats-drawer__backdrop {
     inset: 0;
     width: 100%;
-    height: auto;
+    height: 100%;
+    min-height: 100%;
     max-height: none;
-    min-height: 100dvh;
-    min-height: 100lvh;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--bg-app);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    opacity: 1;
+  }
+
+  .stats-drawer.is-open .stats-drawer__panel {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    max-height: none;
+    padding:
+      env(safe-area-inset-top, 0px)
+      env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px)
+      env(safe-area-inset-left, 0px);
     border-radius: 0;
     border-top: 0;
     box-shadow: none;
@@ -91,11 +110,20 @@
   }
 
   .stats-drawer__panel-header {
-    min-height: calc(44px + env(safe-area-inset-top, 0px));
+    min-height: 48px;
+    padding:
+      var(--space-2)
+      0
+      var(--space-2)
+      0;
   }
 
   .stats-drawer__panel-body {
-    padding-bottom: var(--space-8);
+    padding:
+      var(--space-4)
+      0
+      var(--space-8)
+      0;
   }
 
   .drawer-profile-panel {
@@ -172,10 +200,19 @@
   .player-card__photo {
     object-position: center 8%;
   }
+
+  .player-card__inner {
+    --player-glass-height: 52%;
+  }
+
+  .home-player-card-premium-slide {
+    --player-glass-height: 38%;
+    width: 168px;
+  }
 }
 
 @media (max-width: 480px) {
-  .surface-card {
+  .surface-card:not(.dashboard-next--highlight) {
     padding: var(--space-4);
   }
 

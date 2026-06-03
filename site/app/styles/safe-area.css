@@ -31,24 +31,18 @@
   }
 }
 
-/* Pełnoekranowe modale / drawer — backdrop i panel do krawędzi (Safari iOS) */
-.stats-drawer {
-  width: 100%;
-  inset: 0;
-  height: auto;
-  min-height: 100dvh;
-  min-height: 100lvh;
-  max-height: none;
+/* Pełnoekranowe modale / drawer — Safari iOS (otwarty drawer: patrz mobile.css) */
+html.is-stats-drawer-open,
+html.is-stats-drawer-open body.site-body {
+  background: var(--bg-app);
 }
 
 @supports (-webkit-touch-callout: none) {
-  .stats-drawer {
-    min-height: -webkit-fill-available;
-  }
-
-  .stats-drawer__backdrop,
-  .stats-drawer__panel {
-    min-height: -webkit-fill-available;
+  @media (max-width: 899px) {
+    .stats-drawer.is-open .stats-drawer__backdrop,
+    .stats-drawer.is-open .stats-drawer__panel {
+      min-height: -webkit-fill-available;
+    }
   }
 
   .mobile-fullscreen-menu,

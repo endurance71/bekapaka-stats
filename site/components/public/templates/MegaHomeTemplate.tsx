@@ -118,14 +118,8 @@ export function MegaHomeTemplate({
             aria-hidden='true'
             style={{ backgroundImage: "url('/images/hero-event-basketball.jpg')" }}
           />
-          {nearestEvent ? (
-            <>
-              <div className='next-event-glass-pane' aria-hidden='true' />
-              <NearestEventCard highlight={nearestEvent} />
-            </>
-          ) : (
-            <NearestEventEmpty />
-          )}
+          {nearestEvent ? <div className='next-event-glass-dock' aria-hidden='true' /> : null}
+          {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 
         <article className='surface-card dashboard-leaders'>
@@ -285,7 +279,7 @@ export function MegaHomeTemplate({
                   const initials = `${player.firstName[0] || ''}${player.lastName[0] || ''}`.toUpperCase();
                   return (
                     <Link href='/sklad' key={player.id} className='home-player-card-premium-slide'>
-                      <div className='home-player-card__image-wrap-premium'>
+                      <div className='home-player-card__media' aria-hidden='true'>
                         {!hasPhoto ? (
                           <div className='home-player-card__avatar-placeholder-premium'>
                             <span>{initials}</span>
@@ -293,15 +287,18 @@ export function MegaHomeTemplate({
                         ) : (
                           <img
                             src={resolvePlayerPhoto(player)}
-                            alt={`${player.firstName} ${player.lastName}`}
+                            alt=''
                             className='home-player-card__image-premium'
                           />
                         )}
-                        <div className='home-player-card__number-badge'>#{player.number}</div>
                       </div>
-                      <div className='home-player-card__body-premium'>
-                        <strong>{player.firstName} {player.lastName}</strong>
-                        <span className='muted-gold'>{getPositionLabel(player.position)}</span>
+                      <div className='home-player-card__glass-dock' aria-hidden='true' />
+                      <span className='home-player-card__number-badge'>#{player.number}</span>
+                      <div className='home-player-card__footer'>
+                        <strong className='home-player-card__name'>
+                          {player.firstName} {player.lastName}
+                        </strong>
+                        <span className='home-player-card__position'>{getPositionLabel(player.position)}</span>
                       </div>
                     </Link>
                   );
