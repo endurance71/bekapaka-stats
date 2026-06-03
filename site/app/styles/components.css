@@ -116,18 +116,18 @@
   isolation: isolate;
 }
 
-/* Unsplash: basketball on court — faded, gold-tinted backdrop */
+/* Unsplash: basketball on court — widoczne tło, gradient tylko pod tekstem po lewej */
 .hero-photo-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: 72% 42%;
-  opacity: 0.42;
-  filter: saturate(0.55) brightness(0.72) sepia(0.22);
+  background-position: 78% center;
+  opacity: 1;
+  filter: saturate(1.05) contrast(1.08) brightness(0.92);
   pointer-events: none;
-  transform: scale(1.02);
+  transform: scale(1.04);
 }
 
 .hero-photo-bg::after {
@@ -136,14 +136,15 @@
   inset: 0;
   background:
     linear-gradient(
-      102deg,
-      #121214 0%,
-      rgba(18, 18, 20, 0.94) 38%,
-      rgba(18, 18, 20, 0.72) 58%,
-      rgba(18, 18, 20, 0.45) 100%
+      90deg,
+      rgba(11, 11, 12, 0.92) 0%,
+      rgba(18, 18, 20, 0.78) 28%,
+      rgba(18, 18, 20, 0.42) 48%,
+      rgba(18, 18, 20, 0.12) 72%,
+      transparent 100%
     ),
-    radial-gradient(ellipse 80% 70% at 88% 78%, rgba(236, 167, 44, 0.2) 0%, transparent 62%),
-    linear-gradient(180deg, transparent 55%, rgba(11, 11, 12, 0.55) 100%);
+    radial-gradient(ellipse 70% 85% at 92% 55%, rgba(236, 167, 44, 0.28) 0%, transparent 58%),
+    linear-gradient(180deg, transparent 70%, rgba(11, 11, 12, 0.35) 100%);
 }
 
 .hero-grid-bg {

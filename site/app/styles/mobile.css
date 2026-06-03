@@ -6,20 +6,20 @@
   }
 
   .hero-photo-bg {
-    background-position: center 22%;
-    opacity: 0.34;
-    filter: saturate(0.5) brightness(0.65) sepia(0.18);
+    background-position: center 30%;
+    filter: saturate(1.02) contrast(1.05) brightness(0.88);
   }
 
   .hero-photo-bg::after {
     background:
       linear-gradient(
         180deg,
-        #121214 0%,
-        rgba(18, 18, 20, 0.9) 42%,
-        rgba(18, 18, 20, 0.78) 100%
+        rgba(11, 11, 12, 0.88) 0%,
+        rgba(18, 18, 20, 0.55) 38%,
+        rgba(18, 18, 20, 0.22) 62%,
+        rgba(11, 11, 12, 0.45) 100%
       ),
-      radial-gradient(ellipse 90% 55% at 50% 100%, rgba(236, 167, 44, 0.14) 0%, transparent 70%);
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(236, 167, 44, 0.2) 0%, transparent 65%);
   }
 
   .hero-actions {
