@@ -40,6 +40,14 @@ export function ArrowRightIcon({ size = 14, className }: PublicIconProps) {
   )
 }
 
+export function HomeIcon({ size = 18, className }: PublicIconProps) {
+  return (
+    <svg {...iconProps({ size, className })}>
+      <path d='M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z' />
+    </svg>
+  )
+}
+
 export function CalendarIcon({ size = 16, className }: PublicIconProps) {
   return (
     <svg {...iconProps({ size, className })}>

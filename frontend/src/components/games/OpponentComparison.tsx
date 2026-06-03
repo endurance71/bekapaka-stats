@@ -64,7 +64,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
 
             <div className="flex justify-between items-center text-sm font-bold text-bkpk-text-secondary px-4 pb-2">
                 <span className="text-bkpk-primary">{bekapaka.name}</span>
-                <span className="text-xs uppercase tracking-widest opacity-50">VS</span>
+                <span className="text-2xs uppercase tracking-widest text-bkpk-text-muted">VS</span>
                 <span>{opponent.name}</span>
             </div>
 

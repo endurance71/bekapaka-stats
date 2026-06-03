@@ -1,11 +1,7 @@
 'use client'
 
 import type { NearestHighlight } from '../../../lib/data'
-import {
-  downloadIcsFile,
-  highlightToCalendarPayload,
-  openAppleCalendar
-} from '../../../lib/calendar-ics'
+import { addToCalendar, highlightToCalendarPayload } from '../../../lib/calendar-ics'
 
 interface NearestEventCalendarActionsProps {
   highlight: NearestHighlight
@@ -15,12 +11,8 @@ export function NearestEventCalendarActions({ highlight }: NearestEventCalendarA
   const payload = highlightToCalendarPayload(highlight)
   if (!payload) return null
 
-  const handleDownloadIcs = () => {
-    downloadIcsFile(payload)
-  }
-
-  const handleAppleCalendar = () => {
-    openAppleCalendar(payload)
+  const handleAddToCalendar = () => {
+    void addToCalendar(payload)
   }
 
   return (
@@ -28,16 +20,9 @@ export function NearestEventCalendarActions({ highlight }: NearestEventCalendarA
       <button
         type='button'
         className='next-event-hero__calendar-btn'
-        onClick={handleDownloadIcs}
+        onClick={handleAddToCalendar}
       >
-        Pobierz .ics
-      </button>
-      <button
-        type='button'
-        className='next-event-hero__calendar-btn next-event-hero__calendar-btn--apple'
-        onClick={handleAppleCalendar}
-      >
-        Apple Kalendarz
+        Dodaj do kalendarza
       </button>
     </div>
   )

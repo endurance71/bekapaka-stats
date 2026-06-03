@@ -37,7 +37,12 @@ export function MegaHomeTemplate({
       <section className='dashboard-grid'>
         {/* ROW 1: HERO SECTION (7) & LATEST NEWS (5) */}
         <article className='surface-card dashboard-hero'>
-          <div className='hero-grid-bg'></div>
+          <div
+            className='hero-photo-bg'
+            aria-hidden='true'
+            style={{ backgroundImage: "url('/images/hero-basketball.jpg')" }}
+          />
+          <div className='hero-grid-bg' aria-hidden='true' />
           <div className='hero-content'>
             <p className='section-kicker'>Klub Sportowy</p>
             <h1>

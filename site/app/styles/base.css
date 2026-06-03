@@ -211,7 +211,7 @@ p {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    pointer-events: none;
+    z-index: 1;
     max-width: calc(100% - 7.5rem);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -221,6 +221,12 @@ p {
     letter-spacing: 0.02em;
     line-height: 1;
     color: var(--text-primary);
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .site-header__mobile-brand:active {
+    opacity: 0.75;
   }
 
   .club-logo {

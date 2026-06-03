@@ -64,7 +64,7 @@ export function NextChallengeWidget({
                         {[1, 2, 3, 4, 5].map((level) => (
                             <div
                                 key={level}
-                                className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${level <= difficulty
+                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${level <= difficulty
                                     ? "bg-bkpk-primary shadow-bkpk-primary"
                                     : "bg-bkpk-surface-tint-2"
                                     }`}

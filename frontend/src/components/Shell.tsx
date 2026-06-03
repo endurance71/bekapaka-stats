@@ -56,7 +56,7 @@ function NavItems({
           >
             {({ isActive }) => (
               <>
-                <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-bkpk-primary' : '')} />
+                <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-bkpk-primary' : 'text-bkpk-text-muted group-hover:text-bkpk-primary')} />
                 <span className="flex-1">{link.label}</span>
                 {isActive && (
                   <span className="w-1.5 h-6 bg-bkpk-primary rounded-full shadow-bkpk-glow shrink-0" />
@@ -113,7 +113,7 @@ export default function Shell({ children }: { children: ReactNode }) {
       <aside
         role="navigation"
         aria-label="Nawigacja główna"
-        className="hidden lg:flex flex-col w-72 bg-bkpk-surface border-r border-bkpk-border-strong p-8 transition-all duration-500"
+        className="hidden lg:flex flex-col w-72 bg-bkpk-surface border-r border-bkpk-border-strong p-8 transition-colors duration-200"
       >
         <div className="flex items-center gap-4 mb-12 px-2">
           <div className="w-10 h-10 rounded-xl bg-bkpk-surface flex items-center justify-center shadow-bkpk-glow border border-bkpk-border-strong overflow-hidden p-1">

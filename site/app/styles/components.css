@@ -112,11 +112,44 @@
   min-height: 380px;
   position: relative;
   order: 1;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Unsplash: basketball on court — faded, gold-tinted backdrop */
+.hero-photo-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 72% 42%;
+  opacity: 0.42;
+  filter: saturate(0.55) brightness(0.72) sepia(0.22);
+  pointer-events: none;
+  transform: scale(1.02);
+}
+
+.hero-photo-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      102deg,
+      #121214 0%,
+      rgba(18, 18, 20, 0.94) 38%,
+      rgba(18, 18, 20, 0.72) 58%,
+      rgba(18, 18, 20, 0.45) 100%
+    ),
+    radial-gradient(ellipse 80% 70% at 88% 78%, rgba(236, 167, 44, 0.2) 0%, transparent 62%),
+    linear-gradient(180deg, transparent 55%, rgba(11, 11, 12, 0.55) 100%);
 }
 
 .hero-grid-bg {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background-image: linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
                     linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
   background-size: 24px 24px;
@@ -471,16 +504,6 @@
   background: rgba(230, 57, 70, 0.16);
   border-color: rgba(230, 57, 70, 0.55);
   color: #fff;
-}
-
-.next-event-hero__calendar-btn--apple {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.next-event-hero__calendar-btn--apple:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
 }
 
 .next-event-hero--empty .next-event-hero__content {

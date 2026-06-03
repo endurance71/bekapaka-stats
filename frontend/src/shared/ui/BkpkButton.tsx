@@ -41,13 +41,11 @@ export default function BkpkButton({
     return (
         <motion.button
             className={cn(
-                'relative inline-flex items-center justify-center rounded-bkpk-md font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden',
+                'relative inline-flex items-center justify-center rounded-bkpk-md font-bold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden',
                 variants[variant],
                 sizes[size],
                 className
             )}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             disabled={disabled || loading}
             {...(props as any)}
         >
