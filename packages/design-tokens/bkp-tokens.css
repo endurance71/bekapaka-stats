@@ -58,6 +58,9 @@
   --bkp-primary-subtle: rgba(236, 167, 44, 0.08);
   --bkp-primary-subtle-border: rgba(236, 167, 44, 0.25);
 
+  /* Text on gold gradient CTA */
+  --bkp-on-primary: #000000;
+
   /* Medal / ranking accents */
   --bkp-medal-gold: #ECA72C;
   --bkp-medal-silver: #9CA3AF;

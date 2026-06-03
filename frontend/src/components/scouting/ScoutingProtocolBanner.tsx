@@ -15,9 +15,9 @@ export function ScoutingProtocolBanner({
 }: ScoutingProtocolBannerProps) {
   if (!fallbackBasicOnly && !fallbackFromPreviousMatch) return null;
 
-  let message = 'Brak protokołu dla tego rywala — widoczne są tabela, forma i skład.';
+  let message = 'Brak box score KALK dla tego rywala — widoczne są tabela, forma i skład.';
   if (fallbackFromPreviousMatch && !fallbackBasicOnly) {
-    message = 'DNA z wcześniejszego meczu z protokołem (brak ostatniego protokołu).';
+    message = 'DNA z wcześniejszego meczu KALK (brak box score z ostatniego spotkania).';
     if (sourceMatchDate || sourceMatchLabel) {
       const when = [sourceMatchDate, sourceMatchLabel].filter(Boolean).join(' · ');
       message += ` Źródło: ${when}.`;

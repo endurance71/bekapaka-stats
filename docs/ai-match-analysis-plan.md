@@ -8,7 +8,7 @@
 
 | Produkt | Dla kogo | Dane wejściowe (już w app) | UI dziś | Stan „AI” dziś |
 |---------|----------|------------------------------|---------|----------------|
-| **A. Analiza meczu** | Trener po imporcie protokołu | `Game` — box score, kwarty, `insights.js` | `GameDetail` | Brak LLM |
+| **A. Analiza meczu** | Trener po sync KALK | `KalkMatch.boxScore` (fallback `Game`) — `insights.js` | `GameDetail` | Gemini + cache w `KalkMatch` |
 | **B. Plan rozwoju zawodnika** | Zawodnik / trener | `getPlayerStats` — game log, średnie; opcjonalnie `goals` | `PlayerProfile` | Brak LLM |
 | **C. Scouting rywala** | Przed meczem ligowym | `getDetailedScouting` — tabela, KALK, forma, four factors | `ScoutingPage` → „AI Game Plan” | **Szablony tekstowe** w `dataStore.js` (nie prawdziwe AI) |
 
@@ -20,7 +20,7 @@ Wszystkie trzy mogą używać tego samego modułu `backend/ai/geminiClient.js` i
 
 ### W zakresie (MVP)
 
-- Analiza **tylko meczów BeKaPaKa** z pełnym box score (`Game` w PostgreSQL po imporcie protokołu).
+- Analiza **tylko meczów BeKaPaKa** z pełnym box score (`KalkMatch` po synchronizacji KALK; archiwum `Game`).
 - Język: **polski**, ton: trener / sztab (konkret, bez „lania wody”).
 - Wejście: metryki z `metrics.js`, reguły z `insights.js`, zwarty JSON (wynik, kwarty, statystyki drużyn i zawodników).
 - Wyjście: tekst Markdown (nagłówki + listy), zapisany w bazie — **jedno wywołanie API na generację**, potem tylko odczyt z DB.
@@ -134,7 +134,7 @@ FUNCTION buildMatchAnalysisContext(gameId):
   game ← getGameById(gameId)  // już liczy fourFactors + insights
 
   IF game brak w prisma.game OR brak teamStats/data.teams z box score:
-    THROW "Brak pełnych statystyk — zaimportuj protokół"
+    THROW "Brak pełnych statystyk — uruchom synchronizację KALK (box score /mecz/0.html)"
 
   bekapaka, opponent ← z game.teams / teamStats
   payload ← {

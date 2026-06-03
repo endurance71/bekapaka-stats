@@ -22,6 +22,14 @@ type ScraperStatus = {
     lastLog?: string;
 };
 
+type KalkIngestSummary = {
+    kalkMatches: number;
+    finishedMatches: number;
+    playerGameLogs: number;
+    kalkTeams: number;
+    leagueMatchesWithBoxScore: number;
+};
+
 export default function Administration() {
     const [scraperStatus, setScraperStatus] = useState<ScraperStatus>({
         running: false,
@@ -31,12 +39,16 @@ export default function Administration() {
         lastLog: ''
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [kalkSummary, setKalkSummary] = useState<KalkIngestSummary | null>(null);
 
     const { isAuthenticated } = useAuth();
     const refreshStatus = () => {
         if (!isAuthenticated) return;
         fetchJSON<ScraperStatus>('/api/scrape/kalk/div2/status')
             .then(data => setScraperStatus(data))
+            .catch(() => { });
+        fetchJSON<KalkIngestSummary>('/api/kalk/ingest-summary')
+            .then(data => setKalkSummary(data))
             .catch(() => { });
     };
 
@@ -109,9 +121,17 @@ export default function Administration() {
                     </div>
 
                     <p className="text-bkpk-text-secondary text-sm leading-relaxed">
-                        Uruchomienie scrapera spowoduje pobranie najnowszej tabeli ligowej, wyników meczów oraz statystyk wszystkich zawodników z oficjalnej strony ligi.
-                        Proces jest w pełni zautomatyzowany i trwa zazwyczaj do 30 sekund.
+                        Pełna synchronizacja KALK (v2): tabela, terminarz, wszystkie kategorie statystyk, box score zakończonych meczów Dywizji II oraz log meczów kadry BeKaPaKa.
+                        Proces trwa zwykle 3–4 minuty (rate limit 1 s).
                     </p>
+
+                    {kalkSummary ? (
+                        <ul className="text-xs text-bkpk-text-muted space-y-1 font-mono">
+                            <li>Mecze w DB (KalkMatch): {kalkSummary.finishedMatches} / {kalkSummary.kalkMatches} zakończone</li>
+                            <li>Logi zawodników (tab 3): {kalkSummary.playerGameLogs}</li>
+                            <li>Drużyny KALK: {kalkSummary.kalkTeams} · terminarz z box score: {kalkSummary.leagueMatchesWithBoxScore}</li>
+                        </ul>
+                    ) : null}
 
                     <div className="flex flex-wrap gap-4 pt-4 border-t border-bkpk-border-strong">
                         <BkpkButton

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
+import { bkpkActivePillClass } from '../shared/ui/BkpkButton';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import TeamStats from '../components/games/TeamStats';
 import DashboardMomentum from '../components/games/DashboardMomentum';
@@ -138,6 +139,12 @@ export default function GameDetail() {
             </div>
           </div>
 
+          {(game.dataSource === 'kalk' || game.isFromKalkMatch) ? (
+            <p className="relative z-10 mt-3 text-center text-[10px] font-bold uppercase tracking-widest text-bkpk-primary">
+              Dane z KALK
+            </p>
+          ) : null}
+
           {/* Mobile Info Badge */}
           <div className="sm:hidden flex items-center justify-center gap-2.5 mt-4 text-bkpk-text-secondary font-bold text-[10px] uppercase tracking-widest bg-bkpk-surface-tint-2 px-3 py-1.5 rounded-full border border-bkpk-border-strong w-fit mx-auto relative z-10">
             <div className="flex items-center gap-1">
@@ -234,7 +241,7 @@ export default function GameDetail() {
                     onClick={() => setActiveTab('bekapaka')}
                     className={cn(
                       "px-4 py-1.5 text-xs font-bold rounded-lg transition-all uppercase tracking-widest",
-                      activeTab === 'bekapaka' ? "bg-bkpk-primary-fill text-white" : "text-bkpk-text-secondary"
+                      activeTab === 'bekapaka' ? bkpkActivePillClass : "text-bkpk-text-secondary"
                     )}
                   >
                     BKPK
@@ -243,7 +250,7 @@ export default function GameDetail() {
                     onClick={() => setActiveTab('opponent')}
                     className={cn(
                       "px-4 py-1.5 text-xs font-bold rounded-lg transition-all uppercase tracking-widest",
-                      activeTab === 'opponent' ? "bg-bkpk-primary-fill text-white" : "text-bkpk-text-secondary"
+                      activeTab === 'opponent' ? bkpkActivePillClass : "text-bkpk-text-secondary"
                     )}
                   >
                     OPP

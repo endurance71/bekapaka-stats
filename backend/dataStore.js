@@ -28,6 +28,16 @@ import {
   LEAGUE_TABLE_ORDER_BY,
   resolveLeagueTeamFromList
 } from './lib/leagueTeamResolve.js';
+import { kalkMatchToGameDetail, kalkMatchToListItem } from './kalk/kalkGameView.js';
+import {
+  ingestKalkTeams,
+  ingestKalkMatches,
+  ingestKalkPlayerGameLogs,
+  ingestLeagueScheduleKalk
+} from './kalk/kalkIngest.js';
+import { boxScoreToLeagueDetails } from './kalk/parseMatchBoxScore.js';
+
+export { ingestKalkTeams, ingestKalkMatches, ingestKalkPlayerGameLogs };
 
 export {
   ensureDefaultSeason,
@@ -184,6 +194,11 @@ export async function resetDatabase() {
   await prisma.game.deleteMany();
   await prisma.leagueMatch.deleteMany();
   await prisma.leagueTeam.deleteMany();
+  await prisma.kalkPlayerGameLog.deleteMany();
+  await prisma.kalkMatch.deleteMany();
+  await prisma.kalkTeam.deleteMany();
+  await prisma.kalkSectionSnapshot.deleteMany();
+  await prisma.kalkSyncRun.deleteMany();
   await prisma.kalkPlayer.deleteMany();
   await prisma.rosterPlayer.deleteMany();
   seeded = false; // Allow re-seeding if enabled
@@ -328,6 +343,44 @@ export async function getRoster() {
 /**
  * Agreguje statystyki zawodnika na podstawie wszystkich meczów w bazie.
  */
+function gameLogEntryFromKalkStats(stats, matchMeta) {
+  const pts = parseStat(stats.pts) || 0;
+  const reb = parseStat(stats.reb) || 0;
+  const ast = parseStat(stats.ast) || 0;
+  const fgm = parseStat(stats.fgm) || 0;
+  const fga = parseStat(stats.fga) || 0;
+  const tpm = parseStat(stats.three_pm) || 0;
+  const tpa = parseStat(stats.three_pa) || 0;
+  const ftm = parseStat(stats.ftm) || 0;
+  const fta = parseStat(stats.fta) || 0;
+  const efg = fga > 0 ? (fgm + 0.5 * tpm) / fga : 0;
+  const ts = (fga + 0.44 * fta) > 0 ? pts / (2 * (fga + 0.44 * fta)) : 0;
+
+  return {
+    gameId: matchMeta.kalkMatchId,
+    date: matchMeta.date,
+    opponent: stats.opponent || matchMeta.opponent || '',
+    pts,
+    reb,
+    ast,
+    stl: parseStat(stats.stl) || 0,
+    blk: parseStat(stats.blk) || 0,
+    tov: parseStat(stats.tov) || 0,
+    pf: parseStat(stats.pf) || 0,
+    min: stats.min || '00:00',
+    fgm,
+    fga,
+    three_pm: tpm,
+    three_pa: tpa,
+    ftm,
+    fta,
+    efg,
+    ts,
+    plusMinus: parseStat(stats.plusMinus) || 0,
+    dataSource: 'kalk'
+  };
+}
+
 export async function getPlayerStats(playerId, seasonIdParam) {
   await ensureSeeded();
   await ensureDefaultSeason();
@@ -340,6 +393,111 @@ export async function getPlayerStats(playerId, seasonIdParam) {
   const seasonId = await resolvePlayerViewSeasonId(playerId, seasonIdParam);
   const seasonRow = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
   const kalkPlayer = await findKalkPlayerForRoster(player, seasonId);
+
+  const kalkPlayerId = player.kalkPlayerId || kalkPlayer?.id;
+  if (kalkPlayerId && seasonId) {
+    const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
+      where: { seasonId, kalkPlayerId },
+      include: { kalkMatch: true },
+      orderBy: { kalkMatch: { date: 'desc' } }
+    });
+
+    if (kalkLogs.length) {
+      const gameLog = kalkLogs.map((row) => {
+        const stats = row.stats && typeof row.stats === 'object' ? row.stats : {};
+        return gameLogEntryFromKalkStats(stats, {
+          kalkMatchId: row.kalkMatchId,
+          date: row.kalkMatch?.date
+            ? row.kalkMatch.date.toISOString().split('T')[0]
+            : null,
+          opponent: row.opponentName
+        });
+      });
+
+      let totalPoints = 0;
+      let totalRebounds = 0;
+      let totalAssists = 0;
+      let totalFgm = 0;
+      let totalFga = 0;
+      let totalThreePm = 0;
+      let totalThreePa = 0;
+      let totalFtm = 0;
+      let totalFta = 0;
+      let totalPlusMinus = 0;
+      let totalMinutesSeconds = 0;
+
+      for (const g of gameLog) {
+        totalPoints += g.pts;
+        totalRebounds += g.reb;
+        totalAssists += g.ast;
+        totalFgm += g.fgm;
+        totalFga += g.fga;
+        totalThreePm += g.three_pm;
+        totalThreePa += g.three_pa;
+        totalFtm += g.ftm;
+        totalFta += g.fta;
+        totalPlusMinus += g.plusMinus;
+        const minParts = String(g.min).split(':');
+        totalMinutesSeconds += (Number(minParts[0]) || 0) * 60 + (Number(minParts[1]) || 0);
+      }
+
+      const gamesCount = gameLog.length;
+      const averages = {
+        ppg: gamesCount > 0 ? totalPoints / gamesCount : 0,
+        rpg: gamesCount > 0 ? totalRebounds / gamesCount : 0,
+        apg: gamesCount > 0 ? totalAssists / gamesCount : 0,
+        efg: totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : 0,
+        ts: (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : 0,
+        plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : 0,
+        gamesPlayed: gamesCount,
+        minutesPlayed: Math.round(totalMinutesSeconds / 60)
+      };
+
+      return {
+        season: seasonRow
+          ? {
+              id: seasonRow.id,
+              slug: seasonRow.slug,
+              label: seasonRow.label,
+              isActive: seasonRow.isActive,
+              startsAt: seasonRow.startsAt,
+              endsAt: seasonRow.endsAt
+            }
+          : null,
+        player: {
+          id: player.id,
+          firstName: player.firstName,
+          lastName: player.lastName,
+          number: player.number,
+          position: player.position,
+          kalkPlayer: kalkPlayer || null
+        },
+        leagueKalk: kalkPlayer
+          ? {
+              pointsTotal: kalkPlayer.pointsTotal,
+              pointsAverage: kalkPlayer.pointsAverage,
+              matchesPlayed: kalkPlayer.matchesPlayed,
+              eval: kalkPlayer.eval,
+              stealsAverage: kalkPlayer.stealsAverage,
+              reboundsAverage: kalkPlayer.reboundsAverage,
+              assistsAverage: kalkPlayer.assistsAverage,
+              turnoversAverage: kalkPlayer.turnoversAverage,
+              foulsAverage: kalkPlayer.foulsAverage,
+              minutesAverage: kalkPlayer.minutesAverage,
+              threePointsPct: kalkPlayer.threePointsPct,
+              twoPointsPct: kalkPlayer.twoPointsPct,
+              ftPct: kalkPlayer.ftPct,
+              attackIndex: kalkPlayer.attackIndex,
+              defenseIndex: kalkPlayer.defenseIndex,
+              threePointStats: kalkPlayer.threePointStats
+            }
+          : null,
+        averages,
+        gameLog,
+        dataSource: 'kalk'
+      };
+    }
+  }
 
   const fullName = `${player.firstName} ${player.lastName}`.trim();
   const allGames = await prisma.game.findMany({
@@ -483,8 +641,88 @@ export async function getPlayerStats(playerId, seasonIdParam) {
 /**
  * Agreguje trendy zespołowe (Four Factors) na przestrzeni sezonu.
  */
+function teamTrendFromBekapakaTeam(bekapaka, meta) {
+  const source = bekapaka.fourFactors || bekapaka;
+  let stats = {
+    fgm: source.fgm || 0,
+    fga: source.fga || 0,
+    three_pm: source.three_pm || 0,
+    fta: source.fta || 0,
+    pts: source.pts || meta.scoreUs || 0,
+    tov: source.tov || source.turnovers || 0,
+    orb: source.orb || source.oreb || 0,
+    min: source.min || '40:00',
+    opp_pts: meta.scoreThem || 0
+  };
+
+  if (stats.fga === 0 && bekapaka.players?.length) {
+    for (const p of bekapaka.players) {
+      stats.fgm += p.fgm || 0;
+      stats.fga += p.fga || 0;
+      stats.three_pm += p.three_pm || 0;
+      stats.fta += p.fta || 0;
+      stats.pts += p.pts || 0;
+      stats.tov += p.tov || 0;
+      stats.orb += p.orb || 0;
+    }
+  }
+
+  const ff = withShootingMetrics(stats);
+  return {
+    gameId: meta.gameId,
+    date: meta.date,
+    opponent: meta.opponent,
+    efg: parseStat(ff.efg) || 0,
+    tov: parseStat(ff.tov) || 0,
+    orb: parseStat(ff.orb) || 0,
+    ftr: parseStat(ff.ftr) || 0,
+    offRtg: parseStat(ff.offRtg) || 0,
+    defRtg: parseStat(ff.defRtg) || 0,
+    pace: parseStat(ff.pace) || 0,
+    dataSource: meta.dataSource || 'kalk'
+  };
+}
+
 export async function getTeamTrends() {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+
+  if (activeSeason) {
+    const kalkMatches = await prisma.kalkMatch.findMany({
+      where: {
+        seasonId: activeSeason.id,
+        isFinished: true,
+        OR: [
+          { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+          { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+          { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
+          { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+        ]
+      },
+      orderBy: { date: 'asc' }
+    });
+
+    if (kalkMatches.length) {
+      const trends = kalkMatches
+        .map((km) => {
+          const view = kalkMatchToGameDetail(km);
+          const bekapaka = view.teams?.find((t) => t.isBekapaka);
+          if (!bekapaka) return null;
+          return teamTrendFromBekapakaTeam(bekapaka, {
+            gameId: km.id,
+            date: km.date.toISOString().split('T')[0],
+            opponent: view.opponent,
+            scoreUs: view.scoreUs,
+            scoreThem: view.scoreThem,
+            dataSource: 'kalk'
+          });
+        })
+        .filter(Boolean);
+      if (trends.length) return trends;
+    }
+  }
+
   const allGames = await prisma.game.findMany({
     orderBy: { date: 'asc' }
   });
@@ -860,11 +1098,38 @@ export async function upsertRoster(player) {
   return player;
 }
 
-// MECZE - Lista wszystkich meczów
+// MECZE - Lista meczów BeKaPaKa (priorytet KalkMatch)
 export async function listGames(filters = {}) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
 
-  // 1. Pobierz mecze z zaimportowanymi statystykami (tabela Game)
+  if (activeSeason) {
+    const kalkMatches = await prisma.kalkMatch.findMany({
+      where: {
+        seasonId: activeSeason.id,
+        OR: [
+          { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+          { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+          { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
+          { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+        ]
+      },
+      orderBy: { date: 'desc' }
+    });
+
+    if (kalkMatches.length) {
+      let items = kalkMatches.map(kalkMatchToListItem);
+      if (filters.result) {
+        items = items.filter((g) => g.result === filters.result);
+      }
+      if (filters.homeAway) {
+        items = items.filter((g) => g.homeAway === filters.homeAway);
+      }
+      return items;
+    }
+  }
+
   const where = {};
   if (filters.result) where.result = filters.result;
   if (filters.homeAway) where.homeAway = filters.homeAway;
@@ -874,69 +1139,29 @@ export async function listGames(filters = {}) {
     orderBy: { date: 'desc' }
   });
 
-  const games = rowGames.map(r => ({
+  return rowGames.map((r) => ({
     ...r,
     id: r.id,
     date: r.date.toISOString(),
     teams: r.teamStats || r.data?.teams,
-    coachNotes: r.notes || r.data?.coachNotes
+    coachNotes: r.notes || r.data?.coachNotes,
+    dataSource: 'legacy'
   }));
-
-  // 2. Pobierz mecze z terminarza (tabela LeagueMatch) dla BeKaPaKa
-  const leagueMatches = await prisma.leagueMatch.findMany({
-    where: {
-      OR: [
-        { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-        { guestTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-        { homeTeam: { contains: 'BOBOLICE', mode: 'insensitive' } },
-        { guestTeam: { contains: 'BOBOLICE', mode: 'insensitive' } }
-      ]
-    },
-    orderBy: { date: 'desc' }
-  });
-
-  const processedGameIds = new Set();
-  const mergedGames = [...games];
-
-  games.forEach(g => {
-    const d = typeof g.date === 'string' ? g.date : g.date.toISOString();
-    const dateStr = d.split('T')[0];
-    const key = `${dateStr}_${g.opponent?.toLowerCase()}`;
-    processedGameIds.add(key);
-  });
-
-  for (const lm of leagueMatches) {
-    const isHome = lm.homeTeam.toLowerCase().includes('bekapaka') || lm.homeTeam.toLowerCase().includes('bobolice');
-    const opponent = isHome ? lm.guestTeam : lm.homeTeam;
-    const dateStr = lm.date.toISOString().split('T')[0];
-    const key = `${dateStr}_${opponent.toLowerCase()}`;
-
-    if (!processedGameIds.has(key)) {
-      let innerResult = null;
-      if (lm.isFinished && lm.scoreHome !== null && lm.scoreAway !== null) {
-        const scoreUs = isHome ? lm.scoreHome : lm.scoreAway;
-        const scoreThem = isHome ? lm.scoreAway : lm.scoreHome;
-        innerResult = scoreUs > scoreThem ? 'W' : 'L';
-      }
-
-      mergedGames.push({
-        id: lm.id,
-        date: lm.date.toISOString(),
-        opponent: opponent,
-        result: innerResult,
-        scoreUs: isHome ? lm.scoreHome : lm.scoreAway,
-        scoreThem: isHome ? lm.scoreAway : lm.scoreHome,
-        homeAway: isHome ? 'home' : 'away',
-        isFromLeagueMatch: true
-      });
-    }
-  }
-
-  return mergedGames.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 export async function getGameById(id) {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+
+  if (activeSeason) {
+    const kalkMatch = await prisma.kalkMatch.findUnique({
+      where: { seasonId_id: { seasonId: activeSeason.id, id: String(id) } }
+    });
+    if (kalkMatch) {
+      return kalkMatchToGameDetail(kalkMatch);
+    }
+  }
 
   const game = await prisma.game.findUnique({
     where: { id }
@@ -1071,9 +1296,9 @@ export async function ingestKalkPlayers(entries) {
     return { newPlayers: [], total: 0 };
   }
 
-  const normalizedEntries = entries.filter((entry) => entry && entry.id_zawodnika);
+  const normalizedEntries = entries.filter((entry) => entry && (entry.id_zawodnika || entry.id));
   const ids = [...new Set(normalizedEntries.map((entry) =>
-    buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika)
+    buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika || entry.id)
   ))];
   const existing = await prisma.kalkPlayer.findMany({
     where: { id: { in: ids } },
@@ -1083,7 +1308,7 @@ export async function ingestKalkPlayers(entries) {
   const newPlayers = [];
 
   const upsertPromises = normalizedEntries.map((entry) => {
-    const playerId = buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika);
+    const playerId = buildKalkPlayerDbId(activeSeason.slug, entry.id_zawodnika || entry.id);
     if (!playerId) return null;
     const matchesValue = parseStat(entry.mecze_rozegrane);
     const record = {
@@ -1109,6 +1334,16 @@ export async function ingestKalkPlayers(entries) {
       threePointsAttempted: entry.three_attempted ? parseInt(entry.three_attempted) : null,
       threePointsPct: parseStat(entry.three_pct),
       threePointStats: entry.three_made ? `${entry.three_made}/${entry.three_attempted} (${entry.three_pct}%)` : null,
+      turnoversTotal: parseStat(entry.str_suma || entry.turnovers_suma),
+      turnoversAverage: parseStat(entry.str_srednia || entry.turnovers_srednia),
+      foulsTotal: parseStat(entry.f_suma || entry.fouls_suma),
+      foulsAverage: parseStat(entry.f_srednia || entry.fouls_srednia),
+      minutesTotal: parseStat(entry.czas_gry_suma),
+      minutesAverage: parseStat(entry.czas_gry_srednia),
+      twoPointsPct: parseStat(entry.proc2_srednia),
+      ftPct: parseStat(entry.proc1_srednia),
+      attackIndex: parseStat(entry.atak_srednia),
+      defenseIndex: parseStat(entry.obrona_srednia),
 
       seasonId: activeSeason.id,
       raw: entry
@@ -1174,110 +1409,7 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
 }
 
 export async function ingestLeagueSchedule(scheduleData) {
-  await ensureSeeded();
-  await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
-  if (!activeSeason || !Array.isArray(scheduleData)) return;
-
-  const processedIds = [];
-
-  const parseScheduleDate = (dateStr) => {
-    if (!dateStr) return new Date();
-    // Format: "21-09-2025 14:40" or "21.09.2025" or ISO
-
-    // 1. Try custom parsing for DD-MM-YYYY or DD.MM.YYYY format first to avoid US-locale month/day swap
-    try {
-      const match = dateStr.match(/^(\d{2})[-.](\d{2})[-.](\d{4})(?:\s+(\d{2}):(\d{2}))?$/);
-      if (match) {
-        const day = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10) - 1; // Month is 0-indexed
-        const year = parseInt(match[3], 10);
-        const hours = match[4] ? parseInt(match[4], 10) : 0;
-        const minutes = match[5] ? parseInt(match[5], 10) : 0;
-
-        const d = new Date(year, month, day, hours, minutes);
-        if (!isNaN(d.getTime())) return d;
-      }
-    } catch (e) {
-      console.error('Custom date parsing error', e);
-    }
-
-    // 2. Try custom parsing for YYYY-MM-DD
-    try {
-      const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{2}):(\d{2}))?$/);
-      if (match) {
-        const year = parseInt(match[1], 10);
-        const month = parseInt(match[2], 10) - 1;
-        const day = parseInt(match[3], 10);
-        const hours = match[4] ? parseInt(match[4], 10) : 0;
-        const minutes = match[5] ? parseInt(match[5], 10) : 0;
-
-        const d = new Date(year, month, day, hours, minutes);
-        if (!isNaN(d.getTime())) return d;
-      }
-    } catch (e) {
-      console.error('Custom ISO date parsing error', e);
-    }
-
-    // 3. Try standard date parsing as fallback
-    const d = new Date(dateStr);
-    if (!isNaN(d.getTime())) return d;
-
-    return new Date(); // Fallback to now
-  };
-
-  for (const match of scheduleData) {
-    const matchDate = parseScheduleDate(match.date);
-    
-    // Compare dates ignoring time for matching stability
-    const startOfCurrentDay = new Date(matchDate);
-    startOfCurrentDay.setHours(0,0,0,0);
-    const endOfCurrentDay = new Date(matchDate);
-    endOfCurrentDay.setHours(23,59,59,999);
-
-    const existingMatch = await prisma.leagueMatch.findFirst({
-      where: {
-        seasonId: activeSeason.id,
-        homeTeam: match.homeTeam,
-        guestTeam: match.guestTeam,
-        date: {
-          gte: startOfCurrentDay,
-          lte: endOfCurrentDay
-        }
-      }
-    });
-
-    const data = {
-      seasonId: activeSeason.id,
-      date: matchDate,
-      homeTeam: match.homeTeam,
-      guestTeam: match.guestTeam,
-      scoreHome: match.scoreHome,
-      scoreAway: match.scoreAway,
-      isFinished: !!match.isFinished
-    };
-
-    if (existingMatch) {
-      await prisma.leagueMatch.update({
-        where: { id: existingMatch.id },
-        data
-      });
-      processedIds.push(existingMatch.id);
-    } else {
-      const created = await prisma.leagueMatch.create({
-        data
-      });
-      processedIds.push(created.id);
-    }
-  }
-
-  // Usuń tylko te mecze dla bieżącego sezonu, które nie zostały przetworzone (nie ma ich w nowo pobranym terminarzu)
-  await prisma.leagueMatch.deleteMany({
-    where: {
-      seasonId: activeSeason.id,
-      id: { notIn: processedIds }
-    }
-  });
+  return ingestLeagueScheduleKalk(scheduleData);
 }
 
 export async function logKalkScrapeRun(run) {
@@ -1288,6 +1420,42 @@ export async function logKalkScrapeRun(run) {
 export async function getLatestKalkScrapeRun() {
   await ensureSeeded();
   return prisma.kalkScrapeRun.findFirst({ orderBy: { createdAt: 'desc' } });
+}
+
+/** Podsumowanie importu KALK (panel Admin). */
+export async function getKalkIngestSummary() {
+  await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+  if (!activeSeason) return null;
+
+  const [kalkMatches, finishedMatches, playerGameLogs, kalkTeams, lastSync] = await Promise.all([
+    prisma.kalkMatch.count({ where: { seasonId: activeSeason.id } }),
+    prisma.kalkMatch.count({ where: { seasonId: activeSeason.id, isFinished: true } }),
+    prisma.kalkPlayerGameLog.count({ where: { seasonId: activeSeason.id } }),
+    prisma.kalkTeam.count({ where: { seasonId: activeSeason.id } }),
+    prisma.kalkSyncRun.findFirst({
+      where: { seasonId: activeSeason.id },
+      orderBy: { startedAt: 'desc' }
+    })
+  ]);
+
+  const leagueWithDetails = await prisma.leagueMatch.count({
+    where: {
+      seasonId: activeSeason.id,
+      kalkMatchId: { not: null }
+    }
+  });
+
+  return {
+    seasonSlug: activeSeason.slug,
+    kalkMatches,
+    finishedMatches,
+    playerGameLogs,
+    kalkTeams,
+    leagueMatchesWithBoxScore: leagueWithDetails,
+    lastSync
+  };
 }
 
 // ============================================
@@ -1412,10 +1580,33 @@ export async function syncPlayersFromKalk() {
     }
   }
 
-  // 3. AGREGACJA STATYSTYK Z MECZÓW
-  await updateRosterStats();
+  await updateRosterStatsFromKalk();
 
   return { synced, errors, total: ourKalkPlayers.length };
+}
+
+/** Statystyki kadry z agregatów KalkPlayer (bez protokołów Game). */
+export async function updateRosterStatsFromKalk() {
+  const roster = await prisma.rosterPlayer.findMany({
+    include: { kalkPlayer: true }
+  });
+
+  for (const player of roster) {
+    const kp = player.kalkPlayer;
+    if (!kp) continue;
+
+    await prisma.rosterPlayer.update({
+      where: { id: player.id },
+      data: {
+        gamesPlayed: kp.matchesPlayed ?? player.gamesPlayed,
+        ppg: kp.pointsAverage ?? player.ppg,
+        rpg: kp.reboundsAverage ?? player.rpg,
+        apg: kp.assistsAverage ?? player.apg,
+        threePercentage: kp.threePointsPct ?? player.threePercentage,
+        ftPercentage: kp.ftPct ?? player.ftPercentage
+      }
+    });
+  }
 }
 
 // Nowa funkcja do przeliczania statystyk na bazie tabeli Game
@@ -1902,14 +2093,55 @@ function hasValidLeagueMatchDetails(match) {
   );
 }
 
-// Helper: statystyki zaawansowane rywala z meczów ligowych (protokoły w LeagueMatch.details)
+function leagueMatchRowFromKalk(km) {
+  return {
+    id: `kalk-${km.id}`,
+    date: km.date,
+    homeTeam: km.homeTeamName,
+    guestTeam: km.guestTeamName,
+    scoreHome: km.scoreHome,
+    scoreAway: km.scoreAway,
+    isFinished: km.isFinished,
+    details: boxScoreToLeagueDetails(km.boxScore)
+  };
+}
+
+function teamNameMatchesOpponent(teamName, simplifiedName) {
+  if (!teamName || !simplifiedName) return false;
+  return teamName.toLowerCase().includes(simplifiedName.toLowerCase());
+}
+
+// Helper: statystyki zaawansowane rywala z box score KALK (LeagueMatch.details)
 async function getOpponentAdvancedStats(opponentName) {
   if (!opponentName) return null;
 
-  // Simplify name: "GLAZURIX-Salon Łazienek" -> "GLAZURIX"
   const simplifiedName = opponentName.split('-')[0].trim();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
 
-  // Szukaj w głąb historii — ostatnie mecze często nie mają jeszcze protokołu w DB
+  let kalkDerived = [];
+  if (activeSeason) {
+    const kalkMatches = await prisma.kalkMatch.findMany({
+      where: {
+        seasonId: activeSeason.id,
+        isFinished: true,
+        OR: [
+          { homeTeamName: { contains: simplifiedName, mode: 'insensitive' } },
+          { guestTeamName: { contains: simplifiedName, mode: 'insensitive' } }
+        ]
+      },
+      orderBy: { date: 'desc' },
+      take: 25
+    });
+    kalkDerived = kalkMatches
+      .filter(
+        (km) =>
+          teamNameMatchesOpponent(km.homeTeamName, simplifiedName) ||
+          teamNameMatchesOpponent(km.guestTeamName, simplifiedName)
+      )
+      .map(leagueMatchRowFromKalk);
+  }
+
   const matches = await prisma.leagueMatch.findMany({
     where: {
       OR: [
@@ -1922,8 +2154,19 @@ async function getOpponentAdvancedStats(opponentName) {
     take: 25
   });
 
-  const matchesWithDetails = matches.filter(hasValidLeagueMatchDetails);
-  const latestFinished = matches[0];
+  const leagueWithDetails = matches.filter(hasValidLeagueMatchDetails);
+  const seenDates = new Set();
+  const matchesWithDetails = [];
+  for (const row of [...kalkDerived, ...leagueWithDetails]) {
+    const key = `${row.date?.toISOString?.() || row.date}_${row.homeTeam}_${row.guestTeam}`;
+    if (seenDates.has(key)) continue;
+    if (!hasValidLeagueMatchDetails(row)) continue;
+    seenDates.add(key);
+    matchesWithDetails.push(row);
+  }
+  matchesWithDetails.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  const latestFinished = matchesWithDetails[0] || matches[0] || kalkDerived[0];
 
   if (!matchesWithDetails.length) {
     if (!latestFinished) return null;
@@ -1936,6 +2179,7 @@ async function getOpponentAdvancedStats(opponentName) {
       personnel: { shooters: [], paintProtectors: [], playmakers: [] },
       fallbackFromPreviousMatch: true,
       fallbackBasicOnly: true,
+      dataSource: kalkDerived.length ? 'kalk' : 'schedule',
       sourceMatchDate: latestFinished.date
         ? latestFinished.date.toISOString().split('T')[0]
         : null,

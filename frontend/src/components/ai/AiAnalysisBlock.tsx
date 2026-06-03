@@ -242,7 +242,7 @@ export default function AiAnalysisBlock({
                   {title}
                 </h3>
                 {metaLine ? (
-                  <p className="mt-1 text-[11px] font-medium text-bkpk-text-muted">{metaLine}</p>
+                  <p className="mt-1 text-xs font-medium text-bkpk-text-secondary">{metaLine}</p>
                 ) : (
                   <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted">
                     {hasContent ? 'Raport dostępny' : 'Brak raportu'}
@@ -263,11 +263,11 @@ export default function AiAnalysisBlock({
               {hasContent ? (
                 <BkpkButton
                   variant="primary"
-                  size="sm"
+                  size="md"
                   onClick={handleOpenModal}
                   disabled={loading}
                   className={cn(
-                    'min-h-9 font-black uppercase tracking-widest shadow-bkpk-primary/20 !py-2 text-xs',
+                    'min-h-9 font-black uppercase tracking-widest shadow-bkpk-primary !py-2 text-xs',
                     compactActions && 'flex-1'
                   )}
                   aria-haspopup="dialog"
@@ -300,7 +300,7 @@ export default function AiAnalysisBlock({
                 type="button"
                 onClick={() => onGenerate(true)}
                 disabled={loading}
-                className="self-start text-left text-[10px] font-medium text-bkpk-text-muted underline-offset-2 hover:text-bkpk-text-secondary hover:underline disabled:opacity-50"
+                className="self-start text-left text-xs font-medium text-bkpk-text-secondary underline-offset-2 hover:text-bkpk-text-primary hover:underline disabled:opacity-50"
               >
                 Wymuś ponowną generację
               </button>
@@ -374,7 +374,7 @@ export default function AiAnalysisBlock({
                             {title}
                           </h2>
                           {metaLine ? (
-                            <p className="text-[11px] font-medium text-bkpk-text-muted mt-1">{metaLine}</p>
+                            <p className="text-xs font-medium text-bkpk-text-secondary mt-1">{metaLine}</p>
                           ) : null}
                         </div>
                       </div>

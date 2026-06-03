@@ -41,7 +41,7 @@ export default function GameCenter() {
             transition={{ delay: 0.1 }}
             className="text-bkpk-text-muted text-lg"
           >
-            Analiza meczów, statystyki i szczegółowe protokoły
+            Analiza meczów i box score z oficjalnej strony KALK
           </motion.p>
         </header>
 

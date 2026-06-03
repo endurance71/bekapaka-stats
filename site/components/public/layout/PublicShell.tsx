@@ -38,6 +38,17 @@ export function PublicShell({
       </a>
       <header className='site-header'>
         <div className='container site-header__inner'>
+          <button
+            ref={menuButtonRef}
+            className='mobile-menu-open-btn'
+            type='button'
+            onClick={openMenu}
+            aria-label='Otwórz menu nawigacji'
+            aria-expanded={isMenuOpen}
+          >
+            <MenuIcon />
+          </button>
+
           <ClubLogo logoUrl={logoUrl} />
 
           <div className='desktop-nav-wrapper'>
@@ -49,17 +60,6 @@ export function PublicShell({
               Panel Klubu
             </button>
           </div>
-
-          <button
-            ref={menuButtonRef}
-            className='mobile-menu-open-btn'
-            type='button'
-            onClick={openMenu}
-            aria-label='Otwórz menu nawigacji'
-            aria-expanded={isMenuOpen}
-          >
-            <MenuIcon />
-          </button>
         </div>
       </header>
 

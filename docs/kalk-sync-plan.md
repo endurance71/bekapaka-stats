@@ -24,8 +24,7 @@ Stan odniesienia: scraper `backend/scripts/kalk_scraper.py` (Scrapling), import 
 
 - Pełny scrape ręczny: Admin → `POST /api/scrape/kalk/div2/run` (timeout 15 min).
 - Bootstrap przy pustej bazie (~5 s po starcie backendu).
-- Import: tabela (regular + play-out), terminarz (kolejki + merge BeKaPaKa), zawodnicy + 6 kategorii statystyk.
-- Model `KalkScrapeRun` w Prisma — **funkcje `logKalkScrapeRun` / `getLatestKalkScrapeRun` nie są podpięte do pipeline**.
+- Import v2: tabela, play-out, terminarz (delta, `kalkMatchId`), wszystkie kategorie statystyk, `teams`, `matches` (box score), `playerGameLogs`, `KalkSyncRun`.
 
 ### 2.2 Krytyczne luki
 
@@ -39,10 +38,12 @@ Stan odniesienia: scraper `backend/scripts/kalk_scraper.py` (Scrapling), import 
 | **Plik `kalk_stats.json` jako jedyne źródło pośrednie** | Po restarcie brak audytu „co przyszło z KALK w danym dniu” poza DB operacyjną. |
 | **Brak cron na VPS** | Aktualizacje tylko ręcznie lub przy deploy / bootstrap. |
 
-### 2.3 Czego świadomie **nie** scrapujemy (osobne pipeline)
+### 2.3 Box score meczów (warstwa B — zaimplementowane w v2)
 
-- Protokoły / box score meczów BeKaPaKa → `parser.js` + `POST /api/import` + model `Game`.
-- Statystyki per mecz rywali na KALK (link „Statystyki” przy meczu) — poza zakresem v1 syncu ligowego.
+- **Wszystkie zakończone mecze Dywizji II:** `GET /mecz,...,0.html` → `kalk_stats.json` → `ingestKalkMatches` → `KalkMatch` + `LeagueMatch.details` (scouting / four factors).
+- Szacunek: **~60–90 HTTP** na pełny sync sezonu (przy rate limit 1 s ≈ 1,5–2 min samych meczów).
+- **Full sync łącznie:** ~110–150 HTTP, ~3–4 min (liga + mecze + log tab 3 kadry BeKaPaKa).
+- Import protokołów (`parser.js`, `POST /api/import`) — **wyłączony**; model `Game` pozostaje tylko jako archiwum read-only.
 
 ---
 

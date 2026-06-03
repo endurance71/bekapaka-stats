@@ -40,14 +40,14 @@ export function NextChallengeWidget({
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center gap-3 text-bkpk-text-muted">
-                        <Calendar className="w-4 h-4 text-bkpk-primary/60" />
+                        <Calendar className="w-4 h-4 text-bkpk-primary shrink-0" />
                         <div className="flex flex-col">
                             <span className="text-xs uppercase font-bold text-bkpk-text-secondary">Data</span>
                             <span className="text-sm font-bold text-bkpk-text-primary">{date} @ {time}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3 text-bkpk-text-muted">
-                        <MapPin className="w-4 h-4 text-bkpk-primary/60" />
+                        <MapPin className="w-4 h-4 text-bkpk-primary shrink-0" />
                         <div className="flex flex-col">
                             <span className="text-xs uppercase font-bold text-bkpk-text-secondary">Lokalizacja</span>
                             <span className="text-sm font-bold text-bkpk-text-primary">{location} ({homeAway})</span>

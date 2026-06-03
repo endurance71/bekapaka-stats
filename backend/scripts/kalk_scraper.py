@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Kalk Koszalin Dywizja II stats scraper.
+Kalk Koszalin Dywizja II stats scraper (v2 — KALK-only).
 
-Pobiera stronę dywizji i wchodzi do zakładek Tabela, Terminarz i Statystyki indywidualne.
-Dla każdego zawodnika z sekcji statystyk odwiedza profil i zapisuje: EVAL, sumę punktów,
-średnią punktów oraz rozegrane mecze. Wynik trafia do `kalk_stats.json`.
+Pobiera: tabelę, play-out, terminarz (z linkami do meczów), wszystkie kategorie statystyk ligowych,
+drużyny, przewinienia, box score każdego zakończonego meczu oraz log „mecz po meczu” kadry BeKaPaKa.
+Wynik trafia do `kalk_stats.json`.
 
-Wymaga: requests, beautifulsoup4
+Wymaga: requests, beautifulsoup4, opcjonalnie scrapling
 """
 
 import json
@@ -20,6 +20,20 @@ from urllib.parse import urljoin, urlparse
 
 import requests
 from bs4 import BeautifulSoup
+
+from kalk_parsers import (
+    PARSER_VERSION,
+    discover_stat_category_urls,
+    extract_category_stats_table,
+    extract_match_id_from_url,
+    extract_player_id_from_url,
+    extract_team_page,
+    extract_teams_index,
+    extract_violations,
+    is_our_team,
+    parse_match_page,
+    parse_player_game_log_page,
+)
 
 try:
     from scrapling.fetchers import Fetcher
@@ -44,7 +58,8 @@ SECTION_KEYWORDS: Dict[str, List[str]] = {
     'tabela': ['tabela'],
     'tabela_play_out': ['tabela play out'],
     'terminarz': ['terminarz'],
-    'statystyki': ['statystyki indywidualne', 'statystyki zawodników', 'statystyki']
+    'statystyki': ['statystyki indywidualne', 'statystyki zawodników', 'statystyki'],
+    'druzyny': ['drużyny', 'druzyny'],
 }
 
 STAT_KEYWORDS: Dict[str, List[str]] = {
@@ -153,13 +168,6 @@ def extract_profile_stats(soup: BeautifulSoup) -> Dict[str, Optional[float]]:
                     stats[key] = parse_number(match.group(1))
     return stats
 
-def is_our_team(team_value: Optional[str]) -> bool:
-    if not team_value:
-        return False
-    text = normalize_query(team_value)
-    return any(keyword in text for keyword in OUR_TEAM_KEYWORDS)
-
-
 def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[Dict[str, any]]:
     """Pobiera skrócone dane wszystkich zawodników (do rankingu)."""
     table = soup.find('table')
@@ -202,84 +210,13 @@ def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[
     return players
 
 
-def find_category_urls(stats_soup: BeautifulSoup) -> Dict[str, str]:
-    urls = {}
-    for option in stats_soup.find_all('option'):
-        val = option.get('value', '')
-        if not val:
-            continue
-        full_url = urljoin(BASE_URL, val)
-        if 'eval' in val:
-            urls['eval'] = full_url
-        elif 'zbiorki' in val:
-            urls['rebounds'] = full_url
-        elif 'asysty' in val:
-            urls['assists'] = full_url
-        elif 'prz' in val:
-            urls['steals'] = full_url
-        elif 'bl' in val:
-            urls['blocks'] = full_url
-        elif 'proc3' in val:
-            urls['three_pct'] = full_url
-    return urls
-
-
-def extract_category_stats(session: requests.Session, url: str, category_name: str) -> Dict[str, Dict[str, any]]:
-    """Pobiera i ekstrahuje statystyki z tabeli danej kategorii."""
+def fetch_category_stats(session: requests.Session, url: str, category_name: str) -> Dict[str, Dict[str, any]]:
     try:
         soup = fetch_soup(session, url)
     except Exception as exc:
-        logging.error(f'Błąd pobierania statystyk dla {category_name}: {exc}')
+        logging.error('Błąd pobierania statystyk dla %s: %s', category_name, exc)
         return {}
-
-    table = soup.find('table')
-    if not table:
-        return {}
-
-    stats = {}
-    for row in table.find_all('tr'):
-        if row.find('th'): continue
-        cells = row.find_all('td')
-        if not cells or len(cells) < 4: continue
-
-        link = row.find('a', href=True)
-        if not link: continue
-
-        name = link.get_text(strip=True)
-        profile_url = urljoin(BASE_URL, link['href'])
-        player_id = generate_player_id(profile_url, name)
-
-        if category_name == 'three_pct':
-            try:
-                pct_str = cells[3].get_text(strip=True).replace(',', '.')
-                pct = float(pct_str) if pct_str else 0.0
-                celne_oddane = cells[4].get_text(strip=True)
-                made, att = 0, 0
-                if '/' in celne_oddane:
-                    m_parts = celne_oddane.split('/')
-                    made = int(m_parts[0].strip())
-                    att = int(m_parts[1].strip())
-                stats[player_id] = {
-                    'three_pct': pct,
-                    'three_made': made,
-                    'three_attempted': att
-                }
-            except Exception as e:
-                logging.warning(f"Error parsing 3pt row for {name}: {e}")
-        else:
-            try:
-                suma_str = cells[3].get_text(strip=True).replace(',', '.')
-                suma = float(suma_str) if suma_str else 0.0
-                srednia_str = cells[5].get_text(strip=True).replace(',', '.')
-                srednia = float(srednia_str) if srednia_str else 0.0
-                stats[player_id] = {
-                    f'{category_name}_suma': suma,
-                    f'{category_name}_srednia': srednia
-                }
-            except Exception as e:
-                logging.warning(f"Error parsing {category_name} row for {name}: {e}")
-
-    return stats
+    return extract_category_stats_table(soup, category_name)
 
 
 def extract_league_table(soup: BeautifulSoup) -> List[Dict[str, any]]:
@@ -487,6 +424,8 @@ def main() -> None:
                             # Wynik
                             score_link = m_div.find('a', class_='bialy_link')
                             score_text = score_link.get_text(strip=True) if score_link else "-:-"
+                            mecz_url = urljoin(BASE_URL, score_link['href']) if score_link and score_link.get('href') else None
+                            mecz_id = extract_match_id_from_url(mecz_url or '')
                             
                             # Zespoły - to jest trudniejsze, bo są bezpośrednio w divie jako tekst
                             # Pobierz cały tekst i usuń to, co w dzieciach
@@ -526,7 +465,9 @@ def main() -> None:
                                 'scoreHome': score_home,
                                 'scoreAway': score_away,
                                 'isFinished': is_finished,
-                                'roundUrl': round_url
+                                'roundUrl': round_url,
+                                'meczUrl': mecz_url,
+                                'meczId': mecz_id,
                             })
 
                         except Exception as e:
@@ -598,6 +539,7 @@ def main() -> None:
 
     # --- ZAWODNICY (TOP STRZELCY & INNE KATEGORIE) ---
     players_list = []
+    stat_category_keys: List[str] = []
     stats_url = section_urls.get('statystyki')
     if stats_url:
         try:
@@ -607,27 +549,134 @@ def main() -> None:
             logging.info('Pobrano listę podstawową %d zawodników.', len(players_list))
             
             # Dynamiczne pobieranie dodatkowych kategorii
-            cat_urls = find_category_urls(stats_soup)
-            logging.info(f"Znalezione URL-e kategorii: {cat_urls}")
-            
+            cat_urls = discover_stat_category_urls(stats_soup, BASE_URL)
+            stat_category_keys = list(cat_urls.keys())
+            logging.info('Znalezione kategorie statystyk: %s', stat_category_keys)
+
+            category_key_map = {
+                'rebounds': 'zbiorki',
+                'assists': 'asysty',
+                'steals': 'prz',
+                'blocks': 'bl',
+                'three_pct': 'proc3',
+            }
+
             for cat_name, cat_url in cat_urls.items():
-                logging.info(f"Pobieram statystyki dla kategorii: {cat_name}...")
-                cat_stats = extract_category_stats(session, cat_url, cat_name)
+                ingest_key = category_key_map.get(cat_name, cat_name)
+                logging.info('Pobieram statystyki: %s', cat_name)
+                cat_stats = fetch_category_stats(session, cat_url, ingest_key)
                 for p_id, stats_data in cat_stats.items():
                     if p_id in players_dict:
                         players_dict[p_id].update(stats_data)
-            
+                    else:
+                        players_dict[p_id] = {
+                            'id_zawodnika': p_id,
+                            'imie_nazwisko': p_id,
+                            **stats_data,
+                        }
+
             players_list = list(players_dict.values())
             logging.info('Pobrano i scalono statystyki %d zawodników z ligi.', len(players_list))
         except Exception as exc:
             logging.error('Błąd pobierania statystyk: %s', exc)
 
+    # --- DRUŻYNY (indeks + strony klubów) ---
+    teams_index: List[Dict[str, any]] = []
+    teams_enriched: List[Dict[str, any]] = []
+    try:
+        druzyny_url = section_urls.get('druzyny') or urljoin(BASE_URL, 'poddzial,druzyny,31.html')
+        druzyny_soup = fetch_soup(session, druzyny_url)
+        teams_index = extract_teams_index(druzyny_soup, BASE_URL)
+        logging.info('Indeks drużyn: %d', len(teams_index))
+        for team in teams_index:
+            try:
+                club_soup = fetch_soup(session, team['profile_url'])
+                extra = extract_team_page(club_soup)
+                teams_enriched.append({**team, **extra})
+            except Exception as exc:
+                logging.warning('Błąd strony klubu %s: %s', team.get('name'), exc)
+                teams_enriched.append(team)
+    except Exception as exc:
+        logging.error('Błąd pobierania drużyn: %s', exc)
+
+    # --- PRZEWINIENIA ---
+    violations: List[Dict[str, any]] = []
+    try:
+        viol_url = urljoin(BASE_URL, 'poddzial,przewinienia,69.html')
+        viol_soup = fetch_soup(session, viol_url)
+        violations = extract_violations(viol_soup)
+        logging.info('Przewinienia: %d wierszy', len(violations))
+    except Exception as exc:
+        logging.error('Błąd przewinien: %s', exc)
+
+    # --- MECZE (box score) ---
+    matches_scraped: List[Dict[str, any]] = []
+    seen_match_ids = set()
+    finished_with_url = [
+        m for m in schedule_matches
+        if m.get('isFinished') and m.get('meczUrl')
+    ]
+    logging.info('Pobieram box score dla %d zakończonych meczów...', len(finished_with_url))
+    for m in finished_with_url:
+        mid = m.get('meczId')
+        if not mid or mid in seen_match_ids:
+            continue
+        seen_match_ids.add(mid)
+        mecz_url = m['meczUrl']
+        try:
+            match_soup = fetch_soup(session, mecz_url)
+            parsed = parse_match_page(match_soup, mecz_url)
+            parsed['scheduleDate'] = m.get('date')
+            parsed['roundUrl'] = m.get('roundUrl')
+            matches_scraped.append(parsed)
+        except Exception as exc:
+            logging.warning('Błąd parsowania meczu %s: %s', mecz_url, exc)
+
+    logging.info('Pobrano box score: %d meczów', len(matches_scraped))
+
+    # --- LOGI MECZOWE KADRY BeKaPaKa (tab 3) ---
+    player_game_logs: List[Dict[str, any]] = []
+    our_players = [p for p in players_list if is_our_team(p.get('druzyna'))]
+    logging.info('Log meczowy: %d zawodników BeKaPaKa', len(our_players))
+    for p in our_players:
+        profile_url = p.get('profile_url')
+        if not profile_url:
+            continue
+        log_url = re.sub(r',(\d+),0\.html$', r',\1,3.html', profile_url)
+        if log_url == profile_url:
+            log_url = profile_url.replace(',0.html', ',3.html')
+        try:
+            log_soup = fetch_soup(session, log_url)
+            rows = parse_player_game_log_page(log_soup, p.get('imie_nazwisko', ''))
+            for row in rows:
+                row['kalk_player_id'] = p.get('id_zawodnika')
+                row['id_zawodnika'] = p.get('id_zawodnika')
+            player_game_logs.extend(rows)
+        except Exception as exc:
+            logging.warning('Błąd logu meczowego %s: %s', p.get('imie_nazwisko'), exc)
+
+    http_estimate = len(matches_scraped) + len(teams_enriched) + len(our_players) + 40
+
     final_data = {
+        'version': 2,
         'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'scrapeManifest': {
+            'parserVersion': PARSER_VERSION,
+            'httpEstimate': http_estimate,
+            'matchesScraped': len(matches_scraped),
+            'playersCount': len(players_list),
+            'teamsCount': len(teams_enriched),
+            'playerGameLogRows': len(player_game_logs),
+        },
+        'statCategories': stat_category_keys,
         'table': league_table,
         'playout_table': playout_table,
         'schedule': schedule_matches,
-        'players': players_list
+        'players': players_list,
+        'teams': teams_enriched,
+        'matches': matches_scraped,
+        'violations': violations,
+        'playerGameLogs': player_game_logs,
     }
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -642,6 +691,8 @@ def main() -> None:
     logging.info('Tabela play-out: %d drużyn', len(playout_table))
     logging.info('Mecze: %d spotkań', len(schedule_matches))
     logging.info('Zawodnicy: %d (wszyscy)', len(players_list))
+    logging.info('Mecze (box score): %d', len(matches_scraped))
+    logging.info('Logi meczowe BeKaPaKa: %d wierszy', len(player_game_logs))
     logging.info('Zapisano do: %s', OUTPUT_FILE)
     logging.info('=' * 60)
 

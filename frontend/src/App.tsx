@@ -18,7 +18,6 @@ const Administration = lazy(() => import('./pages/Administration'));
 const GameCenter = lazy(() => import('./pages/GameCenter'));
 const GameDetail = lazy(() => import('./pages/GameDetail'));
 import PlayerProfile from './pages/PlayerProfile';
-const Protocols = lazy(() => import('./pages/Protocols'));
 const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 
@@ -65,7 +64,7 @@ export default function App() {
                       />
                       <Route path="/games" element={<GameCenter />} />
                       <Route path="/games/:id" element={<GameDetail />} />
-                      <Route path="/protocols" element={<Protocols />} />
+                      <Route path="/protocols" element={<Navigate to="/games" replace />} />
                     </Routes>
                   </Suspense>
                 </Shell>

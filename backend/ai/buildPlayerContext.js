@@ -129,7 +129,7 @@ export async function buildPlayerContext(playerId) {
     throw new AiValidationError('Zawodnik nie znaleziony');
   }
   if (!stats.gameLog || stats.gameLog.length < 3) {
-    throw new AiValidationError('Za mało meczów w bazie (minimum 3 z protokołami)');
+    throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK, log zawodnika tab 3)');
   }
 
   const roster = await prisma.rosterPlayer.findUnique({

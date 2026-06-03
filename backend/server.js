@@ -17,8 +17,12 @@ import {
   ingestLeagueTable,
   ingestLeagueSchedule,
   ingestKalkPlayers,
+  ingestKalkTeams,
+  ingestKalkMatches,
+  ingestKalkPlayerGameLogs,
   logKalkScrapeRun,
   getLatestKalkScrapeRun,
+  getKalkIngestSummary,
   listKalkPlayers,
   resetData,
   syncPlayersFromKalk,
@@ -44,10 +48,9 @@ import {
   getLeagueTrends,
   getTeamStatsSummary,
   listSeasons,
-  setPlayerSeasonPreference
+  setPlayerSeasonPreference,
+  getActiveSeason
 } from './dataStore.js';
-import { parseImportPayload } from './parser.js';
-import { withShootingMetrics } from './metrics.js';
 import {
   generateGameAnalysis,
   generatePlayerDevelopment,
@@ -197,45 +200,12 @@ app.get(['/api/dashboard', '/dashboard'], async (req, res) => {
 });
 
 // --- IMPORT ---
-app.post(['/api/import', '/import'], async (req, res) => {
-  try {
-    const parsed = parseImportPayload(req.body);
-
-    if (parsed.source === 'markdown') {
-      return res.json({
-        message: 'Wykryto Markdown.',
-        preview: parsed.game,
-        validation: parsed.validation
-      });
-    }
-
-    const game = parsed.game;
-    if (!game || !game.id) {
-      return res.status(400).json({ error: 'Brak danych meczu.' });
-    }
-
-    // Dodaj metryki do zawodników
-    const bekapaka = game.teams?.find((t) => t.isBekapaka) || game.teams?.[0];
-    if (bekapaka && bekapaka.players) {
-      bekapaka.players = bekapaka.players.map((p) => ({
-        ...p,
-        metrics: withShootingMetrics({
-          fgm: p.fgm,
-          fga: p.fga,
-          three_pm: p.three_pm,
-          fta: p.fta,
-          pts: p.pts,
-          tov: p.tov
-        })
-      }));
-    }
-
-    await saveGame(game);
-    res.json({ message: 'Mecz zaimportowany pomyślnie.', game });
-  } catch (err) {
-    console.error('Import error:', err);
-    res.status(400).json({ error: err.message });
-  }
+app.post(['/api/import', '/import'], async (_req, res) => {
+  res.status(410).json({
+    error: 'Import protokołów został wyłączony. Użyj synchronizacji KALK w panelu Admin.',
+    code: 'PROTOCOL_IMPORT_DEPRECATED',
+    scrapeEndpoint: '/api/scrape/kalk/div2/run'
+  });
 });
 
 // --- GAMES API ---
@@ -505,6 +475,15 @@ const updateScraperLog = (msg) => {
 };
 
 app.get(['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'], authenticateToken, requireAdmin, (req, res) => res.json(scraperState));
+
+app.get(['/api/kalk/ingest-summary', '/kalk/ingest-summary'], authenticateToken, requireAdmin, async (_req, res) => {
+  try {
+    const summary = await getKalkIngestSummary();
+    res.json(summary);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 /**
  * Ensures default admin account exists. Never overwrites password on existing users
  * (password reset on scrape/restart was causing intermittent login failures).
@@ -610,6 +589,25 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     }
     await ingestLeagueSchedule(stats.schedule || []);
     const playersIngest = await ingestKalkPlayers(stats.players || []);
+    const teamsIngest = await ingestKalkTeams(stats.teams || []);
+    const matchesIngest = await ingestKalkMatches(stats.matches || []);
+    const logsIngest = await ingestKalkPlayerGameLogs(stats.playerGameLogs || []);
+
+    const activeSeason = await getActiveSeason();
+    if (activeSeason) {
+      await prisma.kalkSyncRun.create({
+        data: {
+          seasonId: activeSeason.id,
+          mode: 'full',
+          trigger: triggerLabel,
+          status: 'success',
+          httpEstimate: stats.scrapeManifest?.httpCount ?? null,
+          sectionsChanged: stats.scrapeManifest?.sections || [],
+          probeHashes: stats.scrapeManifest || null,
+          finishedAt: new Date()
+        }
+      });
+    }
 
     scraperState.step = 'synchronizacja';
     scraperState.message = 'Synchronizacja zawodników...';
@@ -626,8 +624,12 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     return {
       success: true,
       source: 'scrapling',
-      teams: Array.isArray(stats.table) ? stats.table.length : 0,
-      matches: Array.isArray(stats.schedule) ? stats.schedule.length : 0,
+      version: stats.version || 1,
+      teams: teamsIngest?.total ?? (Array.isArray(stats.table) ? stats.table.length : 0),
+      schedule: Array.isArray(stats.schedule) ? stats.schedule.length : 0,
+      kalkMatches: matchesIngest?.total || 0,
+      kalkMatchesLinked: matchesIngest?.linked || 0,
+      playerGameLogs: logsIngest?.total || 0,
       players: playersIngest?.total || 0
     };
   } catch (err) {
