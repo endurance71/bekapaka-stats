@@ -9,6 +9,13 @@ export const strapiCollectionSchema = z.object({
   data: z.union([z.array(strapiEntrySchema), strapiEntrySchema]).optional()
 })
 
+export const newsAttachmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  url: z.string(),
+  mime: z.string().optional()
+})
+
 export const newsPostSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -16,7 +23,8 @@ export const newsPostSchema = z.object({
   excerpt: z.string(),
   content: z.string(),
   publishedAt: z.string(),
-  coverImageUrl: z.string().optional()
+  coverImageUrl: z.string().optional(),
+  attachments: z.array(newsAttachmentSchema).default([])
 })
 
 export const eventSchema = z.object({
@@ -132,6 +140,7 @@ export const gameSummarySchema = z.object({
 })
 
 export type NewsPost = z.infer<typeof newsPostSchema>
+export type NewsAttachment = z.infer<typeof newsAttachmentSchema>
 export type EventItem = z.infer<typeof eventSchema>
 export type SponsorItem = z.infer<typeof sponsorSchema>
 export type DocumentItem = z.infer<typeof documentSchema>

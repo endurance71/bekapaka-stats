@@ -2757,6 +2757,21 @@
   text-underline-offset: 2px;
 }
 
+.article-attachments {
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border);
+}
+
+.article-attachments__title {
+  margin: 0 0 var(--space-4);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
 /* Document Page List */
 .documents-list {
   list-style: none;

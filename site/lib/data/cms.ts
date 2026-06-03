@@ -9,6 +9,7 @@ import {
   type DocumentItem,
   type EventItem,
   type HomepageSection,
+  type NewsAttachment,
   type NewsPost,
   type SponsorItem
 } from './schemas'
@@ -33,6 +34,37 @@ function mapMediaUrl(value: unknown): string | undefined {
     }
   }
   return undefined
+}
+
+/** Map Strapi media (single or multiple) to public attachment links. */
+function mapMediaAttachments(value: unknown): NewsAttachment[] {
+  if (!value) return []
+
+  const rawList = Array.isArray(value)
+    ? value
+    : typeof value === 'object' && value !== null && Array.isArray((value as { data?: unknown }).data)
+      ? ((value as { data: unknown[] }).data)
+      : typeof value === 'object' && value !== null && (value as { data?: unknown }).data
+        ? [((value as { data: unknown }).data)]
+        : []
+
+  const attachments: NewsAttachment[] = []
+
+  rawList.forEach((entry, index) => {
+    if (!entry || typeof entry !== 'object') return
+    const record = entry as Record<string, unknown>
+    const url = mapMediaUrl(entry)
+    if (!url) return
+    const mime = sanitizeText(record.mime, '')
+    attachments.push({
+      id: sanitizeText(record.id, String(index)),
+      name: sanitizeText(record.name, sanitizeText(record.alternativeText, `Załącznik ${index + 1}`)),
+      url,
+      ...(mime ? { mime } : {})
+    })
+  })
+
+  return attachments
 }
 
 function stateFromArray<T>(items: T[], errorMessage?: string): DataState<T[]> {
@@ -266,7 +298,9 @@ export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
 export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]>> {
   try {
     const response = await fetchJsonState<unknown>(
-      cmsPath(`/api/news-posts?sort=publishedAt:desc&pagination[limit]=${limit}&populate=coverImage`),
+      cmsPath(
+        `/api/news-posts?sort=publishedAt:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true`
+      ),
       { headers: cmsHeaders(), revalidate: 300 }
     )
     if (response.status === 'error') {
@@ -285,7 +319,8 @@ export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]
           excerpt: excerptRaw || excerptFromContent(content),
           content,
           publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
-          coverImageUrl: mapMediaUrl(item.coverImage)
+          coverImageUrl: mapMediaUrl(item.coverImage),
+          attachments: mapMediaAttachments(item.attachments)
         }
       })
       .map((item) => newsPostSchema.parse(item))

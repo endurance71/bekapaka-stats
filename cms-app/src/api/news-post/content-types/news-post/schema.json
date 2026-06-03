@@ -15,6 +15,11 @@
     "excerpt": { "type": "text" },
     "content": { "type": "richtext" },
     "coverImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
+    "attachments": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": ["images", "files", "videos", "audios"]
+    },
     "publishedAtCustom": { "type": "datetime" },
     "tags": { "type": "json" },
     "isPinned": { "type": "boolean", "default": false }
