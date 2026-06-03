@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { AlertCircle, Upload, X, Save } from 'lucide-react';
+import { AlertCircle, Upload, Save } from 'lucide-react';
+import Modal from '../../components/Modal';
 import type { Game } from './types';
 
 interface ImportModalProps {
@@ -30,19 +31,8 @@ export default function ImportModal({
   onFileUpload,
 }: ImportModalProps) {
   return (
-    <div className="fixed inset-0 bg-bkpk-overlay-strong flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div className="bg-bkpk-surface-elevated border border-bkpk-border-strong rounded-2xl w-[600px] max-w-full overflow-hidden shadow-xl animate-scale-in">
-        <div className="flex items-center justify-between p-6 border-b border-bkpk-border-strong bg-bkpk-surface-tint-1">
-          <h3 className="text-xl font-bold font-outfit text-bkpk-text-primary">Dodaj / importuj protokół</h3>
-          <button
-            className="text-bkpk-text-muted hover:text-bkpk-text-primary transition-colors p-1"
-            onClick={onClose}
-          >
-            <X size={24} />
-          </button>
-        </div>
-
-        <div className="p-6 flex flex-col gap-6">
+    <Modal isOpen={true} onClose={onClose} title="Dodaj / importuj protokół" maxWidth="max-w-[600px]">
+      <div className="flex flex-col gap-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="flex flex-col gap-1.5 text-xs text-bkpk-text-muted font-bold uppercase tracking-wider">
               Data meczu
@@ -116,7 +106,7 @@ export default function ImportModal({
           </div>
         )}
 
-        <div className="flex justify-end gap-3 p-6 border-t border-bkpk-border-strong bg-bkpk-surface-tint-1">
+        <div className="flex justify-end gap-3 p-6 border-t border-bkpk-border-strong bg-bkpk-surface-tint-1 mt-6 -mx-6 -mb-6 rounded-b-xl">
           {/* Parse button if content but no preview */}
           {!importPreview && importContent && (
             <button
@@ -143,6 +133,6 @@ export default function ImportModal({
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

@@ -195,7 +195,10 @@ export default function AiAnalysisBlock({
       if (e.key === 'Escape') setModalOpen(false);
     };
 
-    const prevOverflow = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.top = `-${scrollY}px`;
     document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', handleEsc);
 
@@ -205,7 +208,11 @@ export default function AiAnalysisBlock({
 
     return () => {
       document.removeEventListener('keydown', handleEsc);
-      document.body.style.overflow = prevOverflow;
+      document.body.style.position = '';
+      document.body.style.width = '';
+      document.body.style.top = '';
+      document.body.style.overflow = '';
+      window.scrollTo(0, scrollY);
       cancelAnimationFrame(frame);
     };
   }, [modalOpen]);
@@ -396,6 +403,11 @@ export default function AiAnalysisBlock({
                         'max-sm:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]',
                         'sm:pb-6'
                       )}
+                      style={{ 
+                        touchAction: 'pan-y', 
+                        WebkitOverflowScrolling: 'touch',
+                        overscrollBehaviorY: 'contain' 
+                      }}
                     >
                       <AiAnalysisMarkdown markdown={markdown} />
                     </div>

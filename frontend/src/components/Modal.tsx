@@ -1,4 +1,5 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useRef, useId } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 type ModalProps = {
@@ -14,8 +15,10 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     const previousFocusRef = useRef<HTMLElement | null>(null);
     const onCloseRef = useRef(onClose);
     onCloseRef.current = onClose;
+    
+    // Generowanie unikalnego ID dla ARIA
+    const titleId = useId();
 
-    // Tylko przy otwarciu/zamknięciu — NIE przy każdym re-renderze rodzica (inaczej input traci focus)
     useEffect(() => {
         if (!isOpen) return;
 
@@ -25,11 +28,24 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
         previousFocusRef.current = document.activeElement as HTMLElement;
         document.addEventListener('keydown', handleEsc);
+
+        // Scroll lock dedykowany pod Safari iOS
+        const scrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.style.top = `-${scrollY}px`;
         document.body.style.overflow = 'hidden';
 
         return () => {
             document.removeEventListener('keydown', handleEsc);
-            document.body.style.overflow = 'unset';
+            // Przywrócenie scrolla
+            document.body.style.position = '';
+            document.body.style.width = '';
+            document.body.style.top = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, scrollY);
+
+            // Przywrócenie focusa
             if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
                 previousFocusRef.current.focus();
             }
@@ -44,7 +60,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
             const dialog = dialogRef.current;
             if (!dialog) return;
             const firstField = dialog.querySelector<HTMLElement>(
-                'input:not([type="hidden"]), select, textarea'
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
             );
             if (firstField) {
                 firstField.focus();
@@ -63,7 +79,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
             if (e.key !== 'Tab' || !dialogRef.current) return;
 
             const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
-                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
             );
             if (focusable.length === 0) return;
 
@@ -84,10 +100,12 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     }, [isOpen]);
 
     if (!isOpen) return null;
+    if (typeof document === 'undefined') return null;
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 bg-bkpk-overlay-strong flex items-center justify-center z-50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            style={{ touchAction: 'none' }}
             onClick={() => onCloseRef.current()}
             role="presentation"
         >
@@ -95,15 +113,20 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
-                aria-label={title}
+                aria-labelledby={titleId}
                 tabIndex={-1}
-                className={`bg-bkpk-surface border border-bkpk-border-strong rounded-xl w-full ${maxWidth} max-h-[95vh] flex flex-col shadow-2xl animate-in slide-in-from-bottom-5 duration-300 outline-none`}
+                className={`bg-bkpk-surface border border-bkpk-border-strong rounded-xl w-full ${maxWidth} flex flex-col shadow-2xl animate-in slide-in-from-bottom-5 duration-300 outline-none overscroll-contain`}
+                style={{ 
+                    maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)',
+                    paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
+                }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-bkpk-border-strong">
-                    <h2 className="text-xl font-bold text-bkpk-text-primary font-outfit">{title}</h2>
+                <div className="flex justify-between items-center p-6 border-b border-bkpk-border-strong shrink-0">
+                    <h2 id={titleId} className="text-xl font-bold text-bkpk-text-primary font-outfit">{title}</h2>
                     <button
                         type="button"
+                        style={{ touchAction: 'manipulation' }}
                         className="p-1 -mr-1 text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 rounded-lg transition-colors"
                         onClick={() => onCloseRef.current()}
                         aria-label="Zamknij"
@@ -111,10 +134,19 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         <X size={24} />
                     </button>
                 </div>
-                <div className="p-6 overflow-y-auto text-bkpk-text-secondary">
+                
+                <div 
+                    className="p-6 overflow-y-auto text-bkpk-text-secondary"
+                    style={{ 
+                        touchAction: 'pan-y', 
+                        WebkitOverflowScrolling: 'touch',
+                        overscrollBehaviorY: 'contain' 
+                    }}
+                >
                     {children}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
