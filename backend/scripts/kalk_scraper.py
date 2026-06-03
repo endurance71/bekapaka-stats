@@ -52,7 +52,8 @@ HEADERS = {
                   'Chrome/127.0.0.0 Safari/537.36',
     'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7'
 }
-OUTPUT_FILE = Path(__file__).resolve().parents[2] / 'kalk_stats.json'
+# Zapis obok backendu (/app/kalk_stats.json w kontenerze) — zgodnie z server.js
+OUTPUT_FILE = Path(__file__).resolve().parents[1] / 'kalk_stats.json'
 
 SECTION_KEYWORDS: Dict[str, List[str]] = {
     'tabela': ['tabela'],

@@ -192,6 +192,7 @@ export async function ingestKalkPlayerGameLogs(logs) {
 
   const seasonSlug = activeSeason.slug;
   let count = 0;
+  let skipped = 0;
 
   for (const row of logs) {
     const externalId = row.id_zawodnika || row.kalk_player_id;
@@ -199,6 +200,20 @@ export async function ingestKalkPlayerGameLogs(logs) {
     if (!externalId || !matchId) continue;
 
     const kalkPlayerId = buildKalkPlayerDbId(seasonSlug, externalId);
+    const kalkMatchId = String(matchId);
+
+    const [matchRow, playerRow] = await Promise.all([
+      prisma.kalkMatch.findUnique({
+        where: { seasonId_id: { seasonId: activeSeason.id, id: kalkMatchId } }
+      }),
+      prisma.kalkPlayer.findUnique({ where: { id: kalkPlayerId } })
+    ]);
+
+    if (!matchRow || !playerRow) {
+      skipped += 1;
+      continue;
+    }
+
     const stats = normalizePlayerGameLogRow(row);
 
     const isWin = (() => {
@@ -215,13 +230,13 @@ export async function ingestKalkPlayerGameLogs(logs) {
         seasonId_kalkPlayerId_kalkMatchId: {
           seasonId: activeSeason.id,
           kalkPlayerId,
-          kalkMatchId: String(matchId)
+          kalkMatchId
         }
       },
       create: {
         seasonId: activeSeason.id,
         kalkPlayerId,
-        kalkMatchId: String(matchId),
+        kalkMatchId,
         teamName: row.team_name || 'BeKaPaKa',
         opponentName: stats.opponent || row.opponent || '',
         isWin,
@@ -237,7 +252,7 @@ export async function ingestKalkPlayerGameLogs(logs) {
     count += 1;
   }
 
-  return { total: count };
+  return { total: count, skipped };
 }
 
 /**
