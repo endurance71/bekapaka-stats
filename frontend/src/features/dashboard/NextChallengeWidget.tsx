@@ -65,7 +65,7 @@ export function NextChallengeWidget({
                             <div
                                 key={level}
                                 className={`h-1.5 flex-1 rounded-full transition-all duration-500 ${level <= difficulty
-                                    ? "bg-bkpk-primary shadow-[0_0_10px_rgba(255,107,53,0.4)]"
+                                    ? "bg-bkpk-primary shadow-bkpk-primary"
                                     : "bg-bkpk-surface-tint-2"
                                     }`}
                             />

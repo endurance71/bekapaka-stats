@@ -213,7 +213,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                 </div>
                                                 <div className={cn(
                                                     "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-outfit text-[10px] text-white border border-bkpk-bg shadow-lg",
-                                                    idx === 0 ? "bg-bkpk-warning" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-amber-600"
+                                                    idx === 0 ? "bg-bkpk-medal-gold text-black" : idx === 1 ? "bg-bkpk-medal-silver text-black" : "bg-bkpk-medal-bronze text-black"
                                                 )}>
                                                     {idx + 1}
                                                 </div>
@@ -327,7 +327,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                     <td className={cn(
                                                         "px-3 py-2.5 sm:px-6 sm:py-4 font-bold transition-colors sticky left-0 z-10 border-r border-bkpk-border-strong",
                                                         isBkpk
-                                                            ? "text-bkpk-primary bg-[#1d1614] group-hover:bg-[#281a17]"
+                                                            ? "text-bkpk-primary bkpk-row-highlight"
                                                             : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
                                                     )}>
                                                         <div className="flex items-center gap-2">

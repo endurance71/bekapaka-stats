@@ -164,7 +164,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     <td className={cn(
                                         "px-3 py-2.5 sm:px-6 sm:py-4 font-bold transition-colors sticky left-0 z-10 border-r border-bkpk-border-strong",
                                         isBkpk
-                                            ? "text-bkpk-primary bg-[#1d1614] group-hover:bg-[#281a17]"
+                                            ? "text-bkpk-primary bkpk-row-highlight"
                                             : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
                                     )}>
                                         <div className="flex items-center gap-2 sm:gap-3">

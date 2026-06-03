@@ -1,5 +1,5 @@
 .container {
-    background: var(--bg-card, #1E2749);
+    background: var(--bkpk-color-surface);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 24px;
@@ -9,7 +9,7 @@
     margin: 0 0 20px 0;
     font-size: 18px;
     font-weight: 600;
-    color: var(--text-primary, #FFFFFF);
+    color: var(--bkpk-text-primary);
 }
 
 .chartWrapper {
@@ -27,7 +27,7 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    color: var(--text-secondary, #B0B8D4);
+    color: var(--bkpk-text-secondary);
 }
 
 .dot {

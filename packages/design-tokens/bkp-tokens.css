@@ -1,0 +1,73 @@
+/**
+ * BeKaPaKa brand design tokens — single source of truth.
+ * Imported by site (Next.js) and panel (Vite/Tailwind).
+ */
+:root {
+  /* Brand core */
+  --bkp-gold: #ECA72C;
+  --bkp-gold-strong: #F0B849;
+  --bkp-copper: #D97736;
+  --bkp-crimson: #D32F2F;
+  --bkp-navy: #3B465E;
+  --bkp-obsidian: #1A1A1A;
+
+  /* Surfaces */
+  --bkp-bg-app: #0B0B0C;
+  --bkp-bg-surface: #121214;
+  --bkp-bg-surface-muted: #18181B;
+  --bkp-bg-elevated: #1C1C1F;
+  --bkp-bg-header: #070708;
+
+  /* Text */
+  --bkp-text-primary: #FFFFFF;
+  --bkp-text-secondary: #D1D5DB;
+  --bkp-text-muted: #9A9AA6;
+  --bkp-text-soft: #6B6B76;
+
+  /* Borders (alpha — aligned with public site) */
+  --bkp-border: rgba(255, 255, 255, 0.08);
+  --bkp-border-strong: rgba(255, 255, 255, 0.15);
+  --bkp-glass-border: rgba(255, 255, 255, 0.05);
+
+  /* Semantic */
+  --bkp-success: #10B981;
+  --bkp-danger: #D32F2F;
+  --bkp-warning: #F59E0B;
+  --bkp-info: #007AFF;
+
+  /* Gradients & glows */
+  --bkp-gold-gradient: linear-gradient(135deg, #ECA72C 0%, #D97736 100%);
+  --bkp-crimson-gradient: linear-gradient(135deg, #D32F2F 0%, #A82323 100%);
+  --bkp-slate-gradient: linear-gradient(135deg, #3B465E 0%, #20293A 100%);
+  --bkp-dark-gradient: linear-gradient(135deg, #1C1C1F 0%, #121214 100%);
+  --bkp-glow-gold: 0 0 25px rgba(236, 167, 44, 0.18);
+  --bkp-glow-crimson: 0 0 25px rgba(211, 47, 47, 0.18);
+  --bkp-glow-card: 0 0 40px rgba(0, 0, 0, 0.8);
+  --bkp-shadow-primary: 0 8px 32px rgba(236, 167, 44, 0.15);
+
+  /* Glass */
+  --bkp-glass-bg: rgba(18, 18, 20, 0.7);
+  --bkp-header-glass-bg: rgba(11, 11, 12, 0.55);
+
+  /* Primary interaction (gold scale) */
+  --bkp-primary: var(--bkp-gold);
+  --bkp-primary-hover: var(--bkp-gold-strong);
+  --bkp-primary-active: var(--bkp-copper);
+  --bkp-primary-muted: rgba(236, 167, 44, 0.3);
+  --bkp-primary-soft: rgba(236, 167, 44, 0.8);
+  --bkp-primary-subtle: rgba(236, 167, 44, 0.08);
+  --bkp-primary-subtle-border: rgba(236, 167, 44, 0.25);
+
+  /* Medal / ranking accents */
+  --bkp-medal-gold: #ECA72C;
+  --bkp-medal-silver: #9CA3AF;
+  --bkp-medal-bronze: #D97736;
+
+  /* Panel roster cards (synced with panel.bekapaka.pl) */
+  --bkp-panel-bg: var(--bkp-bg-app);
+  --bkp-panel-glass: var(--bkp-glass-bg);
+  --bkp-panel-text-primary: #F5F7FA;
+  --bkp-panel-text-muted: var(--bkp-text-muted);
+  --bkp-panel-overlay-weak: rgba(0, 0, 0, 0.2);
+  --bkp-panel-radius-lg: 24px;
+}

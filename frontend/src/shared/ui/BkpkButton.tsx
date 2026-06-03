@@ -11,7 +11,7 @@ export interface BkpkButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const variants = {
-    primary: 'bg-bkpk-primary-fill text-white hover:bg-bkpk-primary-fill-hover active:bg-bkpk-primary-fill-active shadow-bkpk-glow',
+    primary: 'bkpk-btn-primary border-none',
     ghost: 'bg-bkpk-surface-tint-2 text-bkpk-text-primary hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong backdrop-blur-sm',
     outline: 'bg-transparent border-2 border-bkpk-primary text-bkpk-primary hover:bg-bkpk-primary/10',
     destructive: 'bg-bkpk-danger-fill text-white hover:bg-bkpk-danger-fill-hover active:bg-bkpk-danger-fill-active',
@@ -32,6 +32,8 @@ export default function BkpkButton({
     disabled,
     ...props
 }: BkpkButtonProps) {
+    const isPrimary = variant === 'primary';
+
     return (
         <motion.button
             className={cn(
@@ -47,7 +49,12 @@ export default function BkpkButton({
         >
             {loading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-inherit">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div
+                        className={cn(
+                            'w-5 h-5 border-2 rounded-full animate-spin',
+                            isPrimary ? 'border-black/30 border-t-black' : 'border-white/30 border-t-white'
+                        )}
+                    />
                 </div>
             )}
             <span className={cn(

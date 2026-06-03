@@ -1,10 +1,11 @@
+@import "../../../packages/design-tokens/bkp-tokens.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 html {
   height: 100%;
   height: -webkit-fill-available;
-  background-color: var(--bkpk-color-bg, #0b0b0e);
+  background-color: var(--bkpk-color-bg, #0b0b0c);
 }
 
 body {
@@ -12,7 +13,7 @@ body {
   min-height: 100dvh;
   min-height: 100svh;
   min-height: -webkit-fill-available;
-  background-color: var(--bkpk-color-bg, #0b0b0e);
+  background-color: var(--bkpk-color-bg, #0b0b0c);
   overscroll-behavior-y: none;
 }
 
@@ -41,45 +42,41 @@ body {
 }
 
 @theme {
-  /* Brand Colors - High Intensity 2026 Palette */
-  --bkpk-color-primary: #FF6B35;
-  --bkpk-color-primary-hover: #E85A2A;
-  --bkpk-color-primary-active: #D14D22;
-  --bkpk-color-primary-fill: #C4491F;
-  --bkpk-color-primary-fill-hover: #B24B25;
-  --bkpk-color-primary-fill-active: #A8431C;
+  /* Brand — gold palette (aligned with bekapaka.pl) */
+  --bkpk-color-primary: var(--bkp-gold);
+  --bkpk-color-primary-hover: var(--bkp-gold-strong);
+  --bkpk-color-primary-active: var(--bkp-copper);
+  --bkpk-color-primary-fill: #C9921F;
+  --bkpk-color-primary-fill-hover: #D4A024;
+  --bkpk-color-primary-fill-active: #B8860B;
 
-  --bkpk-color-success: #10B981;
+  --bkpk-color-success: var(--bkp-success);
   --bkpk-color-success-fill: #0F7A56;
   --bkpk-color-success-fill-hover: #0B5F44;
   --bkpk-color-success-fill-active: #084B36;
 
-  --bkpk-color-danger: #F43F5E;
+  --bkpk-color-danger: var(--bkp-crimson);
   --bkpk-color-danger-fill: #B91C3B;
   --bkpk-color-danger-fill-hover: #991B1B;
   --bkpk-color-danger-fill-active: #7F1D1D;
 
-  --bkpk-color-warning: #F59E0B;
+  --bkpk-color-warning: var(--bkp-warning);
   --bkpk-color-warning-fill: #B45309;
   --bkpk-color-warning-fill-hover: #92400E;
   --bkpk-color-warning-fill-active: #78350F;
 
-  --bkpk-color-info: #007AFF;
+  --bkpk-color-info: var(--bkp-info);
 
-  --bkpk-color-bg: #0B0B0E;
-  --bkpk-color-surface: #14161C;
-  --bkpk-color-surface-elevated: #1B1E26;
+  --bkpk-color-bg: var(--bkp-bg-app);
+  --bkpk-color-surface: var(--bkp-bg-surface);
+  --bkpk-color-surface-elevated: var(--bkp-bg-elevated);
 
-  /* Text and Borders */
-  --bkpk-text-primary: #F5F7FA;
-  --bkpk-text-secondary: #D1D5DB;
-  /* Lighter for better contrast on dark bg */
-  --bkpk-text-muted: #9CA3AF;
-  /* Standard Tailwind Gray-400 for better visibility */
-  --bkpk-border-strong: #4B5563;
-  --bkpk-border-subtle: #2A2F3A;
+  --bkpk-text-primary: var(--bkp-panel-text-primary);
+  --bkpk-text-secondary: var(--bkp-text-secondary);
+  --bkpk-text-muted: var(--bkp-text-muted);
+  --bkpk-border-strong: var(--bkp-border-strong);
+  --bkpk-border-subtle: var(--bkp-border);
 
-  /* Surface Tints (for translucent panels) */
   --bkpk-surface-tint-1: rgba(255, 255, 255, 0.03);
   --bkpk-surface-tint-2: rgba(255, 255, 255, 0.05);
   --bkpk-surface-tint-3: rgba(255, 255, 255, 0.08);
@@ -87,24 +84,24 @@ body {
   --bkpk-surface-tint-5: rgba(255, 255, 255, 0.12);
   --bkpk-surface-tint-6: rgba(255, 255, 255, 0.20);
 
-  /* Overlays */
-  --bkpk-overlay-weak: rgba(0, 0, 0, 0.2);
+  --bkpk-overlay-weak: var(--bkp-panel-overlay-weak);
   --bkpk-overlay-medium: rgba(0, 0, 0, 0.4);
   --bkpk-overlay-strong: rgba(0, 0, 0, 0.8);
 
-  /* Glassmorphism Presets */
-  --bkpk-glass-bg: rgba(11, 11, 14, 0.7);
-  --bkpk-glass-border: var(--bkpk-border-strong);
+  --bkpk-glass-bg: var(--bkp-glass-bg);
+  --bkpk-glass-border: var(--bkp-glass-border);
   --bkpk-glass-blur: 16px;
 
-  /* Shadows & Border Radii */
   --bkpk-radius-md: 12px;
   --bkpk-radius-lg: 24px;
 
-  --bkpk-shadow-glow: 0 0 40px rgba(0, 0, 0, 0.5);
-  --bkpk-shadow-primary: 0 8px 32px rgba(255, 107, 53, 0.15);
+  --bkpk-shadow-glow: var(--bkp-glow-card);
+  --bkpk-shadow-primary: var(--bkp-shadow-primary);
 
-  /* Legacy aliases (compatibility) */
+  --bkpk-medal-gold: var(--bkp-medal-gold);
+  --bkpk-medal-silver: var(--bkp-medal-silver);
+  --bkpk-medal-bronze: var(--bkp-medal-bronze);
+
   --color-bkpk-primary: var(--bkpk-color-primary);
   --color-bkpk-primary-hover: var(--bkpk-color-primary-hover);
   --color-bkpk-primary-active: var(--bkpk-color-primary-active);
@@ -115,16 +112,17 @@ body {
   --color-bkpk-surface: var(--bkpk-color-surface);
   --color-bkpk-surface-elevated: var(--bkpk-color-surface-elevated);
   --color-bkpk-glass: var(--bkpk-glass-bg);
-  --color-bkpk-glass-border: var(--bkpk-glass-border);
+  --color-bkpk-glass-border: var(--bkp-glass-border);
   --blur-bkpk-glass: var(--bkpk-glass-blur);
   --radius-bkpk-md: var(--bkpk-radius-md);
   --radius-bkpk-lg: var(--bkpk-radius-lg);
   --shadow-bkpk-glow: var(--bkpk-shadow-glow);
   --shadow-bkpk-primary: var(--bkpk-shadow-primary);
 
-  /* Typography */
   --font-outfit: 'Outfit', sans-serif;
   --font-inter: 'Inter', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-bebas: 'Bebas Neue', sans-serif;
 }
 
 :root {
@@ -139,6 +137,7 @@ body {
   --danger: var(--bkpk-color-danger);
   --accent: var(--bkpk-color-primary);
   --accent-2: var(--bkpk-color-primary);
+  --bkp-gold-gradient: var(--bkp-gold-gradient);
 }
 
 @layer base {
@@ -147,17 +146,17 @@ body {
   }
 
   ::selection {
-    background-color: rgba(255, 107, 53, 0.3);
+    background-color: var(--bkp-primary-muted);
     color: white;
   }
 
   body {
     background-color: var(--bkpk-color-bg);
     color: var(--bkpk-text-primary);
-    font-family: var(--font-inter);
+    font-family: var(--font-montserrat), var(--font-inter), sans-serif;
     @apply antialiased overflow-x-hidden;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(255, 107, 53, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 0% 0%, rgba(236, 167, 44, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
     background-attachment: fixed;
   }
@@ -168,7 +167,8 @@ body {
   h4,
   h5,
   h6 {
-    @apply font-outfit font-black tracking-tight;
+    font-family: var(--font-outfit), var(--font-bebas), sans-serif;
+    @apply font-black tracking-tight;
   }
 
   button:focus-visible,
@@ -182,29 +182,30 @@ body {
   .bkpk-glass {
     background-color: var(--color-bkpk-glass);
     backdrop-filter: blur(var(--blur-bkpk-glass));
-    border: 1px solid var(--color-bkpk-glass-border);
+    border: 1px solid var(--bkp-glass-border);
     box-shadow: var(--shadow-bkpk-glow);
   }
 
   .btn {
-    background: var(--bkpk-color-primary-fill);
-    color: var(--bkpk-text-primary);
-    border: 1px solid var(--bkpk-border-strong);
+    background: var(--bkp-gold-gradient);
+    color: #000000;
+    border: 1px solid transparent;
     border-radius: 12px;
     padding: 10px 16px;
     font-weight: 700;
     font-size: 14px;
     line-height: 1.2;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
     cursor: pointer;
   }
 
   .btn:hover {
-    background: var(--bkpk-color-primary-fill-hover);
+    box-shadow: var(--bkp-glow-gold);
+    color: #000000;
   }
 
   .btn:active {
-    background: var(--bkpk-color-primary-fill-active);
+    filter: brightness(0.95);
   }
 
   .btn:disabled {
@@ -221,6 +222,30 @@ body {
   .btn-secondary:hover {
     background: var(--bkpk-surface-tint-2);
     color: var(--bkpk-text-primary);
+    box-shadow: none;
+  }
+
+  .bkpk-btn-primary {
+    background: var(--bkp-gold-gradient);
+    color: #000000;
+    box-shadow: var(--bkpk-shadow-primary);
+  }
+
+  .bkpk-btn-primary:hover {
+    box-shadow: var(--bkp-glow-gold);
+    color: #000000;
+  }
+
+  .bkpk-btn-primary:active {
+    filter: brightness(0.95);
+  }
+
+  .bkpk-row-highlight {
+    background-color: rgba(236, 167, 44, 0.06);
+  }
+
+  .bkpk-row-highlight:hover {
+    background-color: rgba(236, 167, 44, 0.1);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -236,10 +261,9 @@ body {
     padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
   }
 
-  /* Belka mobilna: ten sam kolor co html/body w notch (theme-color #0B0B0E) */
   .mobile-header-safe-top {
     padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
-    background-color: var(--bkpk-color-bg, #0b0b0e);
+    background-color: var(--bkpk-color-bg, #0b0b0c);
   }
 
   .safe-area-bottom {
@@ -252,7 +276,6 @@ body {
   }
 }
 
-/* Custom scrollbar for desktop */
 ::-webkit-scrollbar {
   width: 6px;
 }

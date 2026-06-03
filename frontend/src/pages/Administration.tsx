@@ -773,7 +773,7 @@ function UserManagement() {
                                         {user.number !== null ? `#${user.number}` : '-'} | {user.position || '-'}
                                     </td>
                                     <td className="py-3 px-4 font-mono text-xs text-bkpk-text-muted">
-                                        {user.username || <span className="italic text-gray-600">brak</span>}
+                                        {user.username || <span className="italic text-bkpk-text-muted">brak</span>}
                                     </td>
                                     <td className="py-3 px-4">
                                         {user.username ? (

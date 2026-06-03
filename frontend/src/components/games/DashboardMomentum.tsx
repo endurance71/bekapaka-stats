@@ -95,7 +95,7 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
             </div>
 
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">
-                <span className="w-2 h-2 rounded-full bg-bkpk-primary shadow-[0_0_10px_rgba(255,107,53,0.5)]"></span>
+                <span className="w-2 h-2 rounded-full bg-bkpk-primary shadow-bkpk-primary"></span>
                 <span>Przewaga punktowa BeKaPaKa</span>
             </div>
         </BkpkCard>

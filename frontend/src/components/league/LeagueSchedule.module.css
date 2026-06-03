@@ -48,12 +48,12 @@
     font-weight: bold;
     font-size: 1.2rem;
     padding: 0 16px;
-    color: #f59e0b;
+    color: var(--bkpk-color-warning);
     min-width: 80px;
     text-align: center;
 }
 
 .highlight {
-    color: #6366f1;
+    color: var(--bkpk-color-primary);
     font-weight: bold;
 }

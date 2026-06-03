@@ -47,6 +47,9 @@ export default {
                     'overlay-medium': 'var(--bkpk-overlay-medium)',
                     'overlay-strong': 'var(--bkpk-overlay-strong)',
                     info: 'var(--bkpk-color-info)',
+                    'medal-gold': 'var(--bkpk-medal-gold)',
+                    'medal-silver': 'var(--bkpk-medal-silver)',
+                    'medal-bronze': 'var(--bkpk-medal-bronze)',
                 },
             },
             borderRadius: {
@@ -76,10 +79,13 @@ export default {
             },
             boxShadow: {
                 'bkpk-glow': 'var(--bkpk-shadow-glow)',
+                'bkpk-primary': 'var(--bkpk-shadow-primary)',
             },
             fontFamily: {
                 outfit: ['Outfit', 'sans-serif'],
                 inter: ['Inter', 'sans-serif'],
+                montserrat: ['Montserrat', 'sans-serif'],
+                bebas: ['"Bebas Neue"', 'sans-serif'],
             },
         },
     },

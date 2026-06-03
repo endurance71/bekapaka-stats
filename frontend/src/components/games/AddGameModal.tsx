@@ -160,7 +160,7 @@ export default function AddGameModal({ onClose, onGameAdded }: AddGameModalProps
                         </button>
                         <button
                             type="submit"
-                            className="flex-1 px-6 py-3 bg-bkpk-primary text-white rounded-lg text-sm font-semibold hover:bg-bkpk-primary-hover shadow-lg shadow-bkpk-primary/20 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                            className="flex-1 px-6 py-3 bkpk-btn-primary rounded-lg text-sm font-semibold transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                             disabled={loading}
                         >
                             {loading ? 'Dodawanie...' : 'Dodaj Mecz'}

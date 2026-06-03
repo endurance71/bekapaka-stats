@@ -49,8 +49,8 @@ function NavItems({
             className={({ isActive }) => cn(
               'group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 font-bold text-sm tracking-tight min-h-[48px]',
               isActive
-                ? 'bg-bkpk-primary/15 text-bkpk-primary'
-                : 'text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1'
+                ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25 shadow-[0_0_15px_rgba(236,167,44,0.05)]'
+                : 'text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-primary/5 border border-transparent'
             )}
           >
             {({ isActive }) => (
@@ -103,7 +103,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   return (
     <div
       className={cn(
-        'flex flex-col min-h-[100dvh] min-h-[100svh] bg-bkpk-bg font-inter text-bkpk-text-primary',
+        'flex flex-col min-h-[100dvh] min-h-[100svh] bg-bkpk-bg font-montserrat text-bkpk-text-primary',
         'lg:flex-row lg:fixed lg:inset-0 lg:z-0 lg:max-h-[100dvh] lg:overflow-hidden'
       )}
     >
@@ -158,7 +158,7 @@ export default function Shell({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
         {/* Mobile — belka u góry (OK); dół bez osobnej belki — treść pod paskiem Safari */}
-        <header className="lg:hidden sticky top-0 z-40 shrink-0 flex items-center justify-between gap-3 px-3 py-2.5 bg-bkpk-bg/95 backdrop-blur-md border-b border-bkpk-border-strong mobile-header-safe-top">
+        <header className="lg:hidden sticky top-0 z-40 shrink-0 flex items-center justify-between gap-3 px-3 py-2.5 bg-bkpk-bg/55 backdrop-blur-md border-b border-bkpk-border-subtle mobile-header-safe-top">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
