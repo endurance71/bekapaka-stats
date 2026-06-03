@@ -394,7 +394,9 @@ export function boxScoreToLeagueDetails(boxScore) {
       players: t.players,
       fourFactors: t.fourFactors,
       pts: t.pts
-    }))
+    })),
+    quarters: boxScore?.quarters,
+    quartersRaw: boxScore?.meta?.quartersRaw
   };
 }
 
