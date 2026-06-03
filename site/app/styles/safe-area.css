@@ -1,11 +1,12 @@
 /**
  * Safe area + status bar (Safari iOS, Chrome Android, PWA).
  * Wzorzec jak panel.bekapaka.pl: viewport-fit=cover, black-translucent,
- * rozmyty header (::before na .site-header), przezroczysty dół bez belki.
+ * rozmyty header (::before na .site-header), tło safe area = --bg-app.
  */
 
 :root {
   --overlay-vh: 100dvh;
+  --overlay-vt: 0px;
 }
 
 @supports (height: 100svh) {
@@ -26,13 +27,13 @@
   }
 }
 
-/* Dolny „oddech” — przezroczysty, jak panel (Shell.tsx); treść widać pod paskiem Safari */
+/* Dolny odstęp nad paskiem Safari — to samo tło co aplikacja (bez czarnej szczeliny) */
 .page-bottom-safe-spacer {
   display: block;
   min-height: calc(env(safe-area-inset-bottom, 0px) + 4.25rem);
   pointer-events: none;
   flex-shrink: 0;
-  background: transparent;
+  background: var(--bg-app);
 }
 
 @media (min-width: 900px) {
@@ -41,23 +42,13 @@
   }
 }
 
-/* Pełnoekranowe modale / drawer — mobile: przezroczysty chrome Safari */
-@media (max-width: 899px) {
-  html.is-overlay-open,
-  html.is-overlay-open body.site-body,
-  html.is-stats-drawer-open,
-  html.is-stats-drawer-open body.site-body {
-    background: transparent;
-  }
-}
-
-@media (min-width: 900px) {
-  html.is-overlay-open,
-  html.is-overlay-open body.site-body,
-  html.is-stats-drawer-open,
-  html.is-stats-drawer-open body.site-body {
-    background: var(--bg-app);
-  }
+/* Overlay: trzymać tło aplikacji — transparent odsłania czarny chrome Safari */
+html.is-overlay-open,
+html.is-overlay-open body.site-body,
+html.is-stats-drawer-open,
+html.is-stats-drawer-open body.site-body {
+  background-color: var(--bg-app);
+  background-image: none;
 }
 
 @supports (-webkit-touch-callout: none) {

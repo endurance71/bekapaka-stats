@@ -93,7 +93,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
     return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-bkpk-overlay-strong backdrop-blur-sm p-4 animate-in fade-in duration-200 overlay-viewport-fill pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
+            className="fixed left-0 right-0 z-50 flex items-center justify-center bg-bkpk-overlay-strong backdrop-blur-sm p-4 animate-in fade-in duration-200 overlay-viewport-fill pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
             style={{ touchAction: 'none' }}
             onClick={() => onCloseRef.current()}
             role="presentation"

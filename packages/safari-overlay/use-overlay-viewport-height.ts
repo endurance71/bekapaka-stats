@@ -13,7 +13,9 @@ export function useOverlayViewportHeight(isOpen: boolean): void {
 
     const apply = () => {
       const height = vv?.height ?? window.innerHeight
+      const top = vv?.offsetTop ?? 0
       root.style.setProperty('--overlay-vh', `${height}px`)
+      root.style.setProperty('--overlay-vt', `${top}px`)
     }
 
     apply()
@@ -26,6 +28,7 @@ export function useOverlayViewportHeight(isOpen: boolean): void {
       vv?.removeEventListener('scroll', apply)
       window.removeEventListener('resize', apply)
       root.style.removeProperty('--overlay-vh')
+      root.style.removeProperty('--overlay-vt')
     }
   }, [isOpen])
 }

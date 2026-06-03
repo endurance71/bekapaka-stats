@@ -330,7 +330,7 @@ export default function AiAnalysisBlock({
             <AnimatePresence>
               {modalOpen ? (
                 <div
-                  className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center sm:p-4 overlay-viewport-fill"
+                  className="fixed left-0 right-0 z-[200] flex sm:items-center sm:justify-center sm:p-4 overlay-viewport-fill sm:inset-0 sm:top-0"
                   role="presentation"
                 >
                   <motion.button
@@ -339,7 +339,7 @@ export default function AiAnalysisBlock({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute inset-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-sm"
+                    className="absolute left-0 right-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-sm max-sm:top-0 sm:inset-0"
                     aria-label="Zamknij analizę"
                     onClick={() => setModalOpen(false)}
                   />

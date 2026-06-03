@@ -41,6 +41,15 @@ body {
   background-attachment: fixed;
 }
 
+/* iOS Safari: fixed background nie maluje safe area — szczeliny u góry/dołu */
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 899px) {
+    body.site-body {
+      background-attachment: scroll;
+    }
+  }
+}
+
 body.site-body {
   display: flex;
   flex-direction: column;
@@ -436,13 +445,15 @@ p {
   --mobile-menu-duration: 300ms;
 
   position: fixed;
-  inset: 0;
+  top: var(--overlay-vt, 0px);
+  right: 0;
+  left: 0;
   z-index: 9999;
   width: 100%;
   height: var(--overlay-vh);
   min-height: var(--overlay-vh);
   max-height: var(--overlay-vh);
-  background: transparent;
+  background: var(--bg-app);
   pointer-events: none;
 }
 
@@ -696,6 +707,15 @@ p {
 @media (max-width: 899px) {
   .site-header {
     padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+    background-color: var(--bg-app);
+  }
+
+  .site-header::before {
+    top: calc(-1 * env(safe-area-inset-top, 0px));
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
   }
 
   body.site-body #content {
