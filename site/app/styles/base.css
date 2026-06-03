@@ -551,7 +551,6 @@ p {
   flex-shrink: 0;
   padding: var(--space-3) var(--space-4);
   background: var(--bg-app);
-  border-top: 1px solid var(--border);
 }
 
 .mobile-fullscreen-menu__cta {
