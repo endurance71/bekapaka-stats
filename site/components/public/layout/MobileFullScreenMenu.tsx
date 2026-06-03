@@ -1,7 +1,9 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
 import { createPortal } from 'react-dom'
+import { CloseIcon } from '../shared/PublicIcons'
 import { MainNav } from './MainNav'
 
 /** Must match `--mobile-menu-duration` in base.css */
@@ -10,6 +12,7 @@ const MENU_ANIMATION_MS = 300
 interface MobileFullScreenMenuProps {
   isOpen: boolean
   onClose: () => void
+  logoUrl?: string
 }
 
 function MenuIcon() {
@@ -20,15 +23,7 @@ function MenuIcon() {
   )
 }
 
-function CloseIcon() {
-  return (
-    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden>
-      <path d='M18 6L6 18M6 6l12 12' strokeLinecap='round' />
-    </svg>
-  )
-}
-
-export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuProps) {
+export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }: MobileFullScreenMenuProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
@@ -185,10 +180,6 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
     >
       <div ref={panelRef} className='mobile-fullscreen-menu__panel'>
         <header className='mobile-fullscreen-menu__header'>
-          <div>
-            <div className='mobile-fullscreen-menu__brand'>BeKaPaKa</div>
-            <div className='mobile-fullscreen-menu__subtitle'>Nawigacja</div>
-          </div>
           <button
             type='button'
             onClick={handleRequestClose}
@@ -197,6 +188,20 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
           >
             <CloseIcon />
           </button>
+
+          <div className='mobile-fullscreen-menu__title'>
+            <div className='mobile-fullscreen-menu__brand'>BeKaPaKa</div>
+            <div className='mobile-fullscreen-menu__subtitle'>Nawigacja</div>
+          </div>
+
+          <Link
+            href='/'
+            onClick={handleRequestClose}
+            className='mobile-fullscreen-menu__logo'
+            aria-label='Strona glowna BeKaPaKa Bobolice'
+          >
+            <img src={logoUrl} alt='' />
+          </Link>
         </header>
 
         <nav className='mobile-fullscreen-menu__nav' aria-label='Sekcje strony'>
