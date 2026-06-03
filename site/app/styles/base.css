@@ -191,14 +191,47 @@ p {
   min-height: var(--header-h);
 }
 
+.site-header__mobile-brand {
+  display: none;
+}
+
 @media (max-width: 899px) {
+  .site-header__inner {
+    position: relative;
+  }
+
   .mobile-menu-open-btn {
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .site-header__mobile-brand {
+    display: block;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    max-width: calc(100% - 7.5rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1;
+    color: var(--text-primary);
   }
 
   .club-logo {
+    position: relative;
+    z-index: 1;
     margin-left: auto;
     justify-content: flex-end;
+  }
+
+  .club-logo__text {
+    display: none;
   }
 }
 

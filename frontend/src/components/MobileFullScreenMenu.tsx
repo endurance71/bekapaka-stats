@@ -151,19 +151,30 @@ export default function MobileFullScreenMenu({
 
                         <div className="pointer-events-none absolute inset-x-4 flex flex-col items-center justify-center text-center min-w-0 px-12">
                             <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary truncate max-w-full">
-                                BeKaPaKa Bobolice
+                                BeKaPaKa
                             </div>
                             <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">
                                 Centrum statystyk
                             </div>
                         </div>
 
-                        <div
-                            className="relative z-10 ml-auto w-10 h-10 rounded-full bg-bkpk-surface flex items-center justify-center border border-bkpk-primary/40 overflow-hidden p-0.5 shrink-0 shadow-[0_0_10px_rgba(236,167,44,0.1)]"
-                            aria-hidden
-                        >
-                            <img src="/logo.png" alt="" className="w-full h-full object-contain" />
-                        </div>
+                        {user ? (
+                            <Link
+                                to="/profile"
+                                onClick={onClose}
+                                className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
+                                aria-label="Mój profil"
+                            >
+                                <img
+                                    src={resolvePlayerPhoto(user)}
+                                    onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                                    className="w-full h-full object-cover"
+                                    alt=""
+                                />
+                            </Link>
+                        ) : (
+                            <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />
+                        )}
                     </header>
 
                     <MenuProfileSection

@@ -171,32 +171,26 @@ export default function Shell({ children }: { children: ReactNode }) {
 
           <div className="pointer-events-none absolute inset-x-3 flex justify-center items-center min-w-0 px-12">
             <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate text-center">
-              BeKaPaKa Bobolice
+              BeKaPaKa
             </span>
           </div>
 
-          <div className="relative z-10 ml-auto flex items-center gap-2 shrink-0">
-            <div
-              className="w-9 h-9 rounded-full bg-bkpk-surface flex items-center justify-center border border-bkpk-primary/40 overflow-hidden p-0.5 shrink-0 shadow-[0_0_10px_rgba(236,167,44,0.1)]"
-              aria-hidden
+          {user ? (
+            <Link
+              to="/profile"
+              className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
+              aria-label="Mój profil"
             >
-              <img src="/logo.png" alt="" className="w-full h-full object-contain" />
-            </div>
-            {user ? (
-              <Link
-                to="/profile"
-                className="flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
-                aria-label="Mój profil"
-              >
-                <img
-                  src={resolvePlayerPhoto(user)}
-                  onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                  className="w-full h-full object-cover"
-                  alt=""
-                />
-              </Link>
-            ) : null}
-          </div>
+              <img
+                src={resolvePlayerPhoto(user)}
+                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                className="w-full h-full object-cover"
+                alt=""
+              />
+            </Link>
+          ) : (
+            <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />
+          )}
         </header>
 
         <main
