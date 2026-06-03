@@ -116,7 +116,7 @@ export function MegaHomeTemplate({
           <div
             className='next-event-photo-bg'
             aria-hidden='true'
-            style={{ backgroundImage: "url('/images/hero-basketball.jpg')" }}
+            style={{ backgroundImage: "url('/images/hero-event-basketball.jpg')" }}
           />
           {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
