@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
-import { useOverlayViewportHeight } from '../../../lib/use-overlay-viewport-height'
+import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay'
 import { CloseIcon } from '../shared/PublicIcons'
 import { MainNav } from './MainNav'
 
@@ -33,6 +33,7 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   const closeCleanupRef = useRef<(() => void) | null>(null)
 
   useOverlayViewportHeight(isMounted)
+  usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' })
 
   const finishUnmount = useCallback(() => {
     closeCleanupRef.current?.()
@@ -121,12 +122,6 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   useEffect(() => {
     if (!isMounted) return
 
-    const scrollY = window.scrollY
-    const root = document.documentElement
-    root.classList.add('is-scroll-locked')
-    document.body.classList.add('is-scroll-locked')
-    document.body.style.top = `-${scrollY}px`
-
     const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
       'button, a, [tabindex]:not([tabindex="-1"])'
     )
@@ -164,10 +159,6 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
 
     document.addEventListener('keydown', handleKeyDown)
     return () => {
-      root.classList.remove('is-scroll-locked')
-      document.body.classList.remove('is-scroll-locked')
-      document.body.style.top = ''
-      window.scrollTo(0, scrollY)
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [isMounted, handleRequestClose])

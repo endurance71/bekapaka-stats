@@ -21,13 +21,19 @@
       {
         "name": "next"
       }
-    ]
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
+      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"]
+    }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../packages/safari-overlay/**/*.ts"
   ],
   "exclude": [
     "node_modules"

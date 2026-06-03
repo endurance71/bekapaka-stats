@@ -43,6 +43,8 @@
 
 /* Pełnoekranowe modale / drawer — mobile: przezroczysty chrome Safari */
 @media (max-width: 899px) {
+  html.is-overlay-open,
+  html.is-overlay-open body.site-body,
   html.is-stats-drawer-open,
   html.is-stats-drawer-open body.site-body {
     background: transparent;
@@ -50,6 +52,8 @@
 }
 
 @media (min-width: 900px) {
+  html.is-overlay-open,
+  html.is-overlay-open body.site-body,
   html.is-stats-drawer-open,
   html.is-stats-drawer-open body.site-body {
     background: var(--bg-app);

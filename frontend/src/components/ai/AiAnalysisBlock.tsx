@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -188,6 +189,9 @@ export default function AiAnalysisBlock({
   const [modalOpen, setModalOpen] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
 
+  useOverlayViewportHeight(modalOpen);
+  usePageScrollLock(modalOpen, { htmlClass: 'is-overlay-open' });
+
   useEffect(() => {
     if (!modalOpen) return;
 
@@ -195,11 +199,6 @@ export default function AiAnalysisBlock({
       if (e.key === 'Escape') setModalOpen(false);
     };
 
-    const scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', handleEsc);
 
     const frame = requestAnimationFrame(() => {
@@ -208,11 +207,6 @@ export default function AiAnalysisBlock({
 
     return () => {
       document.removeEventListener('keydown', handleEsc);
-      document.body.style.position = '';
-      document.body.style.width = '';
-      document.body.style.top = '';
-      document.body.style.overflow = '';
-      window.scrollTo(0, scrollY);
       cancelAnimationFrame(frame);
     };
   }, [modalOpen]);
@@ -336,7 +330,7 @@ export default function AiAnalysisBlock({
             <AnimatePresence>
               {modalOpen ? (
                 <div
-                  className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center sm:p-4"
+                  className="fixed inset-0 z-[200] flex sm:items-center sm:justify-center sm:p-4 overlay-viewport-fill"
                   role="presentation"
                 >
                   <motion.button
@@ -345,7 +339,7 @@ export default function AiAnalysisBlock({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute inset-0 bg-bkpk-overlay-strong backdrop-blur-sm"
+                    className="absolute inset-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-sm"
                     aria-label="Zamknij analizę"
                     onClick={() => setModalOpen(false)}
                   />
@@ -362,9 +356,9 @@ export default function AiAnalysisBlock({
                       'relative z-[201] flex w-full max-w-3xl min-h-0 flex-col border-0 overflow-hidden',
                       'bg-bkpk-surface-elevated shadow-2xl shadow-black/50',
                       'fixed inset-x-0 bottom-0 top-0 sm:static sm:inset-auto',
-                      'h-[100dvh] max-h-[100dvh] min-h-[100dvh]',
+                      'min-h-[100lvh] max-sm:h-[var(--overlay-vh)] max-sm:min-h-[var(--overlay-vh)] max-sm:max-h-[var(--overlay-vh)]',
                       'rounded-t-2xl rounded-b-none sm:rounded-2xl sm:mx-auto',
-                      'sm:h-auto sm:min-h-0 sm:max-h-[min(85dvh,calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))]'
+                      'sm:h-auto sm:min-h-0 sm:max-h-[min(85dvh,calc(var(--overlay-vh,100dvh)-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))]'
                     )}
                     onClick={(e) => e.stopPropagation()}
                   >

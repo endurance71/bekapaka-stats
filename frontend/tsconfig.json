@@ -10,7 +10,12 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "strict": true
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
+      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../packages/safari-overlay"]
 }
