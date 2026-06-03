@@ -25,7 +25,9 @@
     "baseUrl": ".",
     "paths": {
       "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
-      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"]
+      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"],
+      "react": ["./node_modules/react"],
+      "react-dom": ["./node_modules/react-dom"]
     }
   },
   "include": [
