@@ -53,7 +53,6 @@ export default async function NewsDetailPage({ params }: { params: Params }) {
               <img src={item.coverImageUrl} alt='' className='article-detail__cover-image' />
             </div>
           ) : null}
-          {item.excerpt ? <p className='article-detail__lead'>{item.excerpt}</p> : null}
           <div className='article-content'>
             <ArticleMarkdown content={item.content} />
           </div>

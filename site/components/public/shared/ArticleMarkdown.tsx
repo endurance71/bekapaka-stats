@@ -1,5 +1,8 @@
 import ReactMarkdown from 'react-markdown'
 
+const isListLine = (line: string) => /^[-*]\s+/.test(line)
+const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
+
 /**
  * Strapi editors often use single line breaks; merge prose lines so **bold** parses correctly.
  */
@@ -19,7 +22,7 @@ function normalizeNewsMarkdown(content: string): string {
       flush()
       continue
     }
-    if (/^[-*]\s+/.test(trimmed)) {
+    if (isListLine(trimmed) || isHeadingLine(trimmed)) {
       flush()
       blocks.push(trimmed)
       continue
@@ -27,10 +30,10 @@ function normalizeNewsMarkdown(content: string): string {
     buffer = buffer ? `${buffer} ${trimmed}` : trimmed
   }
   flush()
+
   return blocks
     .join('\n\n')
-    .replace(/\*\*\s+/g, '**')
-    .replace(/\s+\*\*/g, '**')
+    .replace(/\*\*([^*]+?)\*\*/g, (_, inner: string) => `**${inner.trim()}**`)
 }
 
 /**
@@ -45,6 +48,8 @@ export function ArticleMarkdown({ content }: { content: string }) {
     <ReactMarkdown
       className='article-markdown'
       components={{
+        h2: ({ children }) => <h2 className='article-markdown__h2'>{children}</h2>,
+        h3: ({ children }) => <h3 className='article-markdown__h3'>{children}</h3>,
         p: ({ children }) => <p>{children}</p>,
         strong: ({ children }) => <strong>{children}</strong>,
         em: ({ children }) => <em>{children}</em>,
