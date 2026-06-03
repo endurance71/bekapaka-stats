@@ -100,7 +100,6 @@ export function MegaHomeTemplate({
 
         {/* ROW 2: NEXT MATCH (7) & STAT LEADERS (5) */}
         <article className='surface-card dashboard-next dashboard-next--highlight'>
-          <p className='section-kicker'>Najbliższe wydarzenie</p>
           {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 

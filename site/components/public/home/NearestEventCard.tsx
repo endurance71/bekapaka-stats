@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { NearestHighlight } from '../../../lib/data'
 import { cmsEventCategoryLabel } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
@@ -52,11 +52,20 @@ function NearestEventCountdown({ startsAt }: { startsAt: string }) {
   if (!Number.isFinite(targetMs)) return null
 
   return (
-    <div className='next-event-hero__countdown' aria-live='polite'>
+    <p className='next-event-hero__countdown' aria-live='polite'>
       <span className='next-event-hero__countdown-label'>Do startu</span>
-      <strong className='next-event-hero__countdown-value' suppressHydrationWarning>
+      <span className='next-event-hero__countdown-value' suppressHydrationWarning>
         {label}
-      </strong>
+      </span>
+    </p>
+  )
+}
+
+function NearestEventShell({ children, isEmpty = false }: { children: ReactNode; isEmpty?: boolean }) {
+  return (
+    <div className={`next-event-hero${isEmpty ? ' next-event-hero--empty' : ''}`}>
+      <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
+      <div className='next-event-hero__content'>{children}</div>
     </div>
   )
 }
@@ -67,15 +76,14 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
   if (highlight.source === 'kalk') {
     const { game } = highlight
     return (
-      <div className='next-event-hero'>
-        <div className='next-event-hero__bg' aria-hidden />
-        <div className='next-event-hero__content'>
-          <span className='next-event-hero__eyebrow'>Zmagania ligowe · KALK</span>
-          <h2 className='next-event-hero__match-title'>
-            <span className='next-event-hero__team'>BEKAPAKA</span>
-            <span className='next-event-hero__vs'>VS</span>
-            <span className='next-event-hero__team next-event-hero__team--gold'>{game.opponent.toUpperCase()}</span>
-          </h2>
+      <NearestEventShell>
+        <span className='next-event-hero__eyebrow'>Zmagania ligowe · KALK</span>
+        <h2 className='next-event-hero__match-title'>
+          <span className='next-event-hero__team'>BEKAPAKA</span>
+          <span className='next-event-hero__vs'>VS</span>
+          <span className='next-event-hero__team next-event-hero__team--accent'>{game.opponent.toUpperCase()}</span>
+        </h2>
+        <div className='next-event-hero__meta-row'>
           <div className='next-event-hero__meta'>
             <div className='next-event-hero__meta-item'>
               <span className='next-event-hero__meta-label'>Termin</span>
@@ -87,20 +95,18 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
             </div>
           </div>
           <NearestEventCountdown startsAt={startsAt} />
-          <span className='next-event-hero__badge'>Liga KALK</span>
         </div>
-      </div>
+      </NearestEventShell>
     )
   }
 
   const { event } = highlight
   return (
-    <div className='next-event-hero'>
-      <div className='next-event-hero__bg' aria-hidden />
-      <div className='next-event-hero__content'>
-        <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>
-        <h2 className='next-event-hero__event-title'>{event.title}</h2>
-        {event.description ? <p className='next-event-hero__lead muted'>{event.description}</p> : null}
+    <NearestEventShell>
+      <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>
+      <h2 className='next-event-hero__event-title'>{event.title}</h2>
+      {event.description ? <p className='next-event-hero__lead muted'>{event.description}</p> : null}
+      <div className='next-event-hero__meta-row'>
         <div className='next-event-hero__meta'>
           <div className='next-event-hero__meta-item'>
             <span className='next-event-hero__meta-label'>Termin</span>
@@ -112,20 +118,16 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
           </div>
         </div>
         <NearestEventCountdown startsAt={startsAt} />
-        <span className='next-event-hero__badge'>Wydarzenie klubu</span>
       </div>
-    </div>
+    </NearestEventShell>
   )
 }
 
 export function NearestEventEmpty() {
   return (
-    <div className='next-event-hero next-event-hero--empty'>
-      <div className='next-event-hero__bg' aria-hidden />
-      <div className='next-event-hero__content'>
-        <h3 className='next-event-hero__empty-title'>Brak zaplanowanych wydarzeń</h3>
-        <p className='muted'>Nie ma nadchodzących meczów w KALK ani wpisów w kalendarzu klubu.</p>
-      </div>
-    </div>
+    <NearestEventShell isEmpty>
+      <h3 className='next-event-hero__empty-title'>Brak zaplanowanych wydarzeń</h3>
+      <p className='muted'>Nie ma nadchodzących meczów w KALK ani wpisów w kalendarzu klubu.</p>
+    </NearestEventShell>
   )
 }

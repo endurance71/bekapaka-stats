@@ -273,55 +273,69 @@
   color: var(--text-primary);
 }
 
-/* Najbliższe wydarzenie — kafelek hero */
+/* Najbliższe wydarzenie — pełny kafelek, akcent czerwony */
 .dashboard-next { order: 3; }
 
 .dashboard-next--highlight {
+  --event-accent: #e63946;
+  --event-accent-deep: #9d1b2a;
+  --event-accent-glow: rgba(230, 57, 70, 0.28);
+  --event-accent-muted: rgba(230, 57, 70, 0.12);
+  position: relative;
   padding: 0;
   overflow: hidden;
-  border-color: rgba(236, 167, 44, 0.22);
-  background: #121214;
+  border-color: rgba(230, 57, 70, 0.4);
+  background: radial-gradient(ellipse 130% 90% at 100% 0%, var(--event-accent-glow) 0%, transparent 52%),
+    radial-gradient(ellipse 110% 85% at 0% 100%, rgba(157, 27, 42, 0.22) 0%, transparent 58%),
+    linear-gradient(168deg, #1c1214 0%, #141216 42%, #101012 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.dashboard-next--highlight .section-kicker {
-  position: relative;
-  z-index: 2;
-  padding: var(--space-4) var(--space-4) 0;
-  margin: 0;
+.dashboard-next--highlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 20px 20px;
+  pointer-events: none;
+}
+
+.dashboard-next--highlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.15) 100%);
+  pointer-events: none;
 }
 
 .next-event-hero {
   position: relative;
-  min-height: 220px;
+  z-index: 1;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  background: radial-gradient(ellipse at top left, rgba(236, 167, 44, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse at bottom right, rgba(236, 167, 44, 0.1) 0%, #121214 65%), #121214;
 }
 
-.next-event-hero__bg {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 22px 22px;
-  pointer-events: none;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, #000 85%);
+.next-event-hero__kicker {
+  margin: 0;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  color: var(--event-accent);
 }
 
 .next-event-hero__content {
-  position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4) var(--space-4);
+  padding: 0 var(--space-4) var(--space-4);
+  flex: 1;
 }
 
 .next-event-hero__eyebrow {
   font-size: 0.72rem;
-  color: var(--text-soft);
+  color: rgba(255, 200, 200, 0.55);
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -342,15 +356,15 @@
   line-height: 1;
 }
 
-.next-event-hero__team--gold {
-  color: var(--bkp-gold);
+.next-event-hero__team--accent {
+  color: var(--event-accent);
 }
 
 .next-event-hero__vs {
   font-family: var(--font-bebas-neue), sans-serif;
   font-size: 1rem;
-  color: var(--bkp-gold);
-  background: rgba(236, 167, 44, 0.12);
+  color: var(--event-accent);
+  background: var(--event-accent-muted);
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -373,10 +387,22 @@
   overflow: hidden;
 }
 
+.next-event-hero__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding-top: var(--space-1);
+  border-top: 1px solid rgba(230, 57, 70, 0.2);
+}
+
 .next-event-hero__meta {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
+  flex: 1;
+  min-width: min(100%, 220px);
 }
 
 .next-event-hero__meta-label {
@@ -394,52 +420,51 @@
 }
 
 .next-event-hero__countdown {
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  border: 1px solid rgba(236, 167, 44, 0.25);
-  background: rgba(236, 167, 44, 0.06);
-  align-self: flex-start;
+  align-items: flex-end;
+  gap: 1px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .next-event-hero__countdown-label {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--bkp-gold);
-  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 180, 180, 0.45);
+  font-weight: 500;
 }
 
 .next-event-hero__countdown-value {
-  font-family: var(--font-bebas-neue), sans-serif;
-  font-size: clamp(1.35rem, 3vw, 1.75rem);
-  letter-spacing: 0.04em;
-  color: var(--text-primary);
-}
-
-.next-event-hero__badge {
-  align-self: flex-start;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--bkp-gold);
-  border: 1px solid rgba(236, 167, 44, 0.35);
-  border-radius: 999px;
-  padding: 4px 10px;
-  background: rgba(236, 167, 44, 0.08);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
 }
 
 .next-event-hero--empty .next-event-hero__content {
-  min-height: 180px;
+  min-height: 160px;
   justify-content: center;
 }
 
 .next-event-hero__empty-title {
   margin: 0;
   font-size: 1.2rem;
+}
+
+@media (max-width: 520px) {
+  .next-event-hero__meta-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .next-event-hero__countdown {
+    align-items: flex-start;
+    text-align: left;
+  }
 }
 
 /* Match Ticket Component (legacy / inne widoki) */
