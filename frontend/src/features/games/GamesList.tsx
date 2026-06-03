@@ -54,7 +54,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
                     <button
                         key={f.id}
                         onClick={() => setFilter(f.id as any)}
-                        className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f.id
+                        className={`px-4 py-2.5 min-h-[44px] text-xs font-bold rounded-lg transition-all touch-manipulation ${filter === f.id
                             ? bkpkActivePillClass
                             : "text-bkpk-text-muted hover:text-bkpk-text-secondary"
                             }`}

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
-import { StandingsBoard } from '../../components/public/shared/StandingsBoard'
+import { StandingsBoardInteractive } from '../../components/public/shared/StandingsBoardInteractive'
 import { getLeagueTableState, getSiteMetadataBase } from '../../lib/data'
 
 export const dynamic = 'force-dynamic'
@@ -30,7 +30,7 @@ export default async function LeagueTablePage() {
           : 'Tabela pojawi sie po imporcie danych sezonu.'
       }
     >
-      <StandingsBoard table={table} />
+      <StandingsBoardInteractive table={table} />
     </EditorialListingTemplate>
   )
 }

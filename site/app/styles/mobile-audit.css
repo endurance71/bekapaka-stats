@@ -1,0 +1,350 @@
+/* Mobile UX audit — responsive overrides (mobile-first) */
+
+/* Page skeleton loaders */
+.page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.page-skeleton__hero {
+  height: clamp(120px, 24vw, 200px);
+  border-radius: var(--radius-md);
+}
+
+.page-skeleton__line {
+  height: 72px;
+  border-radius: var(--radius-sm);
+}
+
+.page-skeleton--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+.page-skeleton__card {
+  aspect-ratio: 3 / 4;
+  border-radius: var(--radius-sm);
+}
+
+.page-skeleton--table {
+  gap: var(--space-2);
+}
+
+.page-skeleton__row {
+  height: 52px;
+  border-radius: var(--radius-sm);
+}
+
+/* Hero — svh for iOS Safari */
+.dashboard-hero {
+  min-height: clamp(320px, 60svh, 680px);
+}
+
+.hero-photo-bg {
+  object-fit: cover;
+}
+
+.hero-actions .button {
+  min-width: 200px;
+  padding: 14px 24px;
+  font-size: 1rem;
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Bento / tap cards */
+.bento-card,
+.home-bento-card,
+.premium-match-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.bento-card:active,
+.home-bento-card:active,
+.premium-match-card:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 479px) {
+  .bento-grid,
+  .home-bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .bento-grid,
+  .home-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Match tabs — horizontal scroll + touch targets */
+.match-tabs-premium {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  gap: var(--space-2);
+  padding: 4px 0;
+}
+
+.match-tabs-premium::-webkit-scrollbar {
+  display: none;
+}
+
+.match-tab-premium-btn {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 10px 16px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.match-tab-premium-btn.is-active {
+  font-weight: 600;
+}
+
+/* Match horizontal scroll cards */
+.matches-scroll-row {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  gap: var(--space-3);
+  scrollbar-width: none;
+  padding-bottom: var(--space-2);
+}
+
+.matches-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.matches-scroll-row > * {
+  scroll-snap-align: start;
+  min-width: 280px;
+  flex-shrink: 0;
+}
+
+/* Standings — responsive table */
+.standings-board__head {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elevated);
+  z-index: 10;
+}
+
+.standings-board__head,
+.standings-row {
+  min-height: 44px;
+}
+
+@media (max-width: 599px) {
+  .standings-board__head,
+  .standings-row {
+    grid-template-columns: 44px 1fr 60px;
+  }
+
+  .col-balance {
+    display: none;
+  }
+}
+
+.standings-board__toggle-cols {
+  display: none;
+  margin-bottom: var(--space-3);
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-muted);
+  color: var(--text-primary);
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (max-width: 599px) {
+  .standings-board__toggle-cols {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .standings-board.is-expanded .col-balance {
+    display: flex;
+  }
+
+  .standings-board.is-expanded .standings-board__head,
+  .standings-board.is-expanded .standings-row {
+    grid-template-columns: 44px 1fr 100px 60px;
+    overflow-x: auto;
+  }
+}
+
+/* Roster grid */
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 479px) {
+  .roster-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .roster-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* News list — thumbnail + text on mobile */
+@media (max-width: 767px) {
+  .news-card,
+  .news-card-premium {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .news-card__thumb,
+  .news-card-premium__media {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .news-card__title,
+  .news-card-premium__title {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Article slug */
+.article-body,
+.markdown-content {
+  max-width: min(680px, 100% - 32px);
+  margin-inline: auto;
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.markdown-content pre {
+  overflow-x: auto;
+  font-size: 0.85rem;
+  border-radius: 8px;
+}
+
+.markdown-table-wrap {
+  overflow-x: auto;
+}
+
+/* Documents — mobile stack */
+@media (max-width: 599px) {
+  .documents-list li {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .documents-list li > a {
+    align-self: flex-start;
+    min-width: 88px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .documents-list li div p a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 2px 0;
+  }
+}
+
+.documents-list li > a {
+  min-height: 44px;
+  min-width: 88px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Sponsors grid */
+.sponsors-logo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-4);
+}
+
+.sponsors-logo-grid img {
+  max-height: 60px;
+  width: 100%;
+  object-fit: contain;
+  filter: grayscale(1);
+  transition: filter 0.2s;
+}
+
+.sponsors-logo-grid a:hover img,
+.sponsors-logo-grid a:focus-visible img {
+  filter: grayscale(0);
+}
+
+/* Club page — map iframe */
+.club-map-iframe {
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  border: 0;
+}
+
+/* Global tap targets */
+button,
+.button,
+[role='button'] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input,
+select,
+textarea {
+  font-size: max(16px, 1rem);
+}
+
+/* Breadcrumb mobile — show back only */
+@media (max-width: 599px) {
+  .breadcrumb-nav .breadcrumb-item:not(:last-child):not(.breadcrumb-back) {
+    display: none;
+  }
+}
+
+/* Players slider */
+.players-slider-wrap-premium {
+  scroll-snap-type: x mandatory;
+}
+
+.players-slider-track-premium > * {
+  scroll-snap-align: start;
+}

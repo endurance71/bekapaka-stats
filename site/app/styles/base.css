@@ -4,8 +4,13 @@
   box-sizing: border-box;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 html {
-  scroll-behavior: smooth;
   height: 100%;
   height: -webkit-fill-available;
   background-color: var(--bg-app);
@@ -21,7 +26,7 @@ body {
 
 body {
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: clamp(0.9375rem, 2.5vw, 1rem);
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--bg-app);
@@ -120,8 +125,28 @@ h6 {
   text-transform: uppercase;
   letter-spacing: 0.03em;
   font-weight: 400;
-  line-height: 1.1;
   margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 3rem);
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: clamp(1.35rem, 4vw, 2.25rem);
+  line-height: 1.15;
+}
+
+h3 {
+  font-size: clamp(1.1rem, 3vw, 1.75rem);
+  line-height: 1.2;
+}
+
+h4,
+h5,
+h6 {
+  line-height: 1.2;
 }
 
 p {
@@ -521,8 +546,10 @@ p {
   position: relative;
   z-index: 1;
   flex-shrink: 0;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

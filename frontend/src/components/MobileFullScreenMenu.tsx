@@ -268,7 +268,7 @@ export default function MobileFullScreenMenu({
                     <button
                         type="button"
                         onClick={handleRequestClose}
-                        className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-bkpk-surface-tint-1/60 border border-bkpk-border-strong text-bkpk-text-primary shrink-0"
+                        className="relative z-10 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-bkpk-surface-tint-1/60 border border-bkpk-border-strong text-bkpk-text-primary shrink-0 touch-manipulation"
                         aria-label="Zamknij menu"
                     >
                         <X className="w-5 h-5" />

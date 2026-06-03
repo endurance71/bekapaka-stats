@@ -33,13 +33,7 @@ export default async function SponsorsPage() {
           : 'Po uzupełnieniu sekcji sponsorów w CMS dane pojawią się automatycznie.'
       }
     >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '24px'
-        }}
-      >
+      <div className='sponsors-logo-grid'>
         {sponsors.map((sponsor) => (
           <SponsorCard key={sponsor.id} sponsor={sponsor} />
         ))}
@@ -128,8 +122,9 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
             fontSize: '10px',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
-            minHeight: '32px',
-            padding: '6px 14px',
+            minHeight: '44px',
+            minWidth: '88px',
+            padding: '8px 14px',
             marginTop: 'auto'
           }}
         >
