@@ -60,6 +60,7 @@ services:
       NODE_ENV: production
       PORT: 3000
       SITE_CMS_API_URL: ${SITE_CMS_API_URL:-http://bkpk-cms:1337}
+      SITE_CMS_PUBLIC_URL: ${SITE_CMS_PUBLIC_URL:-https://cms.bekapaka.pl}
       SITE_BACKEND_API_URL: ${SITE_BACKEND_API_URL:-http://bkpk-backend:4001}
       SITE_CMS_TOKEN: ${SITE_CMS_TOKEN:-}
     ports:
