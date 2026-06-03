@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
+import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { slugifyTitle } from '../../../lib/data/utils'
@@ -56,6 +57,7 @@ export default async function NewsDetailPage({ params }: { params: Params }) {
           <div className='article-content'>
             <ArticleMarkdown content={item.content} />
           </div>
+          <NewsAttachments items={item.attachments} />
         </>
       }
     />
