@@ -86,18 +86,20 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
           <span className='next-event-hero__vs'>VS</span>
           <span className='next-event-hero__team next-event-hero__team--accent'>{game.opponent.toUpperCase()}</span>
         </h2>
-        <div className='next-event-hero__meta-row'>
-          <div className='next-event-hero__meta'>
-            <div className='next-event-hero__meta-item'>
-              <span className='next-event-hero__meta-label'>Termin</span>
-              <strong>{formatDateTime(game.date)}</strong>
+        <div className='next-event-hero__meta-panel'>
+          <div className='next-event-hero__meta-row'>
+            <div className='next-event-hero__meta'>
+              <div className='next-event-hero__meta-item'>
+                <span className='next-event-hero__meta-label'>Termin</span>
+                <strong>{formatDateTime(game.date)}</strong>
+              </div>
+              <div className='next-event-hero__meta-item'>
+                <span className='next-event-hero__meta-label'>Miejsce</span>
+                <strong>{formatVenue(game.data?.venue)}</strong>
+              </div>
             </div>
-            <div className='next-event-hero__meta-item'>
-              <span className='next-event-hero__meta-label'>Miejsce</span>
-              <strong>{formatVenue(game.data?.venue)}</strong>
-            </div>
+            <NearestEventCountdown startsAt={startsAt} />
           </div>
-          <NearestEventCountdown startsAt={startsAt} />
         </div>
         <NearestEventCalendarActions highlight={highlight} />
       </NearestEventShell>
@@ -110,18 +112,20 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
       <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>
       <h2 className='next-event-hero__event-title'>{event.title}</h2>
       {event.description ? <p className='next-event-hero__lead muted'>{event.description}</p> : null}
-      <div className='next-event-hero__meta-row'>
-        <div className='next-event-hero__meta'>
-          <div className='next-event-hero__meta-item'>
-            <span className='next-event-hero__meta-label'>Termin</span>
-            <strong>{formatDateTime(event.startAt)}</strong>
+      <div className='next-event-hero__meta-panel'>
+        <div className='next-event-hero__meta-row'>
+          <div className='next-event-hero__meta'>
+            <div className='next-event-hero__meta-item'>
+              <span className='next-event-hero__meta-label'>Termin</span>
+              <strong>{formatDateTime(event.startAt)}</strong>
+            </div>
+            <div className='next-event-hero__meta-item'>
+              <span className='next-event-hero__meta-label'>Miejsce</span>
+              <strong>{event.location || 'Do potwierdzenia'}</strong>
+            </div>
           </div>
-          <div className='next-event-hero__meta-item'>
-            <span className='next-event-hero__meta-label'>Miejsce</span>
-            <strong>{event.location || 'Do potwierdzenia'}</strong>
-          </div>
+          <NearestEventCountdown startsAt={startsAt} />
         </div>
-        <NearestEventCountdown startsAt={startsAt} />
       </div>
       <NearestEventCalendarActions highlight={highlight} />
     </NearestEventShell>
