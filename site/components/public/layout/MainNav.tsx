@@ -6,7 +6,6 @@ import type { ComponentType } from 'react'
 import {
   BuildingIcon,
   CalendarIcon,
-  FileIcon,
   HandshakeIcon,
   HomeIcon,
   NewspaperIcon,
@@ -24,7 +23,6 @@ const navItems: { href: string; label: string; Icon: NavIcon }[] = [
   { href: '/mecze', label: 'Mecze', Icon: CalendarIcon },
   { href: '/tabela', label: 'Tabela', Icon: TrophyIcon },
   { href: '/sklad', label: 'Skład', Icon: UsersIcon },
-  { href: '/dokumenty', label: 'Dokumenty', Icon: FileIcon },
   { href: '/sponsorzy', label: 'Sponsorzy', Icon: HandshakeIcon },
   { href: '/klub', label: 'Klub', Icon: BuildingIcon }
 ]
