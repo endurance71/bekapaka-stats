@@ -15,7 +15,7 @@ import re
 import time
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -256,37 +256,46 @@ def extract_league_table(soup: BeautifulSoup) -> List[Dict[str, any]]:
     return data
 
 
+def _find_mecz_link_in_row(cells) -> Tuple[Optional[str], Optional[str]]:
+    """Link do strony meczu jest zwykle w kolumnie WYNIK (biały_link), nie w MECZ."""
+    for cell in cells:
+        for anchor in cell.find_all('a', href=True):
+            href = anchor.get('href', '')
+            if '/mecz,' in href or 'mecz,' in href:
+                mecz_url = urljoin(BASE_URL, href)
+                return mecz_url, extract_match_id_from_url(mecz_url)
+    return None, None
+
+
 def extract_team_schedule(soup: BeautifulSoup) -> List[Dict[str, any]]:
-    """Extract schedule from team-specific page table."""
+    """Extract schedule from team-specific page table (klub,...,2.html)."""
     table = soup.find('table')
     if not table:
         return []
-    
+
     matches = []
     for row in table.find_all('tr'):
         if row.find('th'):
             continue
         cells = row.find_all('td')
-        if len(cells) < 4:
+        if len(cells) < 3:
             continue
-        
+
         try:
             # Column structure: DATA | MECZ | WYNIK | FAZA
             date_str = cells[0].get_text(strip=True)
             match_text = cells[1].get_text(strip=True)
             score_text = cells[2].get_text(strip=True)
-            
-            # Parse teams from "TEAM1 - TEAM2" format (with inconsistent spacing)
-            # Use regex to split on dash with optional spaces
-            import re
+            phase = cells[3].get_text(strip=True) if len(cells) > 3 else None
+
             parts = re.split(r'\s*-\s*', match_text, maxsplit=1)
-            if len(parts) == 2:
-                home_team = parts[0].strip()
-                guest_team = parts[1].strip()
-            else:
+            if len(parts) != 2:
                 continue
-            
-            # Parse score
+            home_team = parts[0].strip()
+            guest_team = parts[1].strip()
+
+            mecz_url, mecz_id = _find_mecz_link_in_row(cells)
+
             score_home, score_away = None, None
             is_finished = False
             if ':' in score_text and score_text.strip() != ':':
@@ -298,19 +307,27 @@ def extract_team_schedule(soup: BeautifulSoup) -> List[Dict[str, any]]:
                         is_finished = True
                     except ValueError:
                         pass
-            
-            matches.append({
+
+            entry = {
                 'date': date_str,
                 'homeTeam': home_team,
                 'guestTeam': guest_team,
                 'scoreHome': score_home,
                 'scoreAway': score_away,
-                'isFinished': is_finished
-            })
+                'isFinished': is_finished,
+                'scheduleSource': 'club',
+            }
+            if phase:
+                entry['phaseLabel'] = phase
+            if mecz_url:
+                entry['meczUrl'] = mecz_url
+            if mecz_id:
+                entry['meczId'] = mecz_id
+            matches.append(entry)
         except Exception as e:
-            logging.warning(f"Error parsing team schedule row: {e}")
+            logging.warning('Error parsing team schedule row: %s', e)
             continue
-    
+
     return matches
 
 
@@ -440,12 +457,9 @@ def main() -> None:
                             teams_text = teams_text.replace(u'\xa0', u' ')
                             
                             if '-' in teams_text:
-                                teams = teams_text.split('-')
-                                home = teams[0].strip()
-                                # Guest może mieć śmieci na końcu jeśli parsowanie contents[0] zawiodło
-                                # Ale w strukturze HTML 'EMET ... - BrdCrew&nbsp;<div...'
-                                # Więc split powinien dać 'BrdCrew' jako drugą część (ewentualnie pustą)
-                                guest = teams[1].strip() if len(teams) > 1 else "?"
+                                parts = teams_text.split('-', 1)
+                                home = parts[0].strip()
+                                guest = parts[1].strip() if len(parts) > 1 else "?"
                             else:
                                 home, guest = "?", "?"
 
@@ -522,11 +536,17 @@ def main() -> None:
             key = (extract_date_only(m.get('date', '')), normalize_team(m.get('homeTeam', '')), normalize_team(m.get('guestTeam', '')))
             if key in merged_dict:
                 existing = merged_dict[key]
-                # Merge: prefer the date with time (the longer string)
                 date_to_keep = existing.get('date') if len(existing.get('date', '')) > len(m.get('date', '')) else m.get('date')
                 merged = {**existing, **m, 'date': date_to_keep}
-                if 'roundUrl' in existing and 'roundUrl' not in merged:
+                if existing.get('roundUrl') and not merged.get('roundUrl'):
                     merged['roundUrl'] = existing['roundUrl']
+                # Terminarz klubu: link do /mecz/... jest w kolumnie WYNIK
+                if m.get('meczUrl') and not merged.get('meczUrl'):
+                    merged['meczUrl'] = m['meczUrl']
+                if m.get('meczId') and not merged.get('meczId'):
+                    merged['meczId'] = m['meczId']
+                if existing.get('roundUrl'):
+                    merged['scheduleSource'] = 'division+club'
                 merged_dict[key] = merged
             else:
                 merged_dict[key] = m

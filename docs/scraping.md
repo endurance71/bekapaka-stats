@@ -30,7 +30,7 @@ Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols
 
 - **Dywizja:** [dywizja-2](https://www.kalk-koszalin.com/dzial,dywizja-2,4.html)
 - **Sekcje:** Tabela, Terminarz (kolejki), Statystyki indywidualne
-- **Dodatkowo:** Terminarz zespołu BeKaPaKa (`klub,bekapaka-bobolice,222,2.html`) — scalany z terminarzem ogólnym
+- **Dodatkowo:** Terminarz zespołu BeKaPaKa (`klub,bekapaka-bobolice,222,2.html`) — scalany z terminarzem ogólnym; link do meczu (`meczId`, `meczUrl`) jest w kolumnie **WYNIK** (nie w nazwach drużyn)
 
 ## Przepływ danych
 
