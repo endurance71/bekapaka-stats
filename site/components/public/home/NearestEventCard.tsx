@@ -5,6 +5,7 @@ import type { NearestHighlight } from '../../../lib/data'
 import { cmsEventCategoryLabel } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 import { formatVenue } from '../../../lib/venue'
+import { NearestEventCalendarActions } from './NearestEventCalendarActions'
 
 interface NearestEventCardProps {
   highlight: NearestHighlight
@@ -22,13 +23,15 @@ function formatCountdown(msRemaining: number): string {
   const minutes = Math.floor((totalSeconds % 3600) / 60)
   const seconds = totalSeconds % 60
 
+  const sec = String(seconds).padStart(2, '0')
+
   if (days > 0) {
-    return `${days} d ${hours} h ${minutes} min`
+    return `${days} d ${hours} h ${minutes} min ${sec} s`
   }
   if (hours > 0) {
-    return `${hours} h ${minutes} min ${seconds} s`
+    return `${hours} h ${minutes} min ${sec} s`
   }
-  return `${minutes} min ${seconds} s`
+  return `${minutes} min ${sec} s`
 }
 
 function NearestEventCountdown({ startsAt }: { startsAt: string }) {
@@ -96,6 +99,7 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
           </div>
           <NearestEventCountdown startsAt={startsAt} />
         </div>
+        <NearestEventCalendarActions highlight={highlight} />
       </NearestEventShell>
     )
   }
@@ -119,6 +123,7 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
         </div>
         <NearestEventCountdown startsAt={startsAt} />
       </div>
+      <NearestEventCalendarActions highlight={highlight} />
     </NearestEventShell>
   )
 }
