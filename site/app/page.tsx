@@ -4,7 +4,7 @@ import { getPublicSiteData } from '../lib/data'
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const { news, recentGames, nextGame, roster, sponsors, table } = await getPublicSiteData()
+  const { news, recentGames, nearestEvent, roster, sponsors, table } = await getPublicSiteData()
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsTeam',
@@ -22,7 +22,7 @@ export default async function HomePage() {
       <MegaHomeTemplate
         news={news}
         recentGames={recentGames}
-        nextGame={nextGame}
+        nearestEvent={nearestEvent}
         roster={roster}
         sponsors={sponsors}
         table={table}

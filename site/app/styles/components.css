@@ -334,6 +334,27 @@
   letter-spacing: 0.02em;
 }
 
+.ticket-teams--cms {
+  flex-wrap: wrap;
+}
+
+.ticket-team-them--cms {
+  font-size: clamp(1.25rem, 3.5vw, 1.85rem);
+  line-height: 1.15;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.ticket-event-lead {
+  margin: 0 0 var(--space-2);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .ticket-details {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
