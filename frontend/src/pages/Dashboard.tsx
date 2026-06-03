@@ -63,14 +63,24 @@ export default function Dashboard() {
     setLoading(true);
     try {
       const scoutingQ = new URLSearchParams({ seasonId });
-      const [gamesData, playersData, scheduleData, scouting, tStats, briefingData] = await Promise.all([
+      const settled = await Promise.allSettled([
         fetchJSON<Game[]>('/api/games'),
         fetchJSON<Player[]>('/api/players'),
         fetchJSON<any[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`),
         fetchJSON<any>(`/api/scouting/next?${scoutingQ.toString()}`),
         fetchJSON<any>('/api/team/stats'),
-        fetchJSON<any>('/api/ai/briefing').catch(() => null)
+        fetchJSON<any>('/api/ai/briefing')
       ]);
+
+      const pick = <T,>(idx: number, fallback: T): T =>
+        settled[idx].status === 'fulfilled' ? (settled[idx] as PromiseFulfilledResult<T>).value : fallback;
+
+      const gamesData = pick<Game[]>(0, []);
+      const playersData = pick<Player[]>(1, []);
+      const scheduleData = pick<any[]>(2, []);
+      const scouting = pick<any>(3, null);
+      const tStats = pick<any>(4, null);
+      const briefingData = pick<any>(5, null);
 
       const played = (gamesData || []).filter(g => g.result);
       const wins = played.filter(g => g.result === 'W').length;
