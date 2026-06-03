@@ -2720,6 +2720,22 @@
   color: var(--text-primary);
 }
 
+.article-markdown__h2 {
+  margin: var(--space-2) 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+
+.article-markdown__h3 {
+  margin: var(--space-2) 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
 .article-markdown p {
   margin: 0;
 }
