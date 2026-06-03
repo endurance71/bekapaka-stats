@@ -88,7 +88,7 @@ export async function buildMatchContext(gameId) {
   const hasBoxScore = bekapaka?.players?.length > 0 || game.playerStats?.length > 0;
   if (!hasBoxScore) {
     throw new AiValidationError(
-      'Brak pełnych statystyk — zaimportuj protokół meczu (to nie jest mecz z box score)'
+      'Brak pełnego box score — uruchom synchronizację KALK (mecz /mecz/0.html) w panelu Admin'
     );
   }
 

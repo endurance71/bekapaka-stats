@@ -129,7 +129,7 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
     document.documentElement.style.overflow = 'hidden'
 
     const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-      'button:not(.mobile-fullscreen-menu__backdrop), a, [tabindex]:not([tabindex="-1"])'
+      'button, a, [tabindex]:not([tabindex="-1"])'
     )
     firstFocusable?.focus()
 
@@ -144,7 +144,7 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
 
       const focusableElements = Array.from(
         dialogRef.current.querySelectorAll<HTMLElement>(
-          'button:not(.mobile-fullscreen-menu__backdrop), a, [tabindex]:not([tabindex="-1"])'
+          'button, a, [tabindex]:not([tabindex="-1"])'
         )
       ).filter((element) => !element.hasAttribute('disabled'))
 
@@ -183,14 +183,6 @@ export function MobileFullScreenMenu({ isOpen, onClose }: MobileFullScreenMenuPr
       aria-label='Menu nawigacji'
       className={`mobile-fullscreen-menu ${isVisible ? 'is-visible' : ''}`}
     >
-      <button
-        type='button'
-        className='mobile-fullscreen-menu__backdrop'
-        aria-label='Zamknij menu'
-        tabIndex={-1}
-        onClick={handleRequestClose}
-      />
-
       <div ref={panelRef} className='mobile-fullscreen-menu__panel'>
         <header className='mobile-fullscreen-menu__header'>
           <div>

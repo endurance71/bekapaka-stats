@@ -101,6 +101,7 @@ body {
   --bkpk-medal-gold: var(--bkp-medal-gold);
   --bkpk-medal-silver: var(--bkp-medal-silver);
   --bkpk-medal-bronze: var(--bkp-medal-bronze);
+  --bkpk-on-primary: var(--bkp-on-primary);
 
   --color-bkpk-primary: var(--bkpk-color-primary);
   --color-bkpk-primary-hover: var(--bkpk-color-primary-hover);
@@ -137,7 +138,6 @@ body {
   --danger: var(--bkpk-color-danger);
   --accent: var(--bkpk-color-primary);
   --accent-2: var(--bkpk-color-primary);
-  --bkp-gold-gradient: var(--bkp-gold-gradient);
 }
 
 @layer base {
@@ -227,13 +227,13 @@ body {
 
   .bkpk-btn-primary {
     background: var(--bkp-gold-gradient);
-    color: #000000;
+    color: var(--bkp-on-primary, #000000);
     box-shadow: var(--bkpk-shadow-primary);
   }
 
   .bkpk-btn-primary:hover {
     box-shadow: var(--bkp-glow-gold);
-    color: #000000;
+    color: var(--bkp-on-primary, #000000);
   }
 
   .bkpk-btn-primary:active {

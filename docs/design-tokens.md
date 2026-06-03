@@ -52,17 +52,55 @@ Kanoniczna paleta marki jest w [`packages/design-tokens/bkp-tokens.css`](../pack
 
 Aliasy strony (`--accent`, `--bg-app`) mapują na tokeny wspólne w `tokens.css`.
 
+## Kontrast / WCAG
+
+### Dozwolone pary kolorów
+
+| Kontekst | Tło | Tekst | Uwagi |
+|----------|-----|-------|-------|
+| CTA primary | `--bkp-gold-gradient` | `#000` (`--bkp-on-primary`) | Kanoniczny przycisk akcji |
+| Aktywny pill / tab | `bg-bkpk-primary/10` | `text-bkpk-primary` | Użyj `bkpkActivePillClass` z `BkpkButton.tsx` |
+| Tekst pomocniczy | `--bkp-bg-surface` | `--bkp-text-secondary` | Min. `text-xs` (12px) |
+| Tekst wyciszony | `--bkp-bg-surface` | `--bkp-text-muted` | Tylko ≥12px; przy 10–11px użyj secondary |
+
+### Zakazy
+
+1. **Cykliczne aliasy tokenów** — nigdy `--bkp-gold-gradient: var(--bkp-gold-gradient)` w `:root`; nadpisuje gradient z `bkp-tokens.css` i przezroczyste CTA.
+2. **`text-bkpk-primary/20`–`/40`** na tekście UI — opacity primary tylko dla dekoracji (ikony tła, glow), nie dla czytelnego tekstu.
+3. **Niezdefiniowane klasy Tailwind** — np. `bg-bkpk-card` bez wpisu w `tailwind.config.ts`.
+4. **Opacity na custom shadow** — `shadow-bkpk-primary/20` nie działa; użyj `shadow-bkpk-primary` lub jawnego `shadow-[...]`.
+
+### Wzorzec aktywnych stanów
+
+- **Akcje główne** (submit, „Zobacz analizę”, login) → gradient + czarny tekst (`.bkpk-btn-primary` / `BkpkButton variant="primary"`).
+- **Toggle / filtry / taby** → `bkpkActivePillClass` (złoty tint + border), nie `bg-bkpk-primary-fill text-white`.
+
+### Regresja w repo
+
+```bash
+# Cykliczne aliasy w global.css
+rg 'var\(--bkp-[a-z-]+\);\s*$' frontend/src/styles/global.css
+
+# Zbyt niska opacity primary na tekście
+rg 'text-bkpk-primary/(2[0-9]|3[0-9])' frontend/src
+
+# Legacy pomarańcz
+rg '#FF6B35|rgba\(255,\s*107,\s*53' frontend/src --glob '!global.css'
+```
+
 ## Checklist QA wizualnego
 
 Po zmianie tokenów sprawdź ręcznie:
 
-- [ ] **Login** (`panel.bekapaka.pl`) — CTA gradient złoty, glow, brak pomarańczu
-- [ ] **Dashboard** — karty, wykresy, hero stats
+- [ ] **Login** (`panel.bekapaka.pl`) — CTA gradient złoty, czarny tekst, glow, brak pomarańczu
+- [ ] **Dashboard briefing** — przycisk „Zobacz analizę” widoczny (gradient + czarny tekst), ghost „Odśwież” obok
+- [ ] **Dashboard** — karty, wykresy, hero stats, taby trybu statystyk (gold tint)
 - [ ] **Shell** — sidebar active (złote tło ~8%), mobile menu, header glass
-- [ ] **Mecze / Box score** — sticky headers, primary highlights
-- [ ] **Skład** — panel + `bekapaka.pl/sklad` — spójne karty zawodników
+- [ ] **Mecze** — filtry (tło `bg-bkpk-surface`), aktywny filtr gold tint; lista filtrów Wszystkie/Rozegrane
+- [ ] **Box score / Game detail** — taby BKPK/OPP, sticky headers, primary highlights
+- [ ] **Skład** — PlayerCard: numer czytelny, imię w pełnym primary; panel + `bekapaka.pl/sklad`
 - [ ] **Liga KALK** — wiersz BeKaPaKa w tabeli / rankingach
-- [ ] **Administracja** — tabele, badge ADMIN
+- [ ] **Administracja** — tabele, badge ADMIN; meta AI ≥12px, secondary zamiast muted
 - [ ] **Wykresy** — kontrast etykiet (muted text) na ciemnym tle
 
 ## CI / regresja kolorów (opcjonalnie)

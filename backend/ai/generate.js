@@ -19,8 +19,35 @@ import {
   parseScoutingJson
 } from './scoutingMarkdown.js';
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
+import { getActiveSeason } from '../seasonService.js';
 
 const prisma = new PrismaClient();
+
+const aiSummarySelect = {
+  aiSummary: true,
+  aiSummaryHash: true,
+  aiSummaryAt: true,
+  aiSummaryModel: true
+};
+
+async function findMatchAiTarget(gameId) {
+  const game = await prisma.game.findUnique({
+    where: { id: gameId },
+    select: aiSummarySelect
+  });
+  if (game) return { kind: 'game', id: gameId, existing: game };
+
+  const season = await getActiveSeason();
+  if (!season) return null;
+
+  const kalk = await prisma.kalkMatch.findUnique({
+    where: { seasonId_id: { seasonId: season.id, id: String(gameId) } },
+    select: aiSummarySelect
+  });
+  if (kalk) return { kind: 'kalk', id: String(gameId), seasonId: season.id, existing: kalk };
+
+  return null;
+}
 
 function formatStat(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return '0.0';
@@ -100,7 +127,7 @@ function buildFallbackPlayerPlan(payload) {
   : [`- Utrzymuj straty na poziomie ≤ **${formatStat(derived.tovPerGame ?? 2)}** na mecz i popraw pierwszą decyzję po odbiorze piłki.`];
 
   const sections = {
-    profile: `${firstName}, jestem Twoim Trenerem AI BeKaPaKa. W tym sezonie masz **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach (~**${formatStat(mpg)}** min/mecz) — bazuję na protokołach z KOSiR Koszalin i układam plan pod Twój najbliższy trening.`,
+    profile: `${firstName}, jestem Twoim Trenerem AI BeKaPaKa. W tym sezonie masz **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach (~**${formatStat(mpg)}** min/mecz) — bazuję na statystykach KALK (liga + log meczów) i układam plan pod Twój najbliższy trening.`,
     positionPriorities: `Grasz jako **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\n\n${positionalPrioritiesTu.join('\n')}\n\nBędę monitorował u Ciebie: **${keyMetrics}**.`,
     strengths: strengths
       .map((line) =>
@@ -146,10 +173,8 @@ function resolvePlayerDevelopmentText(raw, payload) {
 export async function generateGameAnalysis(gameId, options = {}) {
   return withAiLock(`game:${gameId}`, async () => {
     const ctx = await buildMatchContext(gameId);
-    const existing = await prisma.game.findUnique({
-      where: { id: gameId },
-      select: { aiSummary: true, aiSummaryHash: true, aiSummaryAt: true, aiSummaryModel: true }
-    });
+    const target = await findMatchAiTarget(gameId);
+    const existing = target?.existing;
 
     if (
       !options.force &&
@@ -171,15 +196,24 @@ export async function generateGameAnalysis(gameId, options = {}) {
 
     const model = getGeminiModelName();
     const now = new Date();
-    await prisma.game.update({
-      where: { id: gameId },
-      data: {
-        aiSummary: text,
-        aiSummaryAt: now,
-        aiSummaryModel: model,
-        aiSummaryHash: ctx.hash
-      }
-    });
+    const aiData = {
+      aiSummary: text,
+      aiSummaryAt: now,
+      aiSummaryModel: model,
+      aiSummaryHash: ctx.hash
+    };
+
+    if (target?.kind === 'kalk') {
+      await prisma.kalkMatch.update({
+        where: { seasonId_id: { seasonId: target.seasonId, id: target.id } },
+        data: aiData
+      });
+    } else {
+      await prisma.game.update({
+        where: { id: gameId },
+        data: aiData
+      });
+    }
 
     return { cached: false, aiSummary: text, aiSummaryAt: now, model };
   });

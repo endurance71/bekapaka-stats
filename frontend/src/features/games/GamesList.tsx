@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import MatchCard from '../../shared/ui/MatchCard';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';
 
 export interface Game {
@@ -54,7 +55,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
                         key={f.id}
                         onClick={() => setFilter(f.id as any)}
                         className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${filter === f.id
-                            ? "bg-bkpk-primary-fill text-white shadow-bkpk-glow"
+                            ? bkpkActivePillClass
                             : "text-bkpk-text-muted hover:text-bkpk-text-secondary"
                             }`}
                     >

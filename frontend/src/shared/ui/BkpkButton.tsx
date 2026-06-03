@@ -11,9 +11,9 @@ export interface BkpkButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const variants = {
-    primary: 'bkpk-btn-primary border-none',
+    primary: 'bkpk-btn-primary border-none text-black hover:shadow-bkpk-primary',
     ghost: 'bg-bkpk-surface-tint-2 text-bkpk-text-primary hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong backdrop-blur-sm',
-    outline: 'bg-transparent border-2 border-bkpk-primary text-bkpk-primary hover:bg-bkpk-primary/10',
+    outline: 'bg-bkpk-primary/10 border border-bkpk-primary/25 text-bkpk-primary hover:bg-bkpk-primary/15 hover:border-bkpk-primary/40',
     destructive: 'bg-bkpk-danger-fill text-white hover:bg-bkpk-danger-fill-hover active:bg-bkpk-danger-fill-active',
 };
 
@@ -22,6 +22,10 @@ const sizes = {
     md: 'px-5 py-2.5 text-base',
     lg: 'px-8 py-3.5 text-lg',
 };
+
+/** Shared active/toggle pill style (nav, filters, tabs). */
+export const bkpkActivePillClass =
+    'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25 shadow-[0_0_15px_rgba(236,167,44,0.05)]';
 
 export default function BkpkButton({
     children,

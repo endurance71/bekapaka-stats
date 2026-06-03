@@ -8,21 +8,21 @@ Dokumentacja pipeline pobierania danych z [kalk-koszalin.com](https://www.kalk-k
 |---------|------------------|------|
 | Pobieranie | `backend/scripts/kalk_scraper.py` | Scrapling + BeautifulSoup → `kalk_stats.json` |
 | Orkiestracja | `backend/server.js` → `runScrapeImportPipeline` | Uruchamia Python, importuje JSON do DB |
-| Import | `backend/dataStore.js` | `ingestLeagueTable`, `ingestLeagueSchedule`, `ingestKalkPlayers`, `syncPlayersFromKalk` |
+| Import | `backend/dataStore.js`, `backend/kalk/kalkIngest.js` | Liga + `ingestKalkTeams`, `ingestKalkMatches`, `ingestKalkPlayerGameLogs`, `syncPlayersFromKalk` |
+| Parser meczu | `backend/kalk/parseMatchBoxScore.js` | HTML `/mecz,...,0.html` → box score JSON |
 | UI | `frontend/src/pages/Administration.tsx` | Przycisk „Uruchom pełny import danych” |
 | Zależności | `backend/scripts/requirements.txt` | `scrapling`, `beautifulsoup4`, `requests` |
 
 **Wyłącznie Scrapling (D4Vinci).** Katalog `backend/scrapers/` i scraper Node.js (`kalkScraper.js`, `kalkDiv2.js`) zostały usunięte — nie dodawaj ponownie `cheerio`/`axios` pod scraping KALK.
 
-## Różnica: scraping KALK vs import protokołów
+## Źródło prawdy (KALK-only)
 
-| | Scraping KALK | Import protokołów |
-|---|---------------|-------------------|
-| Źródło | Strona ligi (HTML) | Markdown/JSON wklejany w panelu |
-| Kod | `kalk_scraper.py` | `backend/parser.js` |
-| API | `POST /api/scrape/kalk/div2/run` | `POST /api/import` |
-| Dane | Tabela ligowa, terminarz, statystyki zawodników | Pojedynczy mecz BeKaPaKa (boxscore) |
-| Folder | — | `Protokoły/*.md` (wzorce formatu) |
+Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols`) jest **wyłączony** (HTTP 410). Jedyny pipeline danych meczowych i scoutingu to scraping KALK + import v2.
+
+| API | Opis |
+|-----|------|
+| `POST /api/scrape/kalk/div2/run` | Pełny scrape + import (do ~15 min) |
+| `GET /api/kalk/ingest-summary` | Liczniki `KalkMatch`, logów zawodników (Admin) |
 
 ## Źródło danych
 
@@ -43,11 +43,23 @@ kalk_stats.json   (w katalogu nadrzędnym względem backend: ../kalk_stats.json)
         │
         ▼
 runScrapeImportPipeline()
-  ├── ingestLeagueTable(table)
-  ├── ingestLeagueSchedule(schedule)   # deleteMany + create
-  ├── ingestKalkPlayers(players)         # upsert KalkPlayer
-  └── syncPlayersFromKalk()            # RosterPlayer ↔ KalkPlayer (BeKaPaKa)
+  ├── ingestLeagueTable(table + playout)
+  ├── ingestLeagueSchedule(schedule)      # delta upsert, kalkMatchId z terminarza
+  ├── ingestKalkPlayers(players)          # wszystkie kategorie ligowe
+  ├── ingestKalkTeams(teams)
+  ├── ingestKalkMatches(matches)          # box score → KalkMatch + LeagueMatch.details
+  ├── ingestKalkPlayerGameLogs(logs)      # tab 3 kadry BeKaPaKa
+  ├── KalkSyncRun (manifest)
+  └── syncPlayersFromKalk()               # PPG/RPG z KalkPlayer
 ```
+
+### Warstwy scrape (v2)
+
+| Warstwa | HTTP (szac.) | Dane |
+|---------|--------------|------|
+| A — liga | ~35–45 | tabela, play-out, terminarz+kolejki, wszystkie `<select>` statystyk, drużyny, przewinienia |
+| B — mecze | ~60–90 | każdy zakończony `/mecz,...,0.html` → `matches[]` |
+| C — kadra | ~12–18 | `zawodnik,...,3.html` → `playerGameLogs[]` |
 
 ### Bootstrap przy starcie backendu
 
@@ -59,7 +71,13 @@ Plik generowany przez skrypt Python (przykład struktury):
 
 ```json
 {
-  "timestamp": "2026-05-28T13:11:50Z",
+  "version": 2,
+  "timestamp": "2026-06-03T12:00:00Z",
+  "scrapeManifest": {
+    "parserVersion": "1.0.0",
+    "httpCount": 120,
+    "sections": ["tabela", "terminarz", "matches", "teams", "playerGameLogs"]
+  },
   "table": [
     {
       "name": "MŁODE WILKI",
@@ -79,9 +97,14 @@ Plik generowany przez skrypt Python (przykład struktury):
       "scoreHome": 49,
       "scoreAway": 34,
       "isFinished": true,
+      "meczId": "4601",
+      "meczUrl": "https://www.kalk-koszalin.com/mecz,...",
       "roundUrl": "https://www.kalk-koszalin.com/..."
     }
   ],
+  "teams": [{ "id": "222", "slug": "bekapaka-bobolice", "name": "BeKaPaKa Bobolice" }],
+  "matches": [{ "id": "4601", "boxScore": { "teams": [] }, "isFinished": true }],
+  "playerGameLogs": [{ "kalk_match_id": "4601", "id_zawodnika": "43340", "pts": 12 }],
   "players": [
     {
       "id_zawodnika": "zawodnikigor-gierlowski43340",
@@ -135,8 +158,10 @@ Przykład odpowiedzi po sukcesie:
 {
   "success": true,
   "source": "scrapling",
-  "teams": 12,
-  "matches": 83,
+  "version": 2,
+  "kalkMatches": 72,
+  "kalkMatchesLinked": 68,
+  "playerGameLogs": 15,
   "players": 140
 }
 ```

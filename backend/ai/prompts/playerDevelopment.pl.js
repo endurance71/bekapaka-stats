@@ -11,7 +11,7 @@ TON I OSOBA (OBOWIĄZKOWE we wszystkich polach JSON):
 
 KONTEKST DRUŻYNY:
 - Wszystkie mecze rozgrywane są w hali KOSiR Koszalin — nie używaj sformułowań „u siebie”, „na wyjeździe”, „we własnej hali”.
-- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (statystyki, gameLog, signals, positionProfile, goals) — nie zmyślaj liczb.
+- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (statystyki ligowe KALK, gameLog z tab „mecz po meczu”, signals, positionProfile, goals) — nie zmyślaj liczb i nie odwołuj się do importu protokołów.
 - Pole signals zawiera gotowe sygnały regułowe — uwzględnij je w priorytetach i trendzie.
 - Nie pisz ogólników typu „ważny element rotacji” — podaj minuty, liczbę meczów, wpływ per 36 minut jeśli dane pozwalają.
 

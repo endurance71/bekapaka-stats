@@ -1,4 +1,5 @@
 import { clsx } from 'clsx';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 
 interface GameFiltersProps {
     resultFilter: 'all' | 'W' | 'L';
@@ -14,10 +15,10 @@ export default function GameFilters({
     sortBy
 }: GameFiltersProps) {
     const baseButtonClass = "px-4 py-2 border border-bkpk-border-strong bg-bkpk-surface-tint-1 text-bkpk-text-primary rounded-lg text-sm font-medium transition-all hover:bg-bkpk-surface-tint-3 hover:border-bkpk-border-strong";
-    const activeBaseClass = "bg-bkpk-primary-fill border-bkpk-primary-fill text-white hover:bg-bkpk-primary-fill-hover hover:border-bkpk-primary-fill-hover";
+    const activeBaseClass = bkpkActivePillClass;
 
     return (
-        <div className="flex flex-col gap-5 bg-bkpk-card rounded-xl p-5 mb-6 md:flex-row md:items-end md:justify-between">
+        <div className="flex flex-col gap-5 bg-bkpk-surface rounded-xl p-5 mb-6 md:flex-row md:items-end md:justify-between">
             <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-wider">Wynik:</label>
                 <div className="flex flex-wrap gap-2">

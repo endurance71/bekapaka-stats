@@ -1,4 +1,5 @@
 import BkpkCard from '../../shared/ui/BkpkCard';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { motion, AnimatePresence } from 'framer-motion';
 import BkpkTooltip from '../../shared/ui/BkpkTooltip';
 import { useState } from 'react';
@@ -140,7 +141,7 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
                                 className={clsx(
                                     "px-2 py-1 text-xs font-bold rounded-md transition-all",
                                     mode === m
-                                        ? "bg-bkpk-primary-fill text-white shadow-bkpk-glow"
+                                        ? bkpkActivePillClass
                                         : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                                 )}
                             >

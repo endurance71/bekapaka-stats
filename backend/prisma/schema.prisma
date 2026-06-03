@@ -21,8 +21,13 @@ model KalkSeason {
   leagueTeams   LeagueTeam[]
   leagueMatches LeagueMatch[]
   kalkPlayers   KalkPlayer[]
+  kalkTeams     KalkTeam[]
+  kalkMatches   KalkMatch[]
+  playerGameLogs KalkPlayerGameLog[]
   games         Game[]
   preferences   PlayerSeasonPreference[]
+  syncRuns      KalkSyncRun[]
+  sectionSnapshots KalkSectionSnapshot[]
 }
 
 model Game {
@@ -171,11 +176,91 @@ model KalkPlayer {
   threePointsAttempted Int?
   threePointsPct   Float?
 
+  turnoversTotal     Float?
+  turnoversAverage   Float?
+  foulsTotal         Float?
+  foulsAverage       Float?
+  minutesTotal       Float?
+  minutesAverage     Float?
+  twoPointsPct       Float?
+  ftPct              Float?
+  attackIndex        Float?
+  defenseIndex       Float?
+
   // Relacja do RosterPlayer
   rosterPlayer  RosterPlayer?
+  gameLogs      KalkPlayerGameLog[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model KalkTeam {
+  id         String
+  seasonId   String
+  season     KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  slug       String
+  name       String
+  captain    String?
+  colors     String?
+  sponsors   String?
+  profileUrl String?
+  playerIds  String[] @default([])
+  raw        Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([seasonId, id])
+}
+
+model KalkMatch {
+  id             String
+  seasonId       String
+  season         KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  slug           String
+  date           DateTime
+  roundCode      String?
+  matchNumber    Int?
+  homeTeamId     String?
+  guestTeamId    String?
+  homeTeamName   String
+  guestTeamName  String
+  scoreHome      Int?
+  scoreAway      Int?
+  isFinished     Boolean  @default(false)
+  referees       String?
+  statistician   String?
+  boxScore       Json
+  meta           Json?
+  contentHash    String?
+  scrapedAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  playerGameLogs KalkPlayerGameLog[]
+
+  aiSummary      String?   @db.Text
+  aiSummaryAt    DateTime?
+  aiSummaryModel String?
+  aiSummaryHash  String?
+
+  @@unique([seasonId, id])
+}
+
+model KalkPlayerGameLog {
+  id             String   @id @default(cuid())
+  seasonId       String
+  season         KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  kalkPlayerId   String
+  kalkPlayer     KalkPlayer @relation(fields: [kalkPlayerId], references: [id], onDelete: Cascade)
+  kalkMatchId    String
+  kalkMatch      KalkMatch @relation(fields: [seasonId, kalkMatchId], references: [seasonId, id], onDelete: Cascade)
+  teamName       String
+  opponentName   String
+  isWin          Boolean?
+  stats          Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([seasonId, kalkPlayerId, kalkMatchId])
 }
 
 model KalkScrapeRun {
@@ -187,6 +272,33 @@ model KalkScrapeRun {
   filePath   String
   newPlayers Json?
   log        Json?
+}
+
+model KalkSyncRun {
+  id               String   @id @default(cuid())
+  seasonId         String?
+  season           KalkSeason? @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  mode             String
+  trigger          String?
+  status           String
+  httpEstimate     Int?
+  sectionsChanged  String[] @default([])
+  probeHashes      Json?
+  errorMessage     String?
+  startedAt        DateTime @default(now())
+  finishedAt       DateTime?
+}
+
+model KalkSectionSnapshot {
+  id          String   @id @default(cuid())
+  seasonId    String
+  season      KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  section     String
+  contentHash String
+  payload     Json
+  fetchedAt   DateTime @default(now())
+
+  @@unique([seasonId, section])
 }
 
 model Training {
@@ -265,8 +377,13 @@ model LeagueMatch {
   scoreHome   Int?
   scoreAway   Int?
   isFinished  Boolean  @default(false)
+  kalkMatchId String?
+  roundUrl    String?
+  phaseLabel  String?
   protocolUrl String?
-  details     Json?    // Store full scraped protocol here (quarters, etc.)
+  details     Json?
   
   updatedAt   DateTime @updatedAt
+
+  @@index([seasonId, kalkMatchId])
 }
