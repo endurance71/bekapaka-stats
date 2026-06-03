@@ -139,23 +139,31 @@ export default function MobileFullScreenMenu({
                     exit={{ opacity: 0, x: '-100%' }}
                     transition={{ type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                 >
-                    <header className="flex items-center justify-between gap-3 px-4 py-3 shrink-0">
-                        <div>
-                            <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary">
-                                BeKaPaKa
-                            </div>
-                            <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">
-                                Nawigacja
-                            </div>
-                        </div>
+                    <header className="relative flex items-center px-4 py-3 shrink-0">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-10 h-10 flex items-center justify-center rounded-xl bg-bkpk-surface-tint-1/60 border border-bkpk-border-strong text-bkpk-text-primary"
+                            className="relative z-10 w-10 h-10 flex items-center justify-center rounded-xl bg-bkpk-surface-tint-1/60 border border-bkpk-border-strong text-bkpk-text-primary shrink-0"
                             aria-label="Zamknij menu"
                         >
                             <X className="w-5 h-5" />
                         </button>
+
+                        <div className="pointer-events-none absolute inset-x-4 flex flex-col items-center justify-center text-center min-w-0 px-12">
+                            <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary truncate max-w-full">
+                                BeKaPaKa Bobolice
+                            </div>
+                            <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">
+                                Centrum statystyk
+                            </div>
+                        </div>
+
+                        <div
+                            className="relative z-10 ml-auto w-10 h-10 rounded-full bg-bkpk-surface flex items-center justify-center border border-bkpk-primary/40 overflow-hidden p-0.5 shrink-0 shadow-[0_0_10px_rgba(236,167,44,0.1)]"
+                            aria-hidden
+                        >
+                            <img src="/logo.png" alt="" className="w-full h-full object-contain" />
+                        </div>
                     </header>
 
                     <MenuProfileSection
@@ -181,28 +189,25 @@ export default function MobileFullScreenMenu({
                                     onClick={onClose}
                                     className={({ isActive }) =>
                                         cn(
-                                            'flex items-center gap-3 px-3 py-3 rounded-xl font-bold text-sm transition-colors min-h-[44px]',
+                                            'group flex items-center gap-4 px-3 py-3.5 rounded-xl font-bold text-sm tracking-tight transition-all duration-200 min-h-[48px]',
                                             isActive
-                                                ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25'
-                                                : 'text-bkpk-text-secondary active:bg-bkpk-primary/5 border border-transparent'
+                                                ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25 shadow-[0_0_15px_rgba(236,167,44,0.05)]'
+                                                : 'text-bkpk-text-muted active:bg-bkpk-primary/5 border border-transparent'
                                         )
                                     }
                                 >
                                     {({ isActive }) => (
                                         <>
-                                            <span
+                                            <Icon
                                                 className={cn(
-                                                    'w-9 h-9 rounded-lg flex items-center justify-center shrink-0 border',
-                                                    isActive
-                                                        ? 'bg-bkpk-primary/20 border-bkpk-primary/30'
-                                                        : 'bg-bkpk-surface-tint-1 border-bkpk-border-subtle'
+                                                    'w-5 h-5 shrink-0',
+                                                    isActive ? 'text-bkpk-primary' : 'text-bkpk-text-muted group-active:text-bkpk-primary'
                                                 )}
-                                            >
-                                                <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
-                                            </span>
+                                                strokeWidth={isActive ? 2.5 : 2}
+                                            />
                                             <span className="flex-1">{link.label}</span>
                                             {isActive ? (
-                                                <span className="w-1 h-5 rounded-full bg-bkpk-primary shrink-0" />
+                                                <span className="w-1.5 h-6 rounded-full bg-bkpk-primary shadow-bkpk-glow shrink-0" />
                                             ) : null}
                                         </>
                                     )}

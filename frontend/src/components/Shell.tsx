@@ -158,40 +158,45 @@ export default function Shell({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
         {/* Mobile — belka u góry (OK); dół bez osobnej belki — treść pod paskiem Safari */}
-        <header className="lg:hidden sticky top-0 z-40 shrink-0 flex items-center justify-between gap-3 px-3 py-2.5 bg-bkpk-bg/55 backdrop-blur-md border-b border-bkpk-border-subtle mobile-header-safe-top">
+        <header className="lg:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 py-2.5 bg-bkpk-bg/55 backdrop-blur-md border-b border-bkpk-border-subtle mobile-header-safe-top">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="flex items-center justify-center w-11 h-11 rounded-xl bg-bkpk-surface-tint-1 border border-bkpk-border-strong text-bkpk-text-primary active:bg-bkpk-surface-tint-2"
+            className="relative z-10 flex items-center justify-center w-11 h-11 rounded-xl bg-bkpk-surface-tint-1 border border-bkpk-border-strong text-bkpk-text-primary active:bg-bkpk-surface-tint-2 shrink-0"
             aria-label="Otwórz menu nawigacji"
             aria-expanded={isMenuOpen}
           >
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2 min-w-0 flex-1 justify-center">
-            <div className="w-7 h-7 rounded-lg bg-bkpk-surface flex items-center justify-center border border-bkpk-border-strong overflow-hidden p-0.5 shrink-0">
-              <img src="/logo.png" alt="" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate">BeKaPaKa</span>
+          <div className="pointer-events-none absolute inset-x-3 flex justify-center items-center min-w-0 px-12">
+            <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate text-center">
+              BeKaPaKa Bobolice
+            </span>
           </div>
 
-          {user ? (
-            <Link
-              to="/profile"
-              className="flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
-              aria-label="Mój profil"
+          <div className="relative z-10 ml-auto flex items-center gap-2 shrink-0">
+            <div
+              className="w-9 h-9 rounded-full bg-bkpk-surface flex items-center justify-center border border-bkpk-primary/40 overflow-hidden p-0.5 shrink-0 shadow-[0_0_10px_rgba(236,167,44,0.1)]"
+              aria-hidden
             >
-              <img
-                src={resolvePlayerPhoto(user)}
-                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                className="w-full h-full object-cover"
-                alt=""
-              />
-            </Link>
-          ) : (
-            <div className="w-11 h-11 shrink-0" aria-hidden />
-          )}
+              <img src="/logo.png" alt="" className="w-full h-full object-contain" />
+            </div>
+            {user ? (
+              <Link
+                to="/profile"
+                className="flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
+                aria-label="Mój profil"
+              >
+                <img
+                  src={resolvePlayerPhoto(user)}
+                  onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                  className="w-full h-full object-cover"
+                  alt=""
+                />
+              </Link>
+            ) : null}
+          </div>
         </header>
 
         <main
