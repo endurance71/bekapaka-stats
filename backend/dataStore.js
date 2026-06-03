@@ -672,6 +672,8 @@ function teamTrendFromBekapakaTeam(bekapaka, meta) {
     gameId: meta.gameId,
     date: meta.date,
     opponent: meta.opponent,
+    scoreUs: meta.scoreUs ?? null,
+    scoreThem: meta.scoreThem ?? null,
     efg: parseStat(ff.efg) || 0,
     tov: parseStat(ff.tov) || 0,
     orb: parseStat(ff.orb) || 0,
@@ -907,27 +909,8 @@ export async function getTeamStatsSummary() {
   const recentPpg = seasonAvg(allPpg.slice(-3));
   const trend = ppg > 0 ? ((recentPpg - ppg) / ppg) * 100 : 0;
 
-  const offRating = seasonAvg(trends.map(t => t.offRtg || 0));
-
-  // Obliczamy DefRating na podstawie OppPts we wszystkich meczach
-  // getTeamTrends liczy OffRtg, musimy wyciągnąć DefRtg (którą liczymy w withShootingMetrics)
-  const defRatings = [];
-  for (const t of trends) {
-    // Ponownie liczymy advanced metrics dla każdego meczu, bo getTeamTrends zwraca tylko OffRtg
-    const game = await prisma.game.findUnique({ where: { id: t.gameId } });
-    const bekapaka = game.teamStats?.find(ts => ts.isBekapaka || ts.name?.toLowerCase().includes('bekapaka') || ts.name?.toLowerCase().includes('bobolice'));
-    if (bekapaka) {
-      const source = bekapaka.fourFactors || bekapaka;
-      const stats = {
-        fga: source.fga || 0, fta: source.fta || 0, tov: source.tov || 0, orb: source.orb || 0,
-        pts: source.pts || game.scoreUs || 0,
-        opp_pts: game.scoreThem || 0
-      };
-      const ff = withShootingMetrics(stats);
-      if (ff.defRtg) defRatings.push(ff.defRtg);
-    }
-  }
-  const defRating = defRatings.length > 0 ? seasonAvg(defRatings) : 0;
+  const offRating = seasonAvg(trends.map((t) => t.offRtg || 0));
+  const defRating = seasonAvg(trends.map((t) => t.defRtg || 0));
 
   return {
     ppg: Number(ppg.toFixed(1)),
