@@ -23,6 +23,7 @@
       }
     ],
     "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types"],
     "paths": {
       "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
       "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"],
