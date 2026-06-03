@@ -14,11 +14,6 @@
     "slug": { "type": "uid", "targetField": "name", "required": true },
     "logo": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
     "websiteUrl": { "type": "string" },
-    "tier": {
-      "type": "enumeration",
-      "enum": ["main", "partner", "support"],
-      "default": "support"
-    },
     "order": { "type": "integer", "default": 0 }
   }
 }

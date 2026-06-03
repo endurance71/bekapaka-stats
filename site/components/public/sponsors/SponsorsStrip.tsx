@@ -6,7 +6,7 @@ export function SponsorsStrip({ sponsors }: { sponsors: SponsorItem[] }) {
   return (
     <section className='sponsors-strip' aria-label='Strefa sponsorow'>
       <div className='container'>
-        <p className='eyebrow'>Partnerzy</p>
+        <p className='eyebrow'>Sponsorzy</p>
         <div className='sponsors-strip__grid'>
           {sponsors.slice(0, 12).map((sponsor) => (
             <div key={sponsor.id} className='sponsor-chip'>

@@ -30,7 +30,7 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                                     "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all group-hover:scale-110",
                                     match.result === 'W'
                                         ? "bg-bkpk-success/20 text-bkpk-success border border-bkpk-success/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                                        : "bg-bkpk-danger/20 text-bkpk-danger border border-bkpk-danger/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
+                                        : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
                                 )}
                             >
                                 {match.result === 'W' ? 'Z' : 'P'}

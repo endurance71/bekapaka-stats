@@ -145,6 +145,12 @@ export default function GameDetail() {
             </p>
           ) : null}
 
+          {game.hasBoxScore === false && game.boxScoreMissingHint ? (
+            <p className="relative z-10 mt-2 text-center text-xs text-bkpk-warning max-w-lg mx-auto">
+              {game.boxScoreMissingHint}
+            </p>
+          ) : null}
+
           {/* Mobile Info Badge */}
           <div className="sm:hidden flex items-center justify-center gap-2.5 mt-4 text-bkpk-text-secondary font-bold text-[10px] uppercase tracking-widest bg-bkpk-surface-tint-2 px-3 py-1.5 rounded-full border border-bkpk-border-strong w-fit mx-auto relative z-10">
             <div className="flex items-center gap-1">
@@ -198,7 +204,7 @@ export default function GameDetail() {
                         className={cn(
                           "p-4 rounded-xl border flex gap-4 items-start",
                           insight.type === 'success' ? "bg-bkpk-success/10 border-bkpk-success/20 text-bkpk-success" :
-                            insight.type === 'warning' ? "bg-bkpk-danger/10 border-bkpk-danger/20 text-bkpk-danger" :
+                            insight.type === 'warning' ? "bg-bkpk-danger/10 border-bkpk-danger/20 text-bkpk-text-danger" :
                               "bg-bkpk-surface-tint-2 border-bkpk-border-strong text-bkpk-text-secondary"
                         )}
                       >

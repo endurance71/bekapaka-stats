@@ -61,7 +61,7 @@ export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
       <p className='eyebrow'>Sezon 2026 / BeKaPaKa Bobolice</p>
       <h1>Nowoczesna koszykowka. Lokalna duma Bobolic.</h1>
       <p>
-        Oficjalna strona klubu w wydaniu premium: aktualnosci, wydarzenia, tabela, sklad i strefa partnerow.
+        Oficjalna strona klubu w wydaniu premium: aktualnosci, wydarzenia, tabela, sklad i strefa sponsorow.
       </p>
       <div className='hero__meta'>
         <span className='hero-badge'>Liga amatorska</span>
@@ -215,7 +215,7 @@ export function SponsorsTile({ sponsors }: { sponsors: SponsorItem[] }) {
   return (
     <BentoTile size='M' accent='none' className='sponsors'>
       <div className='section-head'>
-        <h2>Partnerzy i sponsorzy</h2>
+        <h2>Sponsorzy</h2>
         <Link href='/sponsorzy'>Pelna lista</Link>
       </div>
       <div className='card-grid'>
@@ -225,7 +225,6 @@ export function SponsorsTile({ sponsors }: { sponsors: SponsorItem[] }) {
               {sponsor.name.slice(0, 2).toUpperCase()}
             </span>
             <h3>{sponsor.name}</h3>
-            <p className='muted'>{sponsor.tier}</p>
             {sponsor.websiteUrl ? (
               <a href={sponsor.websiteUrl} target='_blank' rel='noreferrer'>
                 Strona sponsora
@@ -248,7 +247,7 @@ export function SponsorsStrip({ sponsors }: { sponsors: SponsorItem[] }) {
   return (
     <section className='sponsors-strip' aria-label='Strefa sponsorow'>
       <div className='container'>
-        <p className='eyebrow'>Partnerzy</p>
+        <p className='eyebrow'>Sponsorzy</p>
         <div className='sponsors-strip__grid'>
           {sponsors.slice(0, 12).map((sponsor) => (
             <div key={sponsor.id} className='sponsor-chip'>
@@ -292,8 +291,8 @@ export function SiteFooter() {
   return (
     <footer className='site-footer'>
       <div className='container site-footer__inner'>
-        <p>© {new Date().getFullYear()} BeKaPaKa Bobolice</p>
-        <a href='mailto:kontakt@bekapaka.pl'>kontakt@bekapaka.pl</a>
+        <p>© 2026 by MT HUB Damian Motyliński</p>
+        <a href='mailto:kontakt@damianmotylinski.pl'>kontakt@damianmotylinski.pl</a>
       </div>
     </footer>
   )

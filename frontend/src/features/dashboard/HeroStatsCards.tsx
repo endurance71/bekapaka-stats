@@ -72,7 +72,7 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
                 <div className="mt-6 flex items-center gap-2">
                     <div className={clsx(
                         "px-2 py-1 rounded-md flex items-center gap-1 text-xs font-bold",
-                        isPositive ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/20 text-bkpk-danger"
+                        isPositive ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
                     )}>
                         {isPositive ? "↑" : "↓"} {Math.abs(trend)}%
                     </div>

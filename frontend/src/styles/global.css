@@ -91,6 +91,10 @@ body.is-scroll-locked {
   --bkpk-text-primary: var(--bkp-panel-text-primary);
   --bkpk-text-secondary: var(--bkp-text-secondary);
   --bkpk-text-muted: var(--bkp-text-muted);
+  --bkpk-text-soft: var(--bkp-text-soft);
+  --bkpk-text-danger: var(--bkp-text-danger);
+  --bkpk-text-danger-subtle: var(--bkp-text-danger-subtle);
+  --bkpk-text-disabled: var(--bkp-text-disabled);
   --bkpk-border-strong: var(--bkp-border-strong);
   --bkpk-border-subtle: var(--bkp-border);
 
@@ -265,6 +269,18 @@ body.is-scroll-locked {
     background-color: rgba(236, 167, 44, 0.1);
   }
 
+  .bkpk-status-badge--danger {
+    background-color: rgba(211, 47, 47, 0.15);
+    color: var(--bkp-text-danger-subtle);
+    border: 1px solid rgba(211, 47, 47, 0.25);
+  }
+
+  .bkpk-status-badge--success {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: var(--bkp-success);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -308,4 +324,15 @@ body.is-scroll-locked {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

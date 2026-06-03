@@ -29,7 +29,7 @@ export default function ProtocolsList({
             Dodaj pusty protokół
           </button>
           <button
-            className="px-4 py-2 bg-bkpk-primary text-white text-sm font-bold rounded-xl hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary"
+            className="px-4 py-2 bg-bkpk-primary text-bkpk-on-primary text-sm font-bold rounded-xl hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary"
             onClick={onShowImport}
           >
             Dodaj protokół
@@ -61,7 +61,7 @@ export default function ProtocolsList({
                 Edytuj
               </button>
               <button
-                className="bg-bkpk-danger/10 text-bkpk-danger border border-bkpk-danger/20 rounded-lg px-3 py-1.5 text-xs font-bold hover:bg-bkpk-danger/20 transition-colors"
+                className="bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/20 rounded-lg px-3 py-1.5 text-xs font-bold hover:bg-bkpk-danger/20 transition-colors"
                 onClick={() => onDelete(game.id)}
               >
                 Usuń

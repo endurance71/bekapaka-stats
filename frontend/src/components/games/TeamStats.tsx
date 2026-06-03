@@ -86,7 +86,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
                     label="NetRtg"
                     value={`${teamStats.netRtg && teamStats.netRtg > 0 ? '+' : ''}${formatNumber(teamStats.netRtg)}`}
                     desc="Różnica efektywności"
-                    valueClass={teamStats.netRtg && teamStats.netRtg > 0 ? "text-bkpk-success" : "text-bkpk-danger"}
+                    valueClass={teamStats.netRtg && teamStats.netRtg > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"}
                 />
                 <StatItem
                     label="Pace"

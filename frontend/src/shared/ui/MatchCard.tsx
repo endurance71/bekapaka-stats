@@ -47,7 +47,7 @@ export default function MatchCard({
                         {isPlayed && (
                             <span className={cn(
                                 "text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                                isWin ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/20 text-bkpk-danger"
+                                isWin ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
                             )}>
                                 {isWin ? 'Wygrana' : 'Porażka'}
                             </span>

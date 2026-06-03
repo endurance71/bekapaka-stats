@@ -2,8 +2,14 @@ import { createHash } from 'crypto';
 import { PrismaClient } from '@prisma/client';
 import { buildKalkPlayerDbId } from '../lib/kalkSeason.js';
 import { ensureDefaultSeason, getActiveSeason } from '../seasonService.js';
-import { boxScoreToLeagueDetails, hashBoxScore } from './parseMatchBoxScore.js';
-import { normalizePlayerGameLogRow } from './parseMatchBoxScore.js';
+import {
+  boxScoreToLeagueDetails,
+  enrichKalkTeamStats,
+  hashBoxScore,
+  parseQuartersFromRaw,
+  normalizePlayerGameLogRow
+} from './parseMatchBoxScore.js';
+import { leagueRowsReferSameMatch } from '../lib/kalkTeamNames.js';
 
 const prisma = new PrismaClient();
 
@@ -27,6 +33,63 @@ function parseMatchDate(raw) {
   if (!raw) return new Date();
   const d = new Date(raw);
   return Number.isNaN(d.getTime()) ? new Date() : d;
+}
+
+/**
+ * Uzupełnia sumy drużyn i kwarty w box score przed zapisem do DB.
+ * @param {object} boxScore
+ */
+function prepareBoxScoreForPersist(boxScore) {
+  if (!boxScore || !Array.isArray(boxScore.teams) || boxScore.teams.length < 2) {
+    return boxScore || { teams: [] };
+  }
+
+  const copy = JSON.parse(JSON.stringify(boxScore));
+  const home = copy.teams[0];
+  const guest = copy.teams[1];
+  const homePts = home.pts ?? 0;
+  const guestPts = guest.pts ?? 0;
+  copy.teams[0] = enrichKalkTeamStats(home, guestPts);
+  copy.teams[1] = enrichKalkTeamStats(guest, homePts);
+
+  const raw = copy.meta?.quartersRaw;
+  if (raw && !copy.quarters?.length) {
+    const quarters = parseQuartersFromRaw(raw);
+    if (quarters.length) copy.quarters = quarters;
+  }
+
+  return copy;
+}
+
+/**
+ * @param {object} record — wiersz KalkMatch (home/guest + date)
+ * @param {string} seasonId
+ */
+async function findLeagueMatchForKalkRecord(record, seasonId) {
+  const date = record.date instanceof Date ? record.date : new Date(record.date);
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+
+  const candidates = await prisma.leagueMatch.findMany({
+    where: { seasonId, date: { gte: start, lte: end } }
+  });
+
+  const target = {
+    homeTeamName: record.homeTeamName,
+    guestTeamName: record.guestTeamName,
+    date
+  };
+
+  return (
+    candidates.find((lm) =>
+      leagueRowsReferSameMatch(
+        { homeTeam: lm.homeTeam, guestTeam: lm.guestTeam, date: lm.date },
+        target
+      )
+    ) || null
+  );
 }
 
 /**
@@ -116,7 +179,7 @@ export async function ingestKalkMatches(matches) {
   let linked = 0;
   for (const m of matches) {
     if (!m?.id) continue;
-    const boxScore = m.boxScore || { teams: [] };
+    const boxScore = prepareBoxScoreForPersist(m.boxScore || { teams: [] });
     const contentHash = hashBoxScore(boxScore);
     const date = parseMatchDate(m.date || m.scheduleDate);
 
@@ -149,19 +212,8 @@ export async function ingestKalkMatches(matches) {
     });
 
     const details = boxScoreToLeagueDetails(boxScore);
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
 
-    const lm = await prisma.leagueMatch.findFirst({
-      where: {
-        seasonId: activeSeason.id,
-        homeTeam: record.homeTeamName,
-        guestTeam: record.guestTeamName,
-        date: { gte: start, lte: end }
-      }
-    });
+    const lm = await findLeagueMatchForKalkRecord(record, activeSeason.id);
 
     if (lm) {
       await prisma.leagueMatch.update({

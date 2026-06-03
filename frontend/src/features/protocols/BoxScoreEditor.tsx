@@ -123,7 +123,7 @@ const MobilePlayerCard = memo(function MobilePlayerCard({
             </div>
             {mode === 'edit' && (
               <button
-                className="text-bkpk-danger hover:text-red-400 font-bold text-xs uppercase p-1 rounded hover:bg-bkpk-danger/10 transition-colors"
+                className="text-bkpk-text-danger hover:text-red-400 font-bold text-xs uppercase p-1 rounded hover:bg-bkpk-danger/10 transition-colors"
                 onClick={() => onRemove(teamIndex, playerIndex)}
                 title="Usuń zawodnika"
               >
@@ -258,7 +258,7 @@ const DesktopPlayerRow = memo(function DesktopPlayerRow({
       </td>
       {/* PTS */}
       <td className="p-1 border-r border-bkpk-border-subtle/30 bg-bkpk-surface-tint-2/30 text-center">
-        <span className={`font-bold ${ptsMismatch ? 'text-bkpk-danger' : 'text-bkpk-text-primary'}`}>
+        <span className={`font-bold ${ptsMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-text-primary'}`}>
           {player.pts ?? 0}
         </span>
       </td>
@@ -266,7 +266,7 @@ const DesktopPlayerRow = memo(function DesktopPlayerRow({
       {mode === 'edit' && (
         <td className="p-1 text-center">
           <button
-            className="text-bkpk-danger hover:text-red-400 font-bold text-xs uppercase p-1 rounded hover:bg-bkpk-danger/10 transition-colors"
+            className="text-bkpk-text-danger hover:text-red-400 font-bold text-xs uppercase p-1 rounded hover:bg-bkpk-danger/10 transition-colors"
             onClick={() => onRemove(teamIndex, playerIndex)}
             title="Usuń zawodnika"
           >
@@ -336,7 +336,7 @@ export default function BoxScoreEditor({
         <div className="bg-bkpk-surface-elevated border-2 border-bkpk-border-strong rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="font-bold text-bkpk-text-secondary text-sm">W sumie</span>
-            <span className={`text-xl font-bold ${validation.scoreMismatch ? 'text-bkpk-danger' : 'text-bkpk-primary'}`}>
+            <span className={`text-xl font-bold ${validation.scoreMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-primary'}`}>
               {totals.pts} pkt
             </span>
           </div>
@@ -432,28 +432,28 @@ export default function BoxScoreEditor({
           <tfoot>
             <tr className="bg-bkpk-surface-elevated font-bold border-t-2 border-bkpk-border-strong">
               <td colSpan={3} className="p-3 text-right text-bkpk-text-secondary border-r border-bkpk-border-subtle/30 sticky left-0 z-30 bg-bkpk-surface-elevated shadow-[4px_0_12px_-4px_rgba(0,0,0,0.5)]">W sumie</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.two_pm}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.two_pa}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.two_pm}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.two_pa}</td>
               <td className="p-2 text-center border-r border-bkpk-border-subtle/30 text-bkpk-text-muted text-xs font-normal">{formatPct(totals.two_pm, totals.two_pa)}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.three_pm}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.three_pa}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.three_pm}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.three_pa}</td>
               <td className="p-2 text-center border-r border-bkpk-border-subtle/30 text-bkpk-text-muted text-xs font-normal">{formatPct(totals.three_pm, totals.three_pa)}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.ftm}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.fta}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.ftm}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.fta}</td>
               <td className="p-2 text-center border-r border-bkpk-border-subtle/30 text-bkpk-text-muted text-xs font-normal">{formatPct(totals.ftm, totals.fta)}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.oreb}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.dreb}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.reb}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.ast}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.tov}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.stl}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.blk}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.pf}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.fouls_committed}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.fouls_drawn}</td>
-              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-danger' : ''}`}>{totals.plusMinus}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.oreb}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.dreb}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.reb}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.ast}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.tov}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.stl}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.blk}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.pf}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.fouls_committed}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.fouls_drawn}</td>
+              <td className={`p-2 text-center border-r border-bkpk-border-subtle/30 ${totalsMismatch ? 'text-bkpk-text-danger' : ''}`}>{totals.plusMinus}</td>
               <td className="p-2 text-center border-r border-bkpk-border-subtle/30 bg-bkpk-surface-tint-2">
-                <strong className={`text-lg ${validation.scoreMismatch ? 'text-bkpk-danger' : 'text-bkpk-primary'}`}>
+                <strong className={`text-lg ${validation.scoreMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-primary'}`}>
                   {totals.pts}
                 </strong>
               </td>

@@ -96,7 +96,7 @@ export default function ImportModal({
         </div>
 
         {importError && (
-          <div className="mx-6 mb-4 p-3 bg-bkpk-danger/10 border border-bkpk-danger/20 rounded-lg text-bkpk-danger text-sm font-medium flex items-center gap-2">
+          <div className="mx-6 mb-4 p-3 bg-bkpk-danger/10 border border-bkpk-danger/20 rounded-lg text-bkpk-text-danger text-sm font-medium flex items-center gap-2">
             <AlertCircle size={16} />
             {importError}
           </div>

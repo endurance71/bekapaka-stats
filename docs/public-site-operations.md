@@ -111,6 +111,6 @@ Oczekiwany wynik: JSON z `data`, nie `401 Unauthorized`.
 
 Uwaga: po zmianie `CMS_API_TOKEN_SALT` wszystkie stare tokeny API przestają działać — trzeba wygenerować nowy token i zaktualizować `.env`.
 
-### Poziomy sponsorów w CMS
+### Sponsorzy w CMS
 
-Pole `tier` w kolekcji Sponsor (enum): `main` (główny), `partner` (wspierający), `support` (partner klubu).
+Kolekcja **Sponsor**: `name`, `slug`, `logo`, `websiteUrl`, `order` (kolejność na stronie). Brak podziału na rangi — wszyscy sponsorzy wyświetlani jednakowo.

@@ -222,7 +222,7 @@ export default function Profile() {
                             </p>
 
                             {photoError && (
-                                <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                                <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                                     {photoError}
                                 </div>
                             )}
@@ -233,7 +233,7 @@ export default function Profile() {
                                 </div>
                                 <div className="flex-1 flex flex-col gap-3 w-full sm:w-auto">
                                     <div className="flex gap-3">
-                                        <label className="cursor-pointer flex-1 sm:flex-initial bg-bkpk-primary hover:bg-bkpk-primary-hover border border-bkpk-primary/30 text-white px-4 py-2.5 rounded-xl text-xs font-bold text-center select-none transition-all flex items-center justify-center gap-2 shadow-bkpk-glow disabled:opacity-50">
+                                        <label className="cursor-pointer flex-1 sm:flex-initial bg-bkpk-primary hover:bg-bkpk-primary-hover border border-bkpk-primary/30 text-bkpk-on-primary px-4 py-2.5 rounded-xl text-xs font-bold text-center select-none transition-all flex items-center justify-center gap-2 shadow-bkpk-glow disabled:opacity-50">
                                             {photoLoading ? (
                                                 <RefreshCw className="w-4 h-4 animate-spin" />
                                             ) : (
@@ -281,7 +281,7 @@ export default function Profile() {
                                 </div>
 
                                 {passwordError && (
-                                    <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                                    <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                                         {passwordError}
                                     </div>
                                 )}

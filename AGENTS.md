@@ -17,3 +17,4 @@ Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 - BeKaPaKa: `/opt/bekapaka-stats`, kontenery `bkpk-*`, porty `4001` / `8081`
 - MOYA: `~/apps/moya-native-app`, port `3000` — **nie modyfikować bez wyraźnej prośby użytkownika**
 - Scraping wyłącznie przez **Scrapling** (`backend/scripts/kalk_scraper.py`)
+- Audyt danych KALK: `node backend/scripts/kalk-data-audit.js` — szczegóły w [docs/scraping.md](docs/scraping.md#audyt-danych-kalk)

@@ -6,7 +6,7 @@ Ten katalog przechowuje definicje modeli treści oraz dane robocze Strapi.
 
 - `news-posts` — aktualności z miniaturą i datą publikacji
 - `events` — mecze, turnieje i wydarzenia klubowe
-- `sponsors` — sponsorzy i partnerzy
+- `sponsors` — sponsorzy (nazwa, logo, strona WWW, kolejność)
 - `documents` — regulaminy i pliki do pobrania
 - `homepage-sections` — konfigurowalne sekcje strony głównej
 

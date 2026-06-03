@@ -22,12 +22,20 @@
   --bkp-text-primary: #FFFFFF;
   --bkp-text-secondary: #D1D5DB;
   --bkp-text-muted: #9A9AA6;
-  --bkp-text-soft: #6B6B76;
+  --bkp-text-soft: #8B8B98;
+  --bkp-text-danger: #F87171;
+  --bkp-text-danger-subtle: #FCA5A5;
+  --bkp-text-disabled: #6B6B76;
 
   /* Borders (alpha — aligned with public site) */
   --bkp-border: rgba(255, 255, 255, 0.08);
   --bkp-border-strong: rgba(255, 255, 255, 0.15);
-  --bkp-glass-border: rgba(255, 255, 255, 0.05);
+  --bkp-glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Motion — delikatne przejścia panelu */
+  --bkp-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bkp-transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --bkp-transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Semantic */
   --bkp-success: #10B981;

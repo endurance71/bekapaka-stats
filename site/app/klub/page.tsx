@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
-import { MailIcon, MonitorIcon } from '../../components/public/shared/PublicIcons'
+import { MailIcon } from '../../components/public/shared/PublicIcons'
 import { FsmmSupportSection } from '../../components/public/support/FsmmSupportSection'
 import { getSiteMetadataBase } from '../../lib/data'
 
@@ -61,17 +61,8 @@ export default function ClubPage() {
             <MailIcon size={18} />
             <span>
               Email:{' '}
-              <a href='mailto:kontakt@bekapaka.pl' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>
-                kontakt@bekapaka.pl
-              </a>
-            </span>
-          </p>
-          <p className='club-contact-line'>
-            <MonitorIcon size={18} />
-            <span>
-              Panel administracyjny drużyny:{' '}
-              <a href='https://panel.bekapaka.pl' target='_blank' rel='noreferrer' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>
-                panel.bekapaka.pl
+              <a href='mailto:kontakt@damianmotylinski.pl' style={{ color: 'var(--bkp-gold)', textDecoration: 'none', fontWeight: '600' }}>
+                kontakt@damianmotylinski.pl
               </a>
             </span>
           </p>

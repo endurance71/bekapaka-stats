@@ -355,7 +355,7 @@ export default function ScoutingPage() {
                           'flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-black shadow-lg',
                           m.result === 'W'
                             ? 'border-bkpk-success/30 bg-bkpk-success/20 text-bkpk-success'
-                            : 'border-bkpk-danger/30 bg-bkpk-danger/20 text-bkpk-danger'
+                            : 'border-bkpk-danger/30 bg-bkpk-danger/15 text-bkpk-text-danger-subtle'
                         )}
                       >
                         {m.result === 'W' ? 'Z' : 'P'}

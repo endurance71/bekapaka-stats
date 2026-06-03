@@ -45,7 +45,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
                 </div>
                 <div className={cn(
                     "w-16 text-left font-black font-outfit text-lg",
-                    oppWinner ? "text-bkpk-danger" : "text-bkpk-text-muted"
+                    oppWinner ? "text-bkpk-text-danger" : "text-bkpk-text-muted"
                 )}>
                     {oppValue}
                 </div>

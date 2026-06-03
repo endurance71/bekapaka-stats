@@ -27,7 +27,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
 
     // Pace Logic
     const paceLabel = pace > 84 ? 'SZYBKIE TEMPO' : (pace < 78 ? 'WOLNE TEMPO' : 'NORMALNE TEMPO');
-    const paceColor = pace > 84 ? 'text-bkpk-danger' : (pace < 78 ? 'text-bkpk-primary' : 'text-bkpk-success');
+    const paceColor = pace > 84 ? 'text-bkpk-text-danger' : (pace < 78 ? 'text-bkpk-primary' : 'text-bkpk-success');
 
     // Shot Profile Data for Chart
     const pieData = [

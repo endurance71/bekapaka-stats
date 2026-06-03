@@ -211,6 +211,60 @@ export function enrichKalkTeamStats(team, oppPts = 0) {
 }
 
 /**
+ * Parsuje linię kwart z KALK, np. `(15:18; 17:18; 23:11; 7:15;)`.
+ * @param {string | null | undefined} raw
+ * @returns {{ label: string, home: number, away: number }[]}
+ */
+export function parseQuartersFromRaw(raw) {
+  if (!raw || typeof raw !== 'string') return [];
+
+  const inner = raw.replace(/^\(+|\)+$/g, '').trim();
+  if (!inner) return [];
+
+  const parts = inner.split(';').map((p) => p.trim()).filter(Boolean);
+  const quarters = [];
+
+  for (let i = 0; i < parts.length; i += 1) {
+    const part = parts[i];
+    const scoreMatch = part.match(/(\d{1,3})\s*:\s*(\d{1,3})/);
+    if (!scoreMatch) continue;
+    const home = parseInt(scoreMatch[1], 10);
+    const away = parseInt(scoreMatch[2], 10);
+    if (Number.isNaN(home) || Number.isNaN(away)) continue;
+    quarters.push({
+      label: `Q${quarters.length + 1}`,
+      home,
+      away
+    });
+  }
+
+  return quarters;
+}
+
+/**
+ * Kwarty z perspektywy BeKaPaKa (home/away względem naszej drużyny).
+ * @param {object} parsed
+ * @param {boolean} isHome — czy BeKaPaKa grała u siebie w tym meczu
+ */
+export function quartersForBekapakaView(parsed, isHome) {
+  const box = parsed.boxScore || parsed;
+  const fromMeta = parseQuartersFromRaw(box.meta?.quartersRaw);
+  const fromBox = Array.isArray(box.quarters) ? box.quarters : [];
+  const source = fromBox.length ? fromBox : fromMeta;
+  if (!source.length) return [];
+
+  return source.map((q, idx) => {
+    const home = Number(q.home) || 0;
+    const away = Number(q.away) || 0;
+    return {
+      label: q.label || `Q${idx + 1}`,
+      home: isHome ? home : away,
+      away: isHome ? away : home
+    };
+  });
+}
+
+/**
  * @param {string} teamName
  */
 export function isBekapakaTeamName(teamName) {
@@ -277,9 +331,11 @@ export function parseMatchHtml(html) {
   const scoreHome = scoreHeader ? parseInt(scoreHeader[1], 10) : null;
   const scoreAway = scoreHeader ? parseInt(scoreHeader[2], 10) : null;
 
-  const quarterLine = html.match(/\((\d{1,2}:\d{1,2};\s*){3,}/);
+  const quarterLine = html.match(/\((\d{1,2}:\d{1,2};\s*){2,}/);
   if (quarterLine) {
     meta.quartersRaw = quarterLine[0];
+    const quarters = parseQuartersFromRaw(quarterLine[0]);
+    if (quarters.length) meta.quarters = quarters;
   }
 
   const home = teams[0];
@@ -360,6 +416,8 @@ export function gameViewFromKalkMatch(parsed, seasonId) {
     else if (scoreUs < scoreThem) result = 'L';
   }
 
+  const quarters = quartersForBekapakaView(parsed, Boolean(isHome));
+
   return {
     id: parsed.matchId || parsed.id,
     dataSource: 'kalk',
@@ -376,7 +434,9 @@ export function gameViewFromKalkMatch(parsed, seasonId) {
     kalkMatchId: parsed.matchId || parsed.id,
     roundCode: parsed.roundCode || box.meta?.roundCode,
     referees: parsed.referees || box.meta?.referees,
-    statistician: parsed.statistician || box.meta?.statistician
+    statistician: parsed.statistician || box.meta?.statistician,
+    quarters,
+    hasBoxScore: (bekapaka?.players?.length ?? 0) > 0
   };
 }
 

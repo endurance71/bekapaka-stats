@@ -74,7 +74,7 @@ function MenuProfileSection({
                                 alt=""
                             />
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 rounded-md bg-bkpk-primary text-[10px] font-black text-white flex items-center justify-center border border-bkpk-bg">
+                        <span className="absolute -bottom-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 rounded-md bg-bkpk-primary text-[10px] font-black text-bkpk-on-primary flex items-center justify-center border border-bkpk-bg">
                             {user.number ?? '—'}
                         </span>
                     </div>
@@ -354,7 +354,7 @@ export default function MobileFullScreenMenu({
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-bkpk-danger font-bold text-sm min-h-[44px] active:bg-bkpk-danger/10"
+                        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-bkpk-text-danger font-bold text-sm min-h-[44px] active:bg-bkpk-danger/10"
                     >
                         <LogOut className="w-4 h-4" />
                         Wyloguj

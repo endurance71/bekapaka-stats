@@ -184,7 +184,7 @@ export default function ProtocolEditor({
               </div>
 
               <button
-                className="px-3 py-1.5 bg-bkpk-primary text-white text-xs font-bold rounded-lg hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
+                className="px-3 py-1.5 bg-bkpk-primary text-bkpk-on-primary text-xs font-bold rounded-lg hover:bg-bkpk-primary-hover transition-colors shadow-bkpk-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 cursor-pointer"
                 onClick={onSave}
                 disabled={validation.issues.length > 0}
               >

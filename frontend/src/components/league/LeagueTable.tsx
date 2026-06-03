@@ -64,7 +64,7 @@ export default function LeagueTable() {
                                 <td className="p-3 text-center text-bkpk-text-secondary">{team.pointsAgainst}</td>
                                 <td className={clsx(
                                     "p-3 text-center font-medium",
-                                    (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-danger"
+                                    (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"
                                 )}>
                                     {team.pointsFor - team.pointsAgainst}
                                 </td>

@@ -299,7 +299,7 @@ export default function Trends() {
                     <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Status Ataku</div>
                     <div className="text-sm font-bold text-bkpk-text-primary">{comparison?.rankings.points || 'Ładowanie...'}</div>
                   </div>
-                  <Target className={cn("w-8 h-8", comparison?.rankings.points === 'Powyżej średniej' ? "text-bkpk-success" : "text-bkpk-danger")} />
+                  <Target className={cn("w-8 h-8", comparison?.rankings.points === 'Powyżej średniej' ? "text-bkpk-success" : "text-bkpk-text-danger")} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
@@ -307,7 +307,7 @@ export default function Trends() {
                     <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Status Obrony</div>
                     <div className="text-sm font-bold text-bkpk-text-primary">{comparison?.rankings.defense || 'Ładowanie...'}</div>
                   </div>
-                  <Zap className={cn("w-8 h-8", comparison?.rankings.defense === 'Lepsza niż średnia' ? "text-bkpk-success" : "text-bkpk-danger")} />
+                  <Zap className={cn("w-8 h-8", comparison?.rankings.defense === 'Lepsza niż średnia' ? "text-bkpk-success" : "text-bkpk-text-danger")} />
                 </div>
               </div>
 

@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import {
   parseMatchHtml,
   parseCoAtt,
+  parseQuartersFromRaw,
+  enrichKalkTeamStats,
   boxScoreToLeagueDetails,
   isBekapakaTeamName,
   gameViewFromKalkMatch
@@ -46,6 +48,33 @@ describe('parseMatchBoxScore', () => {
     expect(isBekapakaTeamName('PIWIARNIA BUMERANG')).toBe(false);
   });
 
+  it('parseQuartersFromRaw parses KALK quarter line', () => {
+    const q = parseQuartersFromRaw('(15:18; 17:18; 23:11; 7:15;)');
+    expect(q).toHaveLength(4);
+    expect(q[0]).toEqual({ label: 'Q1', home: 15, away: 18 });
+    expect(q[3]).toEqual({ label: 'Q4', home: 7, away: 15 });
+  });
+
+  it('parseMatchHtml extracts quarters from fixture', () => {
+    const html = fs.readFileSync(fixturePath, 'utf8');
+    const parsed = parseMatchHtml(html);
+    expect(parsed.boxScore.meta?.quartersRaw).toBeTruthy();
+    expect(parsed.boxScore.meta?.quarters?.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('enrichKalkTeamStats fills fourFactors from players', () => {
+    const html = fs.readFileSync(fixturePath, 'utf8');
+    const parsed = parseMatchHtml(html);
+    const team = parsed.boxScore.teams.find((t) => t.isBekapaka);
+    const opp = parsed.boxScore.teams.find((t) => !t.isBekapaka);
+    const enriched = enrichKalkTeamStats(
+      { name: team.name, players: team.players, pts: team.pts, fourFactors: team.fourFactors },
+      opp.pts
+    );
+    expect(enriched.fourFactors.fga).toBeGreaterThan(0);
+    expect(enriched.fourFactors.drb).toBeDefined();
+  });
+
   it('gameViewFromKalkMatch builds panel-compatible game object', () => {
     const html = fs.readFileSync(fixturePath, 'utf8');
     const parsed = parseMatchHtml(html);
@@ -56,5 +85,7 @@ describe('parseMatchBoxScore', () => {
     expect(view.scoreUs).toBe(72);
     expect(view.scoreThem).toBe(77);
     expect(view.teamStats).toHaveLength(2);
+    expect(view.quarters?.length).toBeGreaterThanOrEqual(4);
+    expect(view.hasBoxScore).toBe(true);
   });
 });

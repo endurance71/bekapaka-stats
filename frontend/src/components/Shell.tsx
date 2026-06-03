@@ -19,6 +19,7 @@ import SidebarProfile from './SidebarProfile';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import { AppFooter } from './AppFooter';
 
 const allLinks = [
   { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
@@ -142,16 +143,17 @@ export default function Shell({ children }: { children: ReactNode }) {
           />
         </div>
 
-        <div className="mt-auto pt-6 border-t border-bkpk-border-strong">
+        <div className="mt-auto pt-6 border-t border-bkpk-border-strong space-y-4">
           <button
             type="button"
             onClick={handleLogout}
-            className="flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-danger transition-colors font-bold text-sm tracking-tight w-full text-left min-h-[48px]"
+            className="flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-text-danger transition-colors font-bold text-sm tracking-tight w-full text-left min-h-[48px]"
             aria-label="Wyloguj się"
           >
             <LogOut className="w-5 h-5" />
             <span>Wyloguj</span>
           </button>
+          <AppFooter className="px-2 pb-1" />
         </div>
       </aside>
 
@@ -200,6 +202,9 @@ export default function Shell({ children }: { children: ReactNode }) {
           )}
         >
           {children}
+          <div className="lg:hidden px-4 pb-2">
+            <AppFooter />
+          </div>
           {/* Przezroczysty „oddech” na dole — bez belki, tylko miejsce pod paskiem Safari */}
           <div
             className="lg:hidden min-h-[calc(env(safe-area-inset-bottom,0px)+4.25rem)] pointer-events-none"

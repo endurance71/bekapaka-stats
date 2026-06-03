@@ -138,7 +138,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-danger">P</th>
+                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-text-danger">P</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">RZ</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">ST</th>
                             <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">+/-</th>
@@ -175,12 +175,12 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary tabular-nums">{team.matches}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg">{team.points}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-success/80 font-bold tabular-nums">{team.wins}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-danger/80 font-bold tabular-nums">{team.losses}</td>
+                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-danger font-bold tabular-nums">{team.losses}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
                                     <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
                                     <td className={cn(
                                         'px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold tabular-nums',
-                                        (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-danger"
+                                        (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"
                                     )}>
                                         {(team.pointsFor - team.pointsAgainst) > 0 ? `+${team.pointsFor - team.pointsAgainst}` : team.pointsFor - team.pointsAgainst}
                                     </td>
