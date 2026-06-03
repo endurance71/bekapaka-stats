@@ -95,8 +95,10 @@ function NearestEventShell({
 }) {
   return (
     <div className={`next-event-hero${isEmpty ? ' next-event-hero--empty' : ''}`}>
-      <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
-      <div className='next-event-hero__upper'>{upper}</div>
+      <div className='next-event-hero__top'>
+        <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
+        <div className='next-event-hero__upper'>{upper}</div>
+      </div>
       {lower}
     </div>
   )

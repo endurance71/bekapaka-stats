@@ -61,6 +61,8 @@ export function RosterList({ roster }: RosterListProps) {
                   <div className='player-card__scrim' />
                 </div>
 
+                <div className='player-card__glass-dock' aria-hidden='true' />
+
                 <span className='player-card__number'>{player.number}</span>
 
                 <div className='player-card__footer'>
