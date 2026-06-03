@@ -115,16 +115,6 @@ export default function Shell({ children }: { children: ReactNode }) {
         aria-label="Nawigacja główna"
         className="hidden lg:flex flex-col w-72 bg-bkpk-surface border-r border-bkpk-border-strong p-8 transition-colors duration-200"
       >
-        <div className="flex items-center gap-4 mb-12 px-2">
-          <div className="w-10 h-10 rounded-xl bg-bkpk-surface flex items-center justify-center shadow-bkpk-glow border border-bkpk-border-strong overflow-hidden p-1">
-            <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            <div className="font-black font-outfit text-sm tracking-tight leading-none text-bkpk-text-primary">BeKaPaKa Stats</div>
-            <div className="text-xs font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">Centrum Statystyk</div>
-          </div>
-        </div>
-
         {user && (
           <Link to="/profile" className="block cursor-pointer mb-6">
             <SidebarProfile user={user} />
