@@ -66,21 +66,36 @@
     justify-content: center;
   }
 
-  .stats-drawer__panel {
-    height: 100dvh;
-    max-height: 100dvh;
+  .stats-drawer__backdrop {
+    inset: 0;
+    width: 100%;
+    height: auto;
     min-height: 100dvh;
+    min-height: 100lvh;
+  }
+
+  .stats-drawer__panel {
+    inset: 0;
+    width: 100%;
+    height: auto;
+    max-height: none;
+    min-height: 100dvh;
+    min-height: 100lvh;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
     border-radius: 0;
     border-top: 0;
     box-shadow: none;
+    background: var(--bg-app);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
 
   .stats-drawer__panel-header {
-    min-height: calc(48px + env(safe-area-inset-top, 0px));
+    min-height: calc(44px + env(safe-area-inset-top, 0px));
   }
 
   .stats-drawer__panel-body {
-    padding-bottom: calc(var(--space-8) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: var(--space-8);
   }
 
   .drawer-profile-panel {
@@ -117,6 +132,37 @@
   .table-shell-v2 {
     margin-inline: calc(-1 * var(--space-2));
     border-radius: var(--radius-sm);
+  }
+
+  /* Karta zawodnika — pierwsza kolumna (przeciwnik) przy poziomym scrollu */
+  .drawer-section-v2--game-log .table-shell-v2 {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .drawer-section-v2--game-log .data-table-v2 {
+    min-width: max-content;
+  }
+
+  .drawer-section-v2--game-log .data-table-v2 th:first-child,
+  .drawer-section-v2--game-log .data-table-v2 td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    min-width: 7.25rem;
+    max-width: 8.5rem;
+    background: var(--bg-app);
+    border-right: 1px solid var(--border);
+    box-shadow: 6px 0 14px -6px rgba(0, 0, 0, 0.55);
+  }
+
+  .drawer-section-v2--game-log .data-table-v2 thead th:first-child {
+    z-index: 3;
+    background: var(--bg-elevated);
+  }
+
+  .drawer-section-v2--game-log .data-table-v2 tbody tr:hover td:first-child {
+    background: var(--bg-elevated);
   }
 
   .roster-grid {

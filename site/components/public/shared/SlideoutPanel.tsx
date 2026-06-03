@@ -123,14 +123,13 @@ export function SlideoutPanel({
         ref={panelRef}
       >
         <div className="stats-drawer__panel-header">
-          <span className="stats-drawer__handle" aria-hidden="true" />
           <button
             className="stats-drawer__close"
             onClick={() => onCloseRef.current()}
             aria-label="Zamknij panel szczegółów"
             type="button"
           >
-            <CloseIcon size={18} />
+            <CloseIcon size={20} />
           </button>
         </div>
         <div className="stats-drawer__panel-body">{children}</div>

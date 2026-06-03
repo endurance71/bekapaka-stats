@@ -34,9 +34,11 @@
 /* Pełnoekranowe modale / drawer — backdrop i panel do krawędzi (Safari iOS) */
 .stats-drawer {
   width: 100%;
-  height: 100dvh;
+  inset: 0;
+  height: auto;
   min-height: 100dvh;
-  max-height: 100dvh;
+  min-height: 100lvh;
+  max-height: none;
 }
 
 @supports (-webkit-touch-callout: none) {
@@ -44,6 +46,7 @@
     min-height: -webkit-fill-available;
   }
 
+  .stats-drawer__backdrop,
   .stats-drawer__panel {
     min-height: -webkit-fill-available;
   }
