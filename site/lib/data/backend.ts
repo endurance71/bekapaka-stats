@@ -1,7 +1,6 @@
 import { backendPath, fetchJson, fetchJsonState } from './client'
 import { mapApiGameToSummary } from './map-game'
 import {
-  gameSummarySchema,
   rosterPlayerSchema,
   teamStandingSchema,
   type DataState,
