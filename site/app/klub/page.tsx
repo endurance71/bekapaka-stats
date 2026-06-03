@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import { MailIcon, MonitorIcon } from '../../components/public/shared/PublicIcons'
+import { FsmmSupportSection } from '../../components/public/support/FsmmSupportSection'
 import { getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
@@ -48,6 +49,8 @@ export default function ClubPage() {
             <li><strong>Reprezentowanie regionu:</strong> Z dumą nosimy barwy klubu i promujemy gminę Bobolice na arenie regionalnej.</li>
           </ul>
         </article>
+
+        <FsmmSupportSection variant='page' />
 
         <article className='content-card' style={{ padding: 'var(--space-5)', background: 'rgba(255, 255, 255, 0.02)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border)' }}>
           <h2 style={{ fontFamily: 'var(--font-bebas-neue), sans-serif', fontSize: '2rem', color: 'var(--bkp-gold)', marginBottom: 'var(--space-3)' }}>Kontakt</h2>

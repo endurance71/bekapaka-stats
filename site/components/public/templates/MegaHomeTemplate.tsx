@@ -4,6 +4,7 @@ import { formatDateTime } from '../../../lib/format'
 import { formatVenue } from '../../../lib/venue'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 import { ArrowRightIcon } from '../shared/PublicIcons'
+import { FsmmSupportSection } from '../support/FsmmSupportSection'
 
 export function MegaHomeTemplate({
   news,
@@ -292,6 +293,8 @@ export function MegaHomeTemplate({
             </a>
           </div>
         </article>
+
+        <FsmmSupportSection variant='dashboard' />
 
         {/* ROW 5: TEAM ROSTER SLIDER (12) - MANUAL SCROLL ONLY */}
         <article className='surface-card dashboard-roster'>

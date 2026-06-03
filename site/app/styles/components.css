@@ -818,6 +818,161 @@
 
 .dashboard-join-us { order: 8; }
 .dashboard-become-sponsor { order: 9; }
+.dashboard-fsmm-support { order: 10; }
+
+/* FSMM — 1,5% podatku i darowizny */
+.fsmm-support-intro {
+  margin: 0 0 var(--space-4);
+  max-width: 62ch;
+  line-height: 1.65;
+}
+
+.fsmm-support-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.fsmm-support-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+  min-height: 100%;
+}
+
+.fsmm-support-panel--tax {
+  border-color: rgba(236, 167, 44, 0.22);
+  box-shadow: inset 0 1px 0 rgba(236, 167, 44, 0.08);
+}
+
+.fsmm-support-panel--donate {
+  border-color: rgba(255, 107, 53, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 107, 53, 0.06);
+}
+
+.fsmm-support-panel__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  color: var(--bkp-gold);
+  background: rgba(236, 167, 44, 0.1);
+  border: 1px solid rgba(236, 167, 44, 0.25);
+}
+
+.fsmm-support-panel--donate .fsmm-support-panel__icon {
+  color: var(--bkp-crimson, #ff6b35);
+  background: rgba(255, 107, 53, 0.1);
+  border-color: rgba(255, 107, 53, 0.25);
+}
+
+.fsmm-support-panel h3 {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.55rem;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.fsmm-support-panel p.muted {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.fsmm-support-facts {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.fsmm-support-facts__row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr;
+  gap: var(--space-2);
+  align-items: start;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fsmm-support-facts dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.fsmm-support-facts dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fsmm-support-facts code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.82rem;
+  color: var(--bkp-gold);
+  word-break: break-all;
+}
+
+.fsmm-support-account {
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.fsmm-support-bank-name {
+  font-size: 0.72rem;
+}
+
+.fsmm-support-panel__cta {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.fsmm-support-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: auto;
+}
+
+.fsmm-support-panel__link {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--bkp-gold);
+  white-space: nowrap;
+}
+
+.fsmm-support-page {
+  padding: var(--space-5);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.fsmm-support-page .section-head h2 {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 2rem;
+  color: var(--bkp-gold);
+  margin: 0;
+}
+
+@media (min-width: 720px) {
+  .fsmm-support-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 
 .documents-list-premium {
   list-style: none;
@@ -889,7 +1044,7 @@
 }
 
 /* Premium Sponsors Grid */
-.dashboard-sponsors { order: 10; }
+.dashboard-sponsors { order: 11; }
 
 .sponsors-grid-premium {
   display: grid;
@@ -2318,6 +2473,10 @@
 
   .dashboard-become-sponsor {
     grid-column: span 6;
+  }
+
+  .dashboard-fsmm-support {
+    grid-column: span 12;
   }
 
   .dashboard-sponsors {

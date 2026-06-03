@@ -85,6 +85,32 @@ export function MonitorIcon({ size = 18, className }: PublicIconProps) {
   )
 }
 
+export function PercentIcon({ size = 18, className }: PublicIconProps) {
+  return (
+    <svg {...iconProps({ size, className })}>
+      <line x1='19' y1='5' x2='5' y2='19' />
+      <circle cx='6.5' cy='6.5' r='2.5' />
+      <circle cx='17.5' cy='17.5' r='2.5' />
+    </svg>
+  )
+}
+
+export function HeartIcon({ size = 18, className }: PublicIconProps) {
+  return (
+    <svg {...iconProps({ size, className })}>
+      <path d='M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z' />
+    </svg>
+  )
+}
+
+export function BankIcon({ size = 18, className }: PublicIconProps) {
+  return (
+    <svg {...iconProps({ size, className })}>
+      <path d='M3 10h18M5 10V19M9 10V19M15 10V19M19 10V19M2 19h20M12 3 22 10H2z' />
+    </svg>
+  )
+}
+
 export function IconLabel({
   icon,
   children,
