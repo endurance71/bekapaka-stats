@@ -43,6 +43,15 @@ export function kalkMatchToGameDetail(km) {
   view.dataSource = 'kalk';
   view.kalkMatchId = km.id;
   view.isFromKalkMatch = true;
+  view.hasBoxScore = (bekapaka?.players?.length ?? 0) > 0;
+  if (!view.quarters?.length && km.boxScore?.quarters?.length) {
+    const isHome = isBekapakaTeamName(km.homeTeamName);
+    view.quarters = km.boxScore.quarters.map((q, idx) => ({
+      label: q.label || `Q${idx + 1}`,
+      home: isHome ? q.home : q.away,
+      away: isHome ? q.away : q.home
+    }));
+  }
 
   if (km.aiSummary && km.aiSummaryHash) {
     view.aiSummary = km.aiSummary;

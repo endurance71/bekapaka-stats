@@ -20,13 +20,13 @@ export default function ValidationPanel({ validation }: ValidationPanelProps) {
         ))}
       </ul>
       <div className="mt-3 flex flex-wrap gap-4 text-xs text-bkpk-text-muted font-bold pt-3 border-t border-bkpk-warning/20">
-        <span className={validation.scoreMismatch ? 'text-bkpk-danger' : 'text-bkpk-success'}>
+        <span className={validation.scoreMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-success'}>
           Boxscore: {validation.scoreMismatch ? 'BŁĄD' : 'OK'}
         </span>
-        <span className={validation.quartersMismatch ? 'text-bkpk-danger' : 'text-bkpk-success'}>
+        <span className={validation.quartersMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-success'}>
           Kwarty: {validation.quartersMismatch ? 'BŁĄD' : 'OK'}
         </span>
-        <span className={validation.fiveMinMismatch ? 'text-bkpk-danger' : 'text-bkpk-success'}>
+        <span className={validation.fiveMinMismatch ? 'text-bkpk-text-danger' : 'text-bkpk-success'}>
           5‑min: {validation.fiveMinMismatch ? 'BŁĄD' : 'OK'}
         </span>
       </div>

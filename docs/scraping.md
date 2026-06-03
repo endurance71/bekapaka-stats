@@ -22,7 +22,9 @@ Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols
 | API | Opis |
 |-----|------|
 | `POST /api/scrape/kalk/div2/run` | Pełny scrape + import (do ~15 min) |
-| `GET /api/kalk/ingest-summary` | Liczniki `KalkMatch`, logów zawodników (Admin) |
+| `POST /api/scrape/kalk/gaps` | Targeted scrape brakujących meczów (URL-e z body lub z audytu) |
+| `GET /api/kalk/ingest-summary` | KPI + lista meczów BeKaPaKa bez box score (Admin) |
+| `GET /api/kalk/audit` | Pełny raport audytu JSON (Admin) |
 
 ## Źródło danych
 
@@ -151,6 +153,9 @@ Szczegóły odpowiedzi: [api.md](./api.md#kalk-div2--scraping).
 |--------|----------|------|
 | `GET` | `/api/scrape/kalk/div2/status` | Stan bieżący (`running`, `step`, `message`, `lastLog`, `lastFinishedAt`) |
 | `POST` | `/api/scrape/kalk/div2/run` | Pełny scrape + import (timeout do 15 min) |
+| `POST` | `/api/scrape/kalk/gaps` | Pobranie wybranych meczów (`urls[]` lub URL-e z audytu) + `ingestKalkMatches` |
+| `GET` | `/api/kalk/ingest-summary` | KPI importu + `bekapakaMissingBoxScore[]` |
+| `GET` | `/api/kalk/audit` | Pełny audyt spójności danych |
 
 Przykład odpowiedzi po sukcesie:
 
@@ -162,9 +167,49 @@ Przykład odpowiedzi po sukcesie:
   "kalkMatches": 72,
   "kalkMatchesLinked": 68,
   "playerGameLogs": 15,
+  "playerGameLogsSkipped": 2,
   "players": 140
 }
 ```
+
+## Audyt danych KALK
+
+Skrypt read-only (lokalnie lub w kontenerze):
+
+```bash
+node backend/scripts/kalk-data-audit.js
+docker exec bkpk-backend-prod node scripts/kalk-data-audit.js
+```
+
+Sekcje raportu: mecze BeKaPaKa vs terminarz, braki box score, duplikaty `KalkPlayer`, legacy ID, gotowość API.
+
+### Checklist po sync
+
+| KPI | Oczekiwane |
+|-----|------------|
+| `bekapakaScheduleFinished` | Liczba rozegranych meczów BeKaPaKa w terminarzu |
+| `bekapakaWithBoxScore` | Powinno być równe liczbie rozegranych (np. 15) |
+| `playerGameLogsSkipped` | &lt; 5% wierszy z JSON (brak `KalkMatch` / `KalkPlayer` po migracji ID) |
+| `duplicatePlayersCount` | 0 po `migrate-kalk-player-ids.js` |
+
+Migracja legacy ID zawodników (jednorazowo):
+
+```bash
+node backend/scripts/migrate-kalk-player-ids.js --dry-run
+node backend/scripts/migrate-kalk-player-ids.js
+```
+
+Targeted scrape luk:
+
+```bash
+KALK_GAP_URLS='https://www.kalk-koszalin.com/mecz,...,0.html' python3 backend/scripts/kalk_scrape_gaps.py
+# lub POST /api/scrape/kalk/gaps (Admin) bez body — URL-e z audytu
+```
+
+### Ograniczenia
+
+- **Dynamika meczu (5 min):** tylko jeśli KALK udostępnia kwarty w HTML (`quartersRaw` → `quarters`); brak danych 5-min w KALK — wykres kwartowy (krok 10 min) zamiast 5 min.
+- **Scraper ligi:** domyślnie pobiera wszystkie zakończone mecze dywizji (scouting rywali); opcjonalnie `SCRAPE_SCOPE=bekapaka` w przyszłości.
 
 Kody błędów:
 

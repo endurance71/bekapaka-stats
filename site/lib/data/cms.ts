@@ -13,7 +13,6 @@ import {
   type NewsPost,
   type SponsorItem
 } from './schemas'
-import { normalizeSponsorTier } from './sponsor-tiers'
 import {
   excerptFromContent,
   resolveNewsSlug,
@@ -140,7 +139,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-1',
     name: 'Gmina Bobolice',
     slug: 'gmina-bobolice',
-    tier: 'main',
     websiteUrl: 'https://bobolice.pl',
     order: 1
   },
@@ -148,7 +146,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-2',
     name: 'Majster Plus Koszalin',
     slug: 'majster-plus-koszalin',
-    tier: 'main',
     websiteUrl: 'https://majsterplus.pl',
     order: 2
   },
@@ -156,7 +153,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-3',
     name: 'Fem-Tech Tychowo',
     slug: 'fem-tech-tychowo',
-    tier: 'main',
     websiteUrl: '',
     order: 3
   },
@@ -164,7 +160,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-4',
     name: 'Contema Bobolice',
     slug: 'contema-bobolice',
-    tier: 'partner',
     websiteUrl: '',
     order: 4
   },
@@ -172,7 +167,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-5',
     name: 'CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak',
     slug: 'certe-inez-szczesniak',
-    tier: 'partner',
     websiteUrl: '',
     order: 5
   },
@@ -180,7 +174,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-6',
     name: 'PST Sped-Trans Bobolice',
     slug: 'pst-sped-trans',
-    tier: 'partner',
     websiteUrl: '',
     order: 6
   },
@@ -188,7 +181,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-7',
     name: 'Nadleśnictwo Bobolice, Lasy Państwowe',
     slug: 'nadlesnictwo-bobolice',
-    tier: 'partner',
     websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
     order: 7
   },
@@ -196,7 +188,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-8',
     name: 'ALAB laboratoria',
     slug: 'alab-laboratoria',
-    tier: 'partner',
     websiteUrl: 'https://www.alab-laboratoria.pl',
     order: 8
   },
@@ -204,7 +195,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-9',
     name: 'Piotr Adamus',
     slug: 'piotr-adamus',
-    tier: 'support',
     websiteUrl: '',
     order: 9
   },
@@ -212,7 +202,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-10',
     name: '„Skup aut i Auto laweta” Remek Klimek',
     slug: 'skup-aut-remek-klimek',
-    tier: 'support',
     websiteUrl: '',
     order: 10
   },
@@ -220,7 +209,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-11',
     name: 'CESIR Bobolice',
     slug: 'cesir-bobolice',
-    tier: 'support',
     websiteUrl: 'http://www.cesir.bobolice.pl',
     order: 11
   },
@@ -228,7 +216,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-12',
     name: 'Emil Jaświg',
     slug: 'emil-jaswig',
-    tier: 'support',
     websiteUrl: '',
     order: 12
   },
@@ -236,7 +223,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-13',
     name: 'Baumal e-hurtowniabudowlana.pl',
     slug: 'baumal',
-    tier: 'support',
     websiteUrl: 'https://e-hurtowniabudowlana.pl',
     order: 13
   },
@@ -244,7 +230,6 @@ const fallbackSponsors: SponsorItem[] = [
     id: 'fs-14',
     name: 'Insight Data Consulting Izabela Kaszubowska',
     slug: 'insight-data-consulting',
-    tier: 'support',
     websiteUrl: '',
     order: 14
   }
@@ -406,7 +391,6 @@ export async function getSponsorsState(limit = 12): Promise<DataState<SponsorIte
         id: sanitizeText(item.id, String(index)),
         name: sanitizeText(item.name, 'Sponsor'),
         slug: sanitizeText(item.slug, `sponsor-${index}`),
-        tier: normalizeSponsorTier(sanitizeText(item.tier, 'support')),
         websiteUrl: sanitizeText(item.websiteUrl, ''),
         order: sanitizeNumber(item.order, index),
         logoUrl: mapMediaUrl(item.logo)

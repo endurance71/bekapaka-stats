@@ -252,68 +252,84 @@ export async function addTag(gameId, tag) {
   return next;
 }
 
+/**
+ * Mapuje wpis KalkPlayerGameLog na format game log w składzie.
+ * @param {ReturnType<typeof gameLogEntryFromKalkStats>} entry
+ * @param {object} stats
+ */
+function rosterGameFromKalkLog(entry, stats) {
+  const fga = entry.fga || 0;
+  const fgm = entry.fgm || 0;
+  const threePm = entry.three_pm || 0;
+  const fta = entry.fta || 0;
+  const pts = entry.pts || 0;
+  const efg = fga > 0 ? ((fgm + 0.5 * threePm) / fga) * 100 : 0;
+  const tsDivisor = 2 * (fga + 0.44 * fta);
+  const ts = tsDivisor > 0 ? (pts / tsDivisor) * 100 : 0;
+
+  return {
+    date: entry.date,
+    opponent: entry.opponent,
+    min: entry.min || '00:00',
+    pts,
+    reb: entry.reb || 0,
+    ast: entry.ast || 0,
+    stl: entry.stl || 0,
+    blk: entry.blk || 0,
+    tov: entry.tov || 0,
+    pf: entry.pf || 0,
+    fgm,
+    fga,
+    threePm,
+    threePa: entry.three_pa || 0,
+    ftm: entry.ftm || 0,
+    fta,
+    eval: stats.eval ?? entry.eval ?? 0,
+    eFgPercentage: parseFloat(efg.toFixed(1)),
+    tsPercentage: parseFloat(ts.toFixed(1)),
+    plusMinus: entry.plusMinus || 0
+  };
+}
+
 export async function getRoster() {
   await ensureSeeded();
-  // Fetch all games for game logs
-  const allGames = await prisma.game.findMany({
-    where: { playerStats: { not: null } },
-    orderBy: { date: 'desc' }
-  });
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
 
   const rows = await prisma.rosterPlayer.findMany({
     include: { kalkPlayer: true },
     orderBy: { number: 'asc' }
   });
 
-  return rows.map((r) => {
+  return Promise.all(
+    rows.map(async (r) => {
     const base = r.data || {};
 
-    // Build Game Log
     const playerGames = [];
-    for (const game of allGames) {
-      const boxScore = Array.isArray(game.playerStats) ? game.playerStats : [];
-      const pStats = boxScore.find(p => {
-        if (!p.name) return false;
-        return p.name.includes(r.lastName) && (p.name.includes(r.firstName) || p.name.includes(r.firstName.charAt(0)));
+    const kalkPlayer = await findKalkPlayerForRoster(r, activeSeason?.id);
+    const kalkPlayerId = r.kalkPlayerId || kalkPlayer?.id;
+
+    if (kalkPlayerId && activeSeason?.id) {
+      const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
+        where: { seasonId: activeSeason.id, kalkPlayerId },
+        include: { kalkMatch: true },
+        orderBy: { kalkMatch: { date: 'desc' } }
       });
 
-      if (pStats) {
-        const fga = pStats.fga || 0;
-        const fgm = pStats.fgm || 0;
-        const threePm = pStats.three_pm || 0;
-        const fta = pStats.fta || 0;
-        const pts = pStats.pts || 0;
-
-        const efg = fga > 0 ? ((fgm + 0.5 * threePm) / fga) * 100 : 0;
-        const tsDivisor = 2 * (fga + 0.44 * fta);
-        const ts = tsDivisor > 0 ? (pts / tsDivisor) * 100 : 0;
-
-        playerGames.push({
-          date: game.date,
-          opponent: game.opponent,
-          min: pStats.min || 0,
-          pts: pts,
-          reb: pStats.reb || 0,
-          ast: pStats.ast || 0,
-          stl: pStats.stl || 0,
-          blk: pStats.blk || 0,
-          tov: pStats.tov || 0,
-          pf: pStats.pf || 0,
-          fgm: fgm,
-          fga: fga,
-          threePm: threePm,
-          threePa: pStats.three_pa || 0,
-          ftm: pStats.ftm || 0,
-          fta: fta,
-          eval: pStats.eval || 0,
-          eFgPercentage: parseFloat(efg.toFixed(1)),
-          tsPercentage: parseFloat(ts.toFixed(1)),
-          plusMinus: pStats.plusMinus || 0
+      for (const row of kalkLogs) {
+        const stats = row.stats && typeof row.stats === 'object' ? row.stats : {};
+        const entry = gameLogEntryFromKalkStats(stats, {
+          kalkMatchId: row.kalkMatchId,
+          date: row.kalkMatch?.date
+            ? row.kalkMatch.date.toISOString().split('T')[0]
+            : null,
+          opponent: row.opponentName || stats.opponent
         });
+        playerGames.push(rosterGameFromKalkLog(entry, stats));
       }
     }
 
-    let evalAvg = r.kalkPlayer?.eval ?? null;
+    let evalAvg = r.kalkPlayer?.eval ?? kalkPlayer?.eval ?? null;
     if (evalAvg == null) {
       const gamesWithEval = playerGames.filter((g) => g.eval != null && g.eval !== 0);
       if (gamesWithEval.length > 0) {
@@ -353,9 +369,10 @@ export async function getRoster() {
       // Game Log
       games: playerGames,
 
-      kalkPlayer: r.kalkPlayer
+      kalkPlayer: r.kalkPlayer || kalkPlayer
     };
-  });
+    })
+  );
 }
 
 /**
@@ -939,62 +956,71 @@ export async function getTeamStatsSummary() {
  */
 export async function getTrainingPriorities() {
   await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
 
-  // 1. Fetch all finished games with stats
-  const games = await prisma.game.findMany({
+  const empty = {
+    team: { ftPercentage: 0, turnovers: 0, assists: 0 },
+    league: { ftPercentage: 0, turnovers: 0, assists: 0 }
+  };
+
+  if (!activeSeason) return empty;
+
+  const kalkMatches = await prisma.kalkMatch.findMany({
     where: {
-      result: { not: null },
-      teamStats: { not: null }
+      seasonId: activeSeason.id,
+      isFinished: true,
+      OR: BEKAPAKA_KALK_MATCH_OR
     },
     orderBy: { date: 'desc' },
-    take: 10 // Last 10 games for relevance
+    take: 10
   });
 
-  if (games.length === 0) {
-    return {
-      team: { ftPercentage: 0, turnovers: 0, assists: 0 },
-      league: { ftPercentage: 0, turnovers: 0, assists: 0 }
-    };
-  }
+  if (kalkMatches.length === 0) return empty;
 
   let teamStatsSum = { ftm: 0, fta: 0, tov: 0, ast: 0, fga: 0, fgm: 0, three_pm: 0, orb: 0, oppDrb: 0, pf: 0, ptsAgainst: 0, count: 0 };
   let oppStatsSum = { ftm: 0, fta: 0, tov: 0, ast: 0, fga: 0, fgm: 0, three_pm: 0, orb: 0, oppDrb: 0, pf: 0, ptsAgainst: 0, count: 0 };
 
-  for (const game of games) {
-    const stats = Array.isArray(game.teamStats) ? game.teamStats : [];
-    const team = stats.find(t => t.isBekapaka || t.name?.toLowerCase().includes('bekapaka') || t.name?.toLowerCase().includes('bobolice'));
-    const opp = stats.find(t => t !== team);
+  for (const km of kalkMatches) {
+    const box = km.boxScore;
+    const teams = box?.teams || [];
+    let team = teams.find((t) => t.isBekapaka || isBekapakaTeamName(t.name));
+    let opp = teams.find((t) => t !== team);
+    if (!team || !opp) continue;
 
-    if (team && team.fourFactors && opp && opp.fourFactors) {
+    const oppPts = opp.pts ?? (isBekapakaTeamName(km.homeTeamName) ? km.scoreAway : km.scoreHome) ?? 0;
+    const teamPts = team.pts ?? (isBekapakaTeamName(km.homeTeamName) ? km.scoreHome : km.scoreAway) ?? 0;
+    team = enrichKalkTeamStats(team, oppPts);
+    opp = enrichKalkTeamStats(opp, teamPts);
+
+    if (team.fourFactors && opp.fourFactors) {
       const teamTotalPF = (team.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
       const oppTotalPF = (opp.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
 
-      // Team
-      teamStatsSum.ftm += (team.fourFactors.ftm || 0);
-      teamStatsSum.fta += (team.fourFactors.fta || 0);
-      teamStatsSum.tov += (team.fourFactors.tov || 0);
-      teamStatsSum.ast += (team.fourFactors.ast || 0);
-      teamStatsSum.fga += (team.fourFactors.fga || 0);
-      teamStatsSum.fgm += (team.fourFactors.fgm || 0);
-      teamStatsSum.three_pm += (team.fourFactors.three_pm || 0);
-      teamStatsSum.orb += (team.fourFactors.orb || 0);
-      teamStatsSum.oppDrb += (opp.fourFactors.drb || 0);
+      teamStatsSum.ftm += team.fourFactors.ftm || 0;
+      teamStatsSum.fta += team.fourFactors.fta || 0;
+      teamStatsSum.tov += team.fourFactors.tov || 0;
+      teamStatsSum.ast += team.fourFactors.ast || 0;
+      teamStatsSum.fga += team.fourFactors.fga || 0;
+      teamStatsSum.fgm += team.fourFactors.fgm || 0;
+      teamStatsSum.three_pm += team.fourFactors.three_pm || 0;
+      teamStatsSum.orb += team.fourFactors.orb || 0;
+      teamStatsSum.oppDrb += opp.fourFactors.drb || 0;
       teamStatsSum.pf += teamTotalPF;
-      teamStatsSum.ptsAgainst += (opp.fourFactors.pts || 0);
+      teamStatsSum.ptsAgainst += opp.fourFactors.pts || oppPts || 0;
       teamStatsSum.count++;
 
-      // League (Opponent proxy)
-      oppStatsSum.ftm += (opp.fourFactors.ftm || 0);
-      oppStatsSum.fta += (opp.fourFactors.fta || 0);
-      oppStatsSum.tov += (opp.fourFactors.tov || 0);
-      oppStatsSum.ast += (opp.fourFactors.ast || 0);
-      oppStatsSum.fga += (opp.fourFactors.fga || 0);
-      oppStatsSum.fgm += (opp.fourFactors.fgm || 0);
-      oppStatsSum.three_pm += (opp.fourFactors.three_pm || 0);
-      oppStatsSum.orb += (opp.fourFactors.orb || 0);
-      oppStatsSum.oppDrb += (team.fourFactors.drb || 0);
+      oppStatsSum.ftm += opp.fourFactors.ftm || 0;
+      oppStatsSum.fta += opp.fourFactors.fta || 0;
+      oppStatsSum.tov += opp.fourFactors.tov || 0;
+      oppStatsSum.ast += opp.fourFactors.ast || 0;
+      oppStatsSum.fga += opp.fourFactors.fga || 0;
+      oppStatsSum.fgm += opp.fourFactors.fgm || 0;
+      oppStatsSum.three_pm += opp.fourFactors.three_pm || 0;
+      oppStatsSum.orb += opp.fourFactors.orb || 0;
+      oppStatsSum.oppDrb += team.fourFactors.drb || 0;
       oppStatsSum.pf += oppTotalPF;
-      oppStatsSum.ptsAgainst += (team.fourFactors.pts || 0);
+      oppStatsSum.ptsAgainst += team.fourFactors.pts || teamPts || 0;
       oppStatsSum.count++;
     }
   }
@@ -1493,23 +1519,27 @@ export async function getLatestKalkScrapeRun() {
   return prisma.kalkScrapeRun.findFirst({ orderBy: { createdAt: 'desc' } });
 }
 
-/** Podsumowanie importu KALK (panel Admin). */
+/** Podsumowanie importu KALK (panel Admin) + KPI braków z audytu. */
 export async function getKalkIngestSummary() {
   await ensureSeeded();
   await ensureDefaultSeason();
   const activeSeason = await getActiveSeason();
   if (!activeSeason) return null;
 
-  const [kalkMatches, finishedMatches, playerGameLogs, kalkTeams, lastSync] = await Promise.all([
-    prisma.kalkMatch.count({ where: { seasonId: activeSeason.id } }),
-    prisma.kalkMatch.count({ where: { seasonId: activeSeason.id, isFinished: true } }),
-    prisma.kalkPlayerGameLog.count({ where: { seasonId: activeSeason.id } }),
-    prisma.kalkTeam.count({ where: { seasonId: activeSeason.id } }),
-    prisma.kalkSyncRun.findFirst({
-      where: { seasonId: activeSeason.id },
-      orderBy: { startedAt: 'desc' }
-    })
-  ]);
+  const { runKalkDataAudit } = await import('./kalk/kalkDataAudit.js');
+
+  const [kalkMatches, finishedMatches, playerGameLogs, kalkTeams, lastSync, audit] =
+    await Promise.all([
+      prisma.kalkMatch.count({ where: { seasonId: activeSeason.id } }),
+      prisma.kalkMatch.count({ where: { seasonId: activeSeason.id, isFinished: true } }),
+      prisma.kalkPlayerGameLog.count({ where: { seasonId: activeSeason.id } }),
+      prisma.kalkTeam.count({ where: { seasonId: activeSeason.id } }),
+      prisma.kalkSyncRun.findFirst({
+        where: { seasonId: activeSeason.id },
+        orderBy: { startedAt: 'desc' }
+      }),
+      runKalkDataAudit({ seasonId: activeSeason.id })
+    ]);
 
   const leagueWithDetails = await prisma.leagueMatch.count({
     where: {
@@ -1525,8 +1555,22 @@ export async function getKalkIngestSummary() {
     playerGameLogs,
     kalkTeams,
     leagueMatchesWithBoxScore: leagueWithDetails,
-    lastSync
+    lastSync,
+    bekapakaScheduleFinished: audit.matches?.bekapakaScheduleFinished ?? 0,
+    bekapakaWithBoxScore: audit.matches?.bekapakaWithValidBoxScore ?? 0,
+    bekapakaMissingBoxScore: audit.matches?.bekapakaMissingBoxScore ?? [],
+    duplicatePlayersCount: audit.players?.duplicateGroups ?? 0,
+    divisionKalkMatchesTotal: audit.matches?.divisionKalkMatchesTotal ?? 0,
+    lastScrapeManifest: audit.lastSync?.probeHashes ?? null
   };
+}
+
+/** Pełny raport audytu KALK (ADMIN). */
+export async function getKalkDataAuditReport() {
+  await ensureSeeded();
+  await ensureDefaultSeason();
+  const { runKalkDataAudit } = await import('./kalk/kalkDataAudit.js');
+  return runKalkDataAudit();
 }
 
 // ============================================

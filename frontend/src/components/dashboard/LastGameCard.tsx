@@ -65,7 +65,7 @@ export default function LastGameCard({ game, loading }: LastGameCardProps) {
                         <span className={clsx(
                             "font-mono text-xl font-bold px-2 py-0.5 rounded",
                             game.result === 'W' ? "bg-bkpk-success/10 text-bkpk-success" :
-                                game.result === 'L' ? "bg-bkpk-danger/10 text-bkpk-danger" : "text-bkpk-text-secondary"
+                                game.result === 'L' ? "bg-bkpk-danger/15 text-bkpk-text-danger-subtle" : "text-bkpk-text-secondary"
                         )}>{score}</span>
                         <span className="font-bold text-bkpk-text-primary font-outfit text-right">{game.opponent}</span>
                     </div>
@@ -73,7 +73,7 @@ export default function LastGameCard({ game, loading }: LastGameCardProps) {
                     {game.result && (
                         <span className={clsx(
                             "px-2 py-1 rounded-md text-xs font-bold uppercase tracking-wider",
-                            game.result === 'W' ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/20 text-bkpk-danger"
+                            game.result === 'W' ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
                         )}>
                             {game.result === 'W' ? 'Zwycięstwo' : 'Porażka'}
                         </span>

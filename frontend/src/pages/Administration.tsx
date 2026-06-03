@@ -22,12 +22,26 @@ type ScraperStatus = {
     lastLog?: string;
 };
 
+type KalkMissingMatch = {
+    leagueMatchId: string;
+    kalkMatchId: string | null;
+    date: string;
+    opponent: string;
+    score: string;
+    scrapeUrl: string | null;
+};
+
 type KalkIngestSummary = {
     kalkMatches: number;
     finishedMatches: number;
     playerGameLogs: number;
     kalkTeams: number;
     leagueMatchesWithBoxScore: number;
+    bekapakaScheduleFinished?: number;
+    bekapakaWithBoxScore?: number;
+    bekapakaMissingBoxScore?: KalkMissingMatch[];
+    duplicatePlayersCount?: number;
+    divisionKalkMatchesTotal?: number;
 };
 
 export default function Administration() {
@@ -126,11 +140,39 @@ export default function Administration() {
                     </p>
 
                     {kalkSummary ? (
-                        <ul className="text-xs text-bkpk-text-muted space-y-1 font-mono">
-                            <li>Mecze w DB (KalkMatch): {kalkSummary.finishedMatches} / {kalkSummary.kalkMatches} zakończone</li>
-                            <li>Logi zawodników (tab 3): {kalkSummary.playerGameLogs}</li>
-                            <li>Drużyny KALK: {kalkSummary.kalkTeams} · terminarz z box score: {kalkSummary.leagueMatchesWithBoxScore}</li>
-                        </ul>
+                        <div className="space-y-3">
+                            <ul className="text-xs text-bkpk-text-muted space-y-1 font-mono">
+                                <li>
+                                    BeKaPaKa: {kalkSummary.bekapakaWithBoxScore ?? '—'} / {kalkSummary.bekapakaScheduleFinished ?? '—'} z box score
+                                </li>
+                                <li>
+                                    KalkMatch (liga): {kalkSummary.finishedMatches} / {kalkSummary.kalkMatches} zakończone · dywizja łącznie: {kalkSummary.divisionKalkMatchesTotal ?? kalkSummary.kalkMatches}
+                                </li>
+                                <li>Logi zawodników (tab 3): {kalkSummary.playerGameLogs}</li>
+                                <li>
+                                    Drużyny KALK: {kalkSummary.kalkTeams} · terminarz z kalkMatchId: {kalkSummary.leagueMatchesWithBoxScore}
+                                </li>
+                                {(kalkSummary.duplicatePlayersCount ?? 0) > 0 ? (
+                                    <li className="text-bkpk-warning">
+                                        Duplikaty zawodników (name+team): {kalkSummary.duplicatePlayersCount} — uruchom migrację ID
+                                    </li>
+                                ) : null}
+                            </ul>
+                            {(kalkSummary.bekapakaMissingBoxScore?.length ?? 0) > 0 ? (
+                                <div className="p-3 rounded-xl bg-bkpk-warning/10 border border-bkpk-warning/30 text-xs space-y-1">
+                                    <p className="font-bold text-bkpk-warning uppercase tracking-wider">
+                                        Brak box score ({kalkSummary.bekapakaMissingBoxScore?.length})
+                                    </p>
+                                    <ul className="text-bkpk-text-secondary font-mono space-y-0.5 max-h-32 overflow-y-auto">
+                                        {kalkSummary.bekapakaMissingBoxScore?.map((m) => (
+                                            <li key={m.leagueMatchId}>
+                                                {m.date} vs {m.opponent} ({m.score})
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ) : null}
+                        </div>
                     ) : null}
 
                     <div className="flex flex-wrap gap-4 pt-4 border-t border-bkpk-border-strong">
@@ -186,7 +228,7 @@ export default function Administration() {
 
                 <BkpkCard
                     title="Strefa Niebezpieczna"
-                    icon={<Terminal className="w-5 h-5 text-bkpk-danger" />}
+                    icon={<Terminal className="w-5 h-5 text-bkpk-text-danger" />}
                     className="space-y-6 border-bkpk-danger/30"
                 >
                     <p className="text-bkpk-text-secondary text-sm">
@@ -313,7 +355,7 @@ function LoginLogs() {
     }, [usernameFilter]);
 
     if (loading) return <div className="p-4 text-center text-bkpk-text-muted">Ładowanie autoryzacji...</div>;
-    if (!isAuthenticated) return <div className="p-4 text-center text-bkpk-danger">Brak autoryzacji (zaloguj się ponownie).</div>;
+    if (!isAuthenticated) return <div className="p-4 text-center text-bkpk-text-danger">Brak autoryzacji (zaloguj się ponownie).</div>;
 
     return (
         <div className="space-y-6">
@@ -355,7 +397,7 @@ function LoginLogs() {
             {/* Table */}
             <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
                 {error && (
-                    <div className="p-3 m-4 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                    <div className="p-3 m-4 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                         Błąd pobierania logów: {error}
                     </div>
                 )}
@@ -372,7 +414,7 @@ function LoginLogs() {
                                         'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
                                         log.success
                                             ? 'bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20'
-                                            : 'bg-bkpk-danger/10 text-bkpk-danger border border-bkpk-danger/20'
+                                            : 'bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/20'
                                     )}
                                 >
                                     {log.success ? 'Udane' : 'Błąd'}
@@ -406,7 +448,7 @@ function LoginLogs() {
                                 <td className="py-2.5 px-4">
                                     <span className={cn(
                                         "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
-                                        log.success ? "bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20" : "bg-bkpk-danger/10 text-bkpk-danger border border-bkpk-danger/20"
+                                        log.success ? "bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/20"
                                     )}>
                                         {log.success ? 'Udane' : 'Błąd'}
                                     </span>
@@ -698,7 +740,7 @@ function UserManagement() {
             {/* User List Table */}
             <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
                 {error && (
-                    <div className="p-3 m-4 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                    <div className="p-3 m-4 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                         Błąd pobierania użytkowników: {error}
                     </div>
                 )}
@@ -765,7 +807,7 @@ function UserManagement() {
                                             type="button"
                                             onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                             disabled={currentUser?.id === user.id}
-                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-30"
+                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-30"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             Usuń
@@ -850,7 +892,7 @@ function UserManagement() {
                                                 type="button"
                                                 onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                                 disabled={currentUser?.id === user.id}
-                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-danger hover:bg-bkpk-danger/10 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-text-danger hover:bg-bkpk-danger/10 rounded-lg transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                                                 title={currentUser?.id === user.id ? "Nie możesz usunąć samego siebie" : "Usuń zawodnika"}
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -881,7 +923,7 @@ function UserManagement() {
             >
                 <form onSubmit={handleAddUser} className="space-y-4">
                     {addError && (
-                        <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                        <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                             {addError}
                         </div>
                     )}
@@ -970,7 +1012,7 @@ function UserManagement() {
                                     <button
                                         type="button"
                                         onClick={() => setAddPhoto(null)}
-                                        className="text-xs font-bold text-bkpk-danger hover:underline text-left animate-in fade-in"
+                                        className="text-xs font-bold text-bkpk-text-danger hover:underline text-left animate-in fade-in"
                                     >
                                         Usuń zdjęcie
                                     </button>
@@ -1053,7 +1095,7 @@ function UserManagement() {
             >
                 <form onSubmit={handleEditUser} className="space-y-4">
                     {editError && (
-                        <div className="p-3 text-xs bg-bkpk-danger/20 text-bkpk-danger rounded-xl border border-bkpk-danger/30">
+                        <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
                             {editError}
                         </div>
                     )}
@@ -1142,7 +1184,7 @@ function UserManagement() {
                                     <button
                                         type="button"
                                         onClick={() => setEditPhoto(null)}
-                                        className="text-xs font-bold text-bkpk-danger hover:underline text-left animate-in fade-in"
+                                        className="text-xs font-bold text-bkpk-text-danger hover:underline text-left animate-in fade-in"
                                     >
                                         Usuń zdjęcie
                                     </button>

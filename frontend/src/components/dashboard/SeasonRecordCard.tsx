@@ -63,7 +63,7 @@ export default function SeasonRecordCard({ games, totalMatches, remainingMatches
                     </div>
                     <div className="text-3xl text-bkpk-text-muted font-outfit opacity-50">-</div>
                     <div className="flex flex-col items-center gap-1">
-                        <span className="text-5xl font-bold font-outfit text-bkpk-danger">{losses}</span>
+                        <span className="text-5xl font-bold font-outfit text-bkpk-text-danger">{losses}</span>
                         <span className="text-xs text-bkpk-text-secondary uppercase font-semibold tracking-wider">Porażki</span>
                     </div>
                 </div>
@@ -110,7 +110,7 @@ export default function SeasonRecordCard({ games, totalMatches, remainingMatches
                         <span className="text-xs text-bkpk-text-secondary uppercase tracking-wider mr-2">Seria:</span>
                         <span className={clsx(
                             "text-sm font-bold uppercase",
-                            streakType === 'W' ? "text-bkpk-success" : "text-bkpk-danger"
+                            streakType === 'W' ? "text-bkpk-success" : "text-bkpk-text-danger"
                         )}>
                             {currentStreak} {streakType === 'W' ? 'zwycięstw' : 'porażek'}
                         </span>

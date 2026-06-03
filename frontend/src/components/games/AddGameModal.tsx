@@ -77,7 +77,7 @@ export default function AddGameModal({ onClose, onGameAdded }: AddGameModalProps
 
                 <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
                     {error && (
-                        <div className="p-3 bg-bkpk-danger/10 border-l-4 border-bkpk-danger rounded-r-lg text-bkpk-danger text-sm font-medium">
+                        <div className="p-3 bg-bkpk-danger/10 border-l-4 border-bkpk-danger rounded-r-lg text-bkpk-text-danger text-sm font-medium">
                             {error}
                         </div>
                     )}

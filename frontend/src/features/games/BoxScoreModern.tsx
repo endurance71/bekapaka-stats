@@ -60,7 +60,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx }: { player: PlayerStat;
             <td className="px-2 sm:px-4 py-2 sm:py-3 text-center text-[10px] sm:text-xs text-bkpk-text-muted tabular-nums font-medium bg-bkpk-surface-tint-2 hidden lg:table-cell">{player.ft ?? '-'}</td>
             <td className={cn(
                 'px-2 sm:px-4 py-2 sm:py-3 text-center font-medium tabular-nums text-xs sm:text-sm',
-                Number(player.plusMinus) > 0 ? 'text-bkpk-success' : Number(player.plusMinus) < 0 ? 'text-bkpk-danger' : 'text-bkpk-text-muted'
+                Number(player.plusMinus) > 0 ? 'text-bkpk-success' : Number(player.plusMinus) < 0 ? 'text-bkpk-text-danger' : 'text-bkpk-text-muted'
             )}>
                 {Number(player.plusMinus) > 0 ? `+${player.plusMinus}` : player.plusMinus ?? '-'}
             </td>

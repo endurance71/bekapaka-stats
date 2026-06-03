@@ -119,7 +119,7 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                     </div>
                     <div className="bg-bkpk-surface-tint-2 p-3 rounded-2xl border border-bkpk-border-strong">
                         <div className="flex items-center gap-2 mb-1">
-                            <TrendingDown className="w-3 h-3 text-bkpk-danger" />
+                            <TrendingDown className="w-3 h-3 text-bkpk-text-danger" />
                             <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Obrona</span>
                         </div>
                         <div className="text-lg font-black font-outfit text-bkpk-text-primary">{data.oppg.toFixed(1)} <span className="text-xs opacity-50">PPG</span></div>

@@ -23,6 +23,7 @@ import {
   logKalkScrapeRun,
   getLatestKalkScrapeRun,
   getKalkIngestSummary,
+  getKalkDataAuditReport,
   listKalkPlayers,
   resetData,
   purgeProtocolData,
@@ -71,6 +72,7 @@ const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const KALK_SCRAPLING_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scraper.py');
+const KALK_GAP_SCRAPE_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scrape_gaps.py');
 const KALK_SCRAPLING_OUTPUT = path.join(__dirname, 'kalk_stats.json');
 const app = express();
 app.use(cors({
@@ -485,6 +487,16 @@ app.get(['/api/kalk/ingest-summary', '/kalk/ingest-summary'], authenticateToken,
     res.status(500).json({ error: err.message });
   }
 });
+
+app.get(['/api/kalk/audit', '/kalk/audit'], authenticateToken, requireAdmin, async (_req, res) => {
+  try {
+    const report = await getKalkDataAuditReport();
+    res.json(report);
+  } catch (err) {
+    console.error('KALK audit error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
 /**
  * Ensures default admin account exists. Never overwrites password on existing users
  * (password reset on scrape/restart was causing intermittent login failures).
@@ -631,6 +643,7 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
       kalkMatches: matchesIngest?.total || 0,
       kalkMatchesLinked: matchesIngest?.linked || 0,
       playerGameLogs: logsIngest?.total || 0,
+      playerGameLogsSkipped: logsIngest?.skipped || 0,
       players: playersIngest?.total || 0
     };
   } catch (err) {
@@ -651,6 +664,53 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
     if (err.message === 'Scraper już działa.') {
       return res.status(409).json({ error: err.message });
     }
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Targeted scrape brakujących meczów (URL-e z body lub audytu).
+ */
+app.post(['/api/scrape/kalk/gaps', '/scrape/kalk/gaps'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const urls = Array.isArray(req.body?.urls)
+      ? req.body.urls.filter((u) => typeof u === 'string' && u.startsWith('http'))
+      : [];
+
+    if (!urls.length) {
+      const summary = await getKalkIngestSummary();
+      for (const row of summary?.bekapakaMissingBoxScore || []) {
+        if (row.scrapeUrl) urls.push(row.scrapeUrl);
+      }
+    }
+
+    if (!urls.length) {
+      return res.status(400).json({ error: 'Brak URL-i meczów do pobrania (podaj urls[] lub uzupełnij terminarz).' });
+    }
+
+    await new Promise((resolve, reject) => {
+      const child = execFileCb(
+        'python3',
+        [KALK_GAP_SCRAPE_SCRIPT, ...urls],
+        { cwd: __dirname, timeout: 5 * 60 * 1000, maxBuffer: 5 * 1024 * 1024 },
+        (err) => (err ? reject(err) : resolve())
+      );
+      child.stdout?.on('data', (d) => updateScraperLog(String(d).trim()));
+      child.stderr?.on('data', (d) => updateScraperLog(`GAP: ${String(d).trim()}`));
+    });
+
+    const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
+    const stats = JSON.parse(statsRaw);
+    const matchesIngest = await ingestKalkMatches(stats.matches || []);
+
+    res.json({
+      success: true,
+      urlsScraped: urls.length,
+      kalkMatches: matchesIngest?.total || 0,
+      kalkMatchesLinked: matchesIngest?.linked || 0
+    });
+  } catch (err) {
+    console.error('KALK gap scrape error:', err);
     res.status(500).json({ error: err.message });
   }
 });

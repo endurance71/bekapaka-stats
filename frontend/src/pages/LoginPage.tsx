@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { Lock, User, Eye, EyeOff } from 'lucide-react';
+import { AppFooter } from '../components/AppFooter';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -53,7 +54,7 @@ export default function LoginPage() {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
-                            <div className="p-3 bg-bkpk-danger/10 border border-bkpk-danger text-bkpk-danger rounded-md text-sm text-center font-bold">
+                            <div className="p-3 bg-bkpk-danger/10 border border-bkpk-danger text-bkpk-text-danger rounded-md text-sm text-center font-bold">
                                 {error}
                             </div>
                         )}
@@ -112,6 +113,7 @@ export default function LoginPage() {
                         <p>Nie masz dostępu? Skontaktuj się z administratorem.</p>
                     </div>
                 </BkpkCard>
+                <AppFooter className="mt-6" />
                 <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-bkpk-primary/5 blur-[120px] rounded-full pointer-events-none -mr-48 -mt-48" />
                 <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-bkpk-success/5 blur-[120px] rounded-full pointer-events-none -ml-48 -mb-48" />
             </div>

@@ -31,7 +31,7 @@ export default function DebugData() {
     }, []);
 
     if (loading) return <div className="p-5 text-bkpk-text-secondary">Ładowanie danych diagnostycznych...</div>;
-    if (error) return <div className="p-5 text-bkpk-danger">Błąd: {error}</div>;
+    if (error) return <div className="p-5 text-bkpk-text-danger">Błąd: {error}</div>;
 
     return (
         <div className="p-6 text-bkpk-text-primary space-y-8">

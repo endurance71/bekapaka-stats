@@ -76,7 +76,7 @@ export default function GameCard({ game }: GameCardProps) {
                 {game.result && (
                     <div className={clsx(
                         "inline-block px-3 py-1 rounded-bkpk-md text-xs font-bold uppercase self-start tracking-wider",
-                        game.result === 'W' ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/20 text-bkpk-danger"
+                        game.result === 'W' ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
                     )}>
                         {game.result === 'W' ? 'Zwycięstwo' : 'Porażka'}
                     </div>

@@ -335,7 +335,7 @@ export function MegaHomeTemplate({
               Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
             </p>
             <a href='mailto:kontakt@damianmotylinski.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
-              Zostań Partnerem
+              Zostań sponsorem
               <ArrowRightIcon size={14} />
             </a>
           </div>
@@ -388,8 +388,8 @@ export function MegaHomeTemplate({
         {/* ROW 6: SPONSORS SLIDER (12) */}
         <article className='surface-card dashboard-sponsors'>
           <div className='section-head'>
-            <h2>Partnerzy i Sponsorzy</h2>
-            <Link href='/sponsorzy'>Wszyscy partnerzy</Link>
+            <h2>Sponsorzy</h2>
+            <Link href='/sponsorzy'>Wszyscy sponsorzy</Link>
           </div>
           
           <div className='sponsors-slider-wrap-premium'>
