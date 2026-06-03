@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
-import { postJSON, fetchJSON } from '../lib/api';
+import { postJSON, fetchJSON, setUnauthorizedHandler } from '../lib/api';
 
 interface User {
     id: string;
@@ -11,8 +11,8 @@ interface User {
     number?: number;
     position?: string;
     photo?: string | null;
-    data?: any;
-    kalkPlayer?: any;
+    data?: Record<string, unknown>;
+    kalkPlayer?: Record<string, unknown>;
     ppg?: number;
     rpg?: number;
     apg?: number;
@@ -35,43 +35,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState<string | null>(localStorage.getItem('bkpk_token'));
     const [loading, setLoading] = useState(true);
 
+    const logout = useCallback(() => {
+        setToken(null);
+        setUser(null);
+        localStorage.removeItem('bkpk_token');
+    }, []);
+
     const refreshUser = useCallback(async () => {
         if (token) {
             try {
                 const data = await fetchJSON<{ user: User }>('/api/auth/me');
                 setUser(data.user);
-            } catch (err) {
-                console.error('Failed to refresh user:', err);
+            } catch {
+                logout();
             }
         }
-    }, [token]);
+    }, [token, logout]);
+
+    useEffect(() => {
+        setUnauthorizedHandler(() => {
+            logout();
+            const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.assign(`/login?redirect=${redirect}`);
+        });
+        return () => setUnauthorizedHandler(null);
+    }, [logout]);
 
     useEffect(() => {
         if (token) {
-            // Verify token and get user data
             fetchJSON<{ user: User }>('/api/auth/me')
                 .then(data => setUser(data.user))
                 .catch(() => {
-                    // Invalid token
                     logout();
                 })
                 .finally(() => setLoading(false));
         } else {
             setLoading(false);
         }
-    }, [token]);
+    }, [token, logout]);
 
     const login = useCallback(async (username: string, password: string) => {
         const data = await postJSON<{ user: User; token: string }>('/api/auth/login', { username, password });
         setToken(data.token);
         setUser(data.user);
         localStorage.setItem('bkpk_token', data.token);
-    }, []);
-
-    const logout = useCallback(() => {
-        setToken(null);
-        setUser(null);
-        localStorage.removeItem('bkpk_token');
     }, []);
 
     const value = useMemo(

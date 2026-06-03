@@ -1,6 +1,14 @@
 // Use current origin and proxy via Vite
 const API_URL = '';
 
+type UnauthorizedHandler = () => void;
+let onUnauthorized: UnauthorizedHandler | null = null;
+
+/** Register global handler for 401 responses (e.g. logout + redirect). */
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null) {
+  onUnauthorized = handler;
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   const text = await res.text();
   let data = null;
@@ -8,6 +16,11 @@ async function handleResponse<T>(res: Response): Promise<T> {
     data = text ? JSON.parse(text) : null;
   } catch {
     // Response is not valid JSON — propagate the HTTP error below
+  }
+
+  if (res.status === 401) {
+    onUnauthorized?.();
+    throw new Error(data?.error || 'Sesja wygasła — zaloguj się ponownie.');
   }
 
   if (!res.ok) {

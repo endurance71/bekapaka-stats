@@ -4,13 +4,13 @@ function isBekapakaRow(name: string) {
   return name.toLowerCase().includes('bekapaka')
 }
 
-export function StandingsBoard({ table }: { table: TeamStanding[] }) {
+export function StandingsBoard({ table, className }: { table: TeamStanding[]; className?: string }) {
   return (
-    <div className='standings-board' role='table' aria-label='Tabela ligowa'>
+    <div className={`standings-board${className ? ` ${className}` : ''}`} role='table' aria-label='Tabela ligowa'>
       <div className='standings-board__head' role='row'>
         <span role='columnheader'>#</span>
         <span role='columnheader'>Drużyna</span>
-        <span role='columnheader'>Bilans</span>
+        <span className='col-balance' role='columnheader'>Bilans</span>
         <span role='columnheader'>Pkt</span>
       </div>
       <div className='standings-board__body'>
@@ -29,7 +29,7 @@ export function StandingsBoard({ table }: { table: TeamStanding[] }) {
               <span className='standings-row__team' role='cell'>
                 {row.name}
               </span>
-              <span className='standings-row__meta' role='cell'>
+              <span className='standings-row__meta col-balance' role='cell'>
                 <span className='standings-row__stat'>{row.wins + row.losses} M</span>
                 <span className='standings-row__stat'>
                   {row.wins}-{row.losses}
