@@ -1,16 +1,24 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
+import { slugifyTitle } from '../../../lib/data/utils'
 import { formatDateTime } from '../../../lib/format'
 
 export const dynamic = 'force-dynamic'
 
 type Params = { slug: string }
 
+function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
+  const slug = decodeURIComponent(rawSlug).trim()
+  if (item.slug === slug) return true
+  return slugifyTitle(item.title) === slug
+}
+
 async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
   const items = await getNewsPosts(200)
-  return items.find((item) => item.slug === slug) || null
+  return items.find((item) => matchesNewsSlug(item, slug)) || null
 }
 
 export async function generateStaticParams() {
@@ -40,9 +48,14 @@ export default async function NewsDetailPage({ params }: { params: Params }) {
       parentHref='/aktualnosci'
       content={
         <>
-          <p>{item.excerpt}</p>
+          {item.coverImageUrl ? (
+            <div className='article-detail__cover'>
+              <img src={item.coverImageUrl} alt='' className='article-detail__cover-image' />
+            </div>
+          ) : null}
+          {item.excerpt ? <p className='article-detail__lead'>{item.excerpt}</p> : null}
           <div className='article-content'>
-            <p>{item.content || 'Tresc artykulu zostanie uzupelniona przez redakcje.'}</p>
+            <ArticleMarkdown content={item.content} />
           </div>
         </>
       }

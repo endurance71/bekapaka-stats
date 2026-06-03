@@ -1,4 +1,9 @@
 const cmsApiUrl = process.env.SITE_CMS_API_URL || 'http://localhost:1337'
+/** Public URL for media in HTML (browser cannot reach Docker-internal hostnames). */
+const cmsPublicUrl =
+  process.env.SITE_CMS_PUBLIC_URL ||
+  process.env.NEXT_PUBLIC_SITE_CMS_PUBLIC_URL ||
+  cmsApiUrl
 const backendApiUrl = process.env.SITE_BACKEND_API_URL || 'http://localhost:4001'
 const cmsToken = process.env.SITE_CMS_TOKEN
 
@@ -6,9 +11,28 @@ export const siteBaseUrl = process.env.SITE_BASE_URL || 'https://bekapaka.pl'
 
 export function toAbsoluteCmsUrl(rawValue?: string): string {
   if (!rawValue) return ''
-  if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) return rawValue
-  if (rawValue.startsWith('/')) return `${cmsApiUrl}${rawValue}`
+  if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
+    return rewriteCmsHostForPublic(rawValue)
+  }
+  if (rawValue.startsWith('/')) return `${cmsPublicUrl}${rawValue}`
   return rawValue
+}
+
+/** Replace internal CMS API host with the public CMS origin when Strapi returns absolute URLs. */
+function rewriteCmsHostForPublic(absoluteUrl: string): string {
+  try {
+    const parsed = new URL(absoluteUrl)
+    const internal = new URL(cmsApiUrl)
+    const pub = new URL(cmsPublicUrl)
+    if (parsed.hostname === internal.hostname) {
+      parsed.protocol = pub.protocol
+      parsed.host = pub.host
+      return parsed.toString()
+    }
+  } catch {
+    return absoluteUrl
+  }
+  return absoluteUrl
 }
 
 export async function fetchJson<T>(

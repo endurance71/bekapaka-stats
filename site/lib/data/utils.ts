@@ -45,6 +45,47 @@ export function normalizePolishChars(str: string): string {
     .replace(/\s+/g, '-')
 }
 
+/** Slug for news URLs from a Polish title. */
+export function slugifyTitle(title: string): string {
+  return normalizePolishChars(title.trim())
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+/** Strip common Markdown markers for card excerpts and meta descriptions. */
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+}
+
+/** Short plain-text excerpt from article body when CMS excerpt is empty. */
+export function excerptFromContent(content: string, maxLength = 180): string {
+  const plain = stripMarkdown(content)
+  if (!plain) return ''
+  if (plain.length <= maxLength) return plain
+  const cut = plain.slice(0, maxLength)
+  const lastSpace = cut.lastIndexOf(' ')
+  const trimmed = lastSpace > 80 ? cut.slice(0, lastSpace) : cut
+  return `${trimmed.trimEnd()}…`
+}
+
+const GENERIC_NEWS_SLUGS = new Set(['news-post', 'news', 'post'])
+
+/** Prefer a readable slug; Strapi sometimes keeps the default uid "news-post". */
+export function resolveNewsSlug(slug: string, title: string, fallbackIndex: number): string {
+  const normalized = slug.trim().toLowerCase()
+  if (normalized && !GENERIC_NEWS_SLUGS.has(normalized)) return slug.trim()
+  const fromTitle = slugifyTitle(title)
+  if (fromTitle) return fromTitle
+  return `news-${fallbackIndex}`
+}
+
 /** Build a local photo URL from player's first/last name */
 export function getPhotoUrl(firstName?: string, lastName?: string): string {
   if (!firstName || !lastName) return '/photos/default.png'

@@ -13,7 +13,13 @@ import {
   type SponsorItem
 } from './schemas'
 import { normalizeSponsorTier } from './sponsor-tiers'
-import { sanitizeNumber, sanitizeText, toNormalizedArray } from './utils'
+import {
+  excerptFromContent,
+  resolveNewsSlug,
+  sanitizeNumber,
+  sanitizeText,
+  toNormalizedArray
+} from './utils'
 
 function mapMediaUrl(value: unknown): string | undefined {
   if (!value || typeof value !== 'object') return undefined
@@ -268,15 +274,20 @@ export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]
     }
 
     const items = toNormalizedArray(response.payload)
-      .map((item, index) => ({
-        id: sanitizeText(item.id, String(index)),
-        title: sanitizeText(item.title, 'Bez tytulu'),
-        slug: sanitizeText(item.slug, `news-${index}`),
-        excerpt: sanitizeText(item.excerpt, sanitizeText(item.description, '')),
-        content: sanitizeText(item.content, ''),
-        publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
-        coverImageUrl: mapMediaUrl(item.coverImage)
-      }))
+      .map((item, index) => {
+        const title = sanitizeText(item.title, 'Bez tytulu')
+        const content = sanitizeText(item.content, '')
+        const excerptRaw = sanitizeText(item.excerpt, sanitizeText(item.description, ''))
+        return {
+          id: sanitizeText(item.id, String(index)),
+          title,
+          slug: resolveNewsSlug(sanitizeText(item.slug, ''), title, index),
+          excerpt: excerptRaw || excerptFromContent(content),
+          content,
+          publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
+          coverImageUrl: mapMediaUrl(item.coverImage)
+        }
+      })
       .map((item) => newsPostSchema.parse(item))
 
     if (items.length === 0) {
