@@ -70,7 +70,7 @@ const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const KALK_SCRAPLING_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scraper.py');
-const KALK_SCRAPLING_OUTPUT = path.resolve(__dirname, '../kalk_stats.json');
+const KALK_SCRAPLING_OUTPUT = path.join(__dirname, 'kalk_stats.json');
 const app = express();
 app.use(cors({
   origin: true, // Reflect request origin
