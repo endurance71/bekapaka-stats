@@ -60,6 +60,7 @@ import {
   generateTeamBriefing,
   getTeamBriefingCached
 } from './ai/generate.js';
+import { getAiAnalysesCatalog } from './ai/catalog.js';
 import { isGeminiConfigured } from './ai/geminiClient.js';
 import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
@@ -397,6 +398,15 @@ app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
     configured: isGeminiConfigured(),
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
   });
+});
+
+app.get(['/api/ai/catalog', '/ai/catalog'], authenticateToken, async (req, res) => {
+  try {
+    const catalog = await getAiAnalysesCatalog();
+    res.json(catalog);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
 });
 
 app.get(['/api/ai/briefing', '/ai/briefing'], authenticateToken, async (req, res) => {

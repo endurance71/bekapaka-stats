@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
 import { fetchJSON, postJSON, putJSON, deleteJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock } from 'lucide-react';
+import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot } from 'lucide-react';
+import AiCatalogHub from '../components/ai/AiCatalogHub';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { cn } from '../shared/lib/utils';
@@ -118,6 +119,14 @@ export default function Administration() {
                         Narzędzia do zarządzania danymi i aktualizacji systemowych.
                     </motion.p>
                 </header>
+
+                <BkpkCard
+                    title="Centrum analiz AI"
+                    icon={<Bot className="w-5 h-5 text-bkpk-primary" />}
+                    className="space-y-4"
+                >
+                    <AiCatalogHub embedded />
+                </BkpkCard>
 
                 <BkpkCard
                     title="Liga KALK Scraper"
