@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import type { GameSummary, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type { GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import { cmsEventCategoryLabel } from '../../../lib/data'
 import { formatDateTime } from '../../../lib/format'
 import { formatVenue } from '../../../lib/venue'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
@@ -9,14 +10,14 @@ import { FsmmSupportSection } from '../support/FsmmSupportSection'
 export function MegaHomeTemplate({
   news,
   recentGames,
-  nextGame,
+  nearestEvent,
   table,
   roster,
   sponsors,
 }: {
   news: NewsPost[]
   recentGames: GameSummary[]
-  nextGame?: GameSummary | null
+  nearestEvent?: NearestHighlight | null
   table: TeamStanding[]
   roster: RosterPlayer[]
   sponsors: SponsorItem[]
@@ -100,24 +101,24 @@ export function MegaHomeTemplate({
 
         {/* ROW 2: NEXT MATCH (7) & STAT LEADERS (5) */}
         <article className='surface-card dashboard-next'>
-          <p className='section-kicker'>Najbliższy mecz</p>
-          {nextGame ? (
+          <p className='section-kicker'>Najbliższe wydarzenie</p>
+          {nearestEvent?.source === 'kalk' ? (
             <div className='ticket-box'>
               <div className='ticket-main'>
-                <span className='ticket-league'>Zmagania ligowe</span>
+                <span className='ticket-league'>Zmagania ligowe · KALK</span>
                 <h2 className='ticket-teams'>
                   <span className='ticket-team-us'>BEKAPAKA</span>
                   <span className='ticket-vs'>VS</span>
-                  <span className='ticket-team-them'>{nextGame.opponent.toUpperCase()}</span>
+                  <span className='ticket-team-them'>{nearestEvent.game.opponent.toUpperCase()}</span>
                 </h2>
                 <div className='ticket-details'>
                   <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Data meczu</span>
-                    <strong className='ticket-detail-value'>{formatDateTime(nextGame.date)}</strong>
+                    <span className='ticket-detail-label'>Termin</span>
+                    <strong className='ticket-detail-value'>{formatDateTime(nearestEvent.game.date)}</strong>
                   </div>
                   <div className='ticket-detail-item'>
-                    <span className='ticket-detail-label'>Hala</span>
-                    <strong className='ticket-detail-value'>{formatVenue(nextGame.data?.venue)}</strong>
+                    <span className='ticket-detail-label'>Miejsce</span>
+                    <strong className='ticket-detail-value'>{formatVenue(nearestEvent.game.data?.venue)}</strong>
                   </div>
                 </div>
               </div>
@@ -129,8 +130,54 @@ export function MegaHomeTemplate({
               <div className='ticket-stub'>
                 <span className='ticket-badge-pill'>Liga KALK</span>
                 <Link href='/mecze' className='button button--primary stub-button'>
-                  Szczegóły
+                  Terminarz
                 </Link>
+              </div>
+            </div>
+          ) : nearestEvent?.source === 'cms' ? (
+            <div className='ticket-box'>
+              <div className='ticket-main'>
+                <span className='ticket-league'>{cmsEventCategoryLabel(nearestEvent.event.type)} · CMS</span>
+                <h2 className='ticket-teams ticket-teams--cms'>
+                  <span className='ticket-team-them ticket-team-them--cms'>{nearestEvent.event.title}</span>
+                </h2>
+                {nearestEvent.event.description ? (
+                  <p className='ticket-event-lead muted'>{nearestEvent.event.description}</p>
+                ) : null}
+                <div className='ticket-details'>
+                  <div className='ticket-detail-item'>
+                    <span className='ticket-detail-label'>Termin</span>
+                    <strong className='ticket-detail-value'>{formatDateTime(nearestEvent.event.startAt)}</strong>
+                  </div>
+                  <div className='ticket-detail-item'>
+                    <span className='ticket-detail-label'>Miejsce</span>
+                    <strong className='ticket-detail-value'>
+                      {nearestEvent.event.location || 'Do potwierdzenia'}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+              <div className='ticket-divider'>
+                <span className='notch notch-top'></span>
+                <span className='dashed-line'></span>
+                <span className='notch notch-bottom'></span>
+              </div>
+              <div className='ticket-stub'>
+                <span className='ticket-badge-pill'>Wydarzenie</span>
+                {nearestEvent.event.registrationUrl ? (
+                  <a
+                    href={nearestEvent.event.registrationUrl}
+                    className='button button--primary stub-button'
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    Zapisz się
+                  </a>
+                ) : (
+                  <Link href={`/mecze/${nearestEvent.event.slug}`} className='button button--primary stub-button'>
+                    Szczegóły
+                  </Link>
+                )}
               </div>
             </div>
           ) : (
@@ -144,8 +191,8 @@ export function MegaHomeTemplate({
                   <line x1='12' y1='2' x2='12' y2='22'></line>
                 </svg>
               </span>
-              <h3>Brak zaplanowanych meczów</h3>
-              <p className='muted'>Wszystkie spotkania z bieżącej rundy zostały rozegrane.</p>
+              <h3>Brak zaplanowanych wydarzeń</h3>
+              <p className='muted'>Nie ma nadchodzących meczów w KALK ani wydarzeń w kalendarzu klubu.</p>
               <Link href='/mecze' className='button button--ghost stub-button'>
                 Zobacz kalendarz
               </Link>
@@ -273,7 +320,7 @@ export function MegaHomeTemplate({
             <p className='muted'>
               Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
             </p>
-            <a href='mailto:kontakt@bekapaka.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+            <a href='mailto:kontakt@damianmotylinski.pl?subject=Gra w druzynie BeKaPaKa' className='button button--ghost join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
               Zagraj z nami
               <ArrowRightIcon size={14} />
             </a>
@@ -287,7 +334,7 @@ export function MegaHomeTemplate({
             <p className='muted'>
               Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
             </p>
-            <a href='mailto:kontakt@bekapaka.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
+            <a href='mailto:kontakt@damianmotylinski.pl?subject=Wspolpraca sponsorska BeKaPaKa' className='button button--primary join-us-btn-premium button-with-icon' style={{ alignSelf: 'flex-start', marginTop: 'auto' }}>
               Zostań Partnerem
               <ArrowRightIcon size={14} />
             </a>
