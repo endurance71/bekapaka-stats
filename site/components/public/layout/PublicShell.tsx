@@ -65,7 +65,7 @@ export function PublicShell({
         </div>
       </header>
 
-      <MobileFullScreenMenu isOpen={isMenuOpen} onClose={closeMenu} />
+      <MobileFullScreenMenu isOpen={isMenuOpen} onClose={closeMenu} logoUrl={logoUrl} />
 
       <main id='content' className='container'>
         {children}
