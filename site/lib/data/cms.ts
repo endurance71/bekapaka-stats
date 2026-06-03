@@ -85,7 +85,8 @@ const fallbackNews: NewsPost[] = [
     excerpt: 'Uruchamiamy nową platformę dla kibiców BeKaPaKa Bobolice ze szczegółowymi statystykami oraz wynikami spotkań.',
     content: 'Z dumą prezentujemy nasz nowy portal internetowy! Dzięki integracji z systemem analiz sportowych KALK, nasi kibice mogą od dziś śledzić niezwykle szczegółowe, zaawansowane statystyki zawodników oraz terminarz i wyniki meczów. Zapraszamy do eksploracji podstron Skład oraz Mecze!',
     publishedAt: '2026-06-01T12:00:00Z',
-    coverImageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000&auto=format&fit=crop'
+    coverImageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=1000&auto=format&fit=crop',
+    attachments: []
   },
   {
     id: 'fn-2',
@@ -94,7 +95,8 @@ const fallbackNews: NewsPost[] = [
     excerpt: 'Trener zapowiada pełną mobilizację przed nadchodzącym meczem na szczycie. Każdy kosz będzie na wagę złota.',
     content: 'Nasz zespół intensywnie trenuje przed najbliższym spotkaniem ligowym. Po serii zaciętych meczów, przed nami kluczowy pojedynek, który zadecyduje o układzie tabeli przed fazą play-off. Zapraszamy wszystkich kibiców do wsparcia drużyny głośnym dopingiem!',
     publishedAt: '2026-05-28T14:30:00Z',
-    coverImageUrl: 'https://images.unsplash.com/photo-1519766304817-4f37bda74a27?q=80&w=1000&auto=format&fit=crop'
+    coverImageUrl: 'https://images.unsplash.com/photo-1519766304817-4f37bda74a27?q=80&w=1000&auto=format&fit=crop',
+    attachments: []
   },
   {
     id: 'fn-3',
@@ -103,7 +105,8 @@ const fallbackNews: NewsPost[] = [
     excerpt: 'Przyjrzyjmy się bliżej liczbom. Kto jest liderem zbiórek, a kto najlepiej asystuje w tym sezonie?',
     content: 'Pierwsza runda za nami, czas na analizę statystyczną! Zespół BeKaPaKa notuje świetne wskaźniki w grze obronnej, a nasi liderzy Tomasz Kaszubowski oraz Damian Motyliński przewodzą w ligowych statystykach zbiórek oraz asyst. Zapraszamy do zapoznania się ze szczegółowymi profilami zawodników w zakładce Skład.',
     publishedAt: '2026-05-20T10:15:00Z',
-    coverImageUrl: 'https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=1000&auto=format&fit=crop'
+    coverImageUrl: 'https://images.unsplash.com/photo-1518063319789-7217e6706b04?q=80&w=1000&auto=format&fit=crop',
+    attachments: []
   }
 ]
 
