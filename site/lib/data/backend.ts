@@ -1,4 +1,5 @@
-import { backendPath, fetchJsonState } from './client'
+import { backendPath, fetchJson, fetchJsonState } from './client'
+import { mapApiGameToSummary } from './map-game'
 import {
   gameSummarySchema,
   rosterPlayerSchema,
@@ -354,28 +355,7 @@ export async function getRecentGamesState(limit = 100): Promise<DataState<GameSu
 
     const items = response.payload
       .slice(0, limit)
-      .map((game, index) => {
-        const scoreUs = game.scoreUs !== undefined && game.scoreUs !== null ? sanitizeNumber(game.scoreUs, 0) : null
-        const scoreThem = game.scoreThem !== undefined && game.scoreThem !== null ? sanitizeNumber(game.scoreThem, 0) : null
-        const result = game.result ? sanitizeText(game.result, '-') : null
-
-        return {
-          id: sanitizeText(game.id, String(index)),
-          date: sanitizeText(game.date, ''),
-          opponent: sanitizeText(game.opponent, 'Rywal'),
-          result,
-          scoreUs,
-          scoreThem,
-          homeAway: sanitizeText(game.homeAway, 'home'),
-          coachNotes: game.coachNotes ? sanitizeText(game.coachNotes, '') : null,
-          aiSummary: game.aiSummary ? sanitizeText(game.aiSummary, '') : null,
-          videoUrl: game.videoUrl ? String(game.videoUrl) : null,
-          teams: Array.isArray(game.teams) ? game.teams : (Array.isArray(game.teamStats) ? game.teamStats : undefined),
-          playerStats: Array.isArray(game.playerStats) ? game.playerStats : undefined,
-          data: game.data
-        }
-      })
-      .map((item) => gameSummarySchema.parse(item))
+      .map((game, index) => mapApiGameToSummary(game, index))
 
     if (items.length === 0) {
       return { status: 'empty', data: fallbackGames.slice(0, limit), source: 'fallback', message: 'Brak meczów w API.' }
@@ -384,6 +364,25 @@ export async function getRecentGamesState(limit = 100): Promise<DataState<GameSu
     return stateFromArray(items)
   } catch {
     return { status: 'error', data: fallbackGames.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać meczów z backendu.' }
+  }
+}
+
+export async function getGameByIdState(id: string): Promise<DataState<GameSummary | null>> {
+  try {
+    const game = await fetchJson<Record<string, unknown>>(backendPath(`/api/games/${encodeURIComponent(id)}`), {
+      revalidate: 120
+    })
+    if (!game) {
+      return { status: 'error', data: null, source: 'live', message: 'Mecz nie znaleziony.' }
+    }
+    return { status: 'ok', data: mapApiGameToSummary(game), source: 'live' }
+  } catch {
+    return {
+      status: 'error',
+      data: null,
+      source: 'live',
+      message: 'Nie udało się pobrać szczegółów meczu z backendu.'
+    }
   }
 }
 

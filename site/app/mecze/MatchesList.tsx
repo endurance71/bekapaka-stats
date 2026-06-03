@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { GameSummary } from '../../lib/data'
+import { gameSummarySchema } from '../../lib/data/schemas'
 import { formatDateTime } from '../../lib/format'
 import { SlideoutPanel } from '../../components/public/shared/SlideoutPanel'
 import { formatVenue } from '../../lib/venue'
@@ -21,6 +22,9 @@ interface MatchesListProps {
 export function MatchesList({ games }: MatchesListProps) {
   const [activeTab, setActiveTab] = useState<'past' | 'upcoming'>('past')
   const [selectedGame, setSelectedGame] = useState<GameSummary | null>(null)
+  const [detailGame, setDetailGame] = useState<GameSummary | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [detailError, setDetailError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
   const pastGames = games.filter(
@@ -37,14 +41,39 @@ export function MatchesList({ games }: MatchesListProps) {
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   )
 
-  const handleOpenDrawer = (game: GameSummary) => {
+  const handleOpenDrawer = useCallback(async (game: GameSummary) => {
     setSelectedGame(game)
+    setDetailGame(null)
+    setDetailError(null)
+    setDetailLoading(true)
     setIsOpen(true)
-  }
+
+    try {
+      const response = await fetch(`/api/games/${encodeURIComponent(game.id)}`)
+      if (!response.ok) {
+        setDetailError('Nie udało się załadować statystyk meczu.')
+        setDetailGame(game)
+        return
+      }
+      const payload: unknown = await response.json()
+      const parsed = gameSummarySchema.safeParse(payload)
+      setDetailGame(parsed.success ? parsed.data : game)
+    } catch {
+      setDetailError('Nie udało się załadować statystyk meczu.')
+      setDetailGame(game)
+    } finally {
+      setDetailLoading(false)
+    }
+  }, [])
 
   const handleCloseDrawer = () => {
     setIsOpen(false)
-    setTimeout(() => setSelectedGame(null), 300)
+    setTimeout(() => {
+      setSelectedGame(null)
+      setDetailGame(null)
+      setDetailError(null)
+      setDetailLoading(false)
+    }, 300)
   }
 
   return (
@@ -138,7 +167,13 @@ export function MatchesList({ games }: MatchesListProps) {
       )}
 
       <SlideoutPanel isOpen={isOpen} onClose={handleCloseDrawer} title='Szczegóły meczu'>
-        {selectedGame ? <MatchDrawerContent game={selectedGame} /> : null}
+        {selectedGame ? (
+          <MatchDrawerContent
+            game={detailGame ?? selectedGame}
+            loading={detailLoading}
+            loadError={detailError}
+          />
+        ) : null}
       </SlideoutPanel>
     </>
   )

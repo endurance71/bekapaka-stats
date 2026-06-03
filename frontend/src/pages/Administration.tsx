@@ -324,7 +324,7 @@ function LoginLogs() {
         totalPages: 1
     });
 
-    const fetchLogs = (currentPage: number, username: string, status: string) => {
+    const fetchLogs = useCallback((currentPage: number, username: string, status: string) => {
         const query = new URLSearchParams({
             page: currentPage.toString(),
             limit: '20',
@@ -345,7 +345,7 @@ function LoginLogs() {
                 console.error(err);
                 setError(err.message);
             });
-    };
+    }, []);
 
     useEffect(() => {
         if (isAuthenticated) {
@@ -378,7 +378,7 @@ function LoginLogs() {
                     <input
                         type="text"
                         placeholder="Wpisz login..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
                         value={usernameFilter}
                         onChange={(e) => setUsernameFilter(e.target.value)}
                     />
@@ -389,7 +389,7 @@ function LoginLogs() {
                         Status
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
                         value={statusFilter}
                         onChange={(e) => {
                             setStatusFilter(e.target.value);
@@ -553,7 +553,7 @@ function UserManagement() {
     const [editError, setEditError] = useState<string | null>(null);
     const [showEditPassword, setShowEditPassword] = useState(false);
 
-    const fetchUsers = () => {
+    const fetchUsers = useCallback(() => {
         setLoading(true);
         fetchJSON<any[]>('/api/admin/users')
             .then(data => {
@@ -565,7 +565,7 @@ function UserManagement() {
                 setError(err.message);
             })
             .finally(() => setLoading(false));
-    };
+    }, []);
 
     useEffect(() => {
         fetchUsers();
@@ -723,7 +723,7 @@ function UserManagement() {
                     <input
                         type="text"
                         placeholder="Szukaj..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -734,7 +734,7 @@ function UserManagement() {
                         Typ konta / Rola
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-bkpk-primary/50 transition-colors"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                     >
@@ -774,6 +774,8 @@ function UserManagement() {
                                             src={resolvePlayerPhoto(user)}
                                             onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                             className="w-full h-full object-cover"
+                                            loading="lazy"
+                                            decoding="async"
                                             alt=""
                                         />
                                     </div>
