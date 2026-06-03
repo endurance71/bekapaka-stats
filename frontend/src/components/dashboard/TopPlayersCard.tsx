@@ -4,6 +4,7 @@ import { Trophy, Star, Medal } from 'lucide-react';
 import { BkpkCard } from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import { resolvePlayerPhoto } from '../../shared/lib/playerUtils';
+import { formatStatFixed } from '../../shared/lib/formatStat';
 
 interface Player {
     id: string;
@@ -32,7 +33,7 @@ function resolvePlayerEval(player: Player): number | null | undefined {
 export default function TopPlayersCard({ players, loading }: TopPlayersCardProps) {
     const topPlayers = useMemo(() => {
         return [...players]
-            .sort((a, b) => b.ppg - a.ppg)
+            .sort((a, b) => (b.ppg ?? 0) - (a.ppg ?? 0))
             .slice(0, 3);
     }, [players]);
 
@@ -108,16 +109,16 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="text-xl font-black font-outfit text-bkpk-primary">
-                                        {player.ppg.toFixed(1)} <span className="text-2xs uppercase tracking-tighter text-bkpk-text-muted">PPG</span>
+                                        {formatStatFixed(player.ppg)} <span className="text-2xs uppercase tracking-tighter text-bkpk-text-muted">PPG</span>
                                     </div>
                                     {(player.rpg ?? 0) > 0 && (
                                         <div className="text-xs font-bold text-bkpk-text-muted">
-                                            {player.rpg?.toFixed(1)} <span className="text-2xs text-bkpk-text-muted">REB</span>
+                                            {formatStatFixed(player.rpg)} <span className="text-2xs text-bkpk-text-muted">REB</span>
                                         </div>
                                     )}
                                     <div className="text-xs font-bold text-bkpk-text-muted">
                                         {evalVal != null && evalVal > 0
-                                            ? evalVal.toFixed(1)
+                                            ? formatStatFixed(evalVal)
                                             : '—'}{' '}
                                         <span className="text-2xs text-bkpk-text-muted">EVAL</span>
                                     </div>

@@ -4,6 +4,7 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkTooltip from '../../shared/ui/BkpkTooltip';
 import { Activity, Target, Crosshair, HelpCircle } from 'lucide-react';
 import useIsMobile from '../../hooks/useIsMobile';
+import { formatStatFixed } from '../../shared/lib/formatStat';
 
 interface DNAProps {
     data: {
@@ -94,7 +95,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                     overflowVisible={true}
                 >
                     <div className="flex flex-col items-center justify-center py-6">
-                        <div className="text-display font-black text-bkpk-text-primary font-outfit mb-2 tracking-tighter">{pace.toFixed(1)}</div>
+                        <div className="text-display font-black text-bkpk-text-primary font-outfit mb-2 tracking-tighter">{formatStatFixed(pace)}</div>
                         <div className={`text-caption-bold uppercase tracking-[0.2em] mb-6 px-3 py-1 bg-bkpk-surface-tint-2 rounded-full border border-bkpk-border-strong ${paceColor}`}>{paceLabel}</div>
 
                         <div className="bg-bkpk-surface-tint-1 rounded-2xl p-4 border border-bkpk-border-strong w-full shadow-inner">
@@ -193,7 +194,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                         <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">eFG% (Efektywność)</span>
                                         <BkpkTooltip content="Efektywny Procent Rzutów z Pola. Uwzględnia wyższą wartość rzutów za 3 punkty." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{fourFactors.efg.toFixed(1)}%</span>
+                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.efg)}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.efg, 'efg')}`} style={{ width: getWidth(fourFactors.efg) }} />
@@ -208,7 +209,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                         <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">TOV% (Straty)</span>
                                         <BkpkTooltip content="Procent posiadań kończących się stratą. Im niższy, tym lepiej zespół szanuje piłkę." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{fourFactors.tov.toFixed(1)}%</span>
+                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.tov)}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.tov, 'tov')}`} style={{ width: getTovWidth(fourFactors.tov) }} />
@@ -223,7 +224,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                         <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">ORB% (Zbiórki Ataku)</span>
                                         <BkpkTooltip content="Procent dostępnych zbiórek ofensywnych zebranych przez zespół. Klucz do punktów drugiej szansy." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{fourFactors.orb.toFixed(1)}%</span>
+                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.orb)}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.orb, 'orb')}`} style={{ width: getWidth(fourFactors.orb * 2) }} />
@@ -238,7 +239,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                         <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">FTR (Rzuty Wolne)</span>
                                         <BkpkTooltip content="Współczynnik rzutów wolnych do rzutów z pola. Pokazuje, jak agresywnie zespół wymusza faule." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{fourFactors.ftr.toFixed(2)}</span>
+                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 2)}</span>
                                 </div>
                                 <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
                                     <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.ftr, 'ftr')}`} style={{ width: getWidth(fourFactors.ftr * 2) }} />

@@ -103,7 +103,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             case 'three':
                 return {
                     main: player.threePointsMade ? `${player.threePointsMade}` : '0',
-                    sub: player.threePointsPct ? `${player.threePointsPct.toFixed(1)}% (${player.threePointsMade}/${player.threePointsAttempted})` : '0%',
+                    sub: player.threePointsPct != null ? `${Number(player.threePointsPct).toFixed(1)}% (${player.threePointsMade ?? 0}/${player.threePointsAttempted ?? 0})` : '0%',
                     label: 'CELNE'
                 };
             case 'assists':
