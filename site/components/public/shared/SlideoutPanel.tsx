@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useOverlayViewportHeight } from '../../../lib/use-overlay-viewport-height'
 import { CloseIcon } from './PublicIcons'
 
 export function SlideoutPanel({
@@ -22,6 +23,8 @@ export function SlideoutPanel({
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+
+  useOverlayViewportHeight(isOpen)
 
   useEffect(() => {
     if (!isOpen) return

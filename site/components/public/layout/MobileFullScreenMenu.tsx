@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
+import { useOverlayViewportHeight } from '../../../lib/use-overlay-viewport-height'
 import { CloseIcon } from '../shared/PublicIcons'
 import { MainNav } from './MainNav'
 
@@ -30,6 +31,8 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   const panelRef = useRef<HTMLDivElement | null>(null)
   const isClosingRef = useRef(false)
   const closeCleanupRef = useRef<(() => void) | null>(null)
+
+  useOverlayViewportHeight(isMounted)
 
   const finishUnmount = useCallback(() => {
     closeCleanupRef.current?.()

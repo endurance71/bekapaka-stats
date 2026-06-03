@@ -687,29 +687,44 @@
   }
 
   .next-event-hero__meta-row {
-    flex-direction: row;
-    align-items: flex-end;
-    gap: var(--space-2) var(--space-3);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, max-content);
+    align-items: start;
+    gap: var(--space-2);
+    flex-wrap: nowrap;
   }
 
   .next-event-hero__meta {
-    gap: var(--space-2);
+    display: contents;
+  }
+
+  .next-event-hero__meta-item {
     min-width: 0;
   }
 
   .next-event-hero__meta-item strong {
-    font-size: 0.82rem;
-    line-height: 1.25;
+    display: block;
+    font-size: 0.78rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .next-event-hero__countdown {
     align-items: flex-end;
     text-align: right;
-    flex-shrink: 0;
+    min-width: 0;
+    max-width: 100%;
   }
 
   .next-event-hero__countdown-value {
-    font-size: 0.72rem;
+    display: block;
+    font-size: 0.68rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .next-event-hero__calendar-btn {
@@ -2395,7 +2410,8 @@
     var(--space-2)
     max(var(--space-4), env(safe-area-inset-left, 0px));
   border-bottom: 0;
-  background: var(--bg-app);
+  background: transparent;
+  isolation: isolate;
 }
 
 .stats-drawer__panel-body {

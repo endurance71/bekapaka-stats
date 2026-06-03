@@ -4,6 +4,16 @@
  * rozmyty header (::before na .site-header), przezroczysty dół bez belki.
  */
 
+:root {
+  --overlay-vh: 100dvh;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --overlay-vh: 100svh;
+  }
+}
+
 /* Mobile Safari: scroll całej strony (nie fixed shell) */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 899px) {
@@ -31,22 +41,29 @@
   }
 }
 
-/* Pełnoekranowe modale / drawer — Safari iOS (otwarty drawer: patrz mobile.css) */
-html.is-stats-drawer-open,
-html.is-stats-drawer-open body.site-body {
-  background: var(--bg-app);
+/* Pełnoekranowe modale / drawer — mobile: przezroczysty chrome Safari */
+@media (max-width: 899px) {
+  html.is-stats-drawer-open,
+  html.is-stats-drawer-open body.site-body {
+    background: transparent;
+  }
+}
+
+@media (min-width: 900px) {
+  html.is-stats-drawer-open,
+  html.is-stats-drawer-open body.site-body {
+    background: var(--bg-app);
+  }
 }
 
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 899px) {
+    .stats-drawer.is-open,
     .stats-drawer.is-open .stats-drawer__backdrop,
-    .stats-drawer.is-open .stats-drawer__panel {
+    .stats-drawer.is-open .stats-drawer__panel,
+    .mobile-fullscreen-menu,
+    .mobile-fullscreen-menu__panel {
       min-height: -webkit-fill-available;
     }
-  }
-
-  .mobile-fullscreen-menu,
-  .mobile-fullscreen-menu__panel {
-    min-height: -webkit-fill-available;
   }
 }

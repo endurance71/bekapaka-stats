@@ -414,10 +414,10 @@ p {
   inset: 0;
   z-index: 9999;
   width: 100%;
-  height: 100dvh;
-  min-height: 100lvh;
-  max-height: none;
-  background: var(--bg-app);
+  height: var(--overlay-vh);
+  min-height: var(--overlay-vh);
+  max-height: var(--overlay-vh);
+  background: transparent;
   pointer-events: none;
 }
 
@@ -433,15 +433,12 @@ p {
   flex-direction: column;
   width: 100%;
   max-width: 100%;
-  height: 100dvh;
-  min-height: 100lvh;
-  max-height: none;
+  height: var(--overlay-vh);
+  min-height: var(--overlay-vh);
+  max-height: var(--overlay-vh);
   background: var(--bg-app);
   color: var(--text-primary);
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-left: env(safe-area-inset-left, 0px);
-  padding-right: env(safe-area-inset-right, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding: 0;
   transform: translateX(-100%);
   transition: transform var(--mobile-menu-duration) var(--mobile-menu-ease);
   will-change: transform;
@@ -462,8 +459,13 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3) var(--space-4);
   flex-shrink: 0;
+  background: transparent;
+  padding:
+    max(var(--space-3), env(safe-area-inset-top, 0px))
+    max(var(--space-4), env(safe-area-inset-right, 0px))
+    var(--space-3)
+    max(var(--space-4), env(safe-area-inset-left, 0px));
 }
 
 .mobile-fullscreen-menu__title {
@@ -539,7 +541,11 @@ p {
 .mobile-fullscreen-menu__nav {
   flex: 1;
   min-height: 0;
-  margin: 0 var(--space-4);
+  margin:
+    0
+    max(var(--space-4), env(safe-area-inset-right, 0px))
+    0
+    max(var(--space-4), env(safe-area-inset-left, 0px));
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -549,7 +555,11 @@ p {
 
 .mobile-fullscreen-menu__footer {
   flex-shrink: 0;
-  padding: var(--space-3) var(--space-4);
+  padding:
+    var(--space-3)
+    max(var(--space-4), env(safe-area-inset-right, 0px))
+    calc(var(--space-3) + env(safe-area-inset-bottom, 0px))
+    max(var(--space-4), env(safe-area-inset-left, 0px));
   background: var(--bg-app);
 }
 
