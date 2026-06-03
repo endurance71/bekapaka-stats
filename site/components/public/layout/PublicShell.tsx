@@ -49,6 +49,8 @@ export function PublicShell({
             <MenuIcon />
           </button>
 
+          <span className='site-header__mobile-brand'>BeKaPaKa</span>
+
           <ClubLogo logoUrl={logoUrl} />
 
           <div className='desktop-nav-wrapper'>
