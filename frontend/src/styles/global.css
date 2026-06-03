@@ -165,6 +165,12 @@ body.is-scroll-locked {
 @layer base {
   * {
     @apply box-border m-0 p-0 cursor-default border-bkpk-glass-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  input, textarea, select {
+    font-size: max(16px, 1rem) !important;
+    touch-action: manipulation;
   }
 
   ::selection {

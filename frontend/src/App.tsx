@@ -24,7 +24,7 @@ const AiCenterPage = lazy(() => import('./pages/AiCenterPage'));
 
 function PageLoader() {
   return (
-    <div className="flex items-center justify-center h-[60vh]">
+    <div className="flex items-center justify-center h-[60dvh]">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-3 border-bkpk-primary border-t-transparent rounded-full animate-spin" />
         <p className="text-bkpk-text-muted font-bold uppercase tracking-widest text-xs">Ładowanie...</p>
