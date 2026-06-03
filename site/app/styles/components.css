@@ -330,14 +330,14 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Unsplash: obręcz / parkiet — tło pod czerwonym akcentem wydarzenia */
+/* Unsplash: hala / mecz — osobne tło pod czerwonym akcentem wydarzenia */
 .next-event-photo-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   background-repeat: no-repeat;
   background-size: cover;
-  background-position: 82% 35%;
+  background-position: 75% 40%;
   opacity: 1;
   filter: saturate(1.08) contrast(1.06) brightness(0.9);
   pointer-events: none;
@@ -2824,7 +2824,7 @@
 
   .stats-drawer__panel {
     inset: 0 0 0 auto;
-    width: min(520px, 100%);
+    width: min(var(--stats-drawer-width, 520px), 100%);
     height: 100dvh;
     max-height: 100dvh;
     min-height: 100dvh;
@@ -2862,6 +2862,28 @@
 
   .stats-drawer.is-open .stats-drawer__panel {
     transform: translateX(0);
+  }
+
+  /* Karta zawodnika — pełna tabela „Historia występów” bez poziomego scrolla */
+  .stats-drawer--wide {
+    --stats-drawer-width: 760px;
+  }
+
+  .stats-drawer--wide .drawer-section-v2--game-log .table-shell-v2 {
+    overflow-x: visible;
+  }
+
+  .stats-drawer--wide .drawer-section-v2--game-log .data-table-v2 th,
+  .stats-drawer--wide .drawer-section-v2--game-log .data-table-v2 td {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .stats-drawer--wide .drawer-section-v2--game-log .data-table-v2 th {
+    font-size: 0.65rem;
+  }
+
+  .stats-drawer--wide .drawer-section-v2--game-log .data-table-v2 td strong {
+    font-size: 0.85rem;
   }
   
   .profile-header {
