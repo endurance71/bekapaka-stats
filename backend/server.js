@@ -25,6 +25,7 @@ import {
   getKalkIngestSummary,
   listKalkPlayers,
   resetData,
+  purgeProtocolData,
   syncPlayersFromKalk,
   getRoster,
   listAllPlayers,
@@ -657,11 +658,24 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
 // --- ADMIN API ---
 app.post(['/api/admin/reset-data', '/admin/reset-data'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    await resetData(); // Note: imported as resetData, but exported as resetDatabase in dataStore.js? Wait, check imports.
+    await resetData();
     res.json({ message: 'Dane zostały wyczyszczone.' });
   } catch (err) {
     console.error('Reset error:', err);
     res.status(500).json({ error: 'Błąd resetowania danych' });
+  }
+});
+
+app.post(['/api/admin/purge-protocols', '/admin/purge-protocols'], authenticateToken, requireAdmin, async (_req, res) => {
+  try {
+    const result = await purgeProtocolData();
+    res.json({
+      message: 'Usunięto dane z protokołów. Dane KALK (mecze, liga, logi zawodników) pozostają.',
+      ...result
+    });
+  } catch (err) {
+    console.error('Purge protocols error:', err);
+    res.status(500).json({ error: err.message || 'Błąd czyszczenia protokołów' });
   }
 });
 
