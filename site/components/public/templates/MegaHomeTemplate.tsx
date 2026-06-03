@@ -118,7 +118,14 @@ export function MegaHomeTemplate({
             aria-hidden='true'
             style={{ backgroundImage: "url('/images/hero-event-basketball.jpg')" }}
           />
-          {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
+          {nearestEvent ? (
+            <>
+              <div className='next-event-glass-pane' aria-hidden='true' />
+              <NearestEventCard highlight={nearestEvent} />
+            </>
+          ) : (
+            <NearestEventEmpty />
+          )}
         </article>
 
         <article className='surface-card dashboard-leaders'>
