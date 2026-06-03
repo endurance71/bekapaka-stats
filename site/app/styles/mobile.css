@@ -7,19 +7,34 @@
 
   .hero-photo-bg {
     background-position: center 30%;
-    filter: saturate(1.02) contrast(1.05) brightness(0.88);
+    opacity: 0.62;
+    filter: saturate(0.9) contrast(1) brightness(0.72);
   }
 
   .hero-photo-bg::after {
     background:
       linear-gradient(
         180deg,
-        rgba(11, 11, 12, 0.88) 0%,
-        rgba(18, 18, 20, 0.55) 38%,
-        rgba(18, 18, 20, 0.22) 62%,
-        rgba(11, 11, 12, 0.45) 100%
+        rgba(11, 11, 12, 0.94) 0%,
+        rgba(18, 18, 20, 0.72) 38%,
+        rgba(18, 18, 20, 0.38) 62%,
+        rgba(11, 11, 12, 0.55) 100%
       ),
-      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(236, 167, 44, 0.2) 0%, transparent 65%);
+      radial-gradient(ellipse 100% 60% at 50% 0%, rgba(236, 167, 44, 0.14) 0%, transparent 65%);
+  }
+
+  .hero-stats-row {
+    gap: var(--space-2);
+  }
+
+  .hero-stat-badge {
+    flex: 1 1 calc(33.333% - var(--space-2));
+    min-width: 0;
+    padding: var(--space-2);
+  }
+
+  .hero-stat-badge__value {
+    font-size: 1.2rem;
   }
 
   .next-event-photo-bg {
