@@ -322,7 +322,8 @@
   --event-accent-muted: rgba(230, 57, 70, 0.12);
   position: relative;
   overflow: hidden;
-  isolation: isolate;
+  padding: 0;
+  min-height: 360px;
   border-color: rgba(230, 57, 70, 0.4);
   background: radial-gradient(ellipse 130% 90% at 100% 0%, var(--event-accent-glow) 0%, transparent 52%),
     radial-gradient(ellipse 110% 85% at 0% 100%, rgba(157, 27, 42, 0.22) 0%, transparent 58%),
@@ -358,7 +359,7 @@
       rgba(11, 11, 12, 0.52) 100%
     ),
     radial-gradient(ellipse 70% 85% at 92% 55%, rgba(230, 57, 70, 0.14) 0%, transparent 58%),
-    linear-gradient(180deg, rgba(11, 11, 12, 0.25) 0%, transparent 45%, rgba(11, 11, 12, 0.65) 100%);
+    linear-gradient(180deg, rgba(11, 11, 12, 0.42) 0%, rgba(11, 11, 12, 0.12) 48%, rgba(11, 11, 12, 0.22) 100%);
 }
 
 .dashboard-next--highlight.dashboard-next--empty .next-event-photo-bg {
@@ -393,7 +394,7 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.12) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.18) 0%, transparent 52%, transparent 100%);
   pointer-events: none;
 }
 
@@ -401,24 +402,48 @@
   position: relative;
   z-index: 2;
   min-height: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0;
 }
 
 .next-event-hero__kicker {
   margin: 0;
-  padding: 0;
+  padding: var(--space-5) var(--space-5) var(--space-2);
   color: var(--event-accent);
+  flex-shrink: 0;
 }
 
-.next-event-hero__content {
+.next-event-hero__upper {
+  flex: 1 1 0;
+  min-height: 46%;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  gap: var(--space-2);
+  padding: 0 var(--space-5) var(--space-4);
+}
+
+.next-event-hero__lower {
+  flex: 1 1 0;
+  min-height: 46%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   gap: var(--space-3);
-  padding: 0;
-  flex: 1;
-  min-height: 0;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(32px) saturate(1.4);
+  -webkit-backdrop-filter: blur(32px) saturate(1.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .next-event-hero__lower {
+    background: rgba(22, 18, 20, 0.72);
+  }
 }
 
 .next-event-hero__eyebrow {
@@ -473,25 +498,6 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.next-event-hero__meta-panel {
-  margin-top: auto;
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  background: rgba(14, 12, 14, 0.52);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  backdrop-filter: blur(18px) saturate(1.15);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.07),
-    0 10px 28px rgba(0, 0, 0, 0.22);
-}
-
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .next-event-hero__meta-panel {
-    background: rgba(18, 16, 18, 0.88);
-  }
 }
 
 .next-event-hero__meta-row {
@@ -554,7 +560,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-1);
+  margin-top: 0;
 }
 
 .next-event-hero__calendar-btn {
@@ -578,8 +584,8 @@
   color: #fff;
 }
 
-.next-event-hero--empty .next-event-hero__content {
-  min-height: 160px;
+.next-event-hero--empty .next-event-hero__upper {
+  min-height: 200px;
   justify-content: center;
 }
 
@@ -589,8 +595,24 @@
 }
 
 @media (max-width: 520px) {
-  .next-event-hero__meta-panel {
-    padding: var(--space-3);
+  .dashboard-next--highlight {
+    min-height: 380px;
+  }
+
+  .next-event-hero__kicker {
+    padding: var(--space-4) var(--space-4) var(--space-2);
+  }
+
+  .next-event-hero__upper {
+    padding: 0 var(--space-4) var(--space-3);
+    min-height: 44%;
+  }
+
+  .next-event-hero__lower {
+    padding: var(--space-3) var(--space-4) var(--space-4);
+    min-height: 48%;
+    backdrop-filter: blur(24px) saturate(1.35);
+    -webkit-backdrop-filter: blur(24px) saturate(1.35);
   }
 
   .next-event-hero__meta-row {
