@@ -22,7 +22,13 @@ function getTeamsFromGame(game: GameSummary) {
   return { us, them }
 }
 
-export function MatchDrawerContent({ game }: { game: GameSummary }) {
+interface MatchDrawerContentProps {
+  game: GameSummary
+  loading?: boolean
+  loadError?: string | null
+}
+
+export function MatchDrawerContent({ game, loading = false, loadError = null }: MatchDrawerContentProps) {
   const isWin = (game.scoreUs || 0) > (game.scoreThem || 0)
   const teams = getTeamsFromGame(game)
 
@@ -34,6 +40,8 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
     { key: 'Punkty zmiennikow', label: 'Punkty rezerwowych' },
     { key: 'Punkty zmienników', label: 'Punkty rezerwowych' }
   ]
+
+  const quarters = Array.isArray(game.data?.quarters) ? game.data.quarters : null
 
   const comparisonStats = game.data?.teamStats
   const availableStats =
@@ -91,12 +99,24 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
         </div>
       </div>
 
+      {loading ? (
+        <p className='drawer-match-loading muted' role='status'>
+          Ładowanie statystyk meczu…
+        </p>
+      ) : null}
+
+      {loadError ? (
+        <p className='drawer-match-loading muted' role='status'>
+          {loadError}
+        </p>
+      ) : null}
+
       {/* Quarters Breakdown */}
-      {game.data?.quarters && Array.isArray(game.data.quarters) ? (
+      {quarters && quarters.length > 0 ? (
         <section className='drawer-match-section'>
           <h3 className='drawer-section-title-small'>Wyniki w kwartach</h3>
           <div className='quarters-grid-premium'>
-            {game.data.quarters.map((q: { label: string; home: number; away: number }, idx: number) => (
+            {quarters.map((q: { label: string; home: number; away: number }, idx: number) => (
               <div key={idx} className='quarter-cell-premium'>
                 <div className='q-label'>{q.label || `Q${idx + 1}`}</div>
                 <div className='q-scores'>
@@ -197,6 +217,12 @@ export function MatchDrawerContent({ game }: { game: GameSummary }) {
             </table>
           </div>
         </section>
+      ) : null}
+
+      {!loading && !loadError && !quarters?.length && players.length === 0 && availableStats.length === 0 ? (
+        <p className='drawer-match-loading muted'>
+          Brak szczegółowych statystyk dla tego meczu. Uruchom pełny sync KALK w panelu administracyjnym.
+        </p>
       ) : null}
 
       {/* Highlight Video Action Button */}

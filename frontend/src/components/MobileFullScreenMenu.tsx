@@ -71,6 +71,8 @@ function MenuProfileSection({
                                 src={resolvePlayerPhoto(user)}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                                 alt=""
                             />
                         </div>
@@ -292,6 +294,8 @@ export default function MobileFullScreenMenu({
                                 src={resolvePlayerPhoto(user)}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
                                 alt=""
                             />
                         </Link>

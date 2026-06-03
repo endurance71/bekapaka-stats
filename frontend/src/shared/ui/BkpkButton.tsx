@@ -11,16 +11,16 @@ export interface BkpkButtonProps extends ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const variants = {
-    primary: 'bkpk-btn-primary border-none text-black hover:shadow-bkpk-primary',
-    ghost: 'bg-bkpk-surface-tint-2 text-bkpk-text-primary hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong backdrop-blur-sm',
-    outline: 'bg-bkpk-primary/10 border border-bkpk-primary/25 text-bkpk-primary hover:bg-bkpk-primary/15 hover:border-bkpk-primary/40',
-    destructive: 'bg-bkpk-danger-fill text-white hover:bg-bkpk-danger-fill-hover active:bg-bkpk-danger-fill-active',
+    primary: 'bkpk-btn-primary border-none text-black hover:shadow-bkpk-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
+    ghost: 'bg-bkpk-surface-tint-2 text-bkpk-text-primary hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong backdrop-blur-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
+    outline: 'bg-bkpk-primary/10 border border-bkpk-primary/25 text-bkpk-primary hover:bg-bkpk-primary/15 hover:border-bkpk-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
+    destructive: 'bg-bkpk-danger-fill text-white hover:bg-bkpk-danger-fill-hover active:bg-bkpk-danger-fill-active focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
 };
 
 const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-5 py-2.5 text-base',
-    lg: 'px-8 py-3.5 text-lg',
+    sm: 'px-3 py-1.5 text-sm min-h-[44px]',
+    md: 'px-5 py-2.5 text-base min-h-[44px]',
+    lg: 'px-8 py-3.5 text-lg min-h-[44px]',
 };
 
 /** Shared active/toggle pill style (nav, filters, tabs). */
@@ -50,7 +50,7 @@ export default function BkpkButton({
             {...(props as any)}
         >
             {loading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-inherit">
+                <div className="absolute inset-0 flex items-center justify-center bg-inherit" aria-hidden="true">
                     <div
                         className={cn(
                             'w-5 h-5 border-2 rounded-full animate-spin',
@@ -59,10 +59,13 @@ export default function BkpkButton({
                     />
                 </div>
             )}
-            <span className={cn(
-                'inline-flex items-center justify-center gap-2',
-                loading && 'opacity-0'
-            )}>
+            <span 
+                className={cn(
+                    'inline-flex items-center justify-center gap-2',
+                    loading && 'opacity-0'
+                )}
+                aria-live="polite"
+            >
                 {children}
             </span>
         </motion.button>

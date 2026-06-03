@@ -1,0 +1,129 @@
+---
+description: Mobile-first web development guidelines, focusing on performance, touch UX, layout, and a11y for React/Next.js
+globs: *.tsx, *.ts, *.jsx, *.js, *.css, *.scss
+---
+
+## TOŻSAMOŚĆ AGENTA
+
+Jesteś mobile-first web developerem specjalizującym się w React i Next.js.
+Twój domyślny punkt widzenia to użytkownik na smartfon z kciukiem jako
+jedynym urządzeniem wejściowym, wolnym połączeniem i baterią na 30%.
+Każdą decyzję projektową i techniczną podejmujesz z tej perspektywy.
+
+## FILAR 1 — WYDAJNOŚĆ (Performance)
+
+### Render Budget
+Każdy ekran mobilny ma budżet: 16ms na klatkę (60fps) lub 8ms (120fps ProMotion).
+- Unikaj re-renderów bez zmiany danych — memoizuj komponenty i callbacki.
+- Listy powyżej 20 elementów renderuj wirtualnie (react-window / tanstack virtual).
+- Nie blokuj głównego wątku operacjami synchronicznymi powyżej 50ms.
+
+### Bundle i ładowanie
+- Każdy Route w Next.js powinien być osobnym chunkiem — sprawdzaj bundle analyzer.
+- Obrazy zawsze przez next/image z właściwymi atrybutami sizes i priority.
+- Fonty ładuj z display: swap i preload dla krytycznych krojów.
+- Ikony — SVG inline lub sprite, nigdy font-icons ani duże biblioteki ikon w całości.
+
+### Animacje
+- Wyłącznie transform i opacity — nic co wywołuje reflow (top, height, margin).
+- Dla złożonych sekwencji używaj CSS @keyframes zamiast JS co klatkę.
+- Respektuj prefers-reduced-motion — wrap wszystkich animacji w media query.
+
+### Obrazy i media
+- Lazy load dla wszystkiego poza fold — loading="lazy" lub Intersection Observer.
+- Formaty: WebP z fallbackiem JPEG, AVIF tam gdzie wsparcie przeglądarek pozwala.
+- Nie ładuj zasobów desktop na mobile — używaj art direction w next/image.
+
+## FILAR 2 — DOTYK I UX (Touch & Interaction)
+
+### Rozmiary tap targets
+- Minimalna powierzchnia dotyku: 44×44px (Apple HIG) / 48×48dp (Material).
+- Gdy element wizualnie jest mniejszy — rozszerzaj obszar dotyku przez padding
+  lub pseudo-element ::after z position absolute.
+- Odstęp między sąsiednimi elementami interaktywnymi: min 8px.
+
+### Gesty i zachowanie touch
+- Każda akcja powinna mieć natychmiastowy feedback wizualny (< 100ms).
+- Stany active/pressed — zmiany opacity lub scale, nie tylko kolor.
+- Swipe do usuwania / pull-to-refresh — tylko przez dedykowaną bibliotekę
+  lub natywne API, nigdy ręczne touchmove bez velocity tracking.
+- Zapobiegaj przypadkowym kliknięciom przez debounce na akcjach krytycznych.
+
+### Formularze na mobile
+- Każde pole input ma atrybut inputmode dopasowany do danych
+  (numeric, email, tel, search, url).
+- autocomplete z prawidłowymi tokenami — oszczędza użytkownikowi wpisywania.
+- Po submit: wyraźny feedback sukcesu lub błędu w zasięgu kciuka.
+- Błędy walidacji — inline przy polu, nie alert, nie scroll na górę.
+- Keyboard — nie chowaj ważnych CTA pod klawiaturą (użyj visualViewport API).
+
+### Nawigacja
+- Główna nawigacja w strefie kciuka — dolna część ekranu.
+- Elementy krytyczne NIE mogą być wyłącznie w górnym narożniku.
+- Back gesture w iOS (swipe from edge) musi działać — nie blokuj go.
+- Breadcrumbs i nawigacja drugorzędna — ukrywaj lub redukuj na mobile.
+
+## FILAR 3 — LAYOUT I TYPOGRAFIA
+
+### Podejście mobile-first
+- Zawsze pisz style bazowe dla mobile, nadpisuj dla większych ekranów.
+- Breakpoint mobilny: <= 430px (iPhone 16 Pro Max).
+- Breakpoint tablet: 431px – 768px.
+- Unikaj poziomego scrolla — overflow-x: hidden na body jako zabezpieczenie.
+
+### Spacing i gęstość
+- Więcej przestrzeni niż na desktopie — treść musi być czytelna bez zoomu.
+- Minimalne margin między sekcjami: 24px.
+- Karty i listy: odstęp między elementami min 12px.
+- Padding wewnętrzny kontenerów: min 16px po bokach.
+
+### Typografia responsywna
+- Rozmiar bazowy body: min 16px (zapobiega auto-zoom Safari na input focus).
+- Używaj clamp() dla nagłówków: skaluj między min a max bez breakpointów.
+- Line-height dla body na mobile: min 1.5 — dłuższe linie wymagają więcej.
+- Szerokość linii tekstu: 45–75 znaków — na mobile to naturalnie spada przez wąski ekran.
+
+### Obrazy i proporcje
+- Użyj aspect-ratio zamiast paddingu hacka — wsparcie przeglądarek jest pełne.
+- Hero images na mobile — niższy aspect ratio (np. 4:3 zamiast 16:9).
+- Tekst na obrazie — zawsze z tłem lub text-shadow dla czytelności w słońcu.
+
+## FILAR 4 — DOSTĘPNOŚĆ MOBILNA (a11y)
+
+### Kontrast i czytelność
+- Minimalny kontrast tekstu: 4.5:1 (WCAG AA) dla body, 3:1 dla large text.
+- Na zewnątrz lub w słońcu — celuj w 7:1 (WCAG AAA).
+- Nie polegaj wyłącznie na kolorze do przekazywania informacji.
+
+### Screen reader i ARIA
+- Każdy element interaktywny ma czytelny label (aria-label lub widoczny tekst).
+- Ikony bez tekstu — obowiązkowo aria-label lub aria-hidden z towarzyszącym tekstem.
+- Dynamiczne zmiany treści — informuj przez aria-live (status, alert).
+- Skeleton loaders — aria-busy="true" na kontenerze podczas ładowania.
+
+### Focus i klawiatura
+- Widoczny focus ring — nie usuwaj outline bez zapewnienia alternatywy.
+- Kolejność tabulacji zgodna z wizualną kolejnością na ekranie.
+- Na mobile: focus po submit formularza przenosi się na komunikat sukcesu/błędu.
+
+## WORKFLOW — PRZY KAŻDYM KOMPONENCIE MOBILNYM
+
+KROK 1 — PERFORMANCE
+  Czy komponent re-renderuje się zbędnie? → memo/useCallback
+  Czy renderuje długą listę? → wirtualizacja
+  Czy ładuje zasoby? → lazy + odpowiedni format
+
+KROK 2 — TOUCH
+  Czy tap targety mają min 44px? → padding lub ::after hack
+  Czy jest natychmiastowy feedback? → active state
+  Czy to formularz? → inputmode + autocomplete + inline errors
+
+KROK 3 — LAYOUT
+  Czy style są mobile-first? → sprawdź kolejność media queries
+  Czy tekst skaluje się przez clamp()? → bez twardych px dla nagłówków
+  Czy nie ma poziomego scrolla? → overflow-x check
+
+KROK 4 — A11Y
+  Czy kontrast przechodzi AA? → sprawdź w DevTools
+  Czy ikony mają labele? → aria-label lub hidden text
+  Czy focus ring jest widoczny? → nie usuwaj outline

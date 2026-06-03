@@ -40,16 +40,17 @@ export function PasswordInput({
           id={inputId}
           type={showPassword ? 'text' : 'password'}
           required={required}
-          className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 pr-11 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+          className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 pr-12 text-sm text-bkpk-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
+          inputMode={showPassword ? 'text' : 'text'}
         />
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-bkpk-text-muted hover:text-bkpk-primary transition-colors"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-bkpk-text-muted hover:text-bkpk-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
           tabIndex={-1}
           aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
         >
