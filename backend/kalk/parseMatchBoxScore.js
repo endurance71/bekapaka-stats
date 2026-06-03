@@ -151,6 +151,66 @@ export function aggregateTeamFromPlayers(players, oppPts = 0) {
 }
 
 /**
+ * Uzupełnia statystyki drużyny z box score (sumy z zawodników + four factors).
+ * @param {object | null | undefined} team
+ * @param {number} [oppPts]
+ */
+export function enrichKalkTeamStats(team, oppPts = 0) {
+  if (!team) return team;
+  const players = team.players || [];
+  const agg = players.length ? aggregateTeamFromPlayers(players, oppPts) : null;
+  const existingFf = team.fourFactors && typeof team.fourFactors === 'object' ? team.fourFactors : {};
+  const hasBoxTotals = (existingFf.fga ?? team.fga ?? 0) > 0;
+
+  const totals = hasBoxTotals
+    ? {
+        pts: team.pts ?? existingFf.pts ?? 0,
+        fgm: team.fgm ?? existingFf.fgm ?? 0,
+        fga: team.fga ?? existingFf.fga ?? 0,
+        three_pm: team.three_pm ?? existingFf.three_pm ?? 0,
+        three_pa: team.three_pa ?? existingFf.three_pa ?? 0,
+        ftm: team.ftm ?? existingFf.ftm ?? 0,
+        fta: team.fta ?? existingFf.fta ?? 0,
+        tov: team.tov ?? existingFf.tov ?? 0,
+        orb: team.orb ?? existingFf.orb ?? 0,
+        drb: team.drb ?? existingFf.drb ?? 0,
+        ast: team.ast ?? existingFf.ast ?? 0,
+        reb: team.reb ?? existingFf.reb ?? 0,
+        stl: team.stl ?? existingFf.stl ?? 0,
+        blk: team.blk ?? existingFf.blk ?? 0
+      }
+    : agg
+      ? {
+          pts: team.pts ?? agg.pts,
+          fgm: agg.fourFactors.fgm,
+          fga: agg.fourFactors.fga,
+          three_pm: agg.fourFactors.three_pm,
+          three_pa: agg.fourFactors.three_pa,
+          ftm: agg.fourFactors.ftm,
+          fta: agg.fourFactors.fta,
+          tov: agg.fourFactors.tov,
+          orb: agg.fourFactors.orb,
+          drb: agg.fourFactors.drb,
+          ast: agg.fourFactors.ast,
+          reb: agg.fourFactors.reb,
+          stl: agg.fourFactors.stl,
+          blk: agg.fourFactors.blk
+        }
+      : { pts: team.pts ?? 0 };
+
+  const fourFactors = {
+    ...existingFf,
+    ...withShootingMetrics({ ...totals, opp_pts: oppPts, min: existingFf.min || team.min || '40:00' })
+  };
+
+  return {
+    ...team,
+    ...totals,
+    fourFactors
+  };
+}
+
+/**
  * @param {string} teamName
  */
 export function isBekapakaTeamName(teamName) {
