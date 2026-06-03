@@ -73,7 +73,7 @@ export default function ScoutingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bkpk-bg flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-bkpk-primary/20 border-t-bkpk-primary rounded-full animate-spin" />
           <span className="text-bkpk-text-secondary font-bold tracking-widest uppercase text-sm">
@@ -86,7 +86,7 @@ export default function ScoutingPage() {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-bkpk-bg flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
         <div className="text-bkpk-text-secondary font-bold text-xl">Brak danych o rywalu.</div>
       </div>
     );

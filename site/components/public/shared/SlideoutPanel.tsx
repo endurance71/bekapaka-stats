@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { useOverlayViewportHeight } from '../../../lib/use-overlay-viewport-height'
+import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay'
 import { CloseIcon } from './PublicIcons'
 
 export function SlideoutPanel({
@@ -25,15 +25,10 @@ export function SlideoutPanel({
   onCloseRef.current = onClose
 
   useOverlayViewportHeight(isOpen)
+  usePageScrollLock(isOpen, { htmlClass: 'is-overlay-open' })
 
   useEffect(() => {
     if (!isOpen) return
-
-    const scrollY = window.scrollY
-    const root = document.documentElement
-    root.classList.add('is-scroll-locked', 'is-stats-drawer-open')
-    document.body.classList.add('is-scroll-locked')
-    document.body.style.top = `-${scrollY}px`
 
     previousFocusRef.current = document.activeElement as HTMLElement
 
@@ -44,10 +39,6 @@ export function SlideoutPanel({
     document.addEventListener('keydown', handleEsc)
 
     return () => {
-      document.documentElement.classList.remove('is-scroll-locked', 'is-stats-drawer-open')
-      document.body.classList.remove('is-scroll-locked')
-      document.body.style.top = ''
-      window.scrollTo(0, scrollY)
       document.removeEventListener('keydown', handleEsc)
 
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay';
 import { ChevronRight, LogOut, X, type LucideIcon } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import { cn } from '../shared/lib/utils';
@@ -211,22 +212,8 @@ export default function MobileFullScreenMenu({
         };
     }, []);
 
-    useEffect(() => {
-        if (!isMounted) return;
-
-        const scrollY = window.scrollY;
-        const root = document.documentElement;
-        root.classList.add('is-scroll-locked');
-        document.body.classList.add('is-scroll-locked');
-        document.body.style.top = `-${scrollY}px`;
-
-        return () => {
-            root.classList.remove('is-scroll-locked');
-            document.body.classList.remove('is-scroll-locked');
-            document.body.style.top = '';
-            window.scrollTo(0, scrollY);
-        };
-    }, [isMounted]);
+    useOverlayViewportHeight(isMounted);
+    usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' });
 
     const handleLogout = () => {
         handleRequestClose();
@@ -245,7 +232,7 @@ export default function MobileFullScreenMenu({
             aria-modal="true"
             aria-label="Menu nawigacji"
             className={cn(
-                'mobile-fullscreen-menu-root lg:hidden fixed inset-0 z-[9999] w-full h-[100dvh] min-h-[100lvh] max-h-none bg-bkpk-bg',
+                'mobile-fullscreen-menu-root lg:hidden fixed inset-0 z-[9999] w-full min-h-[100lvh] max-h-none bg-bkpk-bg overlay-viewport-fill',
                 isVisible ? 'pointer-events-auto' : 'pointer-events-none'
             )}
         >
@@ -253,7 +240,7 @@ export default function MobileFullScreenMenu({
                 ref={panelRef}
                 className={cn(
                     'mobile-fullscreen-menu-panel absolute inset-0 flex flex-col bg-bkpk-bg text-bkpk-text-primary',
-                    'h-[100dvh] min-h-[100lvh] max-h-none',
+                    'min-h-[100lvh] max-h-none overlay-viewport-fill',
                     'transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform',
                     isVisible ? 'translate-x-0' : '-translate-x-full'
                 )}

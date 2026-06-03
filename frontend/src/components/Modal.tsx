@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay';
 
 type ModalProps = {
     isOpen: boolean;
@@ -15,9 +16,11 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
     const previousFocusRef = useRef<HTMLElement | null>(null);
     const onCloseRef = useRef(onClose);
     onCloseRef.current = onClose;
-    
-    // Generowanie unikalnego ID dla ARIA
+
     const titleId = useId();
+
+    useOverlayViewportHeight(isOpen);
+    usePageScrollLock(isOpen, { htmlClass: 'is-overlay-open' });
 
     useEffect(() => {
         if (!isOpen) return;
@@ -29,23 +32,9 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
         previousFocusRef.current = document.activeElement as HTMLElement;
         document.addEventListener('keydown', handleEsc);
 
-        // Scroll lock dedykowany pod Safari iOS
-        const scrollY = window.scrollY;
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.style.top = `-${scrollY}px`;
-        document.body.style.overflow = 'hidden';
-
         return () => {
             document.removeEventListener('keydown', handleEsc);
-            // Przywrócenie scrolla
-            document.body.style.position = '';
-            document.body.style.width = '';
-            document.body.style.top = '';
-            document.body.style.overflow = '';
-            window.scrollTo(0, scrollY);
 
-            // Przywrócenie focusa
             if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
                 previousFocusRef.current.focus();
             }
@@ -104,7 +93,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
     return createPortal(
         <div
-            className="fixed inset-0 bg-bkpk-overlay-strong flex items-center justify-center z-50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-bkpk-overlay-strong backdrop-blur-sm p-4 animate-in fade-in duration-200 overlay-viewport-fill pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]"
             style={{ touchAction: 'none' }}
             onClick={() => onCloseRef.current()}
             role="presentation"
@@ -116,13 +105,14 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 aria-labelledby={titleId}
                 tabIndex={-1}
                 className={`bg-bkpk-surface border border-bkpk-border-strong rounded-xl w-full ${maxWidth} flex flex-col shadow-2xl animate-in slide-in-from-bottom-5 duration-300 outline-none overscroll-contain`}
-                style={{ 
-                    maxHeight: 'calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)',
+                style={{
+                    maxHeight:
+                        'calc(var(--overlay-vh, 100dvh) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)',
                     paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)'
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center p-6 border-b border-bkpk-border-strong shrink-0">
+                <div className="flex justify-between items-center p-6 border-b border-bkpk-border-strong shrink-0 safe-area-top">
                     <h2 id={titleId} className="text-xl font-bold text-bkpk-text-primary font-outfit">{title}</h2>
                     <button
                         type="button"
@@ -134,13 +124,13 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                         <X size={24} />
                     </button>
                 </div>
-                
-                <div 
+
+                <div
                     className="p-6 overflow-y-auto text-bkpk-text-secondary"
-                    style={{ 
-                        touchAction: 'pan-y', 
+                    style={{
+                        touchAction: 'pan-y',
                         WebkitOverflowScrolling: 'touch',
-                        overscrollBehaviorY: 'contain' 
+                        overscrollBehaviorY: 'contain'
                     }}
                 >
                     {children}

@@ -23,7 +23,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const copyFullPublic = process.env.VITE_COPY_FULL_PUBLIC === '1';
 
+  const safariOverlay = resolve(__dirname, '../packages/safari-overlay');
+
   return {
+    resolve: {
+      alias: {
+        '@bekapaka/safari-overlay': safariOverlay,
+      },
+    },
     plugins: [react(), ...(copyFullPublic ? [] : [copyEssentialPublicPlugin()])],
     build: {
       target: 'es2020',

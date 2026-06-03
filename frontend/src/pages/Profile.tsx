@@ -58,7 +58,7 @@ export default function Profile() {
 
     if (!user) {
         return (
-            <div className="min-h-screen bg-bkpk-bg flex items-center justify-center">
+            <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
                 <div className="text-bkpk-text-muted italic">Brak autoryzacji. Zaloguj się ponownie.</div>
             </div>
         );

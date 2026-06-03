@@ -3,6 +3,23 @@
 @source "../../**/*.{html,js,ts,jsx,tsx}";
 @plugin "@tailwindcss/typography";
 
+:root {
+  --overlay-vh: 100dvh;
+}
+
+@supports (height: 100svh) {
+  :root {
+    --overlay-vh: 100svh;
+  }
+}
+
+@media (max-width: 1023px) {
+  html.is-overlay-open,
+  html.is-overlay-open body {
+    background: transparent;
+  }
+}
+
 html {
   height: 100%;
   height: -webkit-fill-available;
@@ -313,6 +330,12 @@ body.is-scroll-locked {
   .safe-area-x {
     padding-left: env(safe-area-inset-left, 0px);
     padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .overlay-viewport-fill {
+    height: var(--overlay-vh);
+    min-height: var(--overlay-vh);
+    max-height: var(--overlay-vh);
   }
 }
 
