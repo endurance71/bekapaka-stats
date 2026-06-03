@@ -64,79 +64,114 @@ function NearestEventCountdown({ startsAt }: { startsAt: string }) {
   )
 }
 
-function NearestEventShell({ children, isEmpty = false }: { children: ReactNode; isEmpty?: boolean }) {
+function NearestEventLower({
+  startsAt,
+  calendar,
+  children,
+}: {
+  startsAt: string
+  calendar: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <div className='next-event-hero__lower'>
+      <div className='next-event-hero__meta-row'>
+        <div className='next-event-hero__meta'>{children}</div>
+        <NearestEventCountdown startsAt={startsAt} />
+      </div>
+      {calendar}
+    </div>
+  )
+}
+
+function NearestEventShell({
+  upper,
+  lower,
+  isEmpty = false,
+}: {
+  upper: ReactNode
+  lower?: ReactNode
+  isEmpty?: boolean
+}) {
   return (
     <div className={`next-event-hero${isEmpty ? ' next-event-hero--empty' : ''}`}>
       <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
-      <div className='next-event-hero__content'>{children}</div>
+      <div className='next-event-hero__upper'>{upper}</div>
+      {lower}
     </div>
   )
 }
 
 export function NearestEventCard({ highlight }: NearestEventCardProps) {
   const startsAt = getStartsAtIso(highlight)
+  const calendar = <NearestEventCalendarActions highlight={highlight} />
 
   if (highlight.source === 'kalk') {
     const { game } = highlight
     return (
-      <NearestEventShell>
-        <span className='next-event-hero__eyebrow'>Zmagania ligowe · KALK</span>
-        <h2 className='next-event-hero__match-title'>
-          <span className='next-event-hero__team'>BEKAPAKA</span>
-          <span className='next-event-hero__vs'>VS</span>
-          <span className='next-event-hero__team next-event-hero__team--accent'>{game.opponent.toUpperCase()}</span>
-        </h2>
-        <div className='next-event-hero__meta-panel'>
-          <div className='next-event-hero__meta-row'>
-            <div className='next-event-hero__meta'>
-              <div className='next-event-hero__meta-item'>
-                <span className='next-event-hero__meta-label'>Termin</span>
-                <strong>{formatDateTime(game.date)}</strong>
-              </div>
-              <div className='next-event-hero__meta-item'>
-                <span className='next-event-hero__meta-label'>Miejsce</span>
-                <strong>{formatVenue(game.data?.venue)}</strong>
-              </div>
+      <NearestEventShell
+        upper={
+          <>
+            <span className='next-event-hero__eyebrow'>Zmagania ligowe · KALK</span>
+            <h2 className='next-event-hero__match-title'>
+              <span className='next-event-hero__team'>BEKAPAKA</span>
+              <span className='next-event-hero__vs'>VS</span>
+              <span className='next-event-hero__team next-event-hero__team--accent'>{game.opponent.toUpperCase()}</span>
+            </h2>
+          </>
+        }
+        lower={
+          <NearestEventLower startsAt={startsAt} calendar={calendar}>
+            <div className='next-event-hero__meta-item'>
+              <span className='next-event-hero__meta-label'>Termin</span>
+              <strong>{formatDateTime(game.date)}</strong>
             </div>
-            <NearestEventCountdown startsAt={startsAt} />
-          </div>
-        </div>
-        <NearestEventCalendarActions highlight={highlight} />
-      </NearestEventShell>
+            <div className='next-event-hero__meta-item'>
+              <span className='next-event-hero__meta-label'>Miejsce</span>
+              <strong>{formatVenue(game.data?.venue)}</strong>
+            </div>
+          </NearestEventLower>
+        }
+      />
     )
   }
 
   const { event } = highlight
   return (
-    <NearestEventShell>
-      <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>
-      <h2 className='next-event-hero__event-title'>{event.title}</h2>
-      {event.description ? <p className='next-event-hero__lead muted'>{event.description}</p> : null}
-      <div className='next-event-hero__meta-panel'>
-        <div className='next-event-hero__meta-row'>
-          <div className='next-event-hero__meta'>
-            <div className='next-event-hero__meta-item'>
-              <span className='next-event-hero__meta-label'>Termin</span>
-              <strong>{formatDateTime(event.startAt)}</strong>
-            </div>
-            <div className='next-event-hero__meta-item'>
-              <span className='next-event-hero__meta-label'>Miejsce</span>
-              <strong>{event.location || 'Do potwierdzenia'}</strong>
-            </div>
+    <NearestEventShell
+      upper={
+        <>
+          <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>
+          <h2 className='next-event-hero__event-title'>{event.title}</h2>
+          {event.description ? <p className='next-event-hero__lead muted'>{event.description}</p> : null}
+        </>
+      }
+      lower={
+        <NearestEventLower startsAt={startsAt} calendar={calendar}>
+          <div className='next-event-hero__meta-item'>
+            <span className='next-event-hero__meta-label'>Termin</span>
+            <strong>{formatDateTime(event.startAt)}</strong>
           </div>
-          <NearestEventCountdown startsAt={startsAt} />
-        </div>
-      </div>
-      <NearestEventCalendarActions highlight={highlight} />
-    </NearestEventShell>
+          <div className='next-event-hero__meta-item'>
+            <span className='next-event-hero__meta-label'>Miejsce</span>
+            <strong>{event.location || 'Do potwierdzenia'}</strong>
+          </div>
+        </NearestEventLower>
+      }
+    />
   )
 }
 
 export function NearestEventEmpty() {
   return (
-    <NearestEventShell isEmpty>
-      <h3 className='next-event-hero__empty-title'>Brak zaplanowanych wydarzeń</h3>
-      <p className='muted'>Nie ma nadchodzących meczów w KALK ani wpisów w kalendarzu klubu.</p>
-    </NearestEventShell>
+    <NearestEventShell
+      isEmpty
+      upper={
+        <>
+          <h3 className='next-event-hero__empty-title'>Brak zaplanowanych wydarzeń</h3>
+          <p className='muted'>Nie ma nadchodzących meczów w KALK ani wpisów w kalendarzu klubu.</p>
+        </>
+      }
+    />
   )
 }
