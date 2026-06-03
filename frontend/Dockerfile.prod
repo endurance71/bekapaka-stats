@@ -3,6 +3,7 @@ FROM node:22-alpine AS build
 WORKDIR /app/frontend
 COPY packages/design-tokens /app/packages/design-tokens
 COPY packages/safari-overlay /app/packages/safari-overlay
+RUN cd /app/packages/safari-overlay && npm ci
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ .
