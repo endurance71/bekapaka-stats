@@ -5,6 +5,13 @@ data/pgdata_backup*/
 project.tar.gz
 *.tar.gz
 
+# Python
+__pycache__/
+*.pyc
+
+# TypeScript build info
+*.tsbuildinfo
+
 # Node.js
 node_modules/
 site/node_modules/
