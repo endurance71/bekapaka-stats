@@ -29,6 +29,24 @@ import {
   resolveLeagueTeamFromList
 } from './lib/leagueTeamResolve.js';
 import { kalkMatchToGameDetail, kalkMatchToListItem } from './kalk/kalkGameView.js';
+import { enrichKalkTeamStats, isBekapakaTeamName } from './kalk/parseMatchBoxScore.js';
+
+const BEKAPAKA_LEAGUE_MATCH_OR = [
+  { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { guestTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { homeTeam: { contains: 'BOBOLICE', mode: 'insensitive' } },
+  { guestTeam: { contains: 'BOBOLICE', mode: 'insensitive' } }
+];
+
+const BEKAPAKA_KALK_MATCH_OR = [
+  { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
+  { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+];
+
+/** @deprecated alias — terminarz LeagueMatch */
+const BEKAPAKA_MATCH_OR = BEKAPAKA_LEAGUE_MATCH_OR;
 import {
   ingestKalkTeams,
   ingestKalkMatches,
@@ -695,12 +713,7 @@ export async function getTeamTrends() {
       where: {
         seasonId: activeSeason.id,
         isFinished: true,
-        OR: [
-          { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-          { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-          { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
-          { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
-        ]
+        OR: BEKAPAKA_KALK_MATCH_OR
       },
       orderBy: { date: 'asc' }
     });
@@ -1091,26 +1104,56 @@ export async function listGames(filters = {}) {
     const kalkMatches = await prisma.kalkMatch.findMany({
       where: {
         seasonId: activeSeason.id,
-        OR: [
-          { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-          { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-          { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
-          { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
-        ]
+        OR: BEKAPAKA_KALK_MATCH_OR
       },
       orderBy: { date: 'desc' }
     });
 
-    if (kalkMatches.length) {
-      let items = kalkMatches.map(kalkMatchToListItem);
-      if (filters.result) {
-        items = items.filter((g) => g.result === filters.result);
+    let items = kalkMatches.map(kalkMatchToListItem);
+
+    const scheduleOnly = await prisma.leagueMatch.findMany({
+      where: {
+        seasonId: activeSeason.id,
+        OR: BEKAPAKA_LEAGUE_MATCH_OR,
+        isFinished: true,
+        kalkMatchId: null
+      },
+      orderBy: { date: 'desc' }
+    });
+
+    for (const lm of scheduleOnly) {
+      const isHome = isBekapakaTeamName(lm.homeTeam);
+      const opponent = isHome ? lm.guestTeam : lm.homeTeam;
+      const scoreUs = isHome ? lm.scoreHome : lm.scoreAway;
+      const scoreThem = isHome ? lm.scoreAway : lm.scoreHome;
+      let result = null;
+      if (scoreUs != null && scoreThem != null) {
+        result = scoreUs > scoreThem ? 'W' : scoreThem > scoreUs ? 'L' : null;
       }
-      if (filters.homeAway) {
-        items = items.filter((g) => g.homeAway === filters.homeAway);
-      }
-      return items;
+      items.push({
+        id: lm.id,
+        date: lm.date.toISOString(),
+        opponent,
+        result,
+        scoreUs,
+        scoreThem,
+        homeAway: isHome ? 'home' : 'away',
+        dataSource: 'league',
+        hasBoxScore: false,
+        isFromKalkMatch: false,
+        leagueMatchId: lm.id
+      });
     }
+
+    items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    if (filters.result) {
+      items = items.filter((g) => g.result === filters.result);
+    }
+    if (filters.homeAway) {
+      items = items.filter((g) => g.homeAway === filters.homeAway);
+    }
+    if (items.length) return items;
   }
 
   const where = {};
@@ -1143,6 +1186,51 @@ export async function getGameById(id) {
     });
     if (kalkMatch) {
       return kalkMatchToGameDetail(kalkMatch);
+    }
+
+    const leagueRow = await prisma.leagueMatch.findFirst({
+      where: {
+        seasonId: activeSeason.id,
+        OR: [{ id: String(id) }, { kalkMatchId: String(id) }]
+      }
+    });
+    if (leagueRow && (isBekapakaTeamName(leagueRow.homeTeam) || isBekapakaTeamName(leagueRow.guestTeam))) {
+      const isHome = isBekapakaTeamName(leagueRow.homeTeam);
+      const opponent = isHome ? leagueRow.guestTeam : leagueRow.homeTeam;
+      const scoreUs = isHome ? leagueRow.scoreHome : leagueRow.scoreAway;
+      const scoreThem = isHome ? leagueRow.scoreAway : leagueRow.scoreHome;
+      let result = null;
+      if (scoreUs != null && scoreThem != null) {
+        result = scoreUs > scoreThem ? 'W' : scoreThem > scoreUs ? 'L' : null;
+      }
+      return {
+        id: leagueRow.kalkMatchId || leagueRow.id,
+        leagueMatchId: leagueRow.id,
+        dataSource: 'league',
+        seasonId: leagueRow.seasonId,
+        date: leagueRow.date.toISOString(),
+        opponent,
+        homeAway: isHome ? 'home' : 'away',
+        result,
+        scoreUs,
+        scoreThem,
+        teams: [
+          {
+            name: leagueRow.homeTeam,
+            isBekapaka: isBekapakaTeamName(leagueRow.homeTeam),
+            players: [],
+            pts: leagueRow.scoreHome
+          },
+          {
+            name: leagueRow.guestTeam,
+            isBekapaka: isBekapakaTeamName(leagueRow.guestTeam),
+            players: [],
+            pts: leagueRow.scoreAway
+          }
+        ],
+        hasBoxScore: false,
+        boxScoreMissingHint: 'Brak box score w KALK — uruchom pełny sync w Administracji.'
+      };
     }
   }
 
@@ -1802,6 +1890,51 @@ export async function getTopScorers(limit = 20, seasonIdParam) {
   return await getLeagueLeaders('points', limit, seasonIdParam);
 }
 
+function normalizeLeaderKey(name, team) {
+  const n = (name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const t = (team || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  return `${n}|${t}`;
+}
+
+function leaderSortValue(player, category) {
+  switch (category) {
+    case 'three':
+      return player.threePointsMade ?? 0;
+    case 'assists':
+      return player.assistsAverage ?? 0;
+    case 'rebounds':
+      return player.reboundsAverage ?? 0;
+    case 'steals':
+      return player.stealsAverage ?? 0;
+    case 'blocks':
+      return player.blocksAverage ?? 0;
+    default:
+      return player.pointsAverage ?? 0;
+  }
+}
+
+/** Usuwa duplikaty z migracji (stare id bez prefiksu sezonu vs `slug__id`). */
+function dedupeKalkLeaderRows(rows, category) {
+  const byKey = new Map();
+  for (const row of rows) {
+    const key = normalizeLeaderKey(row.name, row.team);
+    const prev = byKey.get(key);
+    if (!prev) {
+      byKey.set(key, row);
+      continue;
+    }
+    const preferNew =
+      row.id.includes('__') && !prev.id.includes('__');
+    const betterStat = leaderSortValue(row, category) > leaderSortValue(prev, category);
+    if (preferNew || (!prev.id.includes('__') && betterStat)) {
+      byKey.set(key, row);
+    }
+  }
+  return [...byKey.values()].sort(
+    (a, b) => leaderSortValue(b, category) - leaderSortValue(a, category)
+  );
+}
+
 // LIGA - Pobierz liderów w danej kategorii
 export async function getLeagueLeaders(category = 'points', limit = 20, seasonIdParam) {
   await ensureSeeded();
@@ -1834,10 +1967,10 @@ export async function getLeagueLeaders(category = 'points', limit = 20, seasonId
     where.pointsAverage = { not: null };
   }
 
-  return await prisma.kalkPlayer.findMany({
+  const rows = await prisma.kalkPlayer.findMany({
     where,
     orderBy,
-    take: limit,
+    take: Math.min(limit * 3, 120),
     include: {
       rosterPlayer: {
         select: {
@@ -1850,6 +1983,8 @@ export async function getLeagueLeaders(category = 'points', limit = 20, seasonId
       }
     }
   });
+
+  return dedupeKalkLeaderRows(rows, category).slice(0, limit);
 }
 
 // PLAYBOOK - Utwórz nową zagrywkę
@@ -1915,13 +2050,6 @@ export async function getLeagueTrends() {
     avgOppg: totalOppPoints / (totalMatches || 1)
   }];
 }
-
-const BEKAPAKA_MATCH_OR = [
-  { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-  { guestTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-  { homeTeam: { contains: 'BOBOLICE', mode: 'insensitive' } },
-  { guestTeam: { contains: 'BOBOLICE', mode: 'insensitive' } }
-];
 
 function extractOpponentFromLeagueMatch(match) {
   const isHome =
@@ -2006,15 +2134,18 @@ async function buildOpponentScoutingCard(opponentName, seasonId, meta = {}) {
     };
   });
 
-  const keyPlayers = await prisma.kalkPlayer.findMany({
-    where: {
-      seasonId,
-      team: { contains: opponentName, mode: 'insensitive' },
-      name: { not: '' }
-    },
-    orderBy: { pointsAverage: 'desc' },
-    take: 3
-  });
+  const keyPlayers = dedupeKalkLeaderRows(
+    await prisma.kalkPlayer.findMany({
+      where: {
+        seasonId,
+        team: { contains: opponentName, mode: 'insensitive' },
+        name: { not: '' }
+      },
+      orderBy: { pointsAverage: 'desc' },
+      take: 10
+    }),
+    'points'
+  ).slice(0, 3);
 
   return {
     opponent: opponentName,
@@ -2210,10 +2341,15 @@ async function getOpponentAdvancedStats(opponentName) {
 
     // Identify which team is the opponent
     const isHome = match.homeTeam.toLowerCase().includes(simplifiedName.toLowerCase());
-    const oppTeamData = isHome ? details.teams[0] : details.teams[1];
-    const enemyTeamData = isHome ? details.teams[1] : details.teams[0]; // The team they played AGAINST
+    const oppTeamRaw = isHome ? details.teams[0] : details.teams[1];
+    const enemyTeamRaw = isHome ? details.teams[1] : details.teams[0];
 
-    if (!oppTeamData || !enemyTeamData) continue;
+    if (!oppTeamRaw || !enemyTeamRaw) continue;
+
+    const enemyPts = enemyTeamRaw.pts ?? (isHome ? match.scoreAway : match.scoreHome) ?? 0;
+    const oppPts = oppTeamRaw.pts ?? (isHome ? match.scoreHome : match.scoreAway) ?? 0;
+    const oppTeamData = enrichKalkTeamStats(oppTeamRaw, enemyPts);
+    const enemyTeamData = enrichKalkTeamStats(enemyTeamRaw, oppPts);
 
     const ff = oppTeamData.fourFactors || {};
 
@@ -2235,7 +2371,7 @@ async function getOpponentAdvancedStats(opponentName) {
     totalTOV += ff.tov;
     totalORB += ff.orb;
     total3PA += (ff.three_pa || 0); // New
-    totalOppDRB += enemyTeamData.fourFactors.drb;
+    totalOppDRB += enemyTeamData.drb ?? enemyTeamData.fourFactors?.drb ?? 0;
 
     // Aggregating Player Stats
     if (oppTeamData.players) {
@@ -2352,14 +2488,18 @@ export async function getDetailedScouting(opponentName) {
   );
 
   // 2. Opponent Players (Top 5)
-  const keyPlayers = await prisma.kalkPlayer.findMany({
-    where: {
-      team: { contains: opponentName, mode: 'insensitive' },
-      name: { not: '' }
-    },
-    orderBy: { pointsAverage: 'desc' },
-    take: 5
-  });
+  const keyPlayers = dedupeKalkLeaderRows(
+    await prisma.kalkPlayer.findMany({
+      where: {
+        seasonId,
+        team: { contains: opponentName, mode: 'insensitive' },
+        name: { not: '' }
+      },
+      orderBy: { pointsAverage: 'desc' },
+      take: 15
+    }),
+    'points'
+  ).slice(0, 5);
 
   // 3. Recent Matches (Opponent)
   const oppMatches = await prisma.leagueMatch.findMany({
