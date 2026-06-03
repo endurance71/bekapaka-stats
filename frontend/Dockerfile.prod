@@ -5,6 +5,7 @@ COPY packages/design-tokens /app/packages/design-tokens
 COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm install
 COPY frontend/ .
+ENV VITE_COPY_FULL_PUBLIC=1
 RUN npm run build
 
 # Step 2: Serve

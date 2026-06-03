@@ -8,12 +8,15 @@ export function SlideoutPanel({
   isOpen,
   title,
   onClose,
-  children
+  children,
+  size = 'default'
 }: {
   isOpen: boolean
   title: string
   onClose: () => void
   children: React.ReactNode
+  /** `wide` — szerszy panel na desktop (np. tabela historii występów w składzie) */
+  size?: 'default' | 'wide'
 }) {
   const panelRef = useRef<HTMLDivElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
@@ -101,7 +104,7 @@ export function SlideoutPanel({
 
   return createPortal(
     <div
-      className={`stats-drawer ${isOpen ? 'is-open' : ''}`}
+      className={`stats-drawer ${size === 'wide' ? 'stats-drawer--wide' : ''} ${isOpen ? 'is-open' : ''}`}
       aria-hidden={!isOpen}
     >
       <button

@@ -1,5 +1,6 @@
 @import "../../../packages/design-tokens/bkp-tokens.css";
 @import "tailwindcss";
+@source "../../**/*.{html,js,ts,jsx,tsx}";
 @plugin "@tailwindcss/typography";
 
 html {

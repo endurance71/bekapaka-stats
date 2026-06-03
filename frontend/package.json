@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:full": "VITE_COPY_FULL_PUBLIC=1 vite build",
     "preview": "vite preview",
     "test": "vitest"
   },

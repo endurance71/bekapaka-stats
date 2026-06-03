@@ -17,7 +17,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Administration = lazy(() => import('./pages/Administration'));
 const GameCenter = lazy(() => import('./pages/GameCenter'));
 const GameDetail = lazy(() => import('./pages/GameDetail'));
-import PlayerProfile from './pages/PlayerProfile';
+const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
 const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 
