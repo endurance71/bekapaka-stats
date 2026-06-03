@@ -47,4 +47,9 @@
   .stats-drawer__panel {
     min-height: -webkit-fill-available;
   }
+
+  .mobile-fullscreen-menu,
+  .mobile-fullscreen-menu__panel {
+    min-height: -webkit-fill-available;
+  }
 }

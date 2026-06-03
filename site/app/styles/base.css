@@ -407,6 +407,11 @@ p {
   position: fixed;
   inset: 0;
   z-index: 9999;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100lvh;
+  max-height: none;
+  background: var(--bg-app);
   pointer-events: none;
 }
 
@@ -422,8 +427,9 @@ p {
   flex-direction: column;
   width: 100%;
   max-width: 100%;
-  min-height: 100dvh;
-  height: 100%;
+  height: 100dvh;
+  min-height: 100lvh;
+  max-height: none;
   background: var(--bg-app);
   color: var(--text-primary);
   padding-top: env(safe-area-inset-top, 0px);

@@ -24,6 +24,18 @@ body {
   isolation: isolate;
 }
 
+html.is-scroll-locked,
+body.is-scroll-locked {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body.is-scroll-locked {
+  position: fixed;
+  width: 100%;
+  touch-action: none;
+}
+
 /* Mobile Safari: scroll całej strony (nie fixed shell) — blur pod paskiem adresu */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 1023px) {
@@ -38,6 +50,11 @@ body {
       min-height: auto;
       isolation: auto;
     }
+  }
+
+  .mobile-fullscreen-menu-root,
+  .mobile-fullscreen-menu-panel {
+    min-height: -webkit-fill-available;
   }
 }
 
