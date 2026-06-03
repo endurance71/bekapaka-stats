@@ -69,6 +69,7 @@
    - błędy runtime
    - czas odpowiedzi
    - brakujace dane z CMS/backend
+   - RAM na VPS: `tail /var/log/bekapaka-ram.log` ([vps-optimization.md](./vps-optimization.md))
 
 ## 5. Rollback
 

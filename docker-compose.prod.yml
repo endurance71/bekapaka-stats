@@ -36,7 +36,7 @@ services:
     depends_on:
       - bkpk-db
     ports:
-      - "4001:4001"
+      - "127.0.0.1:4001:4001"
     networks:
       - bkpk-network
 
@@ -45,7 +45,7 @@ services:
     container_name: bkpk-frontend-prod
     restart: always
     ports:
-      - "8081:80"
+      - "127.0.0.1:8081:80"
     depends_on:
       - bkpk-backend
     networks:
@@ -64,7 +64,7 @@ services:
       SITE_BACKEND_API_URL: ${SITE_BACKEND_API_URL:-http://bkpk-backend:4001}
       SITE_CMS_TOKEN: ${SITE_CMS_TOKEN:-}
     ports:
-      - "8082:3000"
+      - "127.0.0.1:8082:3000"
     depends_on:
       - bkpk-backend
       - bkpk-cms
@@ -90,7 +90,7 @@ services:
       - ./data/cms-data:/opt/app/.tmp
       - ./data/cms-uploads:/opt/app/public/uploads
     ports:
-      - "1337:1337"
+      - "127.0.0.1:1337:1337"
     networks:
       - bkpk-network
 
