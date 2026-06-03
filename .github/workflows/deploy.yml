@@ -89,6 +89,10 @@ jobs:
             docker pull "ghcr.io/${GITHUB_REPOSITORY}/frontend:latest"
             docker pull "ghcr.io/${GITHUB_REPOSITORY}/site:latest"
             # Usuń osierocone kontenery po nieudanym recreate (np. abc123_bkpk-backend-prod)
-            docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]+_bkpk-(backend|frontend|site|cms)-prod$' | xargs -r docker rm -f
+            # grep zwraca 1 gdy brak dopasowań — nie może zabić skryptu przy set -o pipefail
+            orphans="$(docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]+_bkpk-(backend|frontend|site|cms)-prod$' || true)"
+            if [ -n "$orphans" ]; then
+              echo "$orphans" | xargs -r docker rm -f
+            fi
             docker compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
             docker image prune -f
