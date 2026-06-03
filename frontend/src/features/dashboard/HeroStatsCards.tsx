@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import BkpkTooltip from '../../shared/ui/BkpkTooltip';
 import { useState } from 'react';
 import { clsx } from 'clsx';
+import { formatStatFixed } from '../../shared/lib/formatStat';
 
 export interface WinCardProps {
     winPercentage: number;
@@ -63,7 +64,7 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
                     </div>
                     <div className="flex items-baseline gap-2 mt-1">
                         <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
-                            {ppg.toFixed(1)}
+                            {formatStatFixed(ppg)}
                         </h2>
                         <span className="text-bkpk-text-secondary text-sm font-medium uppercase tracking-tighter">PKT/Mecz</span>
                     </div>
@@ -127,7 +128,7 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary"
                                 >
-                                    {value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1)}
+                                    {value > 0 ? `+${formatStatFixed(value)}` : formatStatFixed(value)}
                                 </motion.h2>
                             </AnimatePresence>
                         </div>

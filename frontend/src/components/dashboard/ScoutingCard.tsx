@@ -4,6 +4,7 @@ import { cn } from '../../shared/lib/utils';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
+import { formatStatFixed } from '../../shared/lib/formatStat';
 
 interface ScoutingMatch {
     result: 'W' | 'L';
@@ -115,14 +116,14 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                             <TrendingUp className="w-3 h-3 text-bkpk-success" />
                             <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Atak</span>
                         </div>
-                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{data.ppg.toFixed(1)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
                     </div>
                     <div className="bg-bkpk-surface-tint-2 p-3 rounded-2xl border border-bkpk-border-strong">
                         <div className="flex items-center gap-2 mb-1">
                             <TrendingDown className="w-3 h-3 text-bkpk-text-danger" />
                             <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Obrona</span>
                         </div>
-                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{data.oppg.toFixed(1)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
                     </div>
                 </div>
 
@@ -133,7 +134,7 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                             {data.keyPlayers.map((player, i) => (
                                 <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-bkpk-surface-tint-2 transition-colors">
                                     <span className="text-sm font-bold text-bkpk-text-primary">{player.name}</span>
-                                    <span className="text-sm font-black text-bkpk-primary">{player.ppg.toFixed(1)} <span className="text-xs opacity-60 uppercase tracking-tighter">pkt</span></span>
+                                    <span className="text-sm font-black text-bkpk-primary">{formatStatFixed(player.ppg)} <span className="text-xs opacity-60 uppercase tracking-tighter">pkt</span></span>
                                 </div>
                             ))}
                         </div>

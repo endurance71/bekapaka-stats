@@ -346,9 +346,9 @@ export async function getRoster() {
       number: r.number,
       position: r.position,
       starter: r.starter,
-      ppg: r.ppg,
-      rpg: r.rpg,
-      apg: r.apg,
+      ppg: r.ppg ?? 0,
+      rpg: r.rpg ?? 0,
+      apg: r.apg ?? 0,
       eval: evalAvg,
       fgPercentage: r.fgPercentage,
       threePercentage: r.threePercentage,
@@ -1714,9 +1714,9 @@ export async function updateRosterStatsFromKalk() {
       where: { id: player.id },
       data: {
         gamesPlayed: kp.matchesPlayed ?? player.gamesPlayed,
-        ppg: kp.pointsAverage ?? player.ppg,
-        rpg: kp.reboundsAverage ?? player.rpg,
-        apg: kp.assistsAverage ?? player.apg,
+        ppg: kp.pointsAverage ?? player.ppg ?? 0,
+        rpg: kp.reboundsAverage ?? player.rpg ?? 0,
+        apg: kp.assistsAverage ?? player.apg ?? 0,
         threePercentage: kp.threePointsPct ?? player.threePercentage,
         ftPercentage: kp.ftPct ?? player.ftPercentage
       }
@@ -2214,7 +2214,7 @@ async function buildOpponentScoutingCard(opponentName, seasonId, meta = {}) {
           if (parts.length === 2) return `${parts[1]} ${parts[0]}`;
           return trimmed;
         })();
-        return name ? { name, ppg: p.pointsAverage } : null;
+        return name ? { name, ppg: p.pointsAverage ?? 0 } : null;
       })
       .filter(Boolean),
     ...meta
@@ -2644,7 +2644,7 @@ export async function getDetailedScouting(opponentName) {
 
     return {
       name: p.name.split(/\s+/).length === 2 ? `${p.name.split(/\s+/)[1]} ${p.name.split(/\s+/)[0]}` : p.name,
-      ppg: p.pointsAverage,
+      ppg: p.pointsAverage ?? 0,
       totalPoints: p.pointsTotal || 0,
       matches: p.matchesPlayed || 0,
       threePointStats: stats3pt || '-'

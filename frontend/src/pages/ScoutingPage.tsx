@@ -15,6 +15,7 @@ import { ScoutingMatchHeader } from '../components/scouting/ScoutingMatchHeader'
 import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
 import { usePortraitMobile } from '../hooks/useIsMobile';
+import { formatStatFixed } from '../shared/lib/formatStat';
 
 interface KeyPlayerRow {
   name: string;
@@ -279,7 +280,7 @@ export default function ScoutingPage() {
                       highlight={
                         <div>
                           <div className="font-outfit text-xl font-black tabular-nums text-bkpk-primary">
-                            {p.ppg.toFixed(1)}
+                            {formatStatFixed(p.ppg)}
                           </div>
                           <div className="text-[10px] font-bold uppercase text-bkpk-text-muted">PPG</div>
                         </div>
@@ -317,7 +318,7 @@ export default function ScoutingPage() {
                             {p.name}
                           </td>
                           <td className="py-3 text-center font-mono text-bkpk-text-secondary">{p.matches}</td>
-                          <td className="py-3 text-center font-black text-bkpk-primary">{p.ppg.toFixed(1)}</td>
+                          <td className="py-3 text-center font-black text-bkpk-primary">{formatStatFixed(p.ppg)}</td>
                           <td className="py-3 text-center font-mono text-bkpk-text-secondary">
                             {p.threePointStats || '-'}
                           </td>

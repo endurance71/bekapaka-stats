@@ -1,4 +1,5 @@
 import { cn } from '../../shared/lib/utils';
+import { formatStatFixed } from '../../shared/lib/formatStat';
 
 interface TeamStats {
   name: string;
@@ -17,11 +18,11 @@ interface MatchupStatCardsProps {
 }
 
 const METRICS = [
-  { key: 'ppg', label: 'PPG', format: (v: number) => v.toFixed(1) },
-  { key: 'oppg', label: 'Stracone', format: (v: number) => v.toFixed(1), invertBetter: true },
-  { key: 'winPct', label: 'Wygrane %', format: (v: number) => `${v}%` },
-  { key: 'pace', label: 'Tempo', format: (v: number) => (v > 0 ? v.toFixed(1) : '—') },
-  { key: 'threePtPct', label: '3PT %', format: (v: number) => (v > 0 ? `${v.toFixed(1)}%` : '—') }
+  { key: 'ppg', label: 'PPG', format: (v: number) => formatStatFixed(v) },
+  { key: 'oppg', label: 'Stracone', format: (v: number) => formatStatFixed(v), invertBetter: true },
+  { key: 'winPct', label: 'Wygrane %', format: (v: number) => `${v ?? 0}%` },
+  { key: 'pace', label: 'Tempo', format: (v: number) => (v > 0 ? formatStatFixed(v) : '—') },
+  { key: 'threePtPct', label: '3PT %', format: (v: number) => (v > 0 ? `${formatStatFixed(v)}%` : '—') }
 ] as const;
 
 export function MatchupStatCards({ opponent, bekapaka, compact = false }: MatchupStatCardsProps) {
