@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import type { GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
-import { formatDateTime } from '../../../lib/format'
+import { formatDateTime, formatPointBalance } from '../../../lib/format'
 import { NearestEventCard, NearestEventEmpty } from '../home/NearestEventCard'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 import { ArrowRightIcon } from '../shared/PublicIcons'
@@ -62,6 +62,12 @@ export function MegaHomeTemplate({
                 <div className='hero-stat-badge'>
                   <span className='hero-stat-badge__label'>Bilans</span>
                   <span className='hero-stat-badge__value'>{ourPosition.wins} - {ourPosition.losses}</span>
+                </div>
+                <div className='hero-stat-badge'>
+                  <span className='hero-stat-badge__label'>Bilans pkt.</span>
+                  <span className='hero-stat-badge__value'>
+                    {formatPointBalance(ourPosition.pointsFor, ourPosition.pointsAgainst)}
+                  </span>
                 </div>
               </div>
             )}

@@ -71,7 +71,10 @@ export const teamStandingSchema = z.object({
   name: z.string(),
   position: z.number(),
   wins: z.number(),
-  losses: z.number()
+  losses: z.number(),
+  points: z.number().optional(),
+  pointsFor: z.number().optional(),
+  pointsAgainst: z.number().optional()
 })
 
 export const playerGameLogSchema = z.object({

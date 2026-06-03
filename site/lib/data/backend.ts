@@ -314,17 +314,25 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
         position: sanitizeNumber(row.position, sanitizeNumber(row.rank, 0)),
         points: sanitizeNumber(row.points, 0),
         wins: sanitizeNumber(row.wins, 0),
-        losses: sanitizeNumber(row.losses, 0)
+        losses: sanitizeNumber(row.losses, 0),
+        pointsFor: sanitizeNumber(row.pointsFor, NaN),
+        pointsAgainst: sanitizeNumber(row.pointsAgainst, NaN)
       }))
       .sort((a, b) => b.points - a.points)
 
     const items = rows
-      .map((row, index) => ({
-        name: row.name,
-        position: row.position > 0 ? row.position : index + 1,
-        wins: row.wins,
-        losses: row.losses
-      }))
+      .map((row, index) => {
+        const standing: Record<string, unknown> = {
+          name: row.name,
+          position: row.position > 0 ? row.position : index + 1,
+          wins: row.wins,
+          losses: row.losses
+        }
+        if (row.points > 0) standing.points = row.points
+        if (Number.isFinite(row.pointsFor)) standing.pointsFor = row.pointsFor
+        if (Number.isFinite(row.pointsAgainst)) standing.pointsAgainst = row.pointsAgainst
+        return standing
+      })
       .map((item) => teamStandingSchema.parse(item))
 
     if (items.length === 0) {
