@@ -104,7 +104,14 @@ export function MegaHomeTemplate({
         </article>
 
         {/* ROW 2: NEXT MATCH (7) & STAT LEADERS (5) */}
-        <article className='surface-card dashboard-next dashboard-next--highlight'>
+        <article
+          className={`surface-card dashboard-next dashboard-next--highlight${nearestEvent ? '' : ' dashboard-next--empty'}`}
+        >
+          <div
+            className='next-event-photo-bg'
+            aria-hidden='true'
+            style={{ backgroundImage: "url('/images/hero-basketball.jpg')" }}
+          />
           {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 
