@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Route, Routes, Navigate, ScrollRestoration } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import Shell from './components/Shell';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -39,7 +39,6 @@ export default function App() {
     <ErrorBoundary>
       <MotionConfig reducedMotion="user">
       <AuthProvider>
-        <ScrollRestoration />
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route
