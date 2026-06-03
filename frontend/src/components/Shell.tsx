@@ -9,6 +9,7 @@ import {
   Users,
   ShieldCheck,
   Activity,
+  Bot,
   LogOut,
   User,
   Menu,
@@ -27,6 +28,7 @@ const allLinks = [
   { to: '/league', label: 'Liga KALK', icon: Trophy, public: true },
   { to: '/roster', label: 'Skład', icon: Users, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
+  { to: '/ai', label: 'AI', icon: Bot, public: true },
   { to: '/profile', label: 'Mój Profil', icon: User, public: true },
   { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
 ];
