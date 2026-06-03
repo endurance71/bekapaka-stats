@@ -118,6 +118,46 @@ def parse_player_row(cells: List[str]) -> Dict[str, Any]:
     }
 
 
+def parse_quarters_from_raw(raw: Optional[str]) -> List[Dict[str, Any]]:
+    """Parsuje linię kwart KALK, np. (15:18; 17:18; 23:11; 7:15;)."""
+    if not raw:
+        return []
+    inner = raw.strip().strip('()')
+    if not inner:
+        return []
+    quarters: List[Dict[str, Any]] = []
+    for part in inner.split(';'):
+        part = part.strip()
+        if not part:
+            continue
+        score_match = re.search(r'(\d{1,3})\s*:\s*(\d{1,3})', part)
+        if not score_match:
+            continue
+        home = int(score_match.group(1))
+        away = int(score_match.group(2))
+        quarters.append({
+            'label': f'Q{len(quarters) + 1}',
+            'home': home,
+            'away': away,
+        })
+    return quarters
+
+
+def extract_quarters_raw(soup: BeautifulSoup) -> Optional[str]:
+    """Szuka linii wyników kwartowych (h4 lub HTML strony meczu)."""
+    for h4 in soup.find_all('h4'):
+        text = h4.get_text(strip=True)
+        if re.search(r'\(\d{1,2}:\d{1,2};', text):
+            return text
+    html_str = str(soup)
+    match = re.search(r'\((\d{1,2}:\d{1,2};\s*){2,}[^)]*\)', html_str)
+    if match:
+        return match.group(0)
+    text_blob = soup.get_text(' ', strip=True)
+    match = re.search(r'\((\d{1,2}:\d{1,2};\s*){2,}[^)]*\)', text_blob)
+    return match.group(0) if match else None
+
+
 def parse_team_table(table: Tag, team_name: str) -> Dict[str, Any]:
     players: List[Dict[str, Any]] = []
     for row in table.find_all('tr'):
@@ -164,6 +204,13 @@ def parse_match_page(soup: BeautifulSoup, page_url: str = '') -> Dict[str, Any]:
     if stat_match:
         meta['statistician'] = stat_match.group(1).strip()
 
+    quarters_raw = extract_quarters_raw(soup)
+    if quarters_raw:
+        meta['quartersRaw'] = quarters_raw
+        quarters = parse_quarters_from_raw(quarters_raw)
+        if quarters:
+            meta['quarters'] = quarters
+
     score_h1 = soup.find('h1')
     score_home, score_away = None, None
     if score_h1:
@@ -195,13 +242,15 @@ def parse_match_page(soup: BeautifulSoup, page_url: str = '') -> Dict[str, Any]:
     slug_match = re.search(r'mecz,([^,]+),', page_url or '')
     slug = slug_match.group(1) if slug_match else None
 
-    box_score = {
+    box_score: Dict[str, Any] = {
         'teams': [
             {**home, 'pts': home_pts},
             {**guest, 'pts': guest_pts},
         ],
         'meta': meta,
     }
+    if meta.get('quarters'):
+        box_score['quarters'] = meta['quarters']
 
     return {
         'id': match_id,

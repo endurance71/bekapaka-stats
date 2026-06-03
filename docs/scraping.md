@@ -208,7 +208,7 @@ KALK_GAP_URLS='https://www.kalk-koszalin.com/mecz,...,0.html' python3 backend/sc
 
 ### Ograniczenia
 
-- **Dynamika meczu (5 min):** tylko jeśli KALK udostępnia kwarty w HTML (`quartersRaw` → `quarters`); brak danych 5-min w KALK — wykres kwartowy (krok 10 min) zamiast 5 min.
+- **Dynamika meczu:** kwarty z HTML (`quartersRaw` → `quarters`) — parser **Python** (`kalk_parsers.parse_match_page`) i **Node** (`parseMatchHtml`); ingest zapisuje je w `KalkMatch.boxScore`. Panel: wykres z kwart (krok 10 min, skumulowane punkty); `fiveMinute` tylko jeśli kiedyś pojawi się w źródle. Po zmianie parsera wymagany ponowny scrape + import.
 - **Scraper ligi:** domyślnie pobiera wszystkie zakończone mecze dywizji (scouting rywali); opcjonalnie `SCRAPE_SCOPE=bekapaka` w przyszłości.
 
 Kody błędów:

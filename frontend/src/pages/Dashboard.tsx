@@ -196,16 +196,20 @@ export default function Dashboard() {
 
           <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
 
-          {lastGameFull?.data?.fiveMinute || lastGameFull?.data?.quarters ? (
+          {(() => {
+            const fiveMinute = lastGameFull?.data?.fiveMinute;
+            const quarters = lastGameFull?.quarters ?? lastGameFull?.data?.quarters;
+            if (!fiveMinute && !quarters) return null;
+            return (
             <DashboardMomentum
-              data={lastGameFull.data.fiveMinute || (() => {
+              data={fiveMinute || (() => {
                 const isHome = lastGameFull.homeAway === 'home';
                 let homeSum = 0;
                 let awaySum = 0;
                 const homePoints: number[] = [];
                 const awayPoints: number[] = [];
 
-                lastGameFull.data.quarters.forEach((q: any) => {
+                quarters.forEach((q: { home: number; away: number }) => {
                   homeSum += q.home;
                   awaySum += q.away;
                   homePoints.push(homeSum);
@@ -219,14 +223,15 @@ export default function Dashboard() {
               })()}
               bkCode="BB"
               oppCode="OP"
-              step={lastGameFull.data.fiveMinute ? 5 : 10}
+              step={fiveMinute ? 5 : 10}
             />
-          ) : !loading && (
+            );
+          })() || (!loading && (
             <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
               <Database className="w-4 h-4 text-bkpk-text-muted" />
               <span className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest">Brak danych o dynamice meczu</span>
             </div>
-          )}
+          ))}
 
           <ScoutingCard data={scoutingData} loading={loading} />
         </div>
