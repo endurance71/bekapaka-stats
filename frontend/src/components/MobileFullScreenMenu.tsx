@@ -247,8 +247,7 @@ export default function MobileFullScreenMenu({
                 style={{
                     paddingTop: 'env(safe-area-inset-top, 0px)',
                     paddingLeft: 'env(safe-area-inset-left, 0px)',
-                    paddingRight: 'env(safe-area-inset-right, 0px)',
-                    paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+                    paddingRight: 'env(safe-area-inset-right, 0px)'
                 }}
             >
                 <header className="relative flex items-center px-4 py-3 shrink-0">
@@ -341,7 +340,7 @@ export default function MobileFullScreenMenu({
                     })}
                 </nav>
 
-                <div className="shrink-0 px-4 pt-3 pb-3 bg-bkpk-bg border-t border-bkpk-border-subtle">
+                <div className="shrink-0 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-bkpk-bg border-t border-bkpk-border-subtle">
                     <button
                         type="button"
                         onClick={handleLogout}

@@ -249,7 +249,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           className={cn(
             'flex-1 w-full relative z-10 overflow-y-auto overflow-x-hidden',
             'md:min-h-0 md:no-scrollbar md:scroll-smooth md:bg-bkpk-bg',
-            'pb-20 md:pb-0'
+            'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-0'
           )}
         >
           {children}

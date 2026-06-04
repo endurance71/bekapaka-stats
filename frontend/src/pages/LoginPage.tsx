@@ -36,7 +36,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-bkpk-bg p-4 safe-area-top safe-area-bottom safe-area-x">
+        <div className="min-h-[100dvh] flex items-center justify-center bg-bkpk-bg px-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
             <div className="w-full max-w-sm mx-auto">
                 <BkpkCard className="p-8 space-y-8 relative overflow-hidden">
                     <div className="absolute -top-24 -right-24 w-48 h-48 bg-bkpk-primary/10 blur-3xl rounded-full" />
