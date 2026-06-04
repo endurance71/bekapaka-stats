@@ -51,14 +51,4 @@ html.is-stats-drawer-open body.site-body {
   background-image: none;
 }
 
-@supports (-webkit-touch-callout: none) {
-  @media (max-width: 899px) {
-    .stats-drawer.is-open,
-    .stats-drawer.is-open .stats-drawer__backdrop,
-    .stats-drawer.is-open .stats-drawer__panel,
-    .mobile-fullscreen-menu,
-    .mobile-fullscreen-menu__panel {
-      min-height: -webkit-fill-available;
-    }
-  }
-}
+
