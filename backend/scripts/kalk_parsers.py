@@ -329,6 +329,16 @@ def extract_category_stats_table(soup: BeautifulSoup, category_name: str) -> Dic
                 }
             except (ValueError, IndexError):
                 pass
+        elif category_name in ('proc1', 'proc2'):
+            try:
+                pct_str = cells[3].get_text(strip=True).replace(',', '.')
+                pct = float(pct_str) if pct_str else 0.0
+                stats[player_id] = {
+                    f'{category_name}_suma': pct,
+                    f'{category_name}_srednia': pct,
+                }
+            except (ValueError, IndexError):
+                pass
         else:
             try:
                 suma_str = cells[3].get_text(strip=True).replace(',', '.')
