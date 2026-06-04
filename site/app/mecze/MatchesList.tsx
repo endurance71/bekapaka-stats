@@ -122,9 +122,9 @@ export function MatchesList({ games }: MatchesListProps) {
                 
                 <div className='pm-card-right'>
                   <div className='pm-card-score-box'>
-                    <span className={isWin ? 'color-win' : undefined}>{game.scoreUs}</span>
+                    <span className={isWin ? 'color-win' : 'color-loss'}>{game.scoreUs}</span>
                     <span className='score-separator'>:</span>
-                    <span className={!isWin ? 'color-win' : undefined}>{game.scoreThem}</span>
+                    <span>{game.scoreThem}</span>
                   </div>
                   <span className='pm-card-action-btn'>
                     Szczegóły

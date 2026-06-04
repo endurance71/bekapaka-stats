@@ -63,9 +63,9 @@ export function MatchDrawerContent({ game, loading = false }: MatchDrawerContent
             <span className='scoreboard-team-name'>BeKaPaKa</span>
           </div>
           <div className='scoreboard-score-numbers' aria-label={`Wynik ${game.scoreUs} do ${game.scoreThem}`}>
-            <span className={isWin ? 'color-win' : undefined}>{game.scoreUs}</span>
+            <span className={isWin ? 'color-win' : 'color-loss'}>{game.scoreUs}</span>
             <span className='score-sep'>:</span>
-            <span className={!isWin ? 'color-win' : undefined}>{game.scoreThem}</span>
+            <span>{game.scoreThem}</span>
           </div>
           <div className='scoreboard-team text-right'>
             <span className='scoreboard-team-name'>{game.opponent}</span>
