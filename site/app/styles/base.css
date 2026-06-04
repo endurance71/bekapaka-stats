@@ -25,15 +25,14 @@ body {
 }
 
 body {
+  margin: 0;
   font-family: var(--font-body);
   font-size: clamp(0.9375rem, 2.5vw, 1rem);
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--bg-app);
-  min-height: 100%;
+  /* tylko dvh — 100svh / -webkit-fill-available na iOS rezerwują górę pod status bar */
   min-height: 100dvh;
-  min-height: 100svh;
-  min-height: -webkit-fill-available;
   overscroll-behavior-y: none;
   background-image:
     radial-gradient(circle at 0% 0%, rgba(236, 167, 44, 0.03) 0%, transparent 50%),
@@ -41,18 +40,36 @@ body {
   background-attachment: fixed;
 }
 
-/* iOS Safari: fixed background nie maluje safe area — szczeliny u góry/dołu */
+/* iOS Safari: jednolite tło na mobile (gradient + spacer = „drugi pas” u dołu) */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 899px) {
+    html,
     body.site-body {
+      background-color: var(--bg-app);
+      background-image: none;
       background-attachment: scroll;
     }
+  }
+}
+
+@media (max-width: 899px) {
+  html,
+  body.site-body {
+    background-color: var(--bg-app);
+    background-image: none;
+  }
+
+  .site-footer,
+  .page-bottom-safe-spacer,
+  #content {
+    background-color: var(--bg-app);
   }
 }
 
 body.site-body {
   display: flex;
   flex-direction: column;
+  margin: 0;
   min-height: 100dvh;
 }
 
@@ -74,6 +91,15 @@ body.is-scroll-locked {
 
 .safe-area-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+
+.site-shell {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 100dvh;
+  width: 100%;
+  background-color: var(--bg-app);
 }
 
 body.site-body #content {
@@ -705,17 +731,34 @@ p {
 }
 
 @media (max-width: 899px) {
+  /*
+   * Safe area na .site-header__inner, nie na .site-header —
+   * padding na headerze = osobny pas tła nad przyciskami (podwójnie z ::before).
+   */
   .site-header {
-    padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+    padding-top: 0;
     background-color: var(--bg-app);
   }
 
   .site-header::before {
-    top: calc(-1 * env(safe-area-inset-top, 0px));
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: auto;
+    inset: 0;
+    top: 0;
+    background: var(--bg-app);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .site-header .site-header__inner {
+    width: 100%;
+    max-width: none;
+    margin-inline: 0;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding:
+      max(var(--space-3), env(safe-area-inset-top, 0px))
+      max(var(--space-4), env(safe-area-inset-right, 0px))
+      var(--space-3)
+      max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
   body.site-body #content {

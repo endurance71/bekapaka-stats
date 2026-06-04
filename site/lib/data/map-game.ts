@@ -62,3 +62,33 @@ export function mapApiGameToSummary(game: Record<string, unknown>, index = 0): G
     }
   })
 }
+
+/**
+ * Jak {@link mapApiGameToSummary}, ale bez rzucania — przy niepoprawnym payloadzie zwraca `null`.
+ */
+export function mapApiGameToSummarySafe(
+  game: Record<string, unknown>,
+  index = 0
+): GameSummary | null {
+  try {
+    return mapApiGameToSummary(game, index)
+  } catch {
+    const parsed = gameSummarySchema.safeParse({
+      id: sanitizeText(game.id, String(index)),
+      date: sanitizeText(game.date, ''),
+      opponent: sanitizeText(game.opponent, 'Rywal'),
+      result: game.result ? sanitizeText(game.result, '-') : null,
+      scoreUs:
+        game.scoreUs !== undefined && game.scoreUs !== null ? sanitizeNumber(game.scoreUs, 0) : null,
+      scoreThem:
+        game.scoreThem !== undefined && game.scoreThem !== null
+          ? sanitizeNumber(game.scoreThem, 0)
+          : null,
+      homeAway: sanitizeText(game.homeAway, 'home'),
+      coachNotes: game.coachNotes ? sanitizeText(game.coachNotes, '') : null,
+      aiSummary: game.aiSummary ? sanitizeText(game.aiSummary, '') : null,
+      videoUrl: game.videoUrl ? String(game.videoUrl) : null
+    })
+    return parsed.success ? parsed.data : null
+  }
+}

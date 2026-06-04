@@ -24,7 +24,6 @@ export function MatchesList({ games }: MatchesListProps) {
   const [selectedGame, setSelectedGame] = useState<GameSummary | null>(null)
   const [detailGame, setDetailGame] = useState<GameSummary | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
-  const [detailError, setDetailError] = useState<string | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
   const pastGames = games.filter(
@@ -43,24 +42,22 @@ export function MatchesList({ games }: MatchesListProps) {
 
   const handleOpenDrawer = useCallback(async (game: GameSummary) => {
     setSelectedGame(game)
-    setDetailGame(null)
-    setDetailError(null)
+    setDetailGame(game)
     setDetailLoading(true)
     setIsOpen(true)
 
     try {
       const response = await fetch(`/api/games/${encodeURIComponent(game.id)}`)
       if (!response.ok) {
-        setDetailError('Nie udało się załadować statystyk meczu.')
-        setDetailGame(game)
         return
       }
       const payload: unknown = await response.json()
       const parsed = gameSummarySchema.safeParse(payload)
-      setDetailGame(parsed.success ? parsed.data : game)
+      if (parsed.success) {
+        setDetailGame(parsed.data)
+      }
     } catch {
-      setDetailError('Nie udało się załadować statystyk meczu.')
-      setDetailGame(game)
+      /* Zostaw dane z listy — API niedostępne lub timeout. */
     } finally {
       setDetailLoading(false)
     }
@@ -71,7 +68,6 @@ export function MatchesList({ games }: MatchesListProps) {
     setTimeout(() => {
       setSelectedGame(null)
       setDetailGame(null)
-      setDetailError(null)
       setDetailLoading(false)
     }, 300)
   }
@@ -166,13 +162,28 @@ export function MatchesList({ games }: MatchesListProps) {
         </div>
       )}
 
-      <SlideoutPanel isOpen={isOpen} onClose={handleCloseDrawer} title='Szczegóły meczu'>
+      <SlideoutPanel
+        isOpen={isOpen}
+        onClose={handleCloseDrawer}
+        title='Szczegóły meczu'
+        headerMeta={
+          selectedGame ? (
+            <MetaWithIcons>
+              <IconLabel icon={<CalendarIcon size={14} />}>
+                {formatDateTime((detailGame ?? selectedGame).date)}
+              </IconLabel>
+              <span className='meta-with-icons__sep' aria-hidden>
+                ·
+              </span>
+              <IconLabel icon={<MapPinIcon size={14} />}>
+                {formatVenue((detailGame ?? selectedGame).data?.venue)}
+              </IconLabel>
+            </MetaWithIcons>
+          ) : null
+        }
+      >
         {selectedGame ? (
-          <MatchDrawerContent
-            game={detailGame ?? selectedGame}
-            loading={detailLoading}
-            loadError={detailError}
-          />
+          <MatchDrawerContent game={detailGame ?? selectedGame} loading={detailLoading} />
         ) : null}
       </SlideoutPanel>
     </>

@@ -1,7 +1,6 @@
 /**
  * Safe area + status bar (Safari iOS, Chrome Android, PWA).
- * Wzorzec jak panel.bekapaka.pl: viewport-fit=cover, black-translucent,
- * rozmyty header (::before na .site-header), tło safe area = --bg-app.
+ * viewport-fit=cover (layout.tsx), tło safe area = --bg-app.
  */
 
 :root {
@@ -27,13 +26,14 @@
   }
 }
 
-/* Dolny odstęp nad paskiem Safari — to samo tło co aplikacja (bez czarnej szczeliny) */
+/* Dolny odstęp nad paskiem Safari — to samo tło co aplikacja (bez jaśniejszego pasa) */
 .page-bottom-safe-spacer {
   display: block;
   min-height: calc(env(safe-area-inset-bottom, 0px) + 4.25rem);
   pointer-events: none;
   flex-shrink: 0;
-  background: var(--bg-app);
+  background-color: var(--bg-app);
+  background-image: none;
 }
 
 @media (min-width: 900px) {

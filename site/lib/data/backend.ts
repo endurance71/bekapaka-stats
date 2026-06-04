@@ -1,5 +1,5 @@
 import { backendPath, fetchJson, fetchJsonState } from './client'
-import { mapApiGameToSummary } from './map-game'
+import { mapApiGameToSummary, mapApiGameToSummarySafe } from './map-game'
 import {
   rosterPlayerSchema,
   teamStandingSchema,
@@ -366,16 +366,52 @@ export async function getRecentGamesState(limit = 100): Promise<DataState<GameSu
   }
 }
 
+function findFallbackGameById(id: string): GameSummary | null {
+  return fallbackGames.find((g) => g.id === id) ?? null
+}
+
 export async function getGameByIdState(id: string): Promise<DataState<GameSummary | null>> {
+  const fallbackMatch = findFallbackGameById(id)
+
   try {
     const game = await fetchJson<Record<string, unknown>>(backendPath(`/api/games/${encodeURIComponent(id)}`), {
       revalidate: 120
     })
     if (!game) {
+      if (fallbackMatch) {
+        return {
+          status: 'ok',
+          data: fallbackMatch,
+          source: 'fallback',
+          message: 'Backend niedostępny — wyświetlamy dane podstawowe meczu.'
+        }
+      }
       return { status: 'error', data: null, source: 'live', message: 'Mecz nie znaleziony.' }
     }
-    return { status: 'ok', data: mapApiGameToSummary(game), source: 'live' }
+
+    const mapped = mapApiGameToSummarySafe(game)
+    if (!mapped) {
+      if (fallbackMatch) {
+        return {
+          status: 'ok',
+          data: fallbackMatch,
+          source: 'fallback',
+          message: 'Nie udało się przetworzyć odpowiedzi API — dane podstawowe.'
+        }
+      }
+      return { status: 'error', data: null, source: 'live', message: 'Nieprawidłowe dane meczu z API.' }
+    }
+
+    return { status: 'ok', data: mapped, source: 'live' }
   } catch {
+    if (fallbackMatch) {
+      return {
+        status: 'ok',
+        data: fallbackMatch,
+        source: 'fallback',
+        message: 'Nie udało się pobrać szczegółów meczu z backendu.'
+      }
+    }
     return {
       status: 'error',
       data: null,
