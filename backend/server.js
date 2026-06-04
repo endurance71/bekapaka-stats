@@ -473,7 +473,9 @@ const scraperState = {
   step: 'idle',
   message: 'Gotowy',
   lastFinishedAt: null,
-  lastLog: ''
+  lastLog: '',
+  progressCurrent: 0,
+  progressTotal: 0
 };
 
 const updateScraperLog = (msg) => {
@@ -563,6 +565,8 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
   scraperState.lastLog = `[${new Date().toLocaleTimeString()}] System: Inicjalizacja...` + '\n';
   scraperState.step = 'inicjalizacja';
   scraperState.message = 'Uruchamianie scrapera...';
+  scraperState.progressCurrent = 0;
+  scraperState.progressTotal = 0;
 
   updateScraperLog('Rozpoczynanie pełnego importu danych...');
 
@@ -579,13 +583,30 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     });
 
     child.stdout.on('data', (data) => {
-      const text = data.toString().trim();
-      if (text) updateScraperLog(text);
+      const text = data.toString();
+      const lines = text.split('\n');
+      for (let line of lines) {
+        line = line.trim();
+        if (!line) continue;
+        const progressMatch = line.match(/^::PROGRESS::\s*(\d+)\/(\d+)/);
+        if (progressMatch) {
+          scraperState.progressCurrent = parseInt(progressMatch[1], 10);
+          scraperState.progressTotal = parseInt(progressMatch[2], 10);
+        } else {
+          updateScraperLog(line);
+        }
+      }
     });
 
     child.stderr.on('data', (data) => {
-      const text = data.toString().trim();
-      if (text) updateScraperLog(`STDERR: ${text}`);
+      const text = data.toString();
+      const lines = text.split('\n');
+      for (let line of lines) {
+        line = line.trim();
+        if (line) {
+          updateScraperLog(`STDERR: ${line}`);
+        }
+      }
     });
 
     await new Promise((resolve, reject) => {
@@ -637,6 +658,7 @@ async function runScrapeImportPipeline(triggerLabel = 'manual') {
     await syncPlayersFromKalk();
     await ensureDefaultAdminUser();
 
+    scraperState.progressCurrent = scraperState.progressTotal;
     scraperRunning = false;
     scraperState.running = false;
     scraperState.step = 'idle';
