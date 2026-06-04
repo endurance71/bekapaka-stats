@@ -68,6 +68,26 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                 const isAwayBkpk = match.guestTeam.toLowerCase().includes('bekapaka');
                 const isBkpkInvolved = isHomeBkpk || isAwayBkpk;
 
+                const getHomeScoreClass = () => {
+                    if (!match.isFinished) return "";
+                    if (isHomeBkpk) {
+                        if (match.scoreHome! === match.scoreAway!) return "text-bkpk-text-primary";
+                        return match.scoreHome! > match.scoreAway! ? "text-bkpk-success" : "text-bkpk-text-danger";
+                    }
+                    if (match.scoreHome! === match.scoreAway!) return "text-bkpk-text-primary";
+                    return match.scoreHome! > match.scoreAway! ? "text-bkpk-text-primary" : "text-bkpk-text-muted";
+                };
+
+                const getAwayScoreClass = () => {
+                    if (!match.isFinished) return "";
+                    if (isAwayBkpk) {
+                        if (match.scoreAway! === match.scoreHome!) return "text-bkpk-text-primary";
+                        return match.scoreAway! > match.scoreHome! ? "text-bkpk-success" : "text-bkpk-text-danger";
+                    }
+                    if (match.scoreAway! === match.scoreHome!) return "text-bkpk-text-primary";
+                    return match.scoreAway! > match.scoreHome! ? "text-bkpk-text-primary" : "text-bkpk-text-muted";
+                };
+
                 return (
                     <motion.div
                         key={match.id}
@@ -106,9 +126,9 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                 <div className="flex flex-col items-center gap-1 px-4 py-2 bg-bkpk-surface-tint-2 rounded-full border border-bkpk-border-strong">
                                     {match.isFinished ? (
                                         <div className="flex items-center gap-3">
-                                            <span className={cn("text-2xl font-black font-outfit", match.scoreHome! > match.scoreAway! ? "text-bkpk-text-primary" : "text-bkpk-text-muted")}>{match.scoreHome}</span>
+                                            <span className={cn("text-2xl font-black font-outfit", getHomeScoreClass())}>{match.scoreHome}</span>
                                             <span className="text-bkpk-text-muted font-bold">:</span>
-                                            <span className={cn("text-2xl font-black font-outfit", match.scoreAway! > match.scoreHome! ? "text-bkpk-text-primary" : "text-bkpk-text-muted")}>{match.scoreAway}</span>
+                                            <span className={cn("text-2xl font-black font-outfit", getAwayScoreClass())}>{match.scoreAway}</span>
                                         </div>
                                     ) : (
                                         <span className="text-xs font-black font-outfit text-bkpk-text-muted tracking-[0.3em] uppercase">VS</span>
@@ -166,7 +186,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                     {match.isFinished ? (
                                         <span className={cn(
                                             "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
-                                            match.scoreHome! > match.scoreAway! ? "text-bkpk-text-primary" : "text-bkpk-text-muted"
+                                            getHomeScoreClass()
                                         )}>
                                             {match.scoreHome}
                                         </span>
@@ -187,7 +207,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                     {match.isFinished ? (
                                         <span className={cn(
                                             "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
-                                            match.scoreAway! > match.scoreHome! ? "text-bkpk-text-primary" : "text-bkpk-text-muted"
+                                            getAwayScoreClass()
                                         )}>
                                             {match.scoreAway}
                                         </span>
