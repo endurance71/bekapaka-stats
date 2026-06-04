@@ -107,7 +107,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 className={`bg-bkpk-surface w-full ${maxWidth} flex flex-col outline-none overscroll-contain animate-in slide-in-from-bottom-5 duration-300 max-sm:absolute max-sm:inset-0 max-sm:h-[var(--overlay-vh)] max-sm:min-h-[var(--overlay-vh)] max-sm:max-h-[var(--overlay-vh)] max-sm:border-0 max-sm:rounded-none max-sm:shadow-none sm:max-h-[min(85dvh,calc(var(--overlay-vh,100dvh)-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))] sm:rounded-xl sm:border sm:border-bkpk-border-strong sm:shadow-2xl`}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex justify-between items-center gap-3 border-b border-bkpk-border-strong bg-bkpk-surface/95 shrink-0 px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:p-6">
+                <div className="flex justify-between items-center gap-3 border-b border-bkpk-border-strong bg-bkpk-surface/95 shrink-0 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:p-6">
                     <h2 id={titleId} className="min-w-0 text-lg sm:text-xl font-bold text-bkpk-text-primary font-outfit leading-tight">{title}</h2>
                     <button
                         type="button"
