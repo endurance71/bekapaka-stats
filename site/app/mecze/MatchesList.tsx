@@ -166,6 +166,7 @@ export function MatchesList({ games }: MatchesListProps) {
         isOpen={isOpen}
         onClose={handleCloseDrawer}
         title='Szczegóły meczu'
+        size='wide'
         headerMeta={
           selectedGame ? (
             <MetaWithIcons>
