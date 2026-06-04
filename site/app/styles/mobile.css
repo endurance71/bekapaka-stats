@@ -70,26 +70,21 @@
   /* Pełny ekran — Safari: --overlay-vh (JS) + svh fallback; przezroczysty chrome u góry */
   .stats-drawer.is-open {
     position: fixed;
-    top: var(--overlay-vt, 0px);
+    top: 0;
     right: 0;
-    bottom: auto;
+    bottom: 0;
     left: 0;
     width: 100%;
-    height: var(--overlay-vh);
-    min-height: var(--overlay-vh);
-    max-height: var(--overlay-vh);
     background: var(--bg-app);
   }
 
   .stats-drawer.is-open .stats-drawer__backdrop {
-    position: fixed;
-    top: var(--overlay-vt, 0px);
+    position: absolute;
+    top: 0;
     right: 0;
+    bottom: 0;
     left: 0;
     width: 100%;
-    height: var(--overlay-vh);
-    min-height: var(--overlay-vh);
-    max-height: var(--overlay-vh);
     background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -97,7 +92,7 @@
   }
 
   .stats-drawer.is-open .stats-drawer__panel {
-    position: fixed;
+    position: absolute;
     top: var(--overlay-vt, 0px);
     right: 0;
     bottom: auto;
@@ -106,7 +101,6 @@
     flex-direction: column;
     width: 100%;
     height: var(--overlay-vh);
-    min-height: 100dvh;
     min-height: var(--overlay-vh);
     max-height: var(--overlay-vh);
     padding: 0;
@@ -191,18 +185,22 @@
     border-radius: var(--radius-sm);
   }
 
-  /* Karta zawodnika — pierwsza kolumna (przeciwnik) przy poziomym scrollu */
-  .drawer-section-v2--game-log .table-shell-v2 {
+  /* Karta zawodnika i Szczegóły meczu — pierwsza kolumna (przeciwnik/zawodnik) przy poziomym scrollu */
+  .drawer-section-v2--game-log .table-shell-v2,
+  .drawer-match-section .table-shell-v2 {
     overflow-x: auto;
     overscroll-behavior-x: contain;
   }
 
-  .drawer-section-v2--game-log .data-table-v2 {
+  .drawer-section-v2--game-log .data-table-v2,
+  .drawer-match-section .data-table-v2 {
     min-width: max-content;
   }
 
   .drawer-section-v2--game-log .data-table-v2 th:first-child,
-  .drawer-section-v2--game-log .data-table-v2 td:first-child {
+  .drawer-section-v2--game-log .data-table-v2 td:first-child,
+  .drawer-match-section .data-table-v2 th:first-child,
+  .drawer-match-section .data-table-v2 td:first-child {
     position: sticky;
     left: 0;
     z-index: 2;
@@ -213,12 +211,14 @@
     box-shadow: 6px 0 14px -6px rgba(0, 0, 0, 0.55);
   }
 
-  .drawer-section-v2--game-log .data-table-v2 thead th:first-child {
+  .drawer-section-v2--game-log .data-table-v2 thead th:first-child,
+  .drawer-match-section .data-table-v2 thead th:first-child {
     z-index: 3;
     background: var(--bg-elevated);
   }
 
-  .drawer-section-v2--game-log .data-table-v2 tbody tr:hover td:first-child {
+  .drawer-section-v2--game-log .data-table-v2 tbody tr:hover td:first-child,
+  .drawer-match-section .data-table-v2 tbody tr:hover td:first-child {
     background: var(--bg-elevated);
   }
 
