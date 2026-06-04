@@ -107,7 +107,10 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
           fontSize: '1.4rem',
           margin: '0 0 12px',
           letterSpacing: '0.02em',
-          color: '#fff'
+          color: '#fff',
+          width: '100%',
+          overflowWrap: 'break-word',
+          wordBreak: 'break-word'
         }}
       >
         {sponsor.name}

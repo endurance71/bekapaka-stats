@@ -1,24 +1,43 @@
 import { SITE_TIMEZONE } from './timezone'
 
+/** Składa datę z części Intl — unika różnic SSR/CSR (np. „,” vs „o” w pl-PL). */
+function pickPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
+  return parts.find((part) => part.type === type)?.value ?? ''
+}
+
+function formatPlParts(date: Date, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormatPart[] {
+  return new Intl.DateTimeFormat('pl-PL', { ...options, timeZone: SITE_TIMEZONE }).formatToParts(date)
+}
+
 export function formatDateTime(value?: string): string {
   if (!value) return 'Nieznana data'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Nieznana data'
-  return new Intl.DateTimeFormat('pl-PL', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: SITE_TIMEZONE
-  }).format(date)
+
+  const parts = formatPlParts(date, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+
+  return `${pickPart(parts, 'day')} ${pickPart(parts, 'month')} ${pickPart(parts, 'year')} o ${pickPart(parts, 'hour')}:${pickPart(parts, 'minute')}`
 }
 
 export function formatDate(value?: string): string {
   if (!value) return 'Nieznana data'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Nieznana data'
-  return new Intl.DateTimeFormat('pl-PL', {
-    dateStyle: 'medium',
-    timeZone: SITE_TIMEZONE
-  }).format(date)
+
+  const parts = formatPlParts(date, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+
+  return `${pickPart(parts, 'day')} ${pickPart(parts, 'month')} ${pickPart(parts, 'year')}`
 }
 
 export function formatStat(value?: number | null, digits = 1): string {

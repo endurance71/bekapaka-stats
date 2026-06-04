@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
-import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay'
+import { ClubLogo } from '../shared/ClubLogo'
 import { CloseIcon } from '../shared/PublicIcons'
 import { MainNav } from './MainNav'
 
@@ -29,16 +29,40 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   const [isVisible, setIsVisible] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
+  const scrollYRef = useRef(0)
   const isClosingRef = useRef(false)
   const closeCleanupRef = useRef<(() => void) | null>(null)
 
-  useOverlayViewportHeight(isMounted)
-  usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' })
+  const lockPageScroll = useCallback(() => {
+    if (typeof window === 'undefined') return
+
+    scrollYRef.current = window.scrollY
+    const root = document.documentElement
+    const body = document.body
+
+    root.classList.add('is-scroll-locked', 'is-overlay-open')
+    body.classList.add('is-scroll-locked')
+    body.style.top = `-${scrollYRef.current}px`
+  }, [])
+
+  const unlockPageScroll = useCallback(() => {
+    if (typeof window === 'undefined') return
+
+    const root = document.documentElement
+    const body = document.body
+    const scrollY = scrollYRef.current
+
+    root.classList.remove('is-scroll-locked')
+    body.classList.remove('is-scroll-locked')
+    body.style.top = ''
+    window.scrollTo(0, scrollY)
+  }, [])
 
   const finishUnmount = useCallback(() => {
     closeCleanupRef.current?.()
     closeCleanupRef.current = null
     isClosingRef.current = false
+    document.documentElement.classList.remove('is-overlay-open')
     setIsMounted(false)
     setIsVisible(false)
   }, [])
@@ -49,11 +73,9 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
 
     closeCleanupRef.current?.()
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsVisible(false)
-      })
-    })
+    /* Strona wraca od razu pod przezroczystym overlay — bez szarego flasha przy zdejmowaniu menu */
+    unlockPageScroll()
+    setIsVisible(false)
 
     const panel = panelRef.current
     let completed = false
@@ -78,15 +100,23 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
       panel?.removeEventListener('transitionend', handleTransitionEnd)
       window.clearTimeout(fallbackId)
     }
-  }, [finishUnmount])
+  }, [finishUnmount, unlockPageScroll])
 
   const handleRequestClose = useCallback(() => {
     if (!isMounted || isClosingRef.current) return
+    onClose()
     startCloseAnimation()
-    window.setTimeout(() => {
-      onClose()
-    }, MENU_ANIMATION_MS)
   }, [isMounted, onClose, startCloseAnimation])
+
+  useEffect(() => {
+    if (!isMounted) return
+    lockPageScroll()
+
+    return () => {
+      unlockPageScroll()
+      document.documentElement.classList.remove('is-overlay-open')
+    }
+  }, [isMounted, lockPageScroll, unlockPageScroll])
 
   useEffect(() => {
     if (!isOpen) return
@@ -187,18 +217,16 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
           </button>
 
           <div className='mobile-fullscreen-menu__title'>
-            <div className='mobile-fullscreen-menu__brand'>BeKaPaKa</div>
-            <div className='mobile-fullscreen-menu__subtitle'>Nawigacja</div>
+            <Link
+              href='/'
+              className='site-header__mobile-brand'
+              onClick={handleRequestClose}
+            >
+              BeKaPaKa
+            </Link>
           </div>
 
-          <Link
-            href='/'
-            onClick={handleRequestClose}
-            className='mobile-fullscreen-menu__logo'
-            aria-label='Strona glowna BeKaPaKa Bobolice'
-          >
-            <img src={logoUrl} alt='' />
-          </Link>
+          <ClubLogo logoUrl={logoUrl} onNavigate={handleRequestClose} />
         </header>
 
         <nav className='mobile-fullscreen-menu__nav' aria-label='Sekcje strony'>
