@@ -1,19 +1,24 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay'
 import { CloseIcon } from './PublicIcons'
 
+const DRAWER_TRANSITION_MS = 320
+
 export function SlideoutPanel({
   isOpen,
   title,
+  headerMeta,
   onClose,
   children,
   size = 'default'
 }: {
   isOpen: boolean
   title: string
+  /** Meta pod tytułem w nagłówku panelu (np. data i miejsce meczu). */
+  headerMeta?: React.ReactNode
   onClose: () => void
   children: React.ReactNode
   /** `wide` — szerszy panel na desktop (np. tabela historii występów w składzie) */
@@ -24,11 +29,65 @@ export function SlideoutPanel({
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
-  useOverlayViewportHeight(isOpen)
-  usePageScrollLock(isOpen, { htmlClass: 'is-overlay-open' })
+  /** Panel w DOM (także podczas animacji zamykania). */
+  const [isPresent, setIsPresent] = useState(false)
+  /** Klasa `.is-open` — osobno, żeby odtworzyć wejście od dołu. */
+  const [isShown, setIsShown] = useState(false)
+
+  const overlayActive = isOpen || isPresent
+
+  useOverlayViewportHeight(overlayActive)
+  usePageScrollLock(overlayActive, { htmlClass: 'is-overlay-open' })
+
+  useLayoutEffect(() => {
+    if (isOpen) {
+      setIsPresent(true)
+      setIsShown(false)
+      return
+    }
+    setIsShown(false)
+  }, [isOpen])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen || !isPresent) return
+
+    const frame = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsShown(true))
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [isOpen, isPresent])
+
+  useEffect(() => {
+    if (isOpen || !isPresent) return
+
+    const panel = panelRef.current
+    let done = false
+
+    const finish = () => {
+      if (done) return
+      done = true
+      setIsPresent(false)
+    }
+
+    const timeoutId = window.setTimeout(finish, DRAWER_TRANSITION_MS + 80)
+
+    const handleTransitionEnd = (event: TransitionEvent) => {
+      if (event.target !== panel) return
+      if (event.propertyName !== 'transform') return
+      window.clearTimeout(timeoutId)
+      finish()
+    }
+
+    panel?.addEventListener('transitionend', handleTransitionEnd)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+      panel?.removeEventListener('transitionend', handleTransitionEnd)
+    }
+  }, [isOpen, isPresent])
+
+  useEffect(() => {
+    if (!isShown) return
 
     previousFocusRef.current = document.activeElement as HTMLElement
 
@@ -46,10 +105,10 @@ export function SlideoutPanel({
       }
       previousFocusRef.current = null
     }
-  }, [isOpen])
+  }, [isShown])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isShown) return
 
     const frame = requestAnimationFrame(() => {
       const panel = panelRef.current
@@ -65,10 +124,10 @@ export function SlideoutPanel({
     })
 
     return () => cancelAnimationFrame(frame)
-  }, [isOpen])
+  }, [isShown])
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isShown) return
 
     const handleTab = (event: KeyboardEvent) => {
       if (event.key !== 'Tab' || !panelRef.current) return
@@ -92,21 +151,21 @@ export function SlideoutPanel({
 
     document.addEventListener('keydown', handleTab)
     return () => document.removeEventListener('keydown', handleTab)
-  }, [isOpen])
+  }, [isShown])
 
-  if (typeof document === 'undefined') return null
+  if (typeof document === 'undefined' || !isPresent) return null
 
   return createPortal(
     <div
-      className={`stats-drawer ${size === 'wide' ? 'stats-drawer--wide' : ''} ${isOpen ? 'is-open' : ''}`}
-      aria-hidden={!isOpen}
+      className={`stats-drawer ${size === 'wide' ? 'stats-drawer--wide' : ''} ${isShown ? 'is-open' : ''}`}
+      aria-hidden={!isShown}
     >
       <button
         type="button"
         className="stats-drawer__backdrop"
         onClick={() => onCloseRef.current()}
         aria-label="Zamknij panel"
-        tabIndex={isOpen ? 0 : -1}
+        tabIndex={isShown ? 0 : -1}
       />
       <div
         className="stats-drawer__panel"
@@ -117,6 +176,10 @@ export function SlideoutPanel({
         ref={panelRef}
       >
         <div className="stats-drawer__panel-header">
+          <div className="stats-drawer__header-main">
+            <h2 className="stats-drawer__title">{title}</h2>
+            {headerMeta ? <div className="stats-drawer__header-meta">{headerMeta}</div> : null}
+          </div>
           <button
             className="stats-drawer__close"
             onClick={() => onCloseRef.current()}

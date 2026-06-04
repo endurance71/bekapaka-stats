@@ -1,1 +1,49 @@
-/* Listing-specific overrides — keep minimal; core in components.css */
+/* Listing-specific layout — mobile: karta listy rozciąga się w dół */
+
+@media (max-width: 899px) {
+  #content:has(.listing-page) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .listing-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    flex: 1;
+    width: 100%;
+    min-height: calc(
+      100svh - 10rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  .listing-page__hero,
+  .listing-page > .data-state-notice {
+    flex-shrink: 0;
+  }
+
+  .listing-page__body:not(:has(.news-grid)) {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .listing-page__body:not(:has(.news-grid)) > .listing-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+
+@supports (height: 100dvh) {
+  @media (max-width: 899px) {
+    .listing-page {
+      min-height: calc(
+        100dvh - 10rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+      );
+    }
+  }
+}

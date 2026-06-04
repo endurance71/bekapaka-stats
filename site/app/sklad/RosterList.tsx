@@ -94,7 +94,7 @@ export function RosterList({ roster }: RosterListProps) {
       </div>
 
       <SlideoutPanel isOpen={isOpen} onClose={handleCloseDrawer} title='Karta zawodnika' size='wide'>
-        {selectedPlayer && (
+        {selectedPlayer ? (
           <div className='drawer-profile-panel'>
             {/* Profile Header */}
             <div className='profile-header'>
@@ -270,7 +270,7 @@ export function RosterList({ roster }: RosterListProps) {
               </div>
             )}
           </div>
-        )}
+        ) : null}
       </SlideoutPanel>
     </>
   )

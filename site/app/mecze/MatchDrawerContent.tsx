@@ -1,13 +1,5 @@
 import type { GameSummary } from '../../lib/data'
-import { formatDateTime } from '../../lib/format'
-import { formatVenue } from '../../lib/venue'
-import {
-  CalendarIcon,
-  IconLabel,
-  MapPinIcon,
-  MetaWithIcons,
-  VideoIcon,
-} from '../../components/public/shared/PublicIcons'
+import { VideoIcon } from '../../components/public/shared/PublicIcons'
 
 function getTeamsFromGame(game: GameSummary) {
   const teams = game.teams || game.data?.teams
@@ -25,10 +17,9 @@ function getTeamsFromGame(game: GameSummary) {
 interface MatchDrawerContentProps {
   game: GameSummary
   loading?: boolean
-  loadError?: string | null
 }
 
-export function MatchDrawerContent({ game, loading = false, loadError = null }: MatchDrawerContentProps) {
+export function MatchDrawerContent({ game, loading = false }: MatchDrawerContentProps) {
   const isWin = (game.scoreUs || 0) > (game.scoreThem || 0)
   const teams = getTeamsFromGame(game)
 
@@ -66,18 +57,7 @@ export function MatchDrawerContent({ game, loading = false, loadError = null }: 
 
   return (
     <div className='drawer-stack-v2'>
-      {/* Scoreboard Header */}
       <div className='drawer-match-header'>
-        <p className='drawer-match-meta'>
-          <MetaWithIcons>
-            <IconLabel icon={<CalendarIcon size={14} />}>{formatDateTime(game.date)}</IconLabel>
-            <span className='meta-with-icons__sep' aria-hidden>
-              ·
-            </span>
-            <IconLabel icon={<MapPinIcon size={14} />}>{formatVenue(game.data?.venue)}</IconLabel>
-          </MetaWithIcons>
-        </p>
-        
         <div className='drawer-match-scoreboard'>
           <div className='scoreboard-team'>
             <span className='scoreboard-team-name'>BeKaPaKa</span>
@@ -102,12 +82,6 @@ export function MatchDrawerContent({ game, loading = false, loadError = null }: 
       {loading ? (
         <p className='drawer-match-loading muted' role='status'>
           Ładowanie statystyk meczu…
-        </p>
-      ) : null}
-
-      {loadError ? (
-        <p className='drawer-match-loading muted' role='status'>
-          {loadError}
         </p>
       ) : null}
 
@@ -219,7 +193,7 @@ export function MatchDrawerContent({ game, loading = false, loadError = null }: 
         </section>
       ) : null}
 
-      {!loading && !loadError && !quarters?.length && players.length === 0 && availableStats.length === 0 ? (
+      {!loading && !quarters?.length && players.length === 0 && availableStats.length === 0 ? (
         <p className='drawer-match-loading muted'>
           Brak szczegółowych statystyk dla tego meczu. Uruchom pełny sync KALK w panelu administracyjnym.
         </p>

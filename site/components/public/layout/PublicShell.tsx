@@ -33,7 +33,7 @@ export function PublicShell({
   }, [isMenuOpen])
 
   return (
-    <>
+    <div className='site-shell'>
       <a href='#content' className='skip-link'>
         Przejdz do tresci
       </a>
@@ -75,6 +75,6 @@ export function PublicShell({
       </main>
       <SiteFooter />
       <div className='page-bottom-safe-spacer' aria-hidden='true' />
-    </>
+    </div>
   )
 }
