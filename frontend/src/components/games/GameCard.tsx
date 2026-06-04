@@ -57,9 +57,17 @@ export default function GameCard({ game }: GameCardProps) {
 
                 {isPlayed ? (
                     <div className="flex items-center gap-2 text-3xl font-bold my-2 font-outfit">
-                        <span className="text-bkpk-text-primary">{game.scoreUs}</span>
+                        <span className={clsx(
+                            game.result === 'W' && "text-bkpk-success",
+                            game.result === 'L' && "text-bkpk-text-danger",
+                            !game.result && "text-bkpk-text-primary"
+                        )}>{game.scoreUs}</span>
                         <span className="text-bkpk-text-muted text-xl">-</span>
-                        <span className="text-bkpk-text-secondary">{game.scoreThem}</span>
+                        <span className={clsx(
+                            game.result === 'W' && "text-bkpk-text-muted",
+                            game.result === 'L' && "text-bkpk-text-primary",
+                            !game.result && "text-bkpk-text-secondary"
+                        )}>{game.scoreThem}</span>
                     </div>
                 ) : (
                     <div className="flex flex-col gap-1 my-2">

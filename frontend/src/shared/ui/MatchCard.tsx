@@ -76,9 +76,23 @@ export default function MatchCard({
                     {isPlayed ? (
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center">
-                                <span className="text-2xl md:text-3xl font-bold font-outfit text-bkpk-text-primary">
-                                    {scoreUs} : {scoreThem}
-                                </span>
+                                <div className="text-2xl md:text-3xl font-black font-outfit flex items-center gap-1.5">
+                                    <span className={cn(
+                                        result === 'W' && "text-bkpk-success",
+                                        result === 'L' && "text-bkpk-text-danger",
+                                        !result && "text-bkpk-text-primary"
+                                    )}>
+                                        {scoreUs}
+                                    </span>
+                                    <span className="text-bkpk-text-muted font-bold">:</span>
+                                    <span className={cn(
+                                        result === 'W' && "text-bkpk-text-muted",
+                                        result === 'L' && "text-bkpk-text-primary",
+                                        !result && "text-bkpk-text-primary"
+                                    )}>
+                                        {scoreThem}
+                                    </span>
+                                </div>
                                 {mvp && (
                                     <div className="flex items-center gap-1 mt-1 text-xs text-bkpk-warning font-bold uppercase">
                                         <Trophy className="w-3 h-3" />
