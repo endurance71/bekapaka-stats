@@ -618,13 +618,13 @@
   }
 
   .next-event-glass-dock {
-    display: block;
-    height: var(--event-glass-height);
+    display: none;
   }
 
   .next-event-hero {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) var(--event-glass-height);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     flex: 1 1 auto;
     width: 100%;
     min-height: 18.5rem;
@@ -632,9 +632,10 @@
   }
 
   .next-event-hero__top {
+    flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
-    padding: var(--space-4) var(--space-4) var(--space-2);
+    padding: var(--space-4) var(--space-4) var(--space-3);
     gap: var(--space-2);
     display: flex;
     flex-direction: column;
@@ -672,14 +673,18 @@
   }
 
   .next-event-hero__lower {
+    flex: 0 0 auto;
     min-height: 0;
-    padding: var(--space-3) var(--space-4) var(--space-3);
+    padding: var(--space-4) var(--space-4) var(--space-4);
     gap: var(--space-3);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     overflow: hidden;
-    background: transparent;
+    background: rgba(16, 16, 18, 0.6);
+    backdrop-filter: blur(var(--event-glass-blur));
+    -webkit-backdrop-filter: blur(var(--event-glass-blur));
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
     box-sizing: border-box;
   }
 
@@ -701,6 +706,10 @@
 
   .next-event-hero__meta-item {
     min-width: 0;
+  }
+
+  .next-event-hero__meta-item:last-child {
+    text-align: right;
   }
 
   .next-event-hero__meta-item strong {
