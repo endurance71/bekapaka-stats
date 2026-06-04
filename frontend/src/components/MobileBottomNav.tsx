@@ -21,7 +21,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className='fixed bottom-0 left-0 right-0 z-50 flex justify-around items-stretch bg-bkpk-bg/95 backdrop-blur-md border-t border-bkpk-border-subtle pb-[env(safe-area-inset-bottom,0px)] md:hidden'
+      className='fixed bottom-0 left-0 right-0 z-50 flex justify-around items-stretch bg-bkpk-bg/95 backdrop-blur-md border-t border-bkpk-border-subtle md:hidden'
       aria-label='Nawigacja dolna'
     >
       {tabLinks.map((link) => {
