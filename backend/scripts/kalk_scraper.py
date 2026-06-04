@@ -106,8 +106,45 @@ def parse_number(value: Optional[str]) -> Optional[float]:
     return round(parsed, 2)
 
 
+# --- ZMIENNE DO ŚLEDZENIA POSTĘPU ---
+CURRENT_REQUESTS = 0
+ESTIMATED_ROUNDS = 15
+ESTIMATED_CATEGORIES = 5
+ESTIMATED_TEAMS = 10
+ESTIMATED_MATCHES = 80
+ESTIMATED_OUR_PLAYERS = 12
+
+actual_rounds_count = None
+actual_categories_count = None
+actual_teams_count = None
+actual_matches_count = None
+actual_our_players_count = None
+
+
+def get_total_requests() -> int:
+    total = 1  # division page
+    total += 1  # table
+    total += 1  # playout table
+    total += 1  # schedule index
+    total += (actual_rounds_count if actual_rounds_count is not None else ESTIMATED_ROUNDS)
+    total += 1  # team schedule
+    total += 1  # stats index
+    total += (actual_categories_count if actual_categories_count is not None else ESTIMATED_CATEGORIES)
+    total += 1  # druzyny index
+    total += (actual_teams_count if actual_teams_count is not None else ESTIMATED_TEAMS)
+    total += 1  # violations
+    total += (actual_matches_count if actual_matches_count is not None else ESTIMATED_MATCHES)
+    total += (actual_our_players_count if actual_our_players_count is not None else ESTIMATED_OUR_PLAYERS)
+    return total
+
+
 def fetch_soup(session: requests.Session, url: str) -> BeautifulSoup:
     """Pobierz stronę przez Scrapling (z fallbackiem) i zwróć BeautifulSoup."""
+    global CURRENT_REQUESTS
+    CURRENT_REQUESTS += 1
+    total = get_total_requests()
+    print(f"::PROGRESS:: {CURRENT_REQUESTS}/{total}", flush=True)
+
     logging.info('Pobieram %s', url)
     time.sleep(RATE_LIMIT_SECONDS)
     text = None
@@ -406,6 +443,8 @@ def main() -> None:
                     round_links.add(full_link)
             
             logging.info(f"Znaleziono {len(round_links)} kolejek w terminarzu.")
+            global actual_rounds_count
+            actual_rounds_count = len(round_links)
 
             # 2. Odwiedź każdą kolejkę i pobierz mecze
             # Sortuj linki, aby pobierać w kolejności (opcjonalne, ale ładniej w logach)
@@ -571,6 +610,8 @@ def main() -> None:
             
             # Dynamiczne pobieranie dodatkowych kategorii
             cat_urls = discover_stat_category_urls(stats_soup, BASE_URL)
+            global actual_categories_count
+            actual_categories_count = len(cat_urls)
             stat_category_keys = list(cat_urls.keys())
             logging.info('Znalezione kategorie statystyk: %s', stat_category_keys)
 
@@ -608,6 +649,8 @@ def main() -> None:
         druzyny_url = section_urls.get('druzyny') or urljoin(BASE_URL, 'poddzial,druzyny,31.html')
         druzyny_soup = fetch_soup(session, druzyny_url)
         teams_index = extract_teams_index(druzyny_soup, BASE_URL)
+        global actual_teams_count
+        actual_teams_count = len(teams_index)
         logging.info('Indeks drużyn: %d', len(teams_index))
         for team in teams_index:
             try:
@@ -637,6 +680,9 @@ def main() -> None:
         m for m in schedule_matches
         if m.get('isFinished') and m.get('meczUrl')
     ]
+    unique_matches_count = len(set(m.get('meczId') for m in finished_with_url if m.get('meczId')))
+    global actual_matches_count
+    actual_matches_count = unique_matches_count
     logging.info('Pobieram box score dla %d zakończonych meczów...', len(finished_with_url))
     for m in finished_with_url:
         mid = m.get('meczId')
@@ -658,6 +704,8 @@ def main() -> None:
     # --- LOGI MECZOWE KADRY BeKaPaKa (tab 3) ---
     player_game_logs: List[Dict[str, any]] = []
     our_players = [p for p in players_list if is_our_team(p.get('druzyna'))]
+    global actual_our_players_count
+    actual_our_players_count = len(our_players)
     logging.info('Log meczowy: %d zawodników BeKaPaKa', len(our_players))
     for p in our_players:
         profile_url = p.get('profile_url')

@@ -21,6 +21,8 @@ type ScraperStatus = {
     message: string;
     lastFinishedAt: string | null;
     lastLog?: string;
+    progressCurrent?: number;
+    progressTotal?: number;
 };
 
 type KalkMissingMatch = {
@@ -51,7 +53,9 @@ export default function Administration() {
         step: 'idle',
         message: '',
         lastFinishedAt: null,
-        lastLog: ''
+        lastLog: '',
+        progressCurrent: 0,
+        progressTotal: 0
     });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [kalkSummary, setKalkSummary] = useState<KalkIngestSummary | null>(null);
@@ -90,6 +94,9 @@ export default function Administration() {
             console.error(error);
         }
     };
+    const current = scraperStatus.progressCurrent || 0;
+    const total = scraperStatus.progressTotal || 0;
+    const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
 
     return (
         <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
@@ -204,6 +211,21 @@ export default function Administration() {
                             Pokaż ostatnie logi
                         </BkpkButton>
                     </div>
+
+                    {scraperStatus.running && total > 0 && (
+                        <div className="space-y-2 mt-4">
+                            <div className="flex justify-between text-xs font-bold text-bkpk-text-muted uppercase">
+                                <span>Postęp pobierania stron</span>
+                                <span className="text-bkpk-primary">{percentage}% ({current} / {total})</span>
+                            </div>
+                            <div className="w-full bg-bkpk-surface-tint-2 rounded-full h-2.5 border border-bkpk-border-subtle overflow-hidden">
+                                <div 
+                                    className="bg-bkpk-primary h-full rounded-full transition-all duration-300 shadow-bkpk-glow" 
+                                    style={{ width: `${percentage}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
 
                     {scraperStatus.running && (
                         <div className="mt-8 p-6 bg-bkpk-overlay-medium rounded-2xl border border-bkpk-border-strong space-y-2 font-mono text-xs">
