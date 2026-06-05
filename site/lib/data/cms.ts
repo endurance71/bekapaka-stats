@@ -140,21 +140,24 @@ const fallbackSponsors: SponsorItem[] = [
     name: 'Gmina Bobolice',
     slug: 'gmina-bobolice',
     websiteUrl: 'https://bobolice.pl',
-    order: 1
+    order: 1,
+    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/23/POL_Bobolice_COA.svg'
   },
   {
     id: 'fs-2',
     name: 'Majster Plus Koszalin',
     slug: 'majster-plus-koszalin',
     websiteUrl: 'https://majsterplus.pl',
-    order: 2
+    order: 2,
+    logoUrl: '/images/majster-plus.jpg'
   },
   {
     id: 'fs-3',
     name: 'Fem-Tech Tychowo',
     slug: 'fem-tech-tychowo',
     websiteUrl: '',
-    order: 3
+    order: 3,
+    logoUrl: '/images/fem-tech.jpg'
   },
   {
     id: 'fs-4',
@@ -224,7 +227,8 @@ const fallbackSponsors: SponsorItem[] = [
     name: 'Baumal e-hurtowniabudowlana.pl',
     slug: 'baumal',
     websiteUrl: 'https://e-hurtowniabudowlana.pl',
-    order: 13
+    order: 13,
+    logoUrl: '/images/baumal.jpg'
   },
   {
     id: 'fs-14',
