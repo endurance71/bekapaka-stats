@@ -84,18 +84,63 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
     );
 }
 
+export type RatingLeagueTier = 'weak' | 'average' | 'elite';
+
+export interface TeamRatingLeagueBenchmark {
+    offRating: number;
+    defRating: number;
+    netRating: number;
+}
+
 export interface RatingCardProps {
     offRating: number;
     defRating: number;
+    league?: TeamRatingLeagueBenchmark | null;
+    tiers?: { off: RatingLeagueTier; def: RatingLeagueTier; net: RatingLeagueTier } | null;
 }
 
-export function RatingCard({ offRating, defRating }: RatingCardProps) {
+const RATING_LEAGUE_SPREAD = 12;
+
+function ratingLeagueDelta(
+    teamVal: number,
+    leagueVal: number,
+    higherIsBetter: boolean
+): number {
+    return higherIsBetter ? teamVal - leagueVal : leagueVal - teamVal;
+}
+
+function ratingBarPercent(delta: number): number {
+    return Math.min(100, Math.max(5, 50 + (delta / (RATING_LEAGUE_SPREAD / 2)) * 50));
+}
+
+const TIER_LABELS: Record<RatingLeagueTier, string> = {
+    weak: 'Słabo',
+    average: 'Średnio',
+    elite: 'Elita'
+};
+
+export function RatingCard({ offRating, defRating, league, tiers }: RatingCardProps) {
     const [mode, setMode] = useState<'OFF' | 'DEF' | 'NET'>('NET');
+    const netRating = offRating - defRating;
 
     const getValue = () => {
         if (mode === 'OFF') return offRating;
         if (mode === 'DEF') return defRating;
-        return offRating - defRating; // NET
+        return netRating;
+    };
+
+    const getLeagueValue = () => {
+        if (!league) return null;
+        if (mode === 'OFF') return league.offRating;
+        if (mode === 'DEF') return league.defRating;
+        return league.netRating;
+    };
+
+    const getTier = (): RatingLeagueTier | null => {
+        if (!tiers) return null;
+        if (mode === 'OFF') return tiers.off;
+        if (mode === 'DEF') return tiers.def;
+        return tiers.net;
     };
 
     const getLabel = () => {
@@ -105,6 +150,14 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
     };
 
     const value = getValue();
+    const leagueValue = getLeagueValue();
+    const tier = getTier();
+    const higherIsBetter = mode !== 'DEF';
+    const leagueDelta = leagueValue != null
+        ? ratingLeagueDelta(value, leagueValue, higherIsBetter)
+        : null;
+    const barWidth = leagueDelta != null ? ratingBarPercent(leagueDelta) : Math.min(Math.max(Math.abs(value) * 5, 10), 100);
+    const barPositive = leagueDelta != null ? leagueDelta >= 0 : value >= 0;
 
     return (
         <BkpkCard variant="glass" overflowVisible className="h-full relative group">
@@ -114,9 +167,9 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
                         <div className="flex items-center gap-1.5 mb-1">
                             <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">{getLabel()}</span>
                             <BkpkTooltip content={
-                                mode === 'OFF' ? "Punkty na 100 posiadań. Pokazuje realną jakość ataku, niezależnie od tempa meczu." :
-                                    mode === 'DEF' ? "Punkty stracone na 100 posiadań. Im niższy, tym skuteczniej ograniczacie rywali." :
-                                        "Ogólna różnica między atakiem a obroną. Dodatni wynik oznacza statystyczną dominację nad rywalami."
+                                mode === 'OFF' ? "Punkty na 100 posiadań. Porównanie ze średnią dywizji z box score'ów KALK." :
+                                    mode === 'DEF' ? "Punkty stracone na 100 posiadań. Im niższy od średniej ligi, tym lepsza obrona." :
+                                        "Różnica ORtg − DefRtg. Dodatnia wartość powyżej średniej ligi oznacza przewagę nad rywalami."
                             } />
                         </div>
                         <div className="flex items-baseline gap-2 mt-1">
@@ -128,9 +181,14 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary"
                                 >
-                                    {value > 0 ? `+${formatStatFixed(value)}` : formatStatFixed(value)}
+                                    {mode === 'NET' && value > 0 ? `+${formatStatFixed(value)}` : formatStatFixed(value)}
                                 </motion.h2>
                             </AnimatePresence>
+                            {leagueValue != null && (
+                                <span className="text-xs font-bold text-bkpk-text-muted uppercase tracking-tighter">
+                                    Liga {mode === 'NET' && leagueValue > 0 ? `+${formatStatFixed(leagueValue)}` : formatStatFixed(leagueValue)}
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -153,25 +211,51 @@ export function RatingCard({ offRating, defRating }: RatingCardProps) {
                 </div>
 
                 <div className="mt-6">
-                    <div className="w-full h-1.5 bg-bkpk-surface-tint-2 rounded-full overflow-hidden">
+                    <div className="relative w-full h-1.5 bg-bkpk-surface-tint-2 rounded-full overflow-hidden">
+                        {leagueDelta != null && (
+                            <div
+                                className="absolute top-0 bottom-0 w-0.5 bg-bkpk-text-muted/50 z-10"
+                                style={{ left: '50%' }}
+                                aria-hidden
+                            />
+                        )}
                         <motion.div
                             className={clsx(
                                 "h-full rounded-full",
-                                value >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger"
+                                barPositive ? "bg-bkpk-success" : "bg-bkpk-danger"
                             )}
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(Math.max(Math.abs(value) * 5, 10), 100)}%` }} // Simple visualization
+                            animate={{ width: `${barWidth}%` }}
                             transition={{ type: "spring", stiffness: 100, damping: 20 }}
                         />
                     </div>
-                    <div className="flex justify-between mt-2 text-xs font-bold text-bkpk-text-muted uppercase tracking-[0.1em]">
-                        <span>Słabo</span>
-                        <div className="flex items-center gap-1">
-                            <span>Średnio</span>
-                            <BkpkTooltip content="Skala porównawcza względem ligi. 'Elita' to poziom czołowych zespołów, 'Słabo' sygnalizuje potrzebę zmian treningowych." />
-                        </div>
-                        <span>Elita</span>
+                    <div className="flex justify-between mt-2 text-xs font-bold uppercase tracking-[0.1em]">
+                        {(['weak', 'average', 'elite'] as const).map((tierKey) => (
+                            <div
+                                key={tierKey}
+                                className={clsx(
+                                    "flex items-center gap-1",
+                                    tier === tierKey
+                                        ? tierKey === 'elite'
+                                            ? "text-bkpk-success"
+                                            : tierKey === 'weak'
+                                                ? "text-bkpk-text-danger"
+                                                : "text-bkpk-primary"
+                                        : "text-bkpk-text-muted"
+                                )}
+                            >
+                                <span>{TIER_LABELS[tierKey]}</span>
+                                {tierKey === 'average' && (
+                                    <BkpkTooltip content="Pozycja względem średniej dywizji (box score KALK). ±3 pkt ratingu od średniej = Średnio." />
+                                )}
+                            </div>
+                        ))}
                     </div>
+                    {leagueDelta != null && tier && (
+                        <p className="mt-2 text-[10px] font-bold text-bkpk-text-muted uppercase tracking-widest text-center">
+                            {leagueDelta >= 0 ? '+' : ''}{formatStatFixed(leagueDelta)} vs średnia ligi
+                        </p>
+                    )}
                 </div>
             </div>
         </BkpkCard>
