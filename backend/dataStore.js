@@ -337,6 +337,8 @@ export async function getRoster() {
       }
     }
 
+    const plusMinusAvg = resolveSeasonPlusMinusAverage(playerGames, r);
+
     return {
       ...base,
       id: r.id,
@@ -354,7 +356,7 @@ export async function getRoster() {
       ftPercentage: r.ftPercentage,
       tsPercentage: r.tsPercentage,
       eFgPercentage: r.eFgPercentage,
-      plusMinus: r.plusMinus,
+      plusMinus: plusMinusAvg,
       gamesPlayed: r.gamesPlayed,
       birthDate: r.birthDate,
       heightCm: r.heightCm,
@@ -372,6 +374,25 @@ export async function getRoster() {
     };
     })
   );
+}
+
+/**
+ * Średni plus/minus sezonu — z logów meczowych (KALK) lub ze starej sumy w RosterPlayer.
+ * @param {Array<{ plusMinus?: number }>} playerGames
+ * @param {{ plusMinus?: number, gamesPlayed?: number }} rosterRow
+ */
+function resolveSeasonPlusMinusAverage(playerGames, rosterRow) {
+  if (playerGames.length > 0) {
+    const total = playerGames.reduce((sum, g) => sum + (g.plusMinus || 0), 0);
+    return parseFloat((total / playerGames.length).toFixed(1));
+  }
+
+  const gamesPlayed = rosterRow.gamesPlayed || 0;
+  if (gamesPlayed > 0 && rosterRow.plusMinus != null) {
+    return parseFloat((rosterRow.plusMinus / gamesPlayed).toFixed(1));
+  }
+
+  return rosterRow.plusMinus ?? 0;
 }
 
 /**
@@ -1812,6 +1833,10 @@ export async function updateRosterStats() {
     const tsDivisor = 2 * (stats.fga + 0.44 * stats.fta);
     const tsPct = tsDivisor > 0 ? parseFloat(((stats.pts / tsDivisor) * 100).toFixed(1)) : 0;
 
+    const plusMinusAvg = stats.gamesPlayed > 0
+      ? parseFloat((stats.plusMinus / stats.gamesPlayed).toFixed(1))
+      : 0;
+
     const updateData = {
       gamesPlayed: stats.gamesPlayed,
       ppg, rpg, apg,
@@ -1820,7 +1845,7 @@ export async function updateRosterStats() {
       ftPercentage: ftPct,
       eFgPercentage: eFgPct,
       tsPercentage: tsPct,
-      plusMinus: stats.plusMinus,
+      plusMinus: plusMinusAvg,
       pts: stats.pts,
       fgm: stats.fgm, fga: stats.fga,
       threePm: stats.threePm, threePa: stats.threePa,
