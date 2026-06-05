@@ -64,11 +64,11 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
     return (
         <div className="space-y-6">
             {/* Phase Selector */}
-            <div className="flex gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-fit">
+            <div className="flex gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-full sm:w-fit">
                 <button
                     onClick={() => setPhase('regular')}
                     className={cn(
-                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all text-center",
                         phase === 'regular'
                             ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
                             : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
@@ -79,7 +79,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                 <button
                     onClick={() => setPhase('playout')}
                     className={cn(
-                        "px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                        "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all text-center",
                         phase === 'playout'
                             ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
                             : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
@@ -104,24 +104,28 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             rank={index + 1}
                             title={team.name}
                             accent={isBkpk}
+                            statsColumns={3}
                             highlight={
-                                <div>
-                                    <div className="text-xl font-black font-outfit text-bkpk-text-primary tabular-nums">
+                                <div className="flex flex-col items-center justify-center min-w-[3.25rem] px-2.5 py-1.5 rounded-xl bg-bkpk-surface border border-bkpk-border-strong">
+                                    <div className="text-lg font-black font-outfit text-bkpk-text-primary tabular-nums leading-none">
                                         {team.points}
                                     </div>
-                                    <div className="text-[10px] font-bold text-bkpk-text-muted uppercase">pkt</div>
+                                    <div className="text-[9px] font-bold text-bkpk-text-muted uppercase tracking-wider mt-0.5">
+                                        pkt
+                                    </div>
                                 </div>
                             }
                             stats={[
-                                { label: 'M', value: team.matches },
-                                { label: 'Z', value: team.wins, emphasize: false },
-                                { label: 'P', value: team.losses },
-                                { label: 'RZ', value: team.pointsFor },
-                                { label: 'ST', value: team.pointsAgainst },
+                                { label: 'M', value: team.matches, tone: 'muted' },
+                                { label: 'Z', value: team.wins, tone: 'success' },
+                                { label: 'P', value: team.losses, tone: 'danger' },
+                                { label: 'RZ', value: team.pointsFor, tone: 'muted' },
+                                { label: 'ST', value: team.pointsAgainst, tone: 'muted' },
                                 {
                                     label: '+/-',
                                     value: diff > 0 ? `+${diff}` : diff,
-                                    emphasize: true
+                                    emphasize: true,
+                                    tone: diff > 0 ? 'success' : diff < 0 ? 'danger' : 'muted',
                                 }
                             ]}
                         />

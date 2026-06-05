@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { resolvePlayerPhoto, getPositionLabel } from '../shared/lib/playerUtils';
-import { compressImage } from '../shared/lib/imageCompression';
 import PlayerCard from '../shared/ui/PlayerCard';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { putJSON, fetchJSON } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, User, Key, Image as ImageIcon, ExternalLink, RefreshCw } from 'lucide-react';
+import { ShieldCheck, User, Key, ExternalLink, RefreshCw } from 'lucide-react';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 export default function Profile() {
-    const { user, refreshUser } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
 
     // Password State
@@ -29,9 +28,6 @@ export default function Profile() {
     const [showCurrentPwd, setShowCurrentPwd] = useState(false);
     const [showNewPwd, setShowNewPwd] = useState(false);
     const [showConfirmPwd, setShowConfirmPwd] = useState(false);
-
-    const [photoLoading, setPhotoLoading] = useState(false);
-    const [photoError, setPhotoError] = useState<string | null>(null);
 
     // AI Summary State
     const [aiSummary, setAiSummary] = useState<string | null>(null);
@@ -93,40 +89,6 @@ export default function Profile() {
             setPasswordError(err.message || 'Nie udało się zmienić hasła.');
         } finally {
             setPasswordLoading(false);
-        }
-    };
-
-    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setPhotoLoading(true);
-        setPhotoError(null);
-
-        try {
-            const compressed = await compressImage(file);
-            await putJSON('/api/profile', { photo: compressed });
-            await refreshUser();
-        } catch (err: any) {
-            setPhotoError(err.message || 'Wystąpił błąd podczas wgrywania zdjęcia.');
-        } finally {
-            setPhotoLoading(false);
-        }
-    };
-
-    const handlePhotoRemove = async () => {
-        if (!window.confirm('Czy na pewno chcesz usunąć swoje zdjęcie profilowe?')) return;
-
-        setPhotoLoading(true);
-        setPhotoError(null);
-
-        try {
-            await putJSON('/api/profile', { photo: null });
-            await refreshUser();
-        } catch (err: any) {
-            setPhotoError(err.message || 'Wystąpił błąd podczas usuwania zdjęcia.');
-        } finally {
-            setPhotoLoading(false);
         }
     };
 
@@ -210,64 +172,6 @@ export default function Profile() {
 
                     {/* Right Column: Account Management Forms */}
                     <div className="lg:col-span-7 space-y-6">
-                        
-                        {/* Profile Settings (Avatar Upload) */}
-                        <BkpkCard
-                            title="Wizerunek na Karcie"
-                            icon={<ImageIcon className="w-5 h-5 text-bkpk-primary" />}
-                            className="space-y-4"
-                        >
-                            <p className="text-bkpk-text-secondary text-sm">
-                                Twoje zdjęcie będzie wyświetlane na karcie 3D w składzie, na profilu statystyk oraz w nagłówkach systemu.
-                            </p>
-
-                            {photoError && (
-                                <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
-                                    {photoError}
-                                </div>
-                            )}
-
-                            <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
-                                <div className="w-24 h-24 rounded-full border border-bkpk-border-strong bg-bkpk-bg overflow-hidden flex items-center justify-center shrink-0">
-                                    <img src={userPhoto} className="w-full h-full object-cover" alt="Avatar" />
-                                </div>
-                                <div className="flex-1 flex flex-col gap-3 w-full sm:w-auto">
-                                    <div className="flex gap-3">
-                                        <label className="cursor-pointer flex-1 sm:flex-initial bg-bkpk-primary hover:bg-bkpk-primary-hover border border-bkpk-primary/30 text-bkpk-on-primary px-4 py-2.5 rounded-xl text-xs font-bold text-center select-none transition-all flex items-center justify-center gap-2 shadow-bkpk-glow disabled:opacity-50">
-                                            {photoLoading ? (
-                                                <RefreshCw className="w-4 h-4 animate-spin" />
-                                            ) : (
-                                                <RefreshCw className="w-4 h-4" />
-                                            )}
-                                            Wgraj nowe zdjęcie
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                className="hidden"
-                                                disabled={photoLoading}
-                                                onChange={handlePhotoUpload}
-                                            />
-                                        </label>
-                                        
-                                        {(user.photo || user.data?.photo) && (
-                                            <BkpkButton
-                                                variant="destructive"
-                                                type="button"
-                                                disabled={photoLoading}
-                                                onClick={handlePhotoRemove}
-                                                className="text-xs"
-                                            >
-                                                Usuń
-                                            </BkpkButton>
-                                        )}
-                                    </div>
-                                    <p className="text-bkpk-text-muted text-[11px] leading-relaxed">
-                                        Wgrywając zdjęcie, zostanie ono automatycznie wykadrowane i pomniejszone, aby ładowało się szybko na każdym urządzeniu. Akceptowane są pliki JPEG, PNG, WEBP.
-                                    </p>
-                                </div>
-                            </div>
-                        </BkpkCard>
-
                         {/* Change Password Form */}
                         <BkpkCard
                             title="Bezpieczeństwo Konta"

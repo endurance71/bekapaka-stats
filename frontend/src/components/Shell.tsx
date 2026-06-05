@@ -2,7 +2,6 @@ import { ReactNode, useState, useEffect } from 'react';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileFullScreenMenu from './MobileFullScreenMenu';
-import MobileBottomNav from './MobileBottomNav';
 import {
   LayoutDashboard,
   CalendarRange,
@@ -38,11 +37,6 @@ const allLinks = [
   { to: '/profile', label: 'Mój Profil', icon: User, public: true },
   { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
 ];
-
-/** Secondary links shown in hamburger menu on mobile (bottom bar covers main 5). */
-const mobileMenuOnlyLinks = allLinks.filter(
-  (link) => !['/dashboard', '/games', '/league', '/roster', '/trends'].includes(link.to)
-);
 
 function NavItems({
   links,
@@ -221,11 +215,15 @@ export default function Shell({ children }: { children: ReactNode }) {
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="pointer-events-none absolute inset-x-3 flex justify-center items-center min-w-0 px-12">
+          <Link
+            to="/dashboard"
+            className="absolute inset-x-3 z-[5] flex justify-center items-center min-w-0 px-12 touch-manipulation"
+            aria-label="Przejdź do pulpitu"
+          >
             <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate text-center">
               BeKaPaKa
             </span>
-          </div>
+          </Link>
 
           {user ? (
             <Link
@@ -248,8 +246,8 @@ export default function Shell({ children }: { children: ReactNode }) {
         <main
           className={cn(
             'flex-1 w-full relative z-10 overflow-y-auto overflow-x-hidden',
-            'md:min-h-0 md:no-scrollbar md:scroll-smooth md:bg-bkpk-bg',
-            'pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:pb-0'
+            'pb-[max(0.5rem,var(--safe-area-bottom))] md:pb-0',
+            'md:min-h-0 md:no-scrollbar md:scroll-smooth md:bg-bkpk-bg'
           )}
         >
           {children}
@@ -258,13 +256,11 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
         </main>
 
-        <MobileBottomNav />
-
         <MobileFullScreenMenu
           isOpen={isMenuOpen}
           onClose={() => setIsMenuOpen(false)}
           user={user}
-          links={mobileMenuOnlyLinks.filter((link) => !link.adminOnly || user?.role === 'ADMIN')}
+          links={links}
           onLogout={handleLogout}
         />
 

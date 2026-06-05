@@ -92,19 +92,24 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                     )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2 min-w-0">
                     <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest pl-1">Ostatnia Forma</label>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-3 gap-1.5 min-w-0">
                         {data.form.slice(0, 3).map((match, i) => (
-                            <div key={i} className="group/match flex-1 bg-bkpk-surface-tint-1 border border-bkpk-border-strong p-2 rounded-xl hover:bg-bkpk-surface-tint-2 transition-colors">
+                            <div
+                                key={i}
+                                className="min-w-0 bg-bkpk-surface-tint-1 border border-bkpk-border-strong p-2 rounded-xl hover:bg-bkpk-surface-tint-2 transition-colors overflow-hidden"
+                            >
                                 <div className={cn(
-                                    "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mb-2",
+                                    "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mb-1.5",
                                     match.result === 'W' ? "bg-bkpk-success-fill text-white" : "bg-bkpk-danger-fill text-white"
                                 )}>
                                     {match.result}
                                 </div>
-                                <div className="text-xs font-black text-bkpk-text-primary truncate">{match.scoreUs}:{match.scoreThem}</div>
-                                <div className="text-xs text-bkpk-text-muted truncate uppercase mt-0.5">{match.opponent}</div>
+                                <div className="text-[11px] font-black text-bkpk-text-primary truncate tabular-nums">{match.scoreUs}:{match.scoreThem}</div>
+                                <div className="text-[9px] text-bkpk-text-muted truncate uppercase mt-0.5 leading-tight" title={match.opponent}>
+                                    {match.opponent}
+                                </div>
                             </div>
                         ))}
                     </div>

@@ -6,6 +6,7 @@
 :root {
   --overlay-vh: 100dvh;
   --overlay-vt: 0px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 @supports (height: 100svh) {
@@ -154,6 +155,16 @@ html.is-scroll-locked {
   --color-bkpk-success: var(--bkpk-color-success);
   --color-bkpk-danger: var(--bkpk-color-danger);
   --color-bkpk-warning: var(--bkpk-color-warning);
+  --color-bkpk-text-primary: var(--bkpk-text-primary);
+  --color-bkpk-text-secondary: var(--bkpk-text-secondary);
+  --color-bkpk-text-muted: var(--bkpk-text-muted);
+  --color-bkpk-text-soft: var(--bkpk-text-soft);
+  --color-bkpk-text-danger: var(--bkpk-text-danger);
+  --color-bkpk-text-danger-subtle: var(--bkpk-text-danger-subtle);
+  --color-bkpk-text-disabled: var(--bkpk-text-disabled);
+  --color-bkpk-medal-gold: var(--bkpk-medal-gold);
+  --color-bkpk-medal-silver: var(--bkpk-medal-silver);
+  --color-bkpk-medal-bronze: var(--bkpk-medal-bronze);
   --color-bkpk-bg: var(--bkpk-color-bg);
   --color-bkpk-surface: var(--bkpk-color-surface);
   --color-bkpk-surface-elevated: var(--bkpk-color-surface-elevated);
@@ -330,7 +341,7 @@ html.is-scroll-locked {
   }
 
   .safe-area-bottom {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+    padding-bottom: max(0.75rem, var(--safe-area-bottom));
   }
 
   .safe-area-x {
