@@ -158,7 +158,7 @@ export function RosterList({ roster }: RosterListProps) {
                       ? (selectedPlayer.plusMinus > 0 ? `+${selectedPlayer.plusMinus.toFixed(1)}` : selectedPlayer.plusMinus.toFixed(1)) 
                       : '0.0'}
                   </span>
-                  <span className='db-stat-label'>PLUS / MINUS</span>
+                  <span className='db-stat-label'>PLUS / MINUS (ŚR.)</span>
                 </div>
               </div>
               
