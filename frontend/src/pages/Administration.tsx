@@ -269,24 +269,6 @@ export default function Administration() {
                     <BkpkButton
                         variant="destructive"
                         onClick={async () => {
-                            if (window.confirm('Usunąć wszystkie mecze z importu protokołów (tabela Game), linki protocolUrl i stare cache AI? Dane KALK (box score, liga) zostaną.')) {
-                                try {
-                                    const result = await postJSON<Record<string, number>>('/api/admin/purge-protocols', {});
-                                    alert(`Protokoły usunięte. Pozostało meczów Game: ${result.remainingGames ?? 0}. KalkMatch: ${result.kalkMatches ?? '?'}.`);
-                                    window.location.reload();
-                                } catch (e) {
-                                    alert('Błąd podczas czyszczenia protokołów.');
-                                    console.error(e);
-                                }
-                            }
-                        }}
-                    >
-                        Usuń dane protokołów (zostaw KALK)
-                    </BkpkButton>
-
-                    <BkpkButton
-                        variant="destructive"
-                        onClick={async () => {
                             if (window.confirm('Czy na pewno chcesz usunąć WSZYSTKIE dane z bazy (łącznie z KALK)? Tej operacji nie można cofnąć.')) {
                                 try {
                                     await postJSON('/api/admin/reset-data', {});

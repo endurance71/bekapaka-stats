@@ -26,7 +26,6 @@ import {
   getKalkDataAuditReport,
   listKalkPlayers,
   resetData,
-  purgeProtocolData,
   syncPlayersFromKalk,
   getRoster,
   listAllPlayers,
@@ -201,15 +200,6 @@ app.get(['/api/dashboard', '/dashboard'], async (req, res) => {
     console.error('Dashboard error:', err);
     res.status(500).json({ error: 'Błąd dashboardu' });
   }
-});
-
-// --- IMPORT ---
-app.post(['/api/import', '/import'], async (_req, res) => {
-  res.status(410).json({
-    error: 'Import protokołów został wyłączony. Użyj synchronizacji KALK w panelu Admin.',
-    code: 'PROTOCOL_IMPORT_DEPRECATED',
-    scrapeEndpoint: '/api/scrape/kalk/div2/run'
-  });
 });
 
 // --- GAMES API ---
@@ -755,19 +745,6 @@ app.post(['/api/admin/reset-data', '/admin/reset-data'], authenticateToken, requ
   } catch (err) {
     console.error('Reset error:', err);
     res.status(500).json({ error: 'Błąd resetowania danych' });
-  }
-});
-
-app.post(['/api/admin/purge-protocols', '/admin/purge-protocols'], authenticateToken, requireAdmin, async (_req, res) => {
-  try {
-    const result = await purgeProtocolData();
-    res.json({
-      message: 'Usunięto dane z protokołów. Dane KALK (mecze, liga, logi zawodników) pozostają.',
-      ...result
-    });
-  } catch (err) {
-    console.error('Purge protocols error:', err);
-    res.status(500).json({ error: err.message || 'Błąd czyszczenia protokołów' });
   }
 });
 

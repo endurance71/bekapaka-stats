@@ -34,7 +34,7 @@ function formatCountdown(msRemaining: number): string {
   return `${minutes} min ${sec} s`
 }
 
-function NearestEventCountdown({ startsAt }: { startsAt: string }) {
+function NearestEventCountdown({ startsAt, className = '' }: { startsAt: string; className?: string }) {
   const targetMs = new Date(startsAt).getTime()
   const [label, setLabel] = useState(() =>
     formatCountdown(Number.isFinite(targetMs) ? targetMs - Date.now() : 0)
@@ -55,7 +55,7 @@ function NearestEventCountdown({ startsAt }: { startsAt: string }) {
   if (!Number.isFinite(targetMs)) return null
 
   return (
-    <p className='next-event-hero__countdown' aria-live='polite'>
+    <p className={`next-event-hero__countdown ${className}`} aria-live='polite'>
       <span className='next-event-hero__countdown-label'>Do startu</span>
       <span className='next-event-hero__countdown-value' suppressHydrationWarning>
         {label}
@@ -75,9 +75,10 @@ function NearestEventLower({
 }) {
   return (
     <div className='next-event-hero__lower'>
+      <div className='next-event-glass-dock' aria-hidden='true' />
       <div className='next-event-hero__meta-row'>
         <div className='next-event-hero__meta'>{children}</div>
-        <NearestEventCountdown startsAt={startsAt} />
+        <NearestEventCountdown startsAt={startsAt} className='next-event-hero__countdown--desktop' />
       </div>
       {calendar}
     </div>
@@ -88,10 +89,12 @@ function NearestEventShell({
   upper,
   lower,
   isEmpty = false,
+  startsAt,
 }: {
   upper: ReactNode
   lower?: ReactNode
   isEmpty?: boolean
+  startsAt?: string
 }) {
   return (
     <div className={`next-event-hero${isEmpty ? ' next-event-hero--empty' : ''}`}>
@@ -99,6 +102,9 @@ function NearestEventShell({
         <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
         <div className='next-event-hero__upper'>{upper}</div>
       </div>
+      {startsAt && (
+        <NearestEventCountdown startsAt={startsAt} className='next-event-hero__countdown--mobile' />
+      )}
       {lower}
     </div>
   )
@@ -112,6 +118,7 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
     const { game } = highlight
     return (
       <NearestEventShell
+        startsAt={startsAt}
         upper={
           <>
             <span className='next-event-hero__eyebrow'>Zmagania ligowe · KALK</span>
@@ -141,6 +148,7 @@ export function NearestEventCard({ highlight }: NearestEventCardProps) {
   const { event } = highlight
   return (
     <NearestEventShell
+      startsAt={startsAt}
       upper={
         <>
           <span className='next-event-hero__eyebrow'>{cmsEventCategoryLabel(event.type)}</span>

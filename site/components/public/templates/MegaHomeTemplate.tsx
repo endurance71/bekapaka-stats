@@ -118,7 +118,6 @@ export function MegaHomeTemplate({
             aria-hidden='true'
             style={{ backgroundImage: "url('/images/hero-event-basketball.jpg')" }}
           />
-          {nearestEvent ? <div className='next-event-glass-dock' aria-hidden='true' /> : null}
           {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 

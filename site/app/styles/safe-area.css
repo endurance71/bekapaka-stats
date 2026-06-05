@@ -17,7 +17,6 @@
 /* Mobile Safari: scroll całej strony (nie fixed shell) */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 899px) {
-    html,
     body.site-body {
       overflow-x: hidden;
       overflow-y: auto;

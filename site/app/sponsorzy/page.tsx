@@ -85,7 +85,11 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
   const cardContent = (
     <>
       <span className='sponsor-card-premium__badge'>{badge}</span>
-      <div className='sponsor-card-premium__logo-container'>
+      <div className={`sponsor-card-premium__logo-container ${
+        sponsor.logoUrl 
+          ? 'sponsor-card-premium__logo-container--white' 
+          : 'sponsor-card-premium__logo-container--dark'
+      }`}>
         {sponsor.logoUrl ? (
           <img
             src={sponsor.logoUrl}
