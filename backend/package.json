@@ -9,6 +9,7 @@
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "db:seed": "node scripts/seed.js",
+    "seed:users": "node scripts/seed-users.js",
     "test": "vitest"
   },
   "dependencies": {
