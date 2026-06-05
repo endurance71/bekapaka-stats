@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createPortal } from 'react-dom'
+import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { ClubLogo } from '../shared/ClubLogo'
 import { CloseIcon } from '../shared/PublicIcons'
 import { MainNav } from './MainNav'
@@ -29,40 +30,15 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
   const [isVisible, setIsVisible] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
-  const scrollYRef = useRef(0)
   const isClosingRef = useRef(false)
   const closeCleanupRef = useRef<(() => void) | null>(null)
 
-  const lockPageScroll = useCallback(() => {
-    if (typeof window === 'undefined') return
-
-    scrollYRef.current = window.scrollY
-    const root = document.documentElement
-    const body = document.body
-
-    root.classList.add('is-scroll-locked', 'is-overlay-open')
-    body.classList.add('is-scroll-locked')
-    body.style.top = `-${scrollYRef.current}px`
-  }, [])
-
-  const unlockPageScroll = useCallback(() => {
-    if (typeof window === 'undefined') return
-
-    const root = document.documentElement
-    const body = document.body
-    const scrollY = scrollYRef.current
-
-    root.classList.remove('is-scroll-locked')
-    body.classList.remove('is-scroll-locked')
-    body.style.top = ''
-    window.scrollTo(0, scrollY)
-  }, [])
+  usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' })
 
   const finishUnmount = useCallback(() => {
     closeCleanupRef.current?.()
     closeCleanupRef.current = null
     isClosingRef.current = false
-    document.documentElement.classList.remove('is-overlay-open')
     setIsMounted(false)
     setIsVisible(false)
   }, [])
@@ -73,8 +49,6 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
 
     closeCleanupRef.current?.()
 
-    /* Strona wraca od razu pod przezroczystym overlay — bez szarego flasha przy zdejmowaniu menu */
-    unlockPageScroll()
     setIsVisible(false)
 
     const panel = panelRef.current
@@ -100,23 +74,13 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
       panel?.removeEventListener('transitionend', handleTransitionEnd)
       window.clearTimeout(fallbackId)
     }
-  }, [finishUnmount, unlockPageScroll])
+  }, [finishUnmount])
 
   const handleRequestClose = useCallback(() => {
     if (!isMounted || isClosingRef.current) return
     onClose()
     startCloseAnimation()
   }, [isMounted, onClose, startCloseAnimation])
-
-  useEffect(() => {
-    if (!isMounted) return
-    lockPageScroll()
-
-    return () => {
-      unlockPageScroll()
-      document.documentElement.classList.remove('is-overlay-open')
-    }
-  }, [isMounted, lockPageScroll, unlockPageScroll])
 
   useEffect(() => {
     if (!isOpen) return
@@ -219,8 +183,9 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
           <div className='mobile-fullscreen-menu__title'>
             <Link
               href='/'
-              className='site-header__mobile-brand'
+              className='mobile-fullscreen-menu__brand'
               onClick={handleRequestClose}
+              aria-label='Strona główna'
             >
               BeKaPaKa
             </Link>
@@ -229,23 +194,17 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
           <ClubLogo logoUrl={logoUrl} onNavigate={handleRequestClose} />
         </header>
 
-        <nav className='mobile-fullscreen-menu__nav' aria-label='Sekcje strony'>
-          <MainNav onLinkClick={handleRequestClose} variant='fullscreen' />
-        </nav>
-
-        <div className='mobile-fullscreen-menu__footer'>
-          <button
-            className='button button--primary mobile-fullscreen-menu__cta'
-            type='button'
-            onClick={() => {
+        <div className='mobile-fullscreen-menu__nav'>
+          <MainNav
+            onLinkClick={handleRequestClose}
+            onPanelClick={() => {
               handleRequestClose()
               window.setTimeout(() => {
                 window.open('https://panel.bekapaka.pl', '_blank', 'noopener,noreferrer')
               }, MENU_ANIMATION_MS)
             }}
-          >
-            Zaloguj do Panelu
-          </button>
+            variant='fullscreen'
+          />
         </div>
       </div>
     </div>,

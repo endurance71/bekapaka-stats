@@ -44,13 +44,12 @@ export function MegaHomeTemplate({
           />
           <div className='hero-grid-bg' aria-hidden='true' />
           <div className='hero-content'>
-            <p className='section-kicker'>Klub Sportowy</p>
+            <p className='section-kicker'>Koszykówka to nasza pasja</p>
             <h1>
-              Pasja. Emocje. <br />
               <span className='highlight-gold'>BeKaPaKa Bobolice</span>
             </h1>
             <p className='hero-description'>
-              Oficjalny serwis klubu koszykarskiego z Bobolic. Śledź statystyki zawodników, terminarz rozgrywek oraz bądź na bieżąco z wynikami spotkań.
+              Gramy dla frajdy, rozwijamy pasję i pokazujemy, że basket jest dla każdego. Zobacz, jak radzi sobie nasza ekipa, sprawdź terminarz i zakochaj się w koszykówce razem z nami.
             </p>
             
             {ourPosition && (

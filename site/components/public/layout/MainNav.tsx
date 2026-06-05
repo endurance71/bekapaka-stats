@@ -8,6 +8,7 @@ import {
   CalendarIcon,
   HandshakeIcon,
   HomeIcon,
+  MonitorIcon,
   NewspaperIcon,
   TrophyIcon,
   UsersIcon,
@@ -36,9 +37,11 @@ function isNavItemActive(pathname: string, href: string): boolean {
 
 export function MainNav({
   onLinkClick,
+  onPanelClick,
   variant = 'inline'
 }: {
   onLinkClick?: () => void
+  onPanelClick?: () => void
   variant?: 'inline' | 'fullscreen'
 }) {
   const pathname = usePathname()
@@ -66,7 +69,11 @@ export function MainNav({
                       <Icon size={18} />
                     </span>
                     <span className='main-nav__label'>{item.label}</span>
-                    {isActive ? <span className='main-nav__active-bar' aria-hidden /> : null}
+                    {isActive ? (
+                      <span className='main-nav__active-bar' aria-hidden />
+                    ) : (
+                      <span className='main-nav__active-bar main-nav__active-bar--placeholder' aria-hidden />
+                    )}
                   </>
                 ) : (
                   item.label
@@ -75,6 +82,25 @@ export function MainNav({
             </li>
           )
         })}
+        {isFullscreen && onPanelClick ? (
+          <li className='main-nav__panel-item'>
+            <a
+              href='https://panel.bekapaka.pl'
+              target='_blank'
+              rel='noopener noreferrer'
+              onClick={(event) => {
+                event.preventDefault()
+                onPanelClick()
+              }}
+            >
+              <span className='main-nav__icon' aria-hidden>
+                <MonitorIcon size={18} />
+              </span>
+              <span className='main-nav__label'>Zaloguj do Panelu</span>
+              <span className='main-nav__active-bar main-nav__active-bar--placeholder' aria-hidden />
+            </a>
+          </li>
+        ) : null}
       </ul>
     </nav>
   )
