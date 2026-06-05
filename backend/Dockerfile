@@ -4,7 +4,7 @@ COPY package.json package-lock.json* ./
 COPY scripts/requirements.txt scripts/requirements.txt
 RUN apt-get update \
   && apt-get install -y python3 python3-pip postgresql-client \
-  && pip3 install --no-cache-dir -r scripts/requirements.txt \
+  && pip3 install --no-cache-dir --break-system-packages -r scripts/requirements.txt \
   && rm -rf /var/lib/apt/lists/*
 RUN npm install
 COPY . .
