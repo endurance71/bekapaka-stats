@@ -368,8 +368,10 @@
 
 /* Szkło — ten sam charakter co karty zawodników */
 .next-event-glass-dock {
-  height: var(--event-glass-height);
-  z-index: 1;
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  z-index: 0;
   backdrop-filter: blur(var(--event-glass-blur));
   -webkit-backdrop-filter: blur(var(--event-glass-blur));
 }
@@ -449,6 +451,7 @@
 }
 
 .next-event-hero__lower {
+  position: relative;
   flex: 0 0 var(--event-glass-height);
   min-height: 0;
   display: flex;
@@ -515,6 +518,8 @@
 }
 
 .next-event-hero__meta-row {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -554,6 +559,14 @@
   flex-shrink: 0;
 }
 
+.next-event-hero__countdown--mobile {
+  display: none;
+}
+
+.next-event-hero__countdown--desktop {
+  display: flex;
+}
+
 .next-event-hero__countdown-label {
   font-size: 0.62rem;
   text-transform: uppercase;
@@ -571,6 +584,8 @@
 }
 
 .next-event-hero__calendar-actions {
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
@@ -618,7 +633,8 @@
   }
 
   .next-event-glass-dock {
-    display: none;
+    display: block;
+    height: 100%;
   }
 
   .next-event-hero {
@@ -673,6 +689,7 @@
   }
 
   .next-event-hero__lower {
+    position: relative;
     flex: 0 0 auto;
     min-height: 0;
     padding: var(--space-4) var(--space-4) var(--space-4);
@@ -681,10 +698,7 @@
     flex-direction: column;
     justify-content: flex-start;
     overflow: hidden;
-    background: rgba(16, 16, 18, 0.6);
-    backdrop-filter: blur(var(--event-glass-blur));
-    -webkit-backdrop-filter: blur(var(--event-glass-blur));
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
     box-sizing: border-box;
   }
 
@@ -722,11 +736,15 @@
     text-overflow: clip;
   }
 
-  .next-event-hero__countdown {
+  .next-event-hero__countdown--desktop {
+    display: none;
+  }
+
+  .next-event-hero__countdown--mobile {
+    display: flex;
     position: absolute;
     top: var(--space-4);
     right: var(--space-4);
-    display: flex;
     flex-direction: column;
     align-items: flex-end;
     background: rgba(230, 57, 70, 0.15);
@@ -2008,6 +2026,9 @@
   background: #101012;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55);
   transition: border-color var(--transition), box-shadow var(--transition);
+  transform: translateZ(0);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
 }
 
 .player-card:hover .player-card__inner,
@@ -2022,6 +2043,11 @@
   position: absolute;
   inset: 0;
   z-index: 0;
+  overflow: hidden;
+  border-radius: var(--panel-radius-lg);
+  transform: translateZ(0);
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
 }
 
 .player-card__photo {
@@ -2395,9 +2421,7 @@
   position: fixed;
   inset: 0;
   width: 100%;
-  height: var(--overlay-vh);
-  min-height: var(--overlay-vh);
-  max-height: var(--overlay-vh);
+  height: 100%;
   border: 0;
   padding: 0;
   margin: 0;
@@ -2415,9 +2439,9 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: var(--overlay-vh);
-  max-height: var(--overlay-vh);
-  min-height: var(--overlay-vh);
+  height: auto;
+  max-height: none;
+  min-height: 0;
   overflow: hidden;
   background: var(--glass-bg);
   backdrop-filter: blur(24px);
@@ -3073,9 +3097,7 @@
   .stats-drawer__panel {
     inset: 0 0 0 auto;
     width: min(var(--stats-drawer-width, 520px), 100%);
-    height: var(--overlay-vh);
-    max-height: var(--overlay-vh);
-    min-height: var(--overlay-vh);
+    height: 100%;
     border-radius: 0;
     transform: translateX(100%);
     border-top: 0;
