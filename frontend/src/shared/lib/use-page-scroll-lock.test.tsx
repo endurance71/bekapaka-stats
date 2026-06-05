@@ -7,6 +7,7 @@ describe('usePageScrollLock', () => {
     document.documentElement.classList.remove('is-scroll-locked', 'is-overlay-open')
     document.body.classList.remove('is-scroll-locked')
     document.body.style.top = ''
+    document.body.style.width = ''
   })
 
   it('adds scroll lock classes on html and body when active', () => {
@@ -15,6 +16,8 @@ describe('usePageScrollLock', () => {
     expect(document.documentElement.classList.contains('is-scroll-locked')).toBe(true)
     expect(document.documentElement.classList.contains('is-overlay-open')).toBe(true)
     expect(document.body.classList.contains('is-scroll-locked')).toBe(true)
+    expect(document.body.style.top).toBeTruthy()
+    expect(document.body.style.width).toBe('100%')
   })
 
   it('removes scroll lock classes when inactive', () => {

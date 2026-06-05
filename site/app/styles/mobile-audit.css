@@ -371,21 +371,27 @@
   justify-content: center;
 }
 
-/* Sponsors grid */
+/* Sponsors grid — mobile: 2 kafelki w rzędzie; desktop: auto-fill */
 .sponsors-logo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 600px) {
+  .sponsors-logo-grid {
+    gap: var(--space-4);
+  }
+}
+
+@media (min-width: 900px) {
   .sponsors-logo-grid {
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     gap: var(--space-5);
   }
 }
 
-.sponsors-logo-grid img {
+.sponsors-logo-grid > img {
   max-height: 60px;
   width: 100%;
   object-fit: contain;
@@ -393,9 +399,13 @@
   transition: filter 0.2s;
 }
 
-.sponsors-logo-grid a:hover img,
-.sponsors-logo-grid a:focus-visible img {
+.sponsors-logo-grid > a:hover img,
+.sponsors-logo-grid > a:focus-visible img {
   filter: grayscale(0);
+}
+
+.sponsor-card-premium__logo {
+  filter: none;
 }
 
 /* Club page — map iframe */

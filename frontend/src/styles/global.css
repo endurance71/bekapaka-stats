@@ -49,8 +49,15 @@ body.is-scroll-locked {
 
 body.is-scroll-locked {
   position: fixed;
+  left: 0;
+  right: 0;
   width: 100%;
+  overflow: hidden;
   touch-action: none;
+}
+
+html.is-scroll-locked {
+  overflow: hidden;
 }
 
 /* Mobile Safari: scroll całej strony (nie fixed shell) — blur pod paskiem adresu */

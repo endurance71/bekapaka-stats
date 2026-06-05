@@ -46,71 +46,25 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
   const isLink = !!sponsor.websiteUrl
   const initials = sponsor.name.slice(0, 2).toUpperCase()
 
-  // Dynamic categorization for a highly professional copy layout
-  const getSponsorDetails = (name: string) => {
-    const normalized = name.toLowerCase()
-    if (
-      normalized.includes('gmina') ||
-      normalized.includes('nadleśnictwo') ||
-      normalized.includes('cesir') ||
-      normalized.includes('urząd') ||
-      normalized.includes('lasy państwowe')
-    ) {
-      return {
-        badge: 'Partner Publiczny',
-        description: 'Wspiera rozwój lokalnego sportu i inicjatywy sportowe w gminie Bobolice.'
-      }
-    }
-
-    if (
-      normalized.includes('adamus') ||
-      normalized.includes('jaświg') ||
-      normalized.includes('klimek') ||
-      normalized.includes('remek')
-    ) {
-      return {
-        badge: 'Sponsor Prywatny',
-        description: 'Darczyńca i przyjaciel klubu, bezpośrednio wspierający naszą drużynę.'
-      }
-    }
-
-    return {
-      badge: 'Partner Biznesowy',
-      description: 'Mecenas sportu pomagający w rozwoju organizacyjnym stowarzyszenia.'
-    }
-  }
-
-  const { badge, description } = getSponsorDetails(sponsor.name)
-
   const cardContent = (
     <>
-      <span className='sponsor-card-premium__badge'>{badge}</span>
-      <div className={`sponsor-card-premium__logo-container ${
-        sponsor.logoUrl 
-          ? 'sponsor-card-premium__logo-container--white' 
-          : 'sponsor-card-premium__logo-container--dark'
-      }`}>
-        {sponsor.logoUrl ? (
-          <img
-            src={sponsor.logoUrl}
-            alt={sponsor.name}
-            className='sponsor-card-premium__logo'
-          />
-        ) : (
-          <div className='sponsor-card-premium__emblem'>
-            <div className='sponsor-card-premium__emblem-ring' />
-            <div className='sponsor-card-premium__emblem-shield'>
-              <span className='sponsor-card-premium__emblem-star'>★</span>
-              <span>{initials}</span>
-            </div>
-          </div>
-        )}
+      <div
+        className='sponsor-card-premium__logo-container sponsor-card-premium__logo-container--monogram'
+        aria-hidden='true'
+      >
+        {initials}
       </div>
-      <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
-      <p className='sponsor-card-premium__description'>{description}</p>
-      {sponsor.websiteUrl ? (
-        <span className='sponsor-card-premium__btn'>
-          Odwiedź stronę
+      <div className='sponsor-card-premium__content'>
+        <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
+      </div>
+      <div className='sponsor-card-premium__footer'>
+        <span
+          className={`sponsor-card-premium__btn${
+            sponsor.websiteUrl ? '' : ' sponsor-card-premium__btn--placeholder'
+          }`}
+          aria-hidden={sponsor.websiteUrl ? undefined : true}
+        >
+          Strona
           <svg
             width='12'
             height='12'
@@ -125,7 +79,7 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
             <path d='M7 17L17 7M17 7H7M17 7V17' />
           </svg>
         </span>
-      ) : null}
+      </div>
     </>
   )
 

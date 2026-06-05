@@ -3911,9 +3911,11 @@
 }
 
 .sponsor-card-premium__logo-container {
-  width: 100%;
-  height: 96px;
-  margin-bottom: var(--space-4);
+  --sponsor-logo-size: 5.5rem;
+  width: var(--sponsor-logo-size);
+  height: var(--sponsor-logo-size);
+  flex-shrink: 0;
+  margin: 0 auto var(--space-4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3922,73 +3924,69 @@
   z-index: 2;
   transition: all 0.3s ease;
   overflow: hidden;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  padding: 0.5rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* 1. White background container for logos (to blend white-background images and colored PNGs/SVGs) */
-.sponsor-card-premium__logo-container--white {
-  background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 6px 12px; /* Reduced vertical padding from 12px to 6px for larger logo sizing */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(0, 0, 0, 0.05);
-}
-
-.sponsor-card-premium:hover .sponsor-card-premium__logo-container--white {
-  background: #ffffff;
-  border-color: var(--bkp-gold);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(236, 167, 44, 0.2);
-  transform: translateY(-2px);
-}
-
-/* 2. Glassmorphic dark container for the fallback monogram emblem */
-.sponsor-card-premium__logo-container--dark {
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  padding: var(--space-2);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.sponsor-card-premium__logo-container--dark::before {
+.sponsor-card-premium__logo-container::before {
   content: '';
   position: absolute;
-  inset: var(--space-3);
-  background: radial-gradient(circle, rgba(236, 167, 44, 0.15) 0%, transparent 70%);
+  inset: 0.35rem;
+  background: radial-gradient(circle, rgba(236, 167, 44, 0.1) 0%, transparent 72%);
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: -1;
+  z-index: 0;
   pointer-events: none;
 }
 
-.sponsor-card-premium:hover .sponsor-card-premium__logo-container--dark {
-  background: rgba(0, 0, 0, 0.45);
-  border-color: rgba(236, 167, 44, 0.2);
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+.sponsor-card-premium:hover .sponsor-card-premium__logo-container {
+  border-color: rgba(236, 167, 44, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 0 12px rgba(236, 167, 44, 0.08);
   transform: translateY(-2px);
 }
 
-.sponsor-card-premium:hover .sponsor-card-premium__logo-container--dark::before {
+.sponsor-card-premium:hover .sponsor-card-premium__logo-container::before {
   opacity: 1;
+}
+
+.sponsor-card-premium__logo-container--monogram {
+  padding: 0;
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--bkp-gold);
+  background: rgba(236, 167, 44, 0.08);
+  border-color: rgba(236, 167, 44, 0.28);
+  text-shadow: 0 0 10px rgba(236, 167, 44, 0.2);
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__logo-container--monogram {
+  background: rgba(236, 167, 44, 0.12);
+  border-color: rgba(236, 167, 44, 0.45);
 }
 
 .sponsor-card-premium__logo {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  mix-blend-mode: multiply; /* Blends any off-white/light-grey background from JPEG logos seamlessly */
-  /* Slight desaturation to fit the page theme, but keeping colors readable and clear */
-  filter: grayscale(0.15) contrast(1) opacity(0.95);
+  mix-blend-mode: normal;
+  filter: brightness(1.06) contrast(1.05) saturate(1.02);
   transition: filter 0.3s ease, transform 0.3s ease;
 }
 
 .sponsor-card-premium:hover .sponsor-card-premium__logo {
-  filter: grayscale(0) contrast(1) opacity(1);
+  filter: brightness(1.1) contrast(1.08) saturate(1.05);
   transform: scale(1.04);
 }
 
 /* Fallback Monogram Emblem */
 .sponsor-card-premium__emblem {
   position: relative;
-  width: 70px;
-  height: 70px;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4009,9 +4007,9 @@
 }
 
 .sponsor-card-premium__emblem-shield {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
   background: linear-gradient(135deg, rgba(236, 167, 44, 0.16) 0%, rgba(236, 167, 44, 0.02) 100%);
   border: 1px solid rgba(236, 167, 44, 0.25);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
@@ -4045,6 +4043,32 @@
 
 .sponsor-card-premium:hover .sponsor-card-premium__emblem-star {
   transform: scale(1.2) rotate(36deg);
+}
+
+.sponsor-card-premium__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+  z-index: 2;
+}
+
+.sponsor-card-premium__footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 38px;
+  z-index: 2;
+}
+
+.sponsor-card-premium__btn--placeholder {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .sponsor-card-premium__name {

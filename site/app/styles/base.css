@@ -70,9 +70,19 @@ body.site-body {
   min-height: 100dvh;
 }
 
-html.is-scroll-locked,
-body.is-scroll-locked {
+html.is-scroll-locked {
+  overflow: hidden;
   overscroll-behavior: none;
+}
+
+body.is-scroll-locked {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
 

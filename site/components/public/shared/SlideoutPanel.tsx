@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay'
+import { usePageScrollLock, useVisualViewportOverlay } from '@bekapaka/safari-overlay'
 import { CloseIcon } from './PublicIcons'
 
 const DRAWER_TRANSITION_MS = 320
@@ -24,6 +24,7 @@ export function SlideoutPanel({
   /** `wide` — szerszy panel na desktop (np. tabela historii występów w składzie) */
   size?: 'default' | 'wide'
 }) {
+  const drawerRef = useRef<HTMLDivElement | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
   const onCloseRef = useRef(onClose)
@@ -36,8 +37,8 @@ export function SlideoutPanel({
 
   const overlayActive = isOpen || isPresent
 
-  useOverlayViewportHeight(overlayActive)
   usePageScrollLock(overlayActive, { htmlClass: 'is-overlay-open' })
+  useVisualViewportOverlay(drawerRef, isShown)
 
   useLayoutEffect(() => {
     if (isOpen) {
@@ -157,6 +158,7 @@ export function SlideoutPanel({
 
   return createPortal(
     <div
+      ref={drawerRef}
       className={`stats-drawer ${size === 'wide' ? 'stats-drawer--wide' : ''} ${isShown ? 'is-open' : ''}`}
       aria-hidden={!isShown}
     >

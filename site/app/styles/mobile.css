@@ -67,50 +67,30 @@
     justify-content: center;
   }
 
-  .stats-drawer.is-open {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: var(--bg-app);
-  }
-
-  .stats-drawer.is-open .stats-drawer__backdrop {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity: 1;
-    touch-action: none;
-    overscroll-behavior: none;
-  }
-
+  /* Safari iOS: jeden fixed root, backdrop/panel absolute wewnątrz. Wysokość z visualViewport (JS). */
   .stats-drawer {
-    bottom: -150px;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 200;
   }
 
   .stats-drawer__backdrop {
-    bottom: -150px;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
-  .stats-drawer.is-open .stats-drawer__panel {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: -150px;
-    left: 0;
+  .stats-drawer__panel {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: auto;
-    min-height: auto;
+    height: 100%;
+    min-height: 100%;
     max-height: none;
     padding: 0;
     border-radius: 0;
@@ -119,7 +99,25 @@
     background: var(--bg-app);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    transform: translateY(0);
+  }
+
+  .stats-drawer.is-open {
+    background: var(--bg-app);
+    pointer-events: auto;
+  }
+
+  .stats-drawer.is-open .stats-drawer__backdrop {
+    background: var(--bg-app);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    opacity: 1;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  .stats-drawer.is-open .stats-drawer__panel {
+    transform: none;
+    will-change: auto;
   }
 
   .stats-drawer:not(.is-open) .stats-drawer__panel {
@@ -154,7 +152,7 @@
     padding:
       var(--space-4)
       max(var(--space-4), env(safe-area-inset-right, 0px))
-      calc(var(--space-6) + env(safe-area-inset-bottom, 0px) + 200px)
+      calc(var(--space-6) + env(safe-area-inset-bottom, 0px))
       max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
@@ -246,6 +244,92 @@
   .home-player-card-premium-slide {
     --player-glass-height: 38%;
     width: 168px;
+  }
+
+  /* Sponsorzy — spójne kafelki 2×N (jak surface-card) */
+  .sponsor-card-premium {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
+    min-height: 10rem;
+    padding: var(--space-3);
+    text-align: center;
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .sponsor-card-premium::before {
+    display: none;
+  }
+
+  .sponsor-card-premium::after {
+    opacity: 0.45;
+  }
+
+  .sponsor-card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .sponsor-card-premium__logo-container {
+    --sponsor-logo-size: 4.25rem;
+    margin-bottom: var(--space-2);
+    border-radius: var(--radius-md);
+  }
+
+  .sponsor-card-premium__logo-container--monogram {
+    font-size: 1.15rem;
+    padding: 0;
+  }
+
+  .sponsor-card-premium:hover .sponsor-card-premium__logo-container {
+    transform: none;
+  }
+
+  .sponsor-card-premium__content {
+    flex: 1;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 0 var(--space-1);
+  }
+
+  .sponsor-card-premium__name {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
+    margin: 0;
+    text-transform: uppercase;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    text-align: center;
+    color: var(--text-primary);
+  }
+
+  .sponsor-card-premium:hover .sponsor-card-premium__name {
+    color: var(--bkp-gold);
+  }
+
+  .sponsor-card-premium__footer {
+    min-height: 30px;
+    margin-top: var(--space-2);
+  }
+
+  .sponsor-card-premium__btn {
+    display: inline-flex;
+    min-height: 28px;
+    padding: 4px 12px;
+    font-size: 0.58rem;
+    margin-top: 0;
   }
 }
 
