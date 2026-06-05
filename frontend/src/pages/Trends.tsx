@@ -318,7 +318,11 @@ export default function Trends() {
                 <p className="text-xs text-bkpk-text-secondary leading-relaxed italic">
                   {comparison?.rankings.points === 'Powyżej średniej' && comparison?.rankings.defense === 'Lepsza niż średnia'
                     ? "Wykryto dominację. Drużyna radzi sobie lepiej niż reszta ligi po obu stronach parkietu. Utrzymać tempo."
-                    : "Skupienie na rotacji w obronie. Podczas gdy atak pozostaje elitarny, punkty stracone na posiadanie trendują powyżej docelowych poziomów."}
+                    : comparison?.rankings.points === 'Powyżej średniej'
+                      ? "Atak powyżej średniej ligi — utrzymać jakość rzutów. Obrona wymaga pracy: stracone punkty przewyższają średnią dywizji."
+                      : comparison?.rankings.defense === 'Lepsza niż średnia'
+                        ? "Obrona lepsza niż średnia ligi. Priorytet: poprawa skuteczności ataku i konwersji posiadań na punkty."
+                        : "Atak i obrona poniżej średniej ligi. Skup się na redukcji strat i skuteczności rzutów z gry oraz spod kosza."}
                 </p>
               </div>
             </BkpkCard>

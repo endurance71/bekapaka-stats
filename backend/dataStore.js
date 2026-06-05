@@ -693,25 +693,30 @@ export async function getPlayerStats(playerId, seasonIdParam) {
   };
 }
 
+/** Próg (pkt ratingu) od średniej ligi dla tieru Słabo / Średnio / Elita. */
+const RATING_LEAGUE_TIER_DELTA = 3;
+
 /**
- * Agreguje trendy zespołowe (Four Factors) na przestrzeni sezonu.
+ * Buduje metryki strzeleckie (ORtg, DefRtg, …) dla dowolnej drużyny z box score.
+ * @param {object} team
+ * @param {{ pts?: number, oppPts?: number, min?: string }} context
  */
-function teamTrendFromBekapakaTeam(bekapaka, meta) {
-  const source = bekapaka.fourFactors || bekapaka;
+function buildTeamShootingMetrics(team, context = {}) {
+  const source = team.fourFactors || team;
   let stats = {
     fgm: source.fgm || 0,
     fga: source.fga || 0,
     three_pm: source.three_pm || 0,
     fta: source.fta || 0,
-    pts: source.pts || meta.scoreUs || 0,
+    pts: source.pts || context.pts || 0,
     tov: source.tov || source.turnovers || 0,
     orb: source.orb || source.oreb || 0,
-    min: source.min || '40:00',
-    opp_pts: meta.scoreThem || 0
+    min: source.min || context.min || '40:00',
+    opp_pts: context.oppPts ?? 0
   };
 
-  if (stats.fga === 0 && bekapaka.players?.length) {
-    for (const p of bekapaka.players) {
+  if (stats.fga === 0 && team.players?.length) {
+    for (const p of team.players) {
       stats.fgm += p.fgm || 0;
       stats.fga += p.fga || 0;
       stats.three_pm += p.three_pm || 0;
@@ -722,7 +727,82 @@ function teamTrendFromBekapakaTeam(bekapaka, meta) {
     }
   }
 
-  const ff = withShootingMetrics(stats);
+  return withShootingMetrics(stats);
+}
+
+/**
+ * Tier ratingu względem średniej ligi (elite = lepiej, weak = gorzej).
+ * @param {number} teamVal
+ * @param {number} leagueVal
+ * @param {boolean} higherIsBetter
+ */
+function ratingLeagueTier(teamVal, leagueVal, higherIsBetter) {
+  const delta = higherIsBetter ? teamVal - leagueVal : leagueVal - teamVal;
+  if (delta >= RATING_LEAGUE_TIER_DELTA) return 'elite';
+  if (delta <= -RATING_LEAGUE_TIER_DELTA) return 'weak';
+  return 'average';
+}
+
+/**
+ * Średnie ORtg / DefRtg / NetRtg dywizji z zakończonych meczów KALK (box score).
+ */
+export async function getLeagueRatingBenchmarks() {
+  await ensureSeeded();
+  await ensureDefaultSeason();
+  const activeSeason = await getActiveSeason();
+  if (!activeSeason) return null;
+
+  const kalkMatches = await prisma.kalkMatch.findMany({
+    where: { seasonId: activeSeason.id, isFinished: true },
+    orderBy: { date: 'asc' }
+  });
+
+  const samples = [];
+
+  for (const km of kalkMatches) {
+    const view = kalkMatchToGameDetail(km);
+    const teams = view.teams || [];
+    if (teams.length < 2) continue;
+
+    const scoreHome = view.scoreHome ?? km.scoreHome;
+    const scoreAway = view.scoreAway ?? km.scoreAway;
+
+    teams.forEach((team, index) => {
+      const opponent = teams[1 - index];
+      const teamPts = team.pts ?? (index === 0 ? scoreHome : scoreAway) ?? 0;
+      const oppPts = opponent?.pts ?? (index === 0 ? scoreAway : scoreHome) ?? 0;
+      const ff = buildTeamShootingMetrics(team, { pts: teamPts, oppPts });
+      const offRtg = parseStat(ff.offRtg) || 0;
+      const defRtg = parseStat(ff.defRtg) || 0;
+      if (offRtg <= 0) return;
+      samples.push({ offRtg, defRtg, netRtg: offRtg - defRtg });
+    });
+  }
+
+  if (samples.length === 0) return null;
+
+  const seasonAvg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const offRating = seasonAvg(samples.map((s) => s.offRtg));
+  const defRating = seasonAvg(samples.map((s) => s.defRtg));
+  const netRating = seasonAvg(samples.map((s) => s.netRtg));
+
+  return {
+    offRating: Number(offRating.toFixed(1)),
+    defRating: Number(defRating.toFixed(1)),
+    netRating: Number(netRating.toFixed(1)),
+    sampleTeamGames: samples.length,
+    sampleMatches: kalkMatches.length
+  };
+}
+
+/**
+ * Agreguje trendy zespołowe (Four Factors) na przestrzeni sezonu.
+ */
+function teamTrendFromBekapakaTeam(bekapaka, meta) {
+  const ff = buildTeamShootingMetrics(bekapaka, {
+    pts: meta.scoreUs,
+    oppPts: meta.scoreThem
+  });
   return {
     gameId: meta.gameId,
     date: meta.date,
@@ -939,14 +1019,16 @@ export async function getLoginLogs(filters = {}) {
  * Zwraca podsumowanie statystyk zespołu do kafelków na Dashboardzie.
  */
 export async function getTeamStatsSummary() {
-  const trends = await getTeamTrends();
+  const [trends, league] = await Promise.all([getTeamTrends(), getLeagueRatingBenchmarks()]);
   if (trends.length === 0) {
     return {
       ppg: 0,
       trend: 0,
       offRating: 0,
       defRating: 0,
-      netRating: 0
+      netRating: 0,
+      league: league || null,
+      tiers: null
     };
   }
 
@@ -961,13 +1043,24 @@ export async function getTeamStatsSummary() {
 
   const offRating = seasonAvg(trends.map((t) => t.offRtg || 0));
   const defRating = seasonAvg(trends.map((t) => t.defRtg || 0));
+  const netRating = offRating - defRating;
+
+  const tiers = league
+    ? {
+        off: ratingLeagueTier(offRating, league.offRating, true),
+        def: ratingLeagueTier(defRating, league.defRating, false),
+        net: ratingLeagueTier(netRating, league.netRating, true)
+      }
+    : null;
 
   return {
     ppg: Number(ppg.toFixed(1)),
     trend: Number(trend.toFixed(1)),
     offRating: Number(offRating.toFixed(1)),
     defRating: Number(defRating.toFixed(1)),
-    netRating: Number((offRating - defRating).toFixed(1))
+    netRating: Number(netRating.toFixed(1)),
+    league,
+    tiers
   };
 }
 

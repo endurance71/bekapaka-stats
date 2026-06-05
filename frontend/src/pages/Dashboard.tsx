@@ -173,7 +173,12 @@ export default function Dashboard() {
             loading={loading}
           />
           <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend || 0} />
-          <RatingCard offRating={teamStats?.offRating || 0} defRating={teamStats?.defRating || 0} />
+          <RatingCard
+            offRating={teamStats?.offRating || 0}
+            defRating={teamStats?.defRating || 0}
+            league={teamStats?.league ?? null}
+            tiers={teamStats?.tiers ?? null}
+          />
         </>
       }
       main={
