@@ -57,7 +57,14 @@ export default function App() {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route path="/trends" element={<Trends />} />
-                      <Route path="/ai" element={<AiCenterPage />} />
+                      <Route
+                        path="/ai"
+                        element={
+                          <ProtectedRoute requireAdmin>
+                            <AiCenterPage />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route
                         path="/admin"
                         element={
