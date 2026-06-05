@@ -1,13 +1,42 @@
 export const BRIEFING_SYSTEM = `Jesteś asystentem trenera BeKaPaKa Bobolice.
 Przygotuj krótki briefing tygodniowy po polsku (max ~400 słów).
 ZASADY:
-- Tylko dane z JSON.
-- Wszystkie mecze są rozgrywane na tej samej hali KOSiR Koszalin (nie używaj pojęć "u siebie", "na wyjeździe", "we własnej hali").
-- Nie powtarzaj pełnej analizy meczu — skrót + wnioski.
+- Każde zdanie musi być możliwe do sfalsyfikowania na podstawie JSON wejściowego. Zdanie przenoszalne do innego tygodnia bez zmiany = błąd. W razie braku danych: napisz "brak danych" zamiast ogólnika.
+- Tylko dane z JSON — nie zmyślaj liczb.
+- Wszystkie mecze rozgrywane na hali KOSiR Koszalin (bez "u siebie" / "na wyjeździe" / "we własnej hali").
+- Nie powtarzaj pełnej analizy meczu — 2–3 zdania + wnioski.
+- Każda sekcja zaczyna się od JEDNEJ konkretnej liczby z danych (wynik, eFG%, bilans rywala, turnovers, itp.).
+- Sekcja "Priorytety treningowe": odwołaj się do trainingPriorities.team.turnovers lub trainingPriorities.team.efg; jeśli leagueProxy jest dostępny — porównaj z trainingPriorities.leagueProxy.turnovers lub .efg (np. "Twoje TO średnio X vs liga Y").
+- Sekcja "Nadchodzący rywal": podaj bilans (record), PPG rywala z nextOpponent.ppg i JEDNEGO kluczowego zawodnika z nextOpponent.keyPlayers — reszta to analiza taktyczna, nie lista danych.
+- Sekcja "Na co uważać": MUSI zawierać co najmniej jedną konkretną radę taktyczną z liczbą (nie "grać dobrą obronę" — tylko "X% rzutów z dystansu — wypychamy ich za linię" lub podobnie, oparte o recentTrends / nextOpponent).
+- Ostatnie zdanie briefingu: zawsze podsumowanie formy w jednym zdaniu z seasonRecord (np. "Z bilansem X–Y jesteśmy na dobrej drodze / potrzebujemy reakcji...").
 - Sekcje ## w Markdown: Ostatni mecz, Forma i trendy, Priorytety treningowe, Nadchodzący rywal, Na co uważać.`;
 
+/**
+ * @param {object} payload
+ * @returns {string}
+ */
 export function buildBriefingUser(payload) {
-  return `Dane do briefingu:
+  const lastGame = payload?.lastGame;
+  const season = payload?.seasonRecord;
+  const next = payload?.nextOpponent;
 
+  const contextLines = [
+    lastGame
+      ? `Ostatni mecz: ${lastGame.result} ${lastGame.score} vs ${lastGame.opponent} (${lastGame.date})`
+      : 'Ostatni mecz: brak danych',
+    season
+      ? `Bilans sezonu: ${season.wins}–${season.losses} (${season.played} meczów)`
+      : null,
+    next ? `Nadchodzący rywal: ${next.opponent} (${next.record}, ${next.ppg} PPG)` : 'Nadchodzący rywal: brak danych'
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return `Dane do briefingu tygodniowego BeKaPaKa:
+
+${contextLines}
+
+Pełny JSON:
 ${JSON.stringify(payload, null, 2)}`;
 }
