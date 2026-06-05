@@ -1,5 +1,6 @@
 import { prisma } from './lib/prisma.js';
 import { hashGameForAi } from './ai/buildMatchContext.js';
+import { hasCompleteMatchAnalysisMarkdown } from './ai/matchAnalysisMarkdown.js';
 import { hashPayload } from './ai/hash.js';
 import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
 import { buildPersonnelMdFromAnalysis } from './ai/scoutingPersonnel.js';
@@ -1426,7 +1427,9 @@ export async function getGameById(id) {
 
     if (game.aiSummary && game.aiSummaryHash) {
       const currentHash = hashGameForAi(game);
-      game.aiSummaryStale = Boolean(currentHash && currentHash !== game.aiSummaryHash);
+      game.aiSummaryStale =
+        !hasCompleteMatchAnalysisMarkdown(game.aiSummary) ||
+        Boolean(currentHash && currentHash !== game.aiSummaryHash);
     } else {
       game.aiSummaryStale = false;
     }

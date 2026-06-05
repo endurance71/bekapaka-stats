@@ -6,6 +6,8 @@ import { getActiveSeason } from '../seasonService.js';
 import { buildBriefingContext } from './buildBriefingContext.js';
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
+import { hasCompleteMatchAnalysisMarkdown } from './matchAnalysisMarkdown.js';
+import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
 import { getGeminiModelName, isGeminiConfigured } from './geminiClient.js';
 import { normalizeOpponentKey } from './normalizeOpponent.js';
 
@@ -65,9 +67,10 @@ export async function getAiAnalysesCatalog() {
   if (briefing?.contentMd?.trim() && briefing.sourceHash) {
     try {
       const ctx = await buildBriefingContext();
-      briefingStale = briefing.sourceHash !== ctx.hash;
+      briefingStale =
+        briefing.sourceHash !== ctx.hash || !hasCompleteBriefingMarkdown(briefing.contentMd);
     } catch {
-      briefingStale = false;
+      briefingStale = !hasCompleteBriefingMarkdown(briefing.contentMd);
     }
   }
 
@@ -147,9 +150,10 @@ export async function getAiAnalysesCatalog() {
       if (hasContent && km.aiSummaryHash) {
         try {
           const view = kalkMatchToGameDetail(km);
-          stale = Boolean(view.aiSummaryStale);
+          stale =
+            Boolean(view.aiSummaryStale) || !hasCompleteMatchAnalysisMarkdown(km.aiSummary);
         } catch {
-          stale = false;
+          stale = !hasCompleteMatchAnalysisMarkdown(km.aiSummary);
         }
       }
     } else if (legacy) {
