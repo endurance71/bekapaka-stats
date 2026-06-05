@@ -365,11 +365,13 @@ export async function generateTeamBriefing(options = {}) {
     const ctx = await buildBriefingContext();
     const existing = await prisma.teamBriefing.findUnique({ where: { id: 'default' } });
 
+    const requireUpcomingOpponent = Boolean(ctx.payload.hasUpcomingMatch);
+
     if (
       !options.force &&
       existing?.sourceHash === ctx.hash &&
       existing.contentMd &&
-      hasCompleteBriefingMarkdown(existing.contentMd)
+      hasCompleteBriefingMarkdown(existing.contentMd, { requireUpcomingOpponent })
     ) {
       return {
         cached: true,
@@ -385,7 +387,7 @@ export async function generateTeamBriefing(options = {}) {
       maxOutputTokens: 4096
     });
 
-    if (!hasCompleteBriefingMarkdown(text)) {
+    if (!hasCompleteBriefingMarkdown(text, { requireUpcomingOpponent })) {
       throw new Error('Wygenerowany briefing jest niekompletny — spróbuj ponownie');
     }
 
