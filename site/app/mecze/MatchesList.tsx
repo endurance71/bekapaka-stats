@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { GameSummary } from '../../lib/data'
 import { gameSummarySchema } from '../../lib/data/schemas'
 import { formatDateTime } from '../../lib/format'
@@ -25,18 +25,6 @@ export function MatchesList({ games }: MatchesListProps) {
   const [detailGame, setDetailGame] = useState<GameSummary | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    const firstPast = games.find(
-      (g) => g.result || (g.scoreUs !== null && g.scoreThem !== null)
-    )
-    if (firstPast) {
-      const timer = setTimeout(() => {
-        handleOpenDrawer(firstPast)
-      }, 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [games])
 
   const pastGames = games.filter(
     (g) => g.result || (g.scoreUs !== null && g.scoreThem !== null)

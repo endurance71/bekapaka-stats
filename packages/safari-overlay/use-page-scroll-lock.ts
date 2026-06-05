@@ -7,6 +7,8 @@ export type PageScrollLockOptions = {
 
 /**
  * Locks page scroll while an overlay is open (html + body, Safari-safe).
+ * Nie ustawia height na body — przy scrollY > 0 skrócony body + top offset
+ * zostawia czarną lukę i prześwieca stronę pod modalem.
  */
 export function usePageScrollLock(isActive: boolean, options?: PageScrollLockOptions): void {
   const htmlClass = options?.htmlClass
@@ -16,19 +18,25 @@ export function usePageScrollLock(isActive: boolean, options?: PageScrollLockOpt
 
     const scrollY = window.scrollY
     const root = document.documentElement
+    const body = document.body
 
     root.classList.add('is-scroll-locked')
-    document.body.classList.add('is-scroll-locked')
+    body.classList.add('is-scroll-locked')
+    body.style.top = `-${scrollY}px`
+    body.style.width = '100%'
     if (htmlClass) {
       root.classList.add(htmlClass)
     }
 
     return () => {
       root.classList.remove('is-scroll-locked')
-      document.body.classList.remove('is-scroll-locked')
+      body.classList.remove('is-scroll-locked')
+      body.style.top = ''
+      body.style.width = ''
       if (htmlClass) {
         root.classList.remove(htmlClass)
       }
+      window.scrollTo(0, scrollY)
     }
   }, [isActive, htmlClass])
 }
