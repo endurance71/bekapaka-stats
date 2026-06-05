@@ -673,6 +673,11 @@ function UserManagement() {
         if (!selectedUser) return;
 
         try {
+            if (editRole === 'ADMIN' && !editEnableLogin) {
+                setEditError('Rola Admin wymaga włączonego logowania do systemu.');
+                return;
+            }
+
             const body: any = {
                 firstName: editFirstName,
                 lastName: editLastName,
@@ -1110,17 +1115,20 @@ function UserManagement() {
                                 onToggleShow={() => setShowAddPassword((v) => !v)}
                                 className="[&_input]:px-3 [&_input]:py-2"
                             />
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
-                                <select
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                    value={addRole}
-                                    onChange={(e) => setAddRole(e.target.value as any)}
-                                >
-                                    <option value="USER">Użytkownik (USER)</option>
-                                    <option value="ADMIN">Administrator (ADMIN)</option>
-                                </select>
-                            </div>
+                        </div>
+                    )}
+
+                    {addEnableLogin && (
+                        <div className="space-y-1">
+                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                            <select
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                value={addRole}
+                                onChange={(e) => setAddRole(e.target.value as 'USER' | 'ADMIN')}
+                            >
+                                <option value="USER">Zawodnik</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
                         </div>
                     )}
 
@@ -1245,6 +1253,18 @@ function UserManagement() {
                         </div>
                     </div>
 
+                    <div className="space-y-1">
+                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                        <select
+                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                            value={editRole}
+                            onChange={(e) => setEditRole(e.target.value as 'USER' | 'ADMIN')}
+                        >
+                            <option value="USER">Zawodnik</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+                    </div>
+
                     <div className="pt-2 border-t border-bkpk-border-subtle">
                         <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
                             <input
@@ -1281,17 +1301,6 @@ function UserManagement() {
                                 onToggleShow={() => setShowEditPassword((v) => !v)}
                                 className="[&_input]:px-3 [&_input]:py-2"
                             />
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
-                                <select
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
-                                    value={editRole}
-                                    onChange={(e) => setEditRole(e.target.value as any)}
-                                >
-                                    <option value="USER">Użytkownik (USER)</option>
-                                    <option value="ADMIN">Administrator (ADMIN)</option>
-                                </select>
-                            </div>
                         </div>
                     )}
 
