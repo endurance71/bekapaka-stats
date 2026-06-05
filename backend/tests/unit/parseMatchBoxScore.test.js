@@ -75,6 +75,54 @@ describe('parseMatchBoxScore', () => {
     expect(enriched.fourFactors.drb).toBeDefined();
   });
 
+  it('enrichKalkTeamStats copies box totals into fourFactors when fourFactors shell is empty', () => {
+    const enriched = enrichKalkTeamStats(
+      {
+        name: 'GMVT TEAM',
+        pts: 53,
+        fourFactors: {},
+        players: [
+          {
+            name: 'A',
+            pts: 20,
+            fgm: 8,
+            fga: 15,
+            three_pm: 2,
+            three_pa: 5,
+            ftm: 2,
+            fta: 3,
+            tov: 3,
+            orb: 2,
+            drb: 4,
+            ast: 5,
+            reb: 6,
+            blk: 0
+          },
+          {
+            name: 'B',
+            pts: 33,
+            fgm: 12,
+            fga: 20,
+            three_pm: 3,
+            three_pa: 8,
+            ftm: 6,
+            fta: 8,
+            tov: 4,
+            orb: 3,
+            drb: 5,
+            ast: 2,
+            reb: 8,
+            blk: 1
+          }
+        ]
+      },
+      61
+    );
+    expect(enriched.fourFactors.fga).toBe(35);
+    expect(enriched.fourFactors.pts).toBe(53);
+    expect(enriched.fourFactors.tov).toBe(7);
+  });
+
   it('gameViewFromKalkMatch builds panel-compatible game object', () => {
     const html = fs.readFileSync(fixturePath, 'utf8');
     const parsed = parseMatchHtml(html);
