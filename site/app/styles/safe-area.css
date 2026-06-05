@@ -6,6 +6,9 @@
 :root {
   --overlay-vh: 100dvh;
   --overlay-vt: 0px;
+  /* Safari iOS: dolny pasek URL + home indicator (jak .page-bottom-safe-spacer) */
+  --mobile-browser-bottom: 4.25rem;
+  --mobile-menu-bottom-inset: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 @supports (height: 100svh) {
@@ -17,6 +20,10 @@
 /* Mobile Safari: scroll całej strony (nie fixed shell) */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 899px) {
+    :root {
+      --mobile-menu-bottom-inset: calc(env(safe-area-inset-bottom, 0px) + var(--mobile-browser-bottom));
+    }
+
     body.site-body {
       overflow-x: hidden;
       overflow-y: auto;
@@ -48,5 +55,34 @@ html.is-stats-drawer-open,
 html.is-stats-drawer-open body.site-body {
   background-color: var(--bg-app);
   background-image: none;
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 899px) {
+    html.is-overlay-open,
+    html.is-overlay-open body.site-body {
+      min-height: 100dvh;
+      min-height: 100lvh;
+    }
+
+    html.is-overlay-open .mobile-fullscreen-menu.is-visible,
+    html.is-overlay-open .mobile-fullscreen-menu.is-visible .mobile-fullscreen-menu__panel {
+      min-height: 100dvh;
+      min-height: 100lvh;
+    }
+
+    /* Home indicator / pas pod UI Safari — ten sam kolor co aplikacja */
+    html.is-overlay-open::after {
+      content: '';
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: env(safe-area-inset-bottom, 0px);
+      background-color: var(--bg-app);
+      pointer-events: none;
+      z-index: 9998;
+    }
+  }
 }
 
