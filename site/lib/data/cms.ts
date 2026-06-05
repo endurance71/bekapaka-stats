@@ -72,6 +72,15 @@ function stateFromArray<T>(items: T[], errorMessage?: string): DataState<T[]> {
   return { status: 'ok', data: items, source: 'live' }
 }
 
+/** Sort by display date (publishedAtCustom in CMS), newest first. */
+function sortNewsPostsByDate(items: NewsPost[]): NewsPost[] {
+  return [...items].sort((a, b) => {
+    const aTime = Date.parse(a.publishedAt) || 0
+    const bTime = Date.parse(b.publishedAt) || 0
+    return bTime - aTime
+  })
+}
+
 // ==========================================
 // FALLBACK DATA (CMS)
 // ==========================================
@@ -291,7 +300,7 @@ export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]
   try {
     const response = await fetchJsonState<unknown>(
       cmsPath(
-        `/api/news-posts?sort=publishedAt:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true`
+        `/api/news-posts?sort=publishedAtCustom:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true`
       ),
       { headers: cmsHeaders(), revalidate: 300 }
     )
@@ -317,11 +326,13 @@ export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]
       })
       .map((item) => newsPostSchema.parse(item))
 
-    if (items.length === 0) {
+    const sorted = sortNewsPostsByDate(items)
+
+    if (sorted.length === 0) {
       return { status: 'empty', data: fallbackNews.slice(0, limit), source: 'fallback', message: 'Brak wpisów news w CMS.' }
     }
 
-    return stateFromArray(items)
+    return stateFromArray(sorted)
   } catch {
     return { status: 'error', data: fallbackNews.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać aktualności z CMS.' }
   }
