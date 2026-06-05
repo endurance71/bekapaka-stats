@@ -47,6 +47,38 @@ type KalkIngestSummary = {
     divisionKalkMatchesTotal?: number;
 };
 
+interface ScraperProgressBarProps {
+    current: number;
+    total: number;
+    percentage: number;
+    className?: string;
+}
+
+function ScraperProgressBar({ current, total, percentage, className }: ScraperProgressBarProps) {
+    if (total <= 0) return null;
+
+    return (
+        <div className={cn('space-y-2', className)} aria-live="polite" aria-label={`Postęp pobierania: ${percentage} procent`}>
+            <div className="flex justify-between text-xs font-bold text-bkpk-text-muted uppercase">
+                <span>Postęp pobierania stron</span>
+                <span className="text-bkpk-primary">{percentage}% ({current} / {total})</span>
+            </div>
+            <div
+                className="w-full bg-bkpk-surface-tint-2 rounded-full h-2.5 border border-bkpk-border-subtle overflow-hidden"
+                role="progressbar"
+                aria-valuenow={percentage}
+                aria-valuemin={0}
+                aria-valuemax={100}
+            >
+                <div
+                    className="bg-bkpk-primary h-full rounded-full transition-all duration-300 shadow-bkpk-glow"
+                    style={{ width: `${percentage}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
 export default function Administration() {
     const [scraperStatus, setScraperStatus] = useState<ScraperStatus>({
         running: false,
@@ -212,20 +244,14 @@ export default function Administration() {
                         </BkpkButton>
                     </div>
 
-                    {scraperStatus.running && total > 0 && (
-                        <div className="space-y-2 mt-4">
-                            <div className="flex justify-between text-xs font-bold text-bkpk-text-muted uppercase">
-                                <span>Postęp pobierania stron</span>
-                                <span className="text-bkpk-primary">{percentage}% ({current} / {total})</span>
-                            </div>
-                            <div className="w-full bg-bkpk-surface-tint-2 rounded-full h-2.5 border border-bkpk-border-subtle overflow-hidden">
-                                <div 
-                                    className="bg-bkpk-primary h-full rounded-full transition-all duration-300 shadow-bkpk-glow" 
-                                    style={{ width: `${percentage}%` }}
-                                />
-                            </div>
-                        </div>
-                    )}
+                    {scraperStatus.running ? (
+                        <ScraperProgressBar
+                            current={current}
+                            total={total}
+                            percentage={percentage}
+                            className="mt-4"
+                        />
+                    ) : null}
 
                     {scraperStatus.running && (
                         <div className="mt-8 p-6 bg-bkpk-overlay-medium rounded-2xl border border-bkpk-border-strong space-y-2 font-mono text-xs">
@@ -297,6 +323,17 @@ export default function Administration() {
                         {scraperStatus.running && <RefreshCw className="w-5 h-5 animate-spin text-bkpk-primary" />}
                         <span>{scraperStatus.message}</span>
                     </div>
+
+                    {scraperStatus.running ? (
+                        <>
+                            <ScraperProgressBar current={current} total={total} percentage={percentage} />
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-bkpk-text-secondary">
+                                <span>
+                                    <span className="text-bkpk-primary font-bold">Krok:</span> {scraperStatus.step}
+                                </span>
+                            </div>
+                        </>
+                    ) : null}
 
                     <div className="bg-bkpk-overlay-strong p-6 rounded-2xl border border-bkpk-border-strong font-mono text-sm text-bkpk-success h-[400px] overflow-y-auto whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/10">
                         {scraperStatus.lastLog || "Oczekiwanie na logi..."}
