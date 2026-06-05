@@ -30,6 +30,14 @@ export default function MatchCard({
 }: MatchCardProps) {
     const isPlayed = result !== undefined && result !== null;
     const isWin = result === 'W';
+    const isHome = homeAway === 'home';
+    const leftScore = isHome ? scoreUs : scoreThem;
+    const rightScore = isHome ? scoreThem : scoreUs;
+    const ourScoreClass = cn(
+        isWin && 'text-bkpk-success',
+        !isWin && isPlayed && 'text-bkpk-danger',
+    );
+    const theirScoreClass = 'text-bkpk-text-muted';
 
     return (
         <BkpkCard
@@ -77,20 +85,12 @@ export default function MatchCard({
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center">
                                 <div className="text-2xl md:text-3xl font-black font-outfit flex items-center gap-1.5">
-                                    <span className={cn(
-                                        result === 'W' && "text-bkpk-success",
-                                        result === 'L' && "text-bkpk-text-danger",
-                                        !result && "text-bkpk-text-primary"
-                                    )}>
-                                        {scoreUs}
+                                    <span className={cn(isHome ? ourScoreClass : theirScoreClass)}>
+                                        {leftScore}
                                     </span>
                                     <span className="text-bkpk-text-muted font-bold">:</span>
-                                    <span className={cn(
-                                        result === 'W' && "text-bkpk-text-muted",
-                                        result === 'L' && "text-bkpk-text-primary",
-                                        !result && "text-bkpk-text-primary"
-                                    )}>
-                                        {scoreThem}
+                                    <span className={cn(isHome ? theirScoreClass : ourScoreClass)}>
+                                        {rightScore}
                                     </span>
                                 </div>
                                 {mvp && (

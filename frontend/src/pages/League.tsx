@@ -4,7 +4,7 @@ import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
 import TopScorersModern from '../features/league/TopScorersModern';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
-import { Trophy, Calendar, Target, Activity } from 'lucide-react';
+import { Trophy, Calendar, Target } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 
 type Tab = 'table' | 'schedule' | 'scorers';
@@ -26,14 +26,6 @@ export default function League() {
                 {/* Header Section */}
                 <header className="space-y-2">
                     <div className="space-y-2">
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-xs"
-                        >
-                            <Activity className="w-4 h-4" />
-                            <span>Koszalińska Amatorska Liga Koszykówki</span>
-                        </motion.div>
                         <motion.h1
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}

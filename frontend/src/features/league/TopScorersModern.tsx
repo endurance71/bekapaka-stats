@@ -174,7 +174,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Top 3 Podium */}
-                    <div className="md:col-span-12 lg:col-span-4 space-y-4 order-2 lg:order-1">
+                    <div className="md:col-span-12 lg:col-span-4 space-y-4 order-1">
                         <div className="flex items-center gap-2 mb-6">
                             <CategoryIcon className="w-5 h-5 text-bkpk-primary" />
                             <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit uppercase tracking-tight">
@@ -200,22 +200,26 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             isBkpk && "border-bkpk-primary/30"
                                         )}
                                     >
-                                        <div className="relative z-10 flex items-center gap-4">
-                                            {/* Photo Thumbnail with Badge rank */}
+                                        <div className="relative z-10 flex items-center gap-3 sm:gap-4">
+                                            <div
+                                                className={cn(
+                                                    'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-base font-black font-outfit tabular-nums border-2 shadow-lg',
+                                                    idx === 0 && 'bg-bkpk-medal-gold border-bkpk-primary text-black',
+                                                    idx === 1 && 'bg-bkpk-medal-silver border-bkpk-border-strong text-black',
+                                                    idx === 2 && 'bg-bkpk-medal-bronze border-bkpk-warning/60 text-black'
+                                                )}
+                                                aria-label={`Miejsce ${idx + 1}`}
+                                            >
+                                                {idx + 1}
+                                            </div>
                                             <div className="relative shrink-0">
-                                                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-bkpk-border-strong bg-bkpk-surface flex items-center justify-center">
+                                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-bkpk-border-strong bg-bkpk-surface flex items-center justify-center">
                                                     <img
                                                         src={resolveLeaderPhoto(player)}
                                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                                         className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
                                                         alt=""
                                                     />
-                                                </div>
-                                                <div className={cn(
-                                                    "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-outfit text-[10px] text-white border border-bkpk-bg shadow-lg",
-                                                    idx === 0 ? "bg-bkpk-medal-gold text-black" : idx === 1 ? "bg-bkpk-medal-silver text-black" : "bg-bkpk-medal-bronze text-black"
-                                                )}>
-                                                    {idx + 1}
                                                 </div>
                                             </div>
 
@@ -241,7 +245,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                     </div>
 
                     {/* Rest of the List (4-20) */}
-                    <div className="md:col-span-12 lg:col-span-8 order-1 lg:order-2">
+                    <div className="md:col-span-12 lg:col-span-8 order-2">
                         <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
                             {showCards ? (
                             <MobileDataList>

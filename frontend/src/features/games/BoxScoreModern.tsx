@@ -37,7 +37,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx }: { player: PlayerStat;
             transition={{ delay: idx * 0.03 }}
             className="group hover:bg-bkpk-surface-tint-2 transition-colors"
         >
-            <td className="px-2 sm:px-4 py-2 sm:py-3 font-bold text-bkpk-text-primary sticky left-0 z-10 bg-bkpk-surface group-hover:bg-bkpk-surface-elevated transition-colors border-r border-bkpk-border-strong min-w-[120px] max-w-[140px]">
+            <td className="px-2 sm:px-4 py-2 sm:py-3 font-bold text-bkpk-text-primary sticky left-0 z-10 bg-bkpk-surface group-hover:bg-bkpk-surface-elevated transition-colors border-r border-bkpk-border-strong min-w-[120px] max-w-[140px] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.45)]">
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 min-w-0">
                         {player.number && <span className="text-[10px] sm:text-xs text-bkpk-primary tabular-nums shrink-0">#{player.number}</span>}
@@ -70,7 +70,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx }: { player: PlayerStat;
 });
 
 const headers = [
-    { label: 'Zawodnik', className: 'text-left min-w-[120px] sticky left-0 z-10 bg-bkpk-surface-tint-2' },
+    { label: 'Zawodnik', className: 'text-left min-w-[120px] sticky left-0 z-20 bg-bkpk-surface border-r border-bkpk-border-strong shadow-[4px_0_8px_-2px_rgba(0,0,0,0.45)]' },
     { label: 'MIN', className: 'text-center text-bkpk-text-secondary whitespace-nowrap' },
     { label: 'PTS', className: 'text-center font-bold text-bkpk-primary whitespace-nowrap' },
     { label: 'REB', className: 'text-center text-bkpk-text-secondary whitespace-nowrap' },

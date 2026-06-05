@@ -260,14 +260,19 @@ export default function MobileFullScreenMenu({
                         <X className="w-5 h-5" />
                     </button>
 
-                    <div className="pointer-events-none absolute inset-x-4 flex flex-col items-center justify-center text-center min-w-0 px-12">
+                    <Link
+                        to="/dashboard"
+                        onClick={handleRequestClose}
+                        className="absolute inset-x-4 z-[5] flex flex-col items-center justify-center text-center min-w-0 px-12 touch-manipulation"
+                        aria-label="Przejdź do pulpitu"
+                    >
                         <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary truncate max-w-full">
                             BeKaPaKa
                         </div>
                         <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">
                             Centrum statystyk
                         </div>
-                    </div>
+                    </Link>
 
                     {user ? (
                         <Link
@@ -301,7 +306,7 @@ export default function MobileFullScreenMenu({
                 />
 
                 <nav
-                    className="flex-1 min-h-0 mx-4 overflow-y-auto no-scrollbar rounded-2xl border border-bkpk-border-subtle bg-bkpk-surface-tint-1/40 p-1.5"
+                    className="flex-1 min-h-0 mx-4 mb-4 overflow-y-auto no-scrollbar rounded-2xl border border-bkpk-border-subtle bg-bkpk-surface-tint-1/40 p-1.5 pb-[calc(0.75rem+var(--safe-area-bottom))]"
                     aria-label="Sekcje aplikacji"
                 >
                     {links.map((link) => {
@@ -338,18 +343,15 @@ export default function MobileFullScreenMenu({
                             </NavLink>
                         );
                     })}
-                </nav>
-
-                <div className="shrink-0 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-bkpk-bg border-t border-bkpk-border-subtle">
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-bkpk-text-danger font-bold text-sm min-h-[44px] active:bg-bkpk-danger/10"
+                        className="group flex items-center gap-4 w-full px-3 py-3.5 rounded-xl font-bold text-sm tracking-tight transition-all duration-200 min-h-[48px] text-bkpk-text-danger active:bg-bkpk-danger/10 border border-transparent touch-manipulation"
                     >
-                        <LogOut className="w-4 h-4" />
-                        Wyloguj
+                        <LogOut className="w-5 h-5 shrink-0" strokeWidth={2} />
+                        <span className="flex-1 text-left">Wyloguj</span>
                     </button>
-                </div>
+                </nav>
             </div>
         </div>,
         document.body

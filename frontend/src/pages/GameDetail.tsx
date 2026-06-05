@@ -72,6 +72,8 @@ export default function GameDetail() {
 
   const bekapaka = useMemo(() => game?.teams?.find((t: any) => t.isBekapaka) || game?.teams?.[0] || { name: 'BeKaPaKa', isBekapaka: true, players: [] }, [game]);
   const opponentTeam = useMemo(() => game?.teams?.find((t: any) => !t.isBekapaka) || game?.teams?.[1] || { name: game?.opponent || 'Rywal', isBekapaka: false, players: [] }, [game]);
+  const isWin = game?.result === 'W';
+  const isLoss = game?.result === 'L';
 
   if (loading) {
     return (
@@ -111,10 +113,22 @@ export default function GameDetail() {
 
             {/* Score */}
             <div className="flex flex-col items-center gap-2 shrink-0">
-              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-outfit text-bkpk-text-primary flex items-center gap-2 md:gap-6 tabular-nums">
-                <span>{game.scoreUs ?? 0}</span>
+              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-outfit flex items-center gap-2 md:gap-6 tabular-nums">
+                <span className={cn(
+                  isWin && 'text-bkpk-success',
+                  isLoss && 'text-bkpk-danger',
+                  !isWin && !isLoss && 'text-bkpk-text-primary'
+                )}>
+                  {game.scoreUs ?? 0}
+                </span>
                 <span className="text-white/10 text-2xl md:text-4xl">:</span>
-                <span>{game.scoreThem ?? 0}</span>
+                <span className={cn(
+                  isWin && 'text-bkpk-text-muted',
+                  isLoss && 'text-bkpk-text-primary',
+                  !isWin && !isLoss && 'text-bkpk-text-primary'
+                )}>
+                  {game.scoreThem ?? 0}
+                </span>
               </div>
               <div className="hidden sm:flex items-center gap-4 text-bkpk-text-secondary font-bold text-xs uppercase tracking-widest bg-bkpk-surface-tint-2 px-4 py-2 rounded-full border border-bkpk-border-strong">
                 <div className="flex items-center gap-1.5">

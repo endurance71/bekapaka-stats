@@ -51,9 +51,11 @@ services:
     working_dir: /app
     volumes:
       - ./frontend:/app_sync:delegated
+      - ./packages:/packages:delegated
       - /app/node_modules
     environment:
       TZ: Europe/Warsaw
+      SAFARI_OVERLAY_PATH: /packages/safari-overlay
       VITE_API_TARGET: http://backend:4000
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"

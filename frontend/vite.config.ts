@@ -23,7 +23,14 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const copyFullPublic = process.env.VITE_COPY_FULL_PUBLIC === '1';
 
-  const safariOverlay = resolve(__dirname, '../packages/safari-overlay');
+  const safariOverlayCandidates = [
+    process.env.SAFARI_OVERLAY_PATH,
+    resolve(__dirname, '../packages/safari-overlay'),
+    '/packages/safari-overlay',
+  ].filter(Boolean) as string[];
+  const safariOverlay =
+    safariOverlayCandidates.find((path) => existsSync(path)) ??
+    safariOverlayCandidates[0]!;
 
   return {
     resolve: {
