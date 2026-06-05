@@ -43,97 +43,107 @@ export default async function SponsorsPage() {
 }
 
 function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
-  return (
-    <article
-      className='content-card'
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 20px',
-        textAlign: 'center',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        background: 'rgba(255, 255, 255, 0.02)',
-        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-        borderRadius: '20px',
-        minHeight: '200px',
-        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease'
-      }}
-    >
-      {sponsor.logoUrl ? (
-        <div
-          style={{
-            width: '100%',
-            height: '80px',
-            marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
+  const isLink = !!sponsor.websiteUrl
+  const initials = sponsor.name.slice(0, 2).toUpperCase()
+
+  // Dynamic categorization for a highly professional copy layout
+  const getSponsorDetails = (name: string) => {
+    const normalized = name.toLowerCase()
+    if (
+      normalized.includes('gmina') ||
+      normalized.includes('nadleśnictwo') ||
+      normalized.includes('cesir') ||
+      normalized.includes('urząd') ||
+      normalized.includes('lasy państwowe')
+    ) {
+      return {
+        badge: 'Partner Publiczny',
+        description: 'Wspiera rozwój lokalnego sportu i inicjatywy sportowe w gminie Bobolice.'
+      }
+    }
+
+    if (
+      normalized.includes('adamus') ||
+      normalized.includes('jaświg') ||
+      normalized.includes('klimek') ||
+      normalized.includes('remek')
+    ) {
+      return {
+        badge: 'Sponsor Prywatny',
+        description: 'Darczyńca i przyjaciel klubu, bezpośrednio wspierający naszą drużynę.'
+      }
+    }
+
+    return {
+      badge: 'Partner Biznesowy',
+      description: 'Mecenas sportu pomagający w rozwoju organizacyjnym stowarzyszenia.'
+    }
+  }
+
+  const { badge, description } = getSponsorDetails(sponsor.name)
+
+  const cardContent = (
+    <>
+      <span className='sponsor-card-premium__badge'>{badge}</span>
+      <div className='sponsor-card-premium__logo-container'>
+        {sponsor.logoUrl ? (
           <img
             src={sponsor.logoUrl}
             alt={sponsor.name}
-            style={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain'
-            }}
+            className='sponsor-card-premium__logo'
           />
-        </div>
-      ) : (
-        <div
-          style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '16px',
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            display: 'grid',
-            placeItems: 'center',
-            fontFamily: 'var(--font-bebas-neue), sans-serif',
-            fontSize: '1.6rem',
-            color: 'var(--text-muted)',
-            marginBottom: '12px'
-          }}
-        >
-          {sponsor.name.slice(0, 2).toUpperCase()}
-        </div>
-      )}
-      <h3
-        style={{
-          fontFamily: 'var(--font-bebas-neue), sans-serif',
-          fontSize: '1.4rem',
-          margin: '0 0 12px',
-          letterSpacing: '0.02em',
-          color: '#fff',
-          width: '100%',
-          overflowWrap: 'break-word',
-          wordBreak: 'break-word'
-        }}
-      >
-        {sponsor.name}
-      </h3>
+        ) : (
+          <div className='sponsor-card-premium__emblem'>
+            <div className='sponsor-card-premium__emblem-ring' />
+            <div className='sponsor-card-premium__emblem-shield'>
+              <span className='sponsor-card-premium__emblem-star'>★</span>
+              <span>{initials}</span>
+            </div>
+          </div>
+        )}
+      </div>
+      <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
+      <p className='sponsor-card-premium__description'>{description}</p>
       {sponsor.websiteUrl ? (
-        <a
-          href={sponsor.websiteUrl}
-          target='_blank'
-          rel='noreferrer'
-          className='button button--ghost'
-          style={{
-            fontSize: '10px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            minHeight: '44px',
-            minWidth: '88px',
-            padding: '8px 14px',
-            marginTop: 'auto'
-          }}
-        >
-          Strona
-        </a>
+        <span className='sponsor-card-premium__btn'>
+          Odwiedź stronę
+          <svg
+            width='12'
+            height='12'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2.5'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+            aria-hidden='true'
+          >
+            <path d='M7 17L17 7M17 7H7M17 7V17' />
+          </svg>
+        </span>
       ) : null}
-    </article>
+    </>
+  )
+
+  if (isLink) {
+    return (
+      <a
+        id={`sponsor-link-${sponsor.id}`}
+        href={sponsor.websiteUrl}
+        target='_blank'
+        rel='noreferrer'
+        className='sponsor-card-premium'
+      >
+        {cardContent}
+      </a>
+    )
+  }
+
+  return (
+    <div id={`sponsor-card-${sponsor.id}`} className='sponsor-card-premium'>
+      {cardContent}
+    </div>
   )
 }
+
+

@@ -3810,3 +3810,284 @@
   }
 }
 
+/* Premium Sponsor Card Styles */
+.sponsor-card-premium {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: var(--space-6) var(--space-5);
+  text-align: center;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: radial-gradient(circle at 50% 0%, rgba(236, 167, 44, 0.08), transparent 60%), 
+              linear-gradient(145deg, rgba(20, 20, 24, 0.8) 0%, rgba(10, 10, 12, 0.95) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  min-height: 290px;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Shimmer shine effect */
+.sponsor-card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  transition: none;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.sponsor-card-premium:hover::before {
+  left: 150%;
+  transition: left 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sponsor-card-premium::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, rgba(236, 167, 44, 0.25) 0%, transparent 45%, transparent 100%) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.sponsor-card-premium:hover {
+  transform: translateY(-8px);
+  border-color: rgba(236, 167, 44, 0.4);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6), 
+              0 0 30px rgba(236, 167, 44, 0.15);
+}
+
+.sponsor-card-premium:hover::after {
+  opacity: 1;
+}
+
+.sponsor-card-premium__badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bkp-gold);
+  background: rgba(236, 167, 44, 0.06);
+  border: 1px solid rgba(236, 167, 44, 0.2);
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-bottom: var(--space-4);
+  align-self: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__badge {
+  background: var(--bkp-gold);
+  color: #000;
+  border-color: var(--bkp-gold);
+  box-shadow: 0 0 8px rgba(236, 167, 44, 0.3);
+}
+
+.sponsor-card-premium__logo-container {
+  width: 100%;
+  height: 96px;
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.sponsor-card-premium__logo-container::before {
+  content: '';
+  position: absolute;
+  inset: var(--space-3);
+  background: radial-gradient(circle, rgba(236, 167, 44, 0.15) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__logo-container {
+  background: rgba(0, 0, 0, 0.45);
+  border-color: rgba(236, 167, 44, 0.2);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__logo-container::before {
+  opacity: 1;
+}
+
+.sponsor-card-premium__logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(1) opacity(0.65) brightness(0.95);
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__logo {
+  filter: grayscale(0) opacity(1) brightness(1.05);
+  transform: scale(1.04);
+}
+
+/* Fallback Monogram Emblem */
+.sponsor-card-premium__emblem {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.sponsor-card-premium__emblem-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px dashed rgba(236, 167, 44, 0.35);
+  transition: transform 0.8s ease, border-color 0.3s ease;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__emblem-ring {
+  transform: rotate(90deg);
+  border-color: var(--bkp-gold);
+}
+
+.sponsor-card-premium__emblem-shield {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(236, 167, 44, 0.16) 0%, rgba(236, 167, 44, 0.02) 100%);
+  border: 1px solid rgba(236, 167, 44, 0.25);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.5rem;
+  color: var(--bkp-gold);
+  text-shadow: 0 0 8px rgba(236, 167, 44, 0.35);
+  transition: all 0.3s ease;
+}
+
+.sponsor-card-premium__emblem-star {
+  font-size: 0.55rem;
+  color: var(--bkp-gold);
+  margin-top: -4px;
+  margin-bottom: 2px;
+  opacity: 0.8;
+  text-shadow: 0 0 6px rgba(236, 167, 44, 0.5);
+  transition: transform 0.3s ease;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__emblem-shield {
+  transform: scale(1.06);
+  background: linear-gradient(135deg, rgba(236, 167, 44, 0.25) 0%, rgba(236, 167, 44, 0.05) 100%);
+  border-color: var(--bkp-gold);
+  box-shadow: 0 8px 20px rgba(236, 167, 44, 0.15);
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__emblem-star {
+  transform: scale(1.2) rotate(36deg);
+}
+
+.sponsor-card-premium__name {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  margin: 0 0 4px;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  transition: color 0.3s ease;
+  z-index: 2;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__name {
+  color: var(--bkp-gold);
+}
+
+.sponsor-card-premium__description {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-4);
+  max-width: 32ch;
+  transition: color 0.3s ease;
+  z-index: 2;
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__description {
+  color: var(--text-soft);
+}
+
+.sponsor-card-premium__btn {
+  margin-top: auto;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  min-height: 38px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(236, 167, 44, 0.4);
+  color: var(--bkp-gold);
+  background: transparent;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.sponsor-card-premium__btn svg {
+  transition: transform 0.3s ease;
+}
+
+/* When the parent card is hovered, change the button styling */
+.sponsor-card-premium:hover .sponsor-card-premium__btn {
+  background: var(--bkp-gold);
+  color: #000;
+  border-color: var(--bkp-gold);
+  box-shadow: 0 0 15px rgba(236, 167, 44, 0.4);
+}
+
+.sponsor-card-premium:hover .sponsor-card-premium__btn svg {
+  transform: translate(2px, -2px);
+}
+
