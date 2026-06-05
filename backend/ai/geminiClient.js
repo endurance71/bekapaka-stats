@@ -1,7 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { AiConfigError } from './errors.js';
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 const TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 60000);
 const DEFAULT_MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || 8192);
 

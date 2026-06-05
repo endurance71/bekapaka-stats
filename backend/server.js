@@ -385,7 +385,7 @@ const handleAiRouteError = (err, res) => {
 app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
   res.json({
     configured: isGeminiConfigured(),
-    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash'
   });
 });
 
