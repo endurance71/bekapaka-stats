@@ -3,6 +3,7 @@ import { AiConfigError } from './errors.js';
 
 const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 60000);
+const DEFAULT_MAX_OUTPUT_TOKENS = Number(process.env.GEMINI_MAX_OUTPUT_TOKENS || 8192);
 
 let client = null;
 
@@ -18,15 +19,30 @@ function getClient() {
 }
 
 /**
- * @param {{ system: string, user: string, jsonMode?: boolean, maxOutputTokens?: number }} params
+ * @param {import('@google/genai').GenerateContentResponse} response
+ * @returns {string | undefined}
+ */
+function getFinishReason(response) {
+  return response?.candidates?.[0]?.finishReason ?? response?.finishReason;
+}
+
+/**
+ * @param {{ system: string, user: string, jsonMode?: boolean, maxOutputTokens?: number, disableThinking?: boolean }} params
  * @returns {Promise<string>}
  */
-export async function generateText({ system, user, jsonMode = false, maxOutputTokens }) {
+export async function generateText({
+  system,
+  user,
+  jsonMode = false,
+  maxOutputTokens,
+  disableThinking = true
+}) {
   if (process.env.AI_ANALYSIS_ENABLED === 'false') {
     throw new AiConfigError('Analiza AI jest wyłączona (AI_ANALYSIS_ENABLED=false)');
   }
 
   const ai = getClient();
+  const outputTokenLimit = maxOutputTokens ?? DEFAULT_MAX_OUTPUT_TOKENS;
 
   try {
     const response = await ai.models.generateContent({
@@ -35,15 +51,25 @@ export async function generateText({ system, user, jsonMode = false, maxOutputTo
       config: {
         systemInstruction: system,
         temperature: 0.35,
-        maxOutputTokens: maxOutputTokens ?? 2048,
+        maxOutputTokens: outputTokenLimit,
+        ...(disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
         ...(jsonMode ? { responseMimeType: 'application/json' } : {})
       }
     });
 
+    const finishReason = getFinishReason(response);
     const text = (response.text || '').trim();
+
     if (!text) {
       throw new Error('Pusta odpowiedź modelu');
     }
+
+    if (finishReason === 'MAX_TOKENS') {
+      throw new Error(
+        `Odpowiedź modelu została ucięta (MAX_TOKENS, limit ${outputTokenLimit}). Spróbuj ponownie lub zwiększ GEMINI_MAX_OUTPUT_TOKENS.`
+      );
+    }
+
     return text;
   } catch (err) {
     const msg = err?.message || String(err);

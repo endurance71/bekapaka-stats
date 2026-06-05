@@ -19,6 +19,8 @@ import {
   parseScoutingJson
 } from './scoutingMarkdown.js';
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
+import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
+import { hasCompleteMatchAnalysisMarkdown } from './matchAnalysisMarkdown.js';
 import { getActiveSeason } from '../seasonService.js';
 
 
@@ -178,7 +180,8 @@ export async function generateGameAnalysis(gameId, options = {}) {
     if (
       !options.force &&
       existing?.aiSummary &&
-      existing.aiSummaryHash === ctx.hash
+      existing.aiSummaryHash === ctx.hash &&
+      hasCompleteMatchAnalysisMarkdown(existing.aiSummary)
     ) {
       return {
         cached: true,
@@ -190,8 +193,13 @@ export async function generateGameAnalysis(gameId, options = {}) {
 
     const text = await generateText({
       system: MATCH_ANALYSIS_SYSTEM,
-      user: buildMatchAnalysisUser(ctx.payload, ctx.ruleInsights)
+      user: buildMatchAnalysisUser(ctx.payload, ctx.ruleInsights),
+      maxOutputTokens: 8192
     });
+
+    if (!hasCompleteMatchAnalysisMarkdown(text)) {
+      throw new Error('Wygenerowana analiza meczu jest niekompletna — spróbuj ponownie');
+    }
 
     const model = getGeminiModelName();
     const now = new Date();
@@ -357,7 +365,12 @@ export async function generateTeamBriefing(options = {}) {
     const ctx = await buildBriefingContext();
     const existing = await prisma.teamBriefing.findUnique({ where: { id: 'default' } });
 
-    if (!options.force && existing?.sourceHash === ctx.hash && existing.contentMd) {
+    if (
+      !options.force &&
+      existing?.sourceHash === ctx.hash &&
+      existing.contentMd &&
+      hasCompleteBriefingMarkdown(existing.contentMd)
+    ) {
       return {
         cached: true,
         contentMd: existing.contentMd,
@@ -368,8 +381,13 @@ export async function generateTeamBriefing(options = {}) {
 
     const text = await generateText({
       system: BRIEFING_SYSTEM,
-      user: buildBriefingUser(ctx.payload)
+      user: buildBriefingUser(ctx.payload),
+      maxOutputTokens: 4096
     });
+
+    if (!hasCompleteBriefingMarkdown(text)) {
+      throw new Error('Wygenerowany briefing jest niekompletny — spróbuj ponownie');
+    }
 
     const model = getGeminiModelName();
     const now = new Date();

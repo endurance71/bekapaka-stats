@@ -1,5 +1,6 @@
 import { generateGameInsights } from '../insights.js';
 import { hashGameForAi } from '../ai/buildMatchContext.js';
+import { hasCompleteMatchAnalysisMarkdown } from '../ai/matchAnalysisMarkdown.js';
 import { enrichKalkTeamStats, gameViewFromKalkMatch, isBekapakaTeamName } from './parseMatchBoxScore.js';
 
 /**
@@ -59,7 +60,9 @@ export function kalkMatchToGameDetail(km) {
     view.aiSummaryModel = km.aiSummaryModel;
     view.aiSummaryHash = km.aiSummaryHash;
     const currentHash = hashGameForAi(view);
-    view.aiSummaryStale = Boolean(currentHash && currentHash !== km.aiSummaryHash);
+    view.aiSummaryStale =
+      !hasCompleteMatchAnalysisMarkdown(km.aiSummary) ||
+      Boolean(currentHash && currentHash !== km.aiSummaryHash);
   }
 
   return view;
