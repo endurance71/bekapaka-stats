@@ -200,6 +200,7 @@ export function enrichKalkTeamStats(team, oppPts = 0) {
 
   const fourFactors = {
     ...existingFf,
+    ...totals,
     ...withShootingMetrics({ ...totals, opp_pts: oppPts, min: existingFf.min || team.min || '40:00' })
   };
 
