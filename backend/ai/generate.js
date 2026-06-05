@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { buildBriefingContext } from './buildBriefingContext.js';
 import { buildMatchContext } from './buildMatchContext.js';
 import { buildPlayerContext } from './buildPlayerContext.js';
@@ -21,7 +21,6 @@ import {
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
 import { getActiveSeason } from '../seasonService.js';
 
-const prisma = new PrismaClient();
 
 const aiSummarySelect = {
   aiSummary: true,

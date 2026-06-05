@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma.js';
 import { hashGameForAi } from './ai/buildMatchContext.js';
 import { hashPayload } from './ai/hash.js';
 import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
@@ -77,7 +77,6 @@ const SECRET_KEY = getJwtSecret();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const prisma = new PrismaClient();
 
 let seeded = false;
 let seeding = false;

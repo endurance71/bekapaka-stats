@@ -1,6 +1,5 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 
-const prisma = new PrismaClient();
 
 const roster = [
   { id: 'bk1', firstName: 'Damian', lastName: 'Motyliński', number: 24, position: 'SF', heightCm: 185, starter: true },

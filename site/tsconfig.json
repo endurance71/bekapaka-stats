@@ -15,7 +15,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "incremental": true,
     "plugins": [
       {
@@ -24,8 +24,12 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
-      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"]
+      "@bekapaka/safari-overlay": [
+        "../packages/safari-overlay/index.ts"
+      ],
+      "@bekapaka/safari-overlay/*": [
+        "../packages/safari-overlay/*"
+      ]
     }
   },
   "include": [
@@ -33,7 +37,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../packages/safari-overlay/**/*.ts"
+    "../packages/safari-overlay/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules"

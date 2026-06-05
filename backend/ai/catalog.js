@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { listGames } from '../dataStore.js';
 import { kalkMatchToGameDetail } from '../kalk/kalkGameView.js';
 import { isBekapakaTeamName } from '../kalk/parseMatchBoxScore.js';
@@ -9,7 +9,6 @@ import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
 import { getGeminiModelName, isGeminiConfigured } from './geminiClient.js';
 import { normalizeOpponentKey } from './normalizeOpponent.js';
 
-const prisma = new PrismaClient();
 
 const BEKAPAKA_KALK_MATCH_OR = [
   { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },

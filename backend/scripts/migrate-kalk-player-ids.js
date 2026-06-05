@@ -6,11 +6,10 @@
  *   node backend/scripts/migrate-kalk-player-ids.js
  *   node backend/scripts/migrate-kalk-player-ids.js --dry-run
  */
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { buildKalkPlayerDbId } from '../lib/kalkSeason.js';
 import { ensureDefaultSeason, getActiveSeason } from '../seasonService.js';
 
-const prisma = new PrismaClient();
 const dryRun = process.argv.includes('--dry-run');
 
 await ensureDefaultSeason();

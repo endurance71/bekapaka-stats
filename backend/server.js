@@ -64,10 +64,9 @@ import { isGeminiConfigured } from './ai/geminiClient.js';
 import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma.js';
 import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 
-const prisma = new PrismaClient();
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,9 +1,19 @@
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { requireEnv } from '../lib/requireEnv.js';
 
-const prisma = new PrismaClient();
+
+/** Nazwisko → login ASCII (bez polskich znaków, lowercase). */
+function lastNameToUsername(lastName) {
+    return lastName
+        .replace(/ł/g, 'l')
+        .replace(/Ł/g, 'L')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
 
 async function seedUsers() {
     const plainPassword = requireEnv('SEED_DEFAULT_PASSWORD', { minLength: 8 });
@@ -29,14 +39,8 @@ async function seedUsers() {
     }
 
     for (const player of players) {
-        const username = player.lastName
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase()
-            .trim();
-
-        const normalizedName = player.lastName
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase();
+        const username = lastNameToUsername(player.lastName);
+        const normalizedName = lastNameToUsername(player.lastName);
 
         const role = normalizedName.includes('motylinski') ? 'ADMIN' : 'USER';
 

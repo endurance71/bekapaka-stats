@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { buildKalkPlayerDbId, parseKalkExternalId } from '../lib/kalkSeason.js';
 import { ensureDefaultSeason, getActiveSeason } from '../seasonService.js';
 import { isBekapakaTeamName } from './parseMatchBoxScore.js';
 import { matchPairDayKey, normalizeTeamNameForMatch } from '../lib/kalkTeamNames.js';
 
-const prisma = new PrismaClient();
 
 const BEKAPAKA_LEAGUE_MATCH_OR = [
   { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },

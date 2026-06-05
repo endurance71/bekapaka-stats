@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     resolve: {
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@bekapaka/safari-overlay': safariOverlay,
       },
