@@ -196,7 +196,7 @@ curl -s http://127.0.0.1:3000/api/v1/health 2>/dev/null || echo "sprawdź dokume
 - Hasła i `JWT_SECRET` w `/opt/bekapaka-stats/.env` (nie w `docker-compose.prod.yml`).
 - **Rotacja po wycieku:** [security-rotation.md](./security-rotation.md).
 - **Backup bazy:** tylko poza repo (`pg_dump`, katalog `VPS-dane/`, lokalny dysk). Nigdy nie commituj `data/pgdata/` ani `data/pgdata_backup*/`.
-- **Analiza AI (Gemini):** `GEMINI_API_KEY` z [Google AI Studio](https://aistudio.google.com/apikey) — opcjonalnie `GEMINI_MODEL=gemini-2.5-flash`.
+- **Analiza AI (Gemini):** `GEMINI_API_KEY` z [Google AI Studio](https://aistudio.google.com/apikey) — opcjonalnie `GEMINI_MODEL=gemini-3.5-flash`.
 - Po pierwszym deployu AI uruchom migrację w kontenerze backend: `npx prisma migrate deploy`.
 - **Nigdy** nie commituj `.env` z produkcją do git.
 - Osobna baza: `bekapaka_stats` (nie współdzielona z MOYA).

@@ -29,7 +29,7 @@ services:
       PORT: 4001
       JWT_SECRET: ${JWT_SECRET}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       AI_ANALYSIS_ENABLED: ${AI_ANALYSIS_ENABLED:-true}
       KALK_CRON_SECRET: ${KALK_CRON_SECRET}
       TZ: Europe/Warsaw

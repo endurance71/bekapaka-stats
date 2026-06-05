@@ -30,7 +30,7 @@ services:
       PORT: 4000
       TZ: Europe/Warsaw
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.5-flash}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       AI_ANALYSIS_ENABLED: ${AI_ANALYSIS_ENABLED:-true}
       WATCHPACK_POLLING: "true"
       CHOKIDAR_USEPOLLING: "true"
