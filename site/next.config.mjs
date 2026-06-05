@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  /* react-markdown / micromark — importy z dev/ muszą się poprawnie rozwiązywać w Webpack */
+  /* Monorepo: webpack build resolves ../packages; Turbopack dev needs repo root */
   transpilePackages: [
     'react-markdown',
     'micromark',

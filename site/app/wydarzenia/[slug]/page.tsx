@@ -12,6 +12,7 @@ export async function generateMetadata(): Promise<Metadata> {
   }
 }
 
-export default function EventDetailPage({ params }: { params: Params }) {
-  redirect(`/mecze/${params.slug}`)
+export default async function EventDetailPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params
+  redirect(`/mecze/${slug}`)
 }

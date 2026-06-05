@@ -45,9 +45,9 @@ export function ArticleMarkdown({ content }: { content: string }) {
   }
 
   return (
-    <ReactMarkdown
-      className='article-markdown'
-      components={{
+    <div className='article-markdown'>
+      <ReactMarkdown
+        components={{
         h2: ({ children }) => <h2 className='article-markdown__h2'>{children}</h2>,
         h3: ({ children }) => <h3 className='article-markdown__h3'>{children}</h3>,
         p: ({ children }) => <p>{children}</p>,
@@ -62,8 +62,9 @@ export function ArticleMarkdown({ content }: { content: string }) {
           </a>
         )
       }}
-    >
-      {normalizeNewsMarkdown(content)}
-    </ReactMarkdown>
+      >
+        {normalizeNewsMarkdown(content)}
+      </ReactMarkdown>
+    </div>
   )
 }

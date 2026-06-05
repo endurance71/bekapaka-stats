@@ -1,10 +1,9 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { getPlayerStats, getTrainingPriorities } from '../dataStore.js';
 import { hashPayload } from './hash.js';
 import { computePlayerSignals } from './playerSignals.js';
 import { AiValidationError } from './errors.js';
 
-const prisma = new PrismaClient();
 
 function getPositionProfile(positionRaw) {
   const position = (positionRaw || '').toUpperCase().trim();

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './lib/prisma.js';
 import {
   DEFAULT_SEASON_SLUG,
   seasonRowId,
@@ -8,7 +8,6 @@ import {
   resolveSeasonIdForDate
 } from './lib/kalkSeason.js';
 
-const prisma = new PrismaClient();
 
 let defaultSeasonEnsured = false;
 

@@ -3,7 +3,7 @@
  * Usage (never commit the password):
  *   SET_PASSWORD='...' node backend/scripts/set-user-password.js motylinski
  */
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
 const username = (process.argv[2] || '').toLowerCase().trim();
@@ -19,7 +19,6 @@ if (!plain || plain.length < 8) {
   process.exit(1);
 }
 
-const prisma = new PrismaClient();
 
 try {
   const user = await prisma.rosterPlayer.findFirst({

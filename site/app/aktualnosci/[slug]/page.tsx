@@ -27,8 +27,9 @@ export async function generateStaticParams() {
   return items.map((item) => ({ slug: item.slug }))
 }
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const item = await getNewsBySlug(params.slug)
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { slug } = await params
+  const item = await getNewsBySlug(slug)
   if (!item) return { title: 'Aktualnosc | BeKaPaKa Bobolice' }
   return {
     ...getSiteMetadataBase(),
@@ -37,8 +38,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   }
 }
 
-export default async function NewsDetailPage({ params }: { params: Params }) {
-  const item = await getNewsBySlug(params.slug)
+export default async function NewsDetailPage({ params }: { params: Promise<Params> }) {
+  const { slug } = await params
+  const item = await getNewsBySlug(slug)
   if (!item) notFound()
 
   return (

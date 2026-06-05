@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { buildKalkPlayerDbId } from '../lib/kalkSeason.js';
 import { ensureDefaultSeason, getActiveSeason } from '../seasonService.js';
 import {
@@ -11,7 +11,6 @@ import {
 } from './parseMatchBoxScore.js';
 import { leagueRowsReferSameMatch } from '../lib/kalkTeamNames.js';
 
-const prisma = new PrismaClient();
 
 function parseScheduleDate(dateStr) {
   if (!dateStr) return new Date();

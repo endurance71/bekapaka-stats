@@ -12,12 +12,8 @@ describe('dataStore.js', () => {
         mockReset(prismaMock);
 
         // Use doMock to avoid hoisting issues with the mock variable
-        vi.doMock('@prisma/client', () => ({
-            PrismaClient: class {
-                constructor() {
-                    return prismaMock;
-                }
-            },
+        vi.doMock('../../lib/prisma.js', () => ({
+            prisma: prismaMock,
         }));
 
         // Dynamic import to ensure mock is applied

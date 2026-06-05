@@ -1,6 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 async function checkUser() {
     const users = await prisma.rosterPlayer.findMany({
