@@ -34,6 +34,14 @@ export const metadata: Metadata = {
     canonical: '/'
   },
   keywords: ['BeKaPaKa', 'Bobolice', 'koszykówka', 'klub sportowy', 'terminarz', 'tabela', 'skład', 'sponsorzy'],
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
+      { url: '/logo.png', type: 'image/png', sizes: '512x512' }
+    ],
+    apple: '/apple-touch-icon.png'
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

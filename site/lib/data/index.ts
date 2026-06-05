@@ -93,7 +93,7 @@ export async function getPublicSiteData() {
     documents,
     homepageSections,
     ourPosition,
-    clubLogoUrl: '/favicon.ico',
+    clubLogoUrl: '/logo.png',
     dataErrors,
     dataFallbacks,
     states: {
