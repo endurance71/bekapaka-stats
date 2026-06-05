@@ -22,7 +22,6 @@ export function usePageScrollLock(isActive: boolean, options?: PageScrollLockOpt
     if (htmlClass) {
       root.classList.add(htmlClass)
     }
-    document.body.style.top = `-${scrollY}px`
 
     return () => {
       root.classList.remove('is-scroll-locked')
@@ -30,8 +29,6 @@ export function usePageScrollLock(isActive: boolean, options?: PageScrollLockOpt
       if (htmlClass) {
         root.classList.remove(htmlClass)
       }
-      document.body.style.top = ''
-      window.scrollTo(0, scrollY)
     }
   }, [isActive, htmlClass])
 }

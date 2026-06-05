@@ -68,7 +68,6 @@ export default function App() {
                       />
                       <Route path="/games" element={<GameCenter />} />
                       <Route path="/games/:id" element={<GameDetail />} />
-                      <Route path="/protocols" element={<Navigate to="/games" replace />} />
                     </Routes>
                   </Suspense>
                 </Shell>

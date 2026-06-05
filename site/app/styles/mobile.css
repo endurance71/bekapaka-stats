@@ -67,7 +67,6 @@
     justify-content: center;
   }
 
-  /* Pełny ekran — Safari: --overlay-vh (JS) + svh fallback; przezroczysty chrome u góry */
   .stats-drawer.is-open {
     position: fixed;
     top: 0;
@@ -89,20 +88,33 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     opacity: 1;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+
+  .stats-drawer {
+    height: 100vh;
+    height: 100lvh;
+  }
+
+  .stats-drawer__backdrop {
+    height: 100vh;
+    height: 100lvh;
   }
 
   .stats-drawer.is-open .stats-drawer__panel {
-    position: absolute;
-    top: var(--overlay-vt, 0px);
+    position: fixed;
+    top: 0;
     right: 0;
     bottom: auto;
     left: 0;
     display: flex;
     flex-direction: column;
     width: 100%;
-    height: var(--overlay-vh);
-    min-height: var(--overlay-vh);
-    max-height: var(--overlay-vh);
+    height: 100vh;
+    height: 100lvh;
+    min-height: auto;
+    max-height: none;
     padding: 0;
     border-radius: 0;
     border-top: 0;
@@ -140,12 +152,12 @@
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: contain;
+    overscroll-behavior: none;
     background: var(--bg-app);
     padding:
       var(--space-4)
       max(var(--space-4), env(safe-area-inset-right, 0px))
-      calc(var(--space-6) + env(safe-area-inset-bottom, 0px))
+      calc(var(--space-6) + env(safe-area-inset-bottom, 0px) + 100px)
       max(var(--space-4), env(safe-area-inset-left, 0px));
   }
 
