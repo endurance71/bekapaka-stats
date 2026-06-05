@@ -141,7 +141,7 @@ const fallbackSponsors: SponsorItem[] = [
     slug: 'gmina-bobolice',
     websiteUrl: 'https://bobolice.pl',
     order: 1,
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/2/23/POL_Bobolice_COA.svg'
+    logoUrl: '/images/gmina-bobolice.svg'
   },
   {
     id: 'fs-2',
