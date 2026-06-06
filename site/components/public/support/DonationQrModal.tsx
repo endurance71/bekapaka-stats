@@ -34,9 +34,9 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
     let cancelled = false
 
     QRCode.toDataURL(buildDonationQrPayload(), {
-      errorCorrectionLevel: 'M',
+      errorCorrectionLevel: 'L',
       margin: 2,
-      width: 240,
+      width: 250,
       color: {
         dark: '#0a0a0a',
         light: '#ffffff',
@@ -133,8 +133,8 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
               <img
                 src={qrDataUrl}
                 alt='Kod QR do przelewu na rachunek stowarzyszenia BeKaPaKa'
-                width={240}
-                height={240}
+                width={250}
+                height={250}
                 className='donation-qr-modal__qr'
               />
             ) : (

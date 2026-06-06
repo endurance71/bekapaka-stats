@@ -1597,13 +1597,13 @@
 
 .donation-qr-modal__qr {
   display: block;
-  width: 240px;
-  height: 240px;
+  width: 250px;
+  height: 250px;
 }
 
 .donation-qr-modal__qr-skeleton {
-  width: 240px;
-  height: 240px;
+  width: 250px;
+  height: 250px;
   border-radius: var(--radius-sm);
   background: linear-gradient(90deg, #ececec 25%, #f8f8f8 50%, #ececec 75%);
   background-size: 200% 100%;
