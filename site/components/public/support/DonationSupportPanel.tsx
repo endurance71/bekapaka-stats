@@ -24,7 +24,7 @@ export function DonationSupportPanel({ showClubLink = false }: DonationSupportPa
         </div>
         <h3 id='fsmm-donate-heading'>Wesprzyj indywidualnie</h3>
         <p className='muted'>
-          Darowiznę możesz wpłacić bezpośrednim przelewem na rachunek klubu. W tytule przelewu wpisz
+          Darowiznę możesz wpłacić bezpośrednim przelewem na rachunek stowarzyszenia. W tytule przelewu wpisz
           &bdquo;{BKPK_DONATION.transferTitle}&rdquo; — kwotę wybierasz samodzielnie.
         </p>
         <dl className='fsmm-support-facts'>

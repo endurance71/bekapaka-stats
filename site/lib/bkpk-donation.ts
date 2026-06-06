@@ -1,10 +1,10 @@
-/** Bezpośrednia darowizna na rachunek klubu BeKaPaKa. */
+/** Bezpośrednia darowizna na rachunek stowarzyszenia BeKaPaKa. */
 export const BKPK_DONATION = {
   organizationName: 'BEKAPAKA',
   bankAccountDisplay: '38 1090 2590 0000 0001 5548 5269',
   bankAccountCopy: '38109025900000000155485269',
   iban: 'PL38109025900000000155485269',
-  bankName: 'Santander Bank Polska S.A.',
+  bankName: 'Erste Bank Polska S.A.',
   transferTitle: 'darowizna',
 } as const
 

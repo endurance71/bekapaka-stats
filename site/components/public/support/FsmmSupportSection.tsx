@@ -23,7 +23,7 @@ export function FsmmSupportSection({ variant = 'dashboard' }: FsmmSupportSection
 
       <p className='fsmm-support-intro muted'>
         Twoje wsparcie pomaga rozwijać koszykówkę w Bobolicach — od treningów młodzieży po mecze
-        ligowe. Możesz przekazać 1,5% podatku lub zasilić klub darowizną na nasz rachunek bankowy.
+        ligowe. Możesz przekazać 1,5% podatku lub zasilić stowarzyszenie darowizną na nasz rachunek bankowy.
       </p>
 
       <div className='fsmm-support-grid'>
