@@ -111,7 +111,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
       >
         <div className='donation-qr-modal__header'>
           <h2 id={titleId} className='donation-qr-modal__title'>
-            Darowizna na konto BeKaPaKa
+            Darowizna na konto stowarzyszenia
           </h2>
           <button
             type='button'
@@ -132,7 +132,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
-                alt='Kod QR do przelewu na konto BeKaPaKa'
+                alt='Kod QR do przelewu na rachunek stowarzyszenia BeKaPaKa'
                 width={240}
                 height={240}
                 className='donation-qr-modal__qr'
