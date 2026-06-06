@@ -8,22 +8,42 @@ export const BKPK_DONATION = {
   transferTitle: 'darowizna',
 } as const
 
+const QR_DELIMITER = '|'
+
+/** Znaki dozwolone w polach standardu 2D ZBP (Rekomendacja ZBP v1.0). */
+const QR_DISALLOWED_CHARS =
+  /[^A-Za-z0-9 ,./\\\-@#&*¹æê³ñóœŸ¿¥ÆÊ£ÑŹÓŒąćęłńóśźżĄĆĘŁŃŚŻ¯_]/gu
+
 /**
- * Payload QR zgodny ze standardem EPC (SEPA Credit Transfer) — obsługiwanym przez polskie aplikacje bankowe.
+ * Przycina i czyści pole tekstowe zgodnie z limitem standardu 2D.
+ */
+function sanitizeQrField(value: string, maxLength: number): string {
+  return value
+    .trim()
+    .replace(QR_DISALLOWED_CHARS, '')
+    .slice(0, maxLength)
+}
+
+/**
+ * Payload QR wg Rekomendacji Związku Banków Polskich (standard „2D”).
+ * Obsługiwany przez „Zeskanuj i zapłać” w polskich aplikacjach bankowych.
+ *
+ * Pola: NIP|kraj|NRB|kwota w groszach|odbiorca|tytuł|direct debit|invoobill|rezerwa
  */
 export function buildDonationQrPayload(): string {
-  return [
-    'BCD',
-    '002',
-    '1',
-    'SCT',
+  const amountInGrosze = '000000'
+
+  const parts = [
     '',
-    BKPK_DONATION.organizationName,
-    BKPK_DONATION.iban,
+    'PL',
+    sanitizeQrField(BKPK_DONATION.bankAccountCopy, 26),
+    amountInGrosze,
+    sanitizeQrField(BKPK_DONATION.organizationName, 20),
+    sanitizeQrField(BKPK_DONATION.transferTitle, 32),
     '',
     '',
     '',
-    BKPK_DONATION.transferTitle,
-    '',
-  ].join('\n')
+  ]
+
+  return parts.join(QR_DELIMITER)
 }
