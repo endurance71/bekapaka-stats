@@ -131,8 +131,8 @@ html.is-scroll-locked {
   --bkpk-surface-tint-6: rgba(255, 255, 255, 0.20);
 
   --bkpk-overlay-weak: var(--bkp-panel-overlay-weak);
-  --bkpk-overlay-medium: rgba(0, 0, 0, 0.4);
-  --bkpk-overlay-strong: rgba(0, 0, 0, 0.8);
+  --bkpk-overlay-medium: rgba(0, 0, 0, 0.55);
+  --bkpk-overlay-strong: var(--bkp-overlay-scrim);
 
   --bkpk-glass-bg: var(--bkp-glass-bg);
   --bkpk-glass-border: var(--bkp-glass-border);

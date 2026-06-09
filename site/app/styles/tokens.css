@@ -49,6 +49,8 @@
   --glow-card: var(--bkp-glow-card);
   --glass-bg: var(--bkp-glass-bg);
   --glass-border: var(--bkp-glass-border);
+  --overlay-scrim: var(--bkp-overlay-scrim);
+  --modal-surface: var(--bkp-modal-surface);
   --header-glass-bg: var(--bkp-header-glass-bg);
   --header-glass-blur: 12px;
 

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { restoreScrollPosition } from './overlay-scroll'
 
 export type PageScrollLockOptions = {
   /** Extra class on documentElement (e.g. is-overlay-open for transparent Safari chrome). */
@@ -36,7 +37,7 @@ export function usePageScrollLock(isActive: boolean, options?: PageScrollLockOpt
       if (htmlClass) {
         root.classList.remove(htmlClass)
       }
-      window.scrollTo(0, scrollY)
+      restoreScrollPosition(scrollY)
     }
   }, [isActive, htmlClass])
 }

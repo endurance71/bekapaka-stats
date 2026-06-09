@@ -1522,8 +1522,9 @@
   position: fixed;
   inset: 0;
   border: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(4px);
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
 }
 
@@ -2548,9 +2549,9 @@
   border: 0;
   padding: 0;
   margin: 0;
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   opacity: 0;
   transition: opacity 200ms ease;
   cursor: pointer;
@@ -2566,9 +2567,7 @@
   max-height: none;
   min-height: 0;
   overflow: hidden;
-  background: var(--glass-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: var(--modal-surface);
   border-top: 1px solid var(--border-strong);
   border-radius: 0;
   transform: translateY(100%);
@@ -2594,7 +2593,7 @@
     var(--space-3)
     max(var(--space-4), env(safe-area-inset-left, 0px));
   border-bottom: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--modal-surface);
   isolation: isolate;
 }
 
@@ -3244,7 +3243,7 @@
       var(--space-6);
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
-    background: rgba(0, 0, 0, 0.25);
+    background: var(--modal-surface);
   }
 
   .stats-drawer__panel-body {
