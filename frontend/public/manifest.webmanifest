@@ -1,7 +1,7 @@
 {
-  "name": "BeKaPaKa Stats",
-  "short_name": "BeKaPaKa",
-  "description": "Centrum statystyk BeKaPaKa Bobolice",
+  "name": "BeKaPaKa Bobolice — Panel statystyk",
+  "short_name": "BeKaPaKa Stats",
+  "description": "Oficjalny panel statystyk BeKaPaKa Bobolice dla członków klubu",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0B0C",

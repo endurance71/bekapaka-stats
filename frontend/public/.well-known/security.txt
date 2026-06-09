@@ -1,0 +1,4 @@
+Contact: mailto:kontakt@damianmotylinski.pl
+Policy: https://bekapaka.pl
+Preferred-Languages: pl, en
+Canonical: https://panel.bekapaka.pl/.well-known/security.txt

@@ -7,24 +7,11 @@
 - `cms.bekapaka.pl` -> `bkpk-cms-prod` (`127.0.0.1:1337`)
 - `moya-api.damianmotylinski.pl` pozostaje bez zmian -> `127.0.0.1:3000`
 
-## Caddy (przykład bloków BeKaPaKa)
+## Caddy (bloki BeKaPaKa)
 
-```caddyfile
-bekapaka.pl, www.bekapaka.pl {
-  reverse_proxy 127.0.0.1:8082
-}
+Pełna konfiguracja z nagłówkami HSTS/CSP: [`deploy/caddy/bekapaka-blocks.caddy`](../deploy/caddy/bekapaka-blocks.caddy).
 
-panel.bekapaka.pl {
-  reverse_proxy 127.0.0.1:8081
-}
-
-cms.bekapaka.pl {
-  basicauth {
-    admin JDJhJDEwJG5iN2c0NmNhY0J4dFQwZm5hN3M3NE9zNU1xR1pMSThjUDBXWmExNldDbDVQWktYQzJ3YjJX
-  }
-  reverse_proxy 127.0.0.1:1337
-}
-```
+Na produkcji CMS (`cms.bekapaka.pl`) nie ma `basicauth` w Caddy — dostęp przez Strapi. Opcjonalny `basicauth` można dodać tylko w bloku `cms.bekapaka.pl` w Caddyfile na VPS.
 
 ## Dane i źródła
 

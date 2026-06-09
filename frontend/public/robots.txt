@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /login
+Disallow: /api/
+Sitemap: https://bekapaka.pl/sitemap.xml

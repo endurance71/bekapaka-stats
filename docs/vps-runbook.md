@@ -124,12 +124,19 @@ Restart **tylko** kontenerów `bkpk-*`:
 docker compose -f docker-compose.prod.yml restart bkpk-backend
 ```
 
-Aktualizacja Caddy **tylko** bloków BeKaPaKa (po backupie):
+### Aktualizacja Caddy (BeKaPaKa)
+
+Źródło prawdy bloków BeKaPaKa (HSTS, CSP): [`deploy/caddy/bekapaka-blocks.caddy`](../deploy/caddy/bekapaka-blocks.caddy).  
+Playbook filtrów operatorów: [trust-and-filtering.md](./trust-and-filtering.md).
+
+Po backupie podmień **tylko** bloki `bekapaka.pl` … `cms.bekapaka.pl` (nie ruszaj `moya-api.*`):
 
 ```bash
 sudo cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak.$(date +%Y%m%d)
+# edycja: wklej bloki z deploy/caddy/bekapaka-blocks.caddy
 sudo caddy validate --config /etc/caddy/Caddyfile
 sudo systemctl reload caddy
+curl -sI https://panel.bekapaka.pl | grep -i strict-transport-security
 ```
 
 ### Zabronione (MOYA)
