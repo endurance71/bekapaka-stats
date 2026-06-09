@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SponsorLogoFrame } from '../../components/public/sponsors/SponsorLogoFrame'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import {
   getSiteMetadataBase,
@@ -26,12 +27,8 @@ export default async function SponsorsPage() {
       stateStatus={sponsorsState.status}
       stateSource={sponsorsState.source}
       stateMessage={sponsorsState.message}
-      emptyTitle={sponsorsState.status === 'error' ? 'Nie można pobrać sponsorów' : 'Brak sponsorów'}
-      emptyDescription={
-        sponsorsState.status === 'error'
-          ? 'Sprawdź połączenie z CMS lub token dostępu (SITE_CMS_TOKEN).'
-          : 'Po uzupełnieniu sekcji sponsorów w CMS dane pojawią się automatycznie.'
-      }
+      emptyTitle='Brak sponsorów'
+      emptyDescription='Lista sponsorów jest aktualnie pusta.'
     >
       <div className='sponsors-logo-grid'>
         {sponsors.map((sponsor) => (
@@ -48,12 +45,16 @@ function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
 
   const cardContent = (
     <>
-      <div
-        className='sponsor-card-premium__logo-container sponsor-card-premium__logo-container--monogram'
-        aria-hidden='true'
-      >
-        {initials}
-      </div>
+      {sponsor.logoUrl ? (
+        <SponsorLogoFrame sponsor={sponsor} variant='card' />
+      ) : (
+        <div
+          className='sponsor-card-premium__logo-container sponsor-card-premium__logo-container--monogram'
+          aria-hidden='true'
+        >
+          {initials}
+        </div>
+      )}
       <div className='sponsor-card-premium__content'>
         <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
       </div>

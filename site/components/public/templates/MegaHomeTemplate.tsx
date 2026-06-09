@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { SponsorLogoFrame } from '../sponsors/SponsorLogoFrame'
 import type { GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { formatDateTime, formatPointBalance } from '../../../lib/format'
 import { NearestEventCard, NearestEventEmpty } from '../home/NearestEventCard'
@@ -321,7 +322,7 @@ export function MegaHomeTemplate({
               {normalizedSponsors.map((sponsor) => (
                 <div key={`s1-${sponsor.id}`} className='sponsor-tile-premium-slide'>
                   {sponsor.logoUrl ? (
-                    <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
+                    <SponsorLogoFrame sponsor={sponsor} variant='slider' />
                   ) : (
                     <span className='sponsor-logo-text'>{sponsor.name}</span>
                   )}
@@ -331,7 +332,7 @@ export function MegaHomeTemplate({
               {normalizedSponsors.map((sponsor) => (
                 <div key={`s2-${sponsor.id}`} className='sponsor-tile-premium-slide'>
                   {sponsor.logoUrl ? (
-                    <img src={sponsor.logoUrl} alt={sponsor.name} className='sponsor-logo-img' />
+                    <SponsorLogoFrame sponsor={sponsor} variant='slider' />
                   ) : (
                     <span className='sponsor-logo-text'>{sponsor.name}</span>
                   )}
