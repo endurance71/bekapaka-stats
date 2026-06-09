@@ -1,0 +1,12 @@
+**/node_modules
+**/.next
+**/dist
+.git
+.gitignore
+data/
+data/pgdata*
+**/scratch
+**/*.md
+.env
+.env.*
+!**/.env.example
