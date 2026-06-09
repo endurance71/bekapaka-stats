@@ -47,13 +47,30 @@ export default function LoginPage() {
                                 <div className="absolute inset-0 bg-bkpk-primary/5 group-hover:bg-bkpk-primary/10 transition-colors" />
                                 <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain relative z-10" />
                             </div>
-                            <div>
+                            <div className="space-y-2">
                                 <h1 className="text-3xl font-black font-outfit tracking-tighter text-bkpk-text-primary">
                                     BeKaPaKa <span className="text-bkpk-primary">STATS</span>
                                 </h1>
+                                <p className="text-sm text-bkpk-text-secondary">
+                                    Panel statystyk dla członków BeKaPaKa Bobolice
+                                </p>
+                                <p className="text-xs text-bkpk-text-muted">
+                                    Dostęp tylko dla zaproszonych użytkowników klubu
+                                </p>
                             </div>
                         </div>
                     </div>
+
+                    <p className="text-center text-sm relative z-10">
+                        <a
+                            href="https://bekapaka.pl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-bkpk-primary hover:underline font-semibold"
+                        >
+                            Oficjalna strona klubu: bekapaka.pl
+                        </a>
+                    </p>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {error && (
@@ -126,7 +143,7 @@ export default function LoginPage() {
                                     Logowanie…
                                 </span>
                             ) : (
-                                'Zaloguj się do systemu'
+                                'Zaloguj się do panelu'
                             )}
                         </BkpkButton>
                     </form>

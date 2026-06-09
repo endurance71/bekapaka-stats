@@ -1,0 +1,49 @@
+# BeKaPaKa — bloki Caddy (wklej do /etc/caddy/Caddyfile zamiast istniejących bloków BeKaPaKa).
+# NIE modyfikuj bloku moya-api.damianmotylinski.pl.
+#
+# Wdrożenie:
+#   sudo cp /etc/caddy/Caddyfile /etc/caddy/Caddyfile.bak.$(date +%Y%m%d)
+#   # podmień bloki bekapaka.pl … cms.bekapaka.pl treścią tego pliku
+#   sudo caddy validate --config /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+
+(bekapaka_security) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+}
+
+(bekapaka_csp_panel) {
+	header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+}
+
+(bekapaka_csp_site) {
+	header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+}
+
+(bekapaka_csp_cms) {
+	header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob: https:; connect-src 'self' https:; frame-ancestors 'self'; base-uri 'self'; form-action 'self'"
+}
+
+bekapaka.pl, www.bekapaka.pl {
+	import bekapaka_security
+	import bekapaka_csp_site
+	reverse_proxy 127.0.0.1:8082
+}
+
+panel.bekapaka.pl {
+	import bekapaka_security
+	import bekapaka_csp_panel
+	reverse_proxy 127.0.0.1:8081
+}
+
+cms.bekapaka.pl {
+	import bekapaka_security
+	import bekapaka_csp_cms
+	reverse_proxy 127.0.0.1:1337
+}
