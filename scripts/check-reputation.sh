@@ -100,9 +100,9 @@ check_dnsbl() {
   for bl in zen.spamhaus.org bl.spamcop.net; do
     local listed_ip=""
     if command -v dig >/dev/null 2>&1; then
-      listed_ip=$(dig +short "${rev}.${bl}" 2>/dev/null | head -1)
+      listed_ip=$(dig +short "${rev}.${bl}" 2>/dev/null | head -1 || true)
     elif command -v host >/dev/null 2>&1; then
-      listed_ip=$(host -t A "${rev}.${bl}" 2>/dev/null | awk '/has address/ { print $4; exit }')
+      listed_ip=$(host -t A "${rev}.${bl}" 2>/dev/null | awk '/has address/ { print $4; exit }' || true)
     fi
     if [[ -n "$listed_ip" ]]; then
       bad "DNSBL $bl: LISTED ($ip)"
