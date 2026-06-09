@@ -917,6 +917,42 @@ export async function getTeamTrends() {
 
 // --- AUTHENTICATION ---
 
+/** Min. odstęp między zapisami lastActivityAt do DB (ms). */
+const ACTIVITY_TOUCH_INTERVAL_MS = 10 * 60 * 1000;
+
+/** userId → timestamp ostatniego zapisu do DB (throttling w pamięci procesu). */
+const activityTouchCache = new Map();
+
+/**
+ * Aktualizuje ostatnią aktywność użytkownika (throttled).
+ * @param {string} userId
+ * @param {string | undefined} ipAddress
+ * @param {{ force?: boolean }} [options] — force=true omija throttling (np. przy logowaniu)
+ */
+export async function touchUserActivity(userId, ipAddress, options = {}) {
+  if (!userId) return;
+
+  const now = Date.now();
+  if (!options.force) {
+    const lastWritten = activityTouchCache.get(userId) ?? 0;
+    if (now - lastWritten < ACTIVITY_TOUCH_INTERVAL_MS) return;
+  }
+
+  activityTouchCache.set(userId, now);
+
+  try {
+    await prisma.rosterPlayer.update({
+      where: { id: userId },
+      data: {
+        lastActivityAt: new Date(),
+        ...(ipAddress ? { lastActivityIp: ipAddress } : {})
+      }
+    });
+  } catch (e) {
+    console.error('Failed to touch user activity:', e);
+  }
+}
+
 export async function hashPassword(password) {
   return await bcrypt.hash(password, 10);
 }
@@ -946,6 +982,8 @@ export async function loginUser(username, password, ipAddress) {
   await logLogin(cleanUsername, isValid, ipAddress);
 
   if (!isValid) return null;
+
+  await touchUserActivity(user.id, ipAddress, { force: true });
 
   const token = jwt.sign(
     { id: user.id, username: user.username, role: user.role },

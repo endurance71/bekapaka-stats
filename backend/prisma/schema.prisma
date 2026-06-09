@@ -129,6 +129,10 @@ model RosterPlayer {
   password     String?
   role         String   @default("USER") // "USER" | "ADMIN"
 
+  // Ostatnia aktywność w panelu (autoryzowane żądania API)
+  lastActivityAt DateTime?
+  lastActivityIp String?
+
   seasonPreference PlayerSeasonPreference?
 }
 

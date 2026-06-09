@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { loginUser, getLoginLogs } from './dataStore.js';
+import { loginUser, getLoginLogs, touchUserActivity } from './dataStore.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import fs from 'node:fs/promises';
@@ -116,6 +116,12 @@ const authenticateToken = (req, res, next) => {
       return res.sendStatus(403);
     }
     req.user = user;
+
+    const skipActivityPaths = ['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'];
+    if (!skipActivityPaths.some((p) => req.path === p || req.url.startsWith(p))) {
+      void touchUserActivity(user.id, req.ip);
+    }
+
     next();
   });
 };
