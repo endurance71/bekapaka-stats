@@ -14,6 +14,12 @@ import { PasswordInput } from '../shared/ui/PasswordInput';
 import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
 import { usePortraitMobile } from '../hooks/useIsMobile';
+import {
+    formatLastActivity,
+    formatLastActivityExact,
+    getActivityRecency,
+    activityRecencyClass
+} from '../lib/formatLastActivity';
 
 type ScraperStatus = {
     running: boolean;
@@ -276,14 +282,6 @@ export default function Administration() {
                 </BkpkCard>
 
                 <BkpkCard
-                    title="Historia Logowań (Audyt)"
-                    icon={<Users className="w-5 h-5 text-bkpk-text-muted" />}
-                    className="space-y-4"
-                >
-                    <LoginLogs />
-                </BkpkCard>
-
-                <BkpkCard
                     title="Strefa Niebezpieczna"
                     icon={<Terminal className="w-5 h-5 text-bkpk-text-danger" />}
                     className="space-y-6 border-bkpk-danger/30"
@@ -347,6 +345,41 @@ export default function Administration() {
                 </div>
             </Modal>
         </div>
+    );
+}
+
+type AdminUser = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    username?: string | null;
+    role?: string;
+    number?: number | null;
+    position?: string | null;
+    photo?: string | null;
+    data?: { photo?: string };
+    lastActivityAt?: string | null;
+    lastActivityIp?: string | null;
+};
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+function LastActivityDisplay({ user }: { user: AdminUser }) {
+    if (!user.username) {
+        return <span className="text-bkpk-text-muted">—</span>;
+    }
+
+    const label = formatLastActivity(user.lastActivityAt);
+    const exact = formatLastActivityExact(user.lastActivityAt);
+    const recency = getActivityRecency(user.lastActivityAt);
+    const title = exact
+        ? `${exact}${user.lastActivityIp ? ` · IP: ${user.lastActivityIp}` : ''}`
+        : undefined;
+
+    return (
+        <span className={cn('text-xs font-medium', activityRecencyClass[recency])} title={title}>
+            {label}
+        </span>
     );
 }
 
@@ -551,7 +584,7 @@ function LoginLogs() {
 }
 
 function UserManagement() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const showCards = usePortraitMobile();
@@ -559,11 +592,14 @@ function UserManagement() {
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
     const [roleFilter, setRoleFilter] = useState('all'); // all, USER, ADMIN, no-login
+    const [inactiveOnly, setInactiveOnly] = useState(false);
+    const [activitySort, setActivitySort] = useState<'none' | 'desc' | 'asc'>('none');
 
     // Modals
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedUser, setSelectedUser] = useState<any | null>(null);
+    const [isLoginAuditOpen, setIsLoginAuditOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
     // Current logged in user (from Auth context) to prevent deleting oneself
     const { user: currentUser } = useAuth();
@@ -726,17 +762,42 @@ function UserManagement() {
         }
     };
 
+    const handleActivitySortToggle = () => {
+        setActivitySort((prev) => {
+            if (prev === 'none') return 'desc';
+            if (prev === 'desc') return 'asc';
+            return 'none';
+        });
+    };
+
+    const isUserInactive = (user: AdminUser) => {
+        if (!user.username) return false;
+        if (!user.lastActivityAt) return true;
+        const diffDays = (Date.now() - new Date(user.lastActivityAt).getTime()) / MS_PER_DAY;
+        return diffDays > 30;
+    };
+
     // Filter logic
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = 
+    const filteredUsers = users.filter((user) => {
+        const matchesSearch =
             `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
             (user.username && user.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
-        if (roleFilter === 'all') return matchesSearch;
-        if (roleFilter === 'ADMIN') return matchesSearch && user.role === 'ADMIN';
-        if (roleFilter === 'USER') return matchesSearch && user.role === 'USER' && !!user.username;
-        if (roleFilter === 'no-login') return matchesSearch && !user.username;
-        return matchesSearch;
+        if (!matchesSearch) return false;
+        if (inactiveOnly && !isUserInactive(user)) return false;
+
+        if (roleFilter === 'all') return true;
+        if (roleFilter === 'ADMIN') return user.role === 'ADMIN';
+        if (roleFilter === 'USER') return user.role === 'USER' && !!user.username;
+        if (roleFilter === 'no-login') return !user.username;
+        return true;
+    });
+
+    const displayUsers = [...filteredUsers].sort((a, b) => {
+        if (activitySort === 'none') return 0;
+        const aTime = a.lastActivityAt ? new Date(a.lastActivityAt).getTime() : 0;
+        const bTime = b.lastActivityAt ? new Date(b.lastActivityAt).getTime() : 0;
+        return activitySort === 'desc' ? bTime - aTime : aTime - bTime;
     });
 
     return (
@@ -790,6 +851,19 @@ function UserManagement() {
                         <option value="no-login">Bez konta logowania (tylko zawodnik)</option>
                     </select>
                 </div>
+                <div className="w-full md:w-auto flex items-end pb-0.5">
+                    <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-bkpk-text-secondary">
+                        <input
+                            type="checkbox"
+                            className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface-tint-1"
+                            checked={inactiveOnly}
+                            onChange={(e) => setInactiveOnly(e.target.checked)}
+                        />
+                        <span className="text-xs font-bold uppercase text-bkpk-text-muted whitespace-nowrap">
+                            Nieaktywni &gt; 30 dni
+                        </span>
+                    </label>
+                </div>
             </div>
 
             {/* User List Table */}
@@ -809,7 +883,7 @@ function UserManagement() {
                     <>
                     {showCards ? (
                     <MobileDataList className="p-4">
-                        {filteredUsers.map((user) => (
+                        {displayUsers.map((user) => (
                             <MobileDataCard
                                 key={user.id}
                                 title={`${user.firstName} ${user.lastName}`}
@@ -846,8 +920,10 @@ function UserManagement() {
                                         value: `${user.number !== null ? `#${user.number}` : '—'} · ${user.position || '—'}`
                                     },
                                     {
-                                        label: 'Status',
-                                        value: user.username ? 'Aktywny login' : 'Tylko profil'
+                                        label: 'Ostatnia aktywność',
+                                        value: user.username
+                                            ? formatLastActivity(user.lastActivityAt)
+                                            : '—'
                                     }
                                 ]}
                                 footer={
@@ -873,7 +949,7 @@ function UserManagement() {
                                 }
                             />
                         ))}
-                        {filteredUsers.length === 0 && (
+                        {displayUsers.length === 0 && (
                             <p className="py-6 text-center text-bkpk-text-muted italic text-sm">
                                 Brak zawodników spełniających kryteria wyszukiwania.
                             </p>
@@ -881,19 +957,29 @@ function UserManagement() {
                     </MobileDataList>
                     ) : (
                     <ScrollableTableShell compact className="border-0 rounded-none">
-                    <table className="w-full text-sm text-left min-w-[640px]">
+                    <table className="w-full text-sm text-left min-w-[720px]">
                         <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
                             <tr>
                                 <th className="py-3 px-4">Zawodnik</th>
                                 <th className="py-3 px-4">Numer i Poz.</th>
                                 <th className="py-3 px-4">Login</th>
                                 <th className="py-3 px-4">Rola</th>
-                                <th className="py-3 px-4">Status</th>
+                                <th className="py-3 px-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleActivitySortToggle}
+                                        className="inline-flex items-center gap-1 hover:text-bkpk-primary transition-colors"
+                                        title="Sortuj po ostatniej aktywności"
+                                    >
+                                        Ostatnia aktywność
+                                        {activitySort === 'desc' ? ' ↓' : activitySort === 'asc' ? ' ↑' : ''}
+                                    </button>
+                                </th>
                                 <th className="py-3 px-4 text-right">Akcje</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-bkpk-border-subtle">
-                            {filteredUsers.map((user) => (
+                            {displayUsers.map((user) => (
                                 <tr key={user.id} className="hover:bg-bkpk-surface-tint-2 transition-colors">
                                     <td className="py-3 px-4 font-bold text-bkpk-text-primary flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
@@ -923,17 +1009,7 @@ function UserManagement() {
                                         ) : '-'}
                                     </td>
                                     <td className="py-3 px-4">
-                                        {user.username ? (
-                                            <span className="text-xs text-bkpk-success flex items-center gap-1.5 font-bold">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-bkpk-success font-bold" />
-                                                Aktywny login
-                                            </span>
-                                        ) : (
-                                            <span className="text-xs text-bkpk-text-muted flex items-center gap-1.5">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-bkpk-text-muted/45" />
-                                                Tylko profil
-                                            </span>
-                                        )}
+                                        <LastActivityDisplay user={user} />
                                     </td>
                                     <td className="py-3 px-4 text-right">
                                         <div className="flex justify-end gap-2">
@@ -958,7 +1034,7 @@ function UserManagement() {
                                     </td>
                                 </tr>
                             ))}
-                            {filteredUsers.length === 0 && (
+                            {displayUsers.length === 0 && (
                                 <tr>
                                     <td colSpan={6} className="py-8 text-center text-bkpk-text-muted italic">Brak zawodników spełniających kryteria wyszukiwania.</td>
                                 </tr>
@@ -970,6 +1046,26 @@ function UserManagement() {
                     </>
                 )}
             </div>
+
+            <div className="pt-2 border-t border-bkpk-border-subtle">
+                <button
+                    type="button"
+                    onClick={() => setIsLoginAuditOpen(true)}
+                    className="text-xs font-bold text-bkpk-text-muted hover:text-bkpk-primary transition-colors flex items-center gap-1.5"
+                >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Pokaż historię logowań (audyt bezpieczeństwa)
+                </button>
+            </div>
+
+            <Modal
+                isOpen={isLoginAuditOpen}
+                onClose={() => setIsLoginAuditOpen(false)}
+                title="Historia logowań (audyt bezpieczeństwa)"
+                maxWidth="max-w-4xl"
+            >
+                <LoginLogs />
+            </Modal>
 
             {/* Add User Modal */}
             <Modal
