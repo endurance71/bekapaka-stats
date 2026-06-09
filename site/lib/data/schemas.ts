@@ -45,7 +45,23 @@ export const sponsorSchema = z.object({
   slug: z.string(),
   websiteUrl: z.string(),
   order: z.number(),
-  logoUrl: z.string().optional()
+  logoUrl: z.string().optional(),
+  /** Kolor tła ramki loga — dopasowany do pliku (np. czerwień Majster, biel Baumal). */
+  logoBgColor: z.string().optional(),
+  /** fill = logo wypełnia ramkę; contain = logo na jasnym tle z marginesem. */
+  logoFit: z.enum(['fill', 'contain']).optional(),
+  /** Nadpisanie fitu wyłącznie w sliderze na stronie głównej. */
+  logoSliderFit: z.enum(['fill', 'contain']).optional(),
+  /** Nadpisanie fitu wyłącznie na kartach /sponsorzy. */
+  logoCardFit: z.enum(['fill', 'contain']).optional(),
+  /** Skala loga w sliderze (np. 1.15 = większe, 0.9 = mniejsze). */
+  logoSliderScale: z.number().min(0.5).max(1.75).optional(),
+  /** Padding ramki loga w sliderze (np. '0.2rem'). */
+  logoSliderPadding: z.string().optional(),
+  /** Skala loga na kartach /sponsorzy. */
+  logoCardScale: z.number().min(0.5).max(1.75).optional(),
+  /** Padding ramki loga na kartach /sponsorzy. */
+  logoCardPadding: z.string().optional()
 })
 
 export const documentSchema = z.object({

@@ -5,13 +5,11 @@ import {
   eventSchema,
   homepageSectionSchema,
   newsPostSchema,
-  sponsorSchema,
   type DocumentItem,
   type EventItem,
   type HomepageSection,
   type NewsAttachment,
-  type NewsPost,
-  type SponsorItem
+  type NewsPost
 } from './schemas'
 import {
   excerptFromContent,
@@ -143,111 +141,6 @@ const fallbackEvents: EventItem[] = [
   }
 ]
 
-const fallbackSponsors: SponsorItem[] = [
-  {
-    id: 'fs-1',
-    name: 'Gmina Bobolice',
-    slug: 'gmina-bobolice',
-    websiteUrl: 'https://bobolice.pl',
-    order: 1,
-    logoUrl: '/images/gmina-bobolice.svg'
-  },
-  {
-    id: 'fs-2',
-    name: 'Majster Plus Koszalin',
-    slug: 'majster-plus-koszalin',
-    websiteUrl: 'https://majsterplus.pl',
-    order: 2,
-    logoUrl: '/images/majster-plus.jpg'
-  },
-  {
-    id: 'fs-3',
-    name: 'Fem-Tech Tychowo',
-    slug: 'fem-tech-tychowo',
-    websiteUrl: '',
-    order: 3,
-    logoUrl: '/images/fem-tech.jpg'
-  },
-  {
-    id: 'fs-4',
-    name: 'Contema Bobolice',
-    slug: 'contema-bobolice',
-    websiteUrl: '',
-    order: 4
-  },
-  {
-    id: 'fs-5',
-    name: 'CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak',
-    slug: 'certe-inez-szczesniak',
-    websiteUrl: '',
-    order: 5
-  },
-  {
-    id: 'fs-6',
-    name: 'PST Sped-Trans Bobolice',
-    slug: 'pst-sped-trans',
-    websiteUrl: '',
-    order: 6
-  },
-  {
-    id: 'fs-7',
-    name: 'Nadleśnictwo Bobolice, Lasy Państwowe',
-    slug: 'nadlesnictwo-bobolice',
-    websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
-    order: 7
-  },
-  {
-    id: 'fs-8',
-    name: 'ALAB laboratoria',
-    slug: 'alab-laboratoria',
-    websiteUrl: 'https://www.alab-laboratoria.pl',
-    order: 8
-  },
-  {
-    id: 'fs-9',
-    name: 'Piotr Adamus',
-    slug: 'piotr-adamus',
-    websiteUrl: '',
-    order: 9
-  },
-  {
-    id: 'fs-10',
-    name: '„Skup aut i Auto laweta” Remek Klimek',
-    slug: 'skup-aut-remek-klimek',
-    websiteUrl: '',
-    order: 10
-  },
-  {
-    id: 'fs-11',
-    name: 'CESIR Bobolice',
-    slug: 'cesir-bobolice',
-    websiteUrl: 'http://www.cesir.bobolice.pl',
-    order: 11
-  },
-  {
-    id: 'fs-12',
-    name: 'Emil Jaświg',
-    slug: 'emil-jaswig',
-    websiteUrl: '',
-    order: 12
-  },
-  {
-    id: 'fs-13',
-    name: 'Baumal e-hurtowniabudowlana.pl',
-    slug: 'baumal',
-    websiteUrl: 'https://e-hurtowniabudowlana.pl',
-    order: 13,
-    logoUrl: '/images/baumal.jpg'
-  },
-  {
-    id: 'fs-14',
-    name: 'Insight Data Consulting Izabela Kaszubowska',
-    slug: 'insight-data-consulting',
-    websiteUrl: '',
-    order: 14
-  }
-]
-
 const fallbackDocuments: DocumentItem[] = [
   {
     id: 'fd-1',
@@ -374,51 +267,6 @@ export async function getEventsState(limit = 6): Promise<DataState<EventItem[]>>
     return stateFromArray(items)
   } catch {
     return { status: 'error', data: fallbackEvents.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać wydarzeń z CMS.' }
-  }
-}
-
-export async function getSponsors(limit = 12): Promise<SponsorItem[]> {
-  const state = await getSponsorsState(limit)
-  return state.data
-}
-
-export async function getSponsorsState(limit = 12): Promise<DataState<SponsorItem[]>> {
-  if (!hasCmsToken()) {
-    return {
-      status: 'error',
-      data: fallbackSponsors.slice(0, limit),
-      source: 'fallback',
-      message: 'CMS_TOKEN_MISSING'
-    }
-  }
-
-  try {
-    const response = await fetchJsonState<unknown>(
-      cmsPath(`/api/sponsors?sort=order:asc&pagination[limit]=${limit}&populate=logo`),
-      { headers: cmsHeaders(), revalidate: 600 }
-    )
-    if (response.status === 'error') {
-      return { status: 'error', data: fallbackSponsors.slice(0, limit), source: 'fallback', message: response.message }
-    }
-
-    const items = toNormalizedArray(response.payload)
-      .map((item, index) => ({
-        id: sanitizeText(item.id, String(index)),
-        name: sanitizeText(item.name, 'Sponsor'),
-        slug: sanitizeText(item.slug, `sponsor-${index}`),
-        websiteUrl: sanitizeText(item.websiteUrl, ''),
-        order: sanitizeNumber(item.order, index),
-        logoUrl: mapMediaUrl(item.logo)
-      }))
-      .map((item) => sponsorSchema.parse(item))
-
-    if (items.length === 0) {
-      return { status: 'empty', data: fallbackSponsors.slice(0, limit), source: 'fallback', message: 'Brak sponsorów w CMS.' }
-    }
-
-    return stateFromArray(items)
-  } catch {
-    return { status: 'error', data: fallbackSponsors.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać sponsorów z CMS.' }
   }
 }
 

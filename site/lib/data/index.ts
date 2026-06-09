@@ -7,10 +7,9 @@ import {
   getHomepageSections,
   getHomepageSectionsState,
   getNewsPosts,
-  getNewsPostsState,
-  getSponsors,
-  getSponsorsState
+  getNewsPostsState
 } from './cms'
+import { getSponsors, getSponsorsState } from './sponsors'
 import { siteBaseUrl } from './client'
 import { pickNearestUpcomingHighlight, type NearestHighlight } from './nearest-event'
 
@@ -23,16 +22,17 @@ export {
   getEventsState,
   getHomepageSections,
   getHomepageSectionsState,
+  getNewsPosts,
+  getNewsPostsState
+} from './cms'
+export {
   getLeagueTable,
   getLeagueTableState,
   getRecentGamesState,
-  getNewsPosts,
-  getNewsPostsState,
   getRoster,
-  getRosterState,
-  getSponsors,
-  getSponsorsState
-}
+  getRosterState
+} from './backend'
+export { getSponsors, getSponsorsState } from './sponsors'
 
 export async function getPublicSiteData() {
   const [tableState, rosterState, recentGamesState, newsState, eventsState, sponsorsState, documentsState, homepageSectionsState] = await Promise.all([
