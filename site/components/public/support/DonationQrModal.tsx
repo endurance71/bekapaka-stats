@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import QRCode from 'qrcode'
-import { usePageScrollLock } from '@bekapaka/safari-overlay'
+import { focusWithoutScroll, usePageScrollLock } from '@bekapaka/safari-overlay'
 import { BKPK_DONATION, buildDonationQrPayload } from '../../../lib/bkpk-donation'
 import { CloseIcon } from '../shared/PublicIcons'
 
@@ -73,8 +73,8 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
       document.removeEventListener('keydown', handleEsc)
       cancelAnimationFrame(frame)
 
-      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
-        previousFocusRef.current.focus()
+      if (previousFocusRef.current) {
+        focusWithoutScroll(previousFocusRef.current)
       }
       previousFocusRef.current = null
     }

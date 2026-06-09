@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { usePageScrollLock, useVisualViewportOverlay } from '@bekapaka/safari-overlay'
+import { focusWithoutScroll, usePageScrollLock, useVisualViewportOverlay } from '@bekapaka/safari-overlay'
 import { CloseIcon } from './PublicIcons'
 
 const DRAWER_TRANSITION_MS = 320
@@ -101,8 +101,8 @@ export function SlideoutPanel({
     return () => {
       document.removeEventListener('keydown', handleEsc)
 
-      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
-        previousFocusRef.current.focus()
+      if (previousFocusRef.current) {
+        focusWithoutScroll(previousFocusRef.current)
       }
       previousFocusRef.current = null
     }

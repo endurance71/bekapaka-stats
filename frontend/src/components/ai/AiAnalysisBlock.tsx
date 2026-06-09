@@ -339,7 +339,7 @@ export default function AiAnalysisBlock({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute left-0 right-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-sm max-sm:top-0 sm:inset-0"
+                    className="absolute left-0 right-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-md max-sm:top-0 sm:inset-0"
                     aria-label="Zamknij analizę"
                     onClick={() => setModalOpen(false)}
                   />
@@ -362,7 +362,7 @@ export default function AiAnalysisBlock({
                     )}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-start justify-between gap-3 border-b border-bkpk-border-strong bg-bkpk-surface/50 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top,0px))] sm:px-5 sm:pb-5 sm:pt-5 shrink-0">
+                    <div className="flex items-start justify-between gap-3 border-b border-bkpk-border-strong bg-bkpk-surface-elevated px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top,0px))] sm:px-5 sm:pb-5 sm:pt-5 shrink-0">
                       <div className="flex items-start gap-3 min-w-0">
                         <div className="p-2 rounded-xl bg-bkpk-primary/10 border border-bkpk-primary/20 shrink-0">
                           <Bot className="w-5 h-5 text-bkpk-primary" aria-hidden />

@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ClubLogo } from '../shared/ClubLogo'
 import { MainNav } from './MainNav'
 import { SiteFooter } from './SiteFooter'
+import { focusWithoutScroll } from '@bekapaka/safari-overlay'
 import { MenuIcon, MobileFullScreenMenu } from './MobileFullScreenMenu'
 
 export function PublicShell({
@@ -28,7 +29,9 @@ export function PublicShell({
 
   useEffect(() => {
     if (!isMenuOpen) {
-      menuButtonRef.current?.focus()
+      if (menuButtonRef.current) {
+        focusWithoutScroll(menuButtonRef.current)
+      }
     }
   }, [isMenuOpen])
 
