@@ -27,9 +27,22 @@ bad() {
   fail=$((fail + 1))
 }
 
+resolve_a() {
+  local domain="$1"
+  if command -v dig >/dev/null 2>&1; then
+    dig +short "$domain" A | head -1
+    return
+  fi
+  if command -v host >/dev/null 2>&1; then
+    host -t A "$domain" 2>/dev/null | awk '/has address/ { print $4; exit }'
+    return
+  fi
+  getent ahosts "$domain" 2>/dev/null | awk 'NR==1 { print $1; exit }'
+}
+
 check_dns() {
   local ip
-  ip=$(dig +short "$PANEL_DOMAIN" A | head -1)
+  ip=$(resolve_a "$PANEL_DOMAIN")
   if [[ -z "$ip" ]]; then
     bad "DNS A brak dla $PANEL_DOMAIN"
     return
@@ -85,7 +98,13 @@ check_dnsbl() {
   local listed=0
 
   for bl in zen.spamhaus.org bl.spamcop.net; do
-    if dig +short "${rev}.${bl}" 2>/dev/null | grep -q .; then
+    local listed_ip=""
+    if command -v dig >/dev/null 2>&1; then
+      listed_ip=$(dig +short "${rev}.${bl}" 2>/dev/null | head -1)
+    elif command -v host >/dev/null 2>&1; then
+      listed_ip=$(host -t A "${rev}.${bl}" 2>/dev/null | awk '/has address/ { print $4; exit }')
+    fi
+    if [[ -n "$listed_ip" ]]; then
       bad "DNSBL $bl: LISTED ($ip)"
       listed=1
     else
@@ -114,7 +133,7 @@ main() {
 
   check_dns
   local ip
-  ip=$(dig +short "$PANEL_DOMAIN" A | head -1)
+  ip=$(resolve_a "$PANEL_DOMAIN")
   if [[ -n "$ip" ]]; then
     check_dnsbl "$ip"
   fi
