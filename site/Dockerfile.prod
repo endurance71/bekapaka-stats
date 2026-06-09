@@ -17,7 +17,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 COPY --from=build /app/site/.next/standalone ./
-COPY --from=build /app/site/.next/static ./.next/static
-COPY --from=build /app/site/public ./public
+COPY --from=build /app/site/.next/static ./site/.next/static
+COPY --from=build /app/site/public ./site/public
 EXPOSE 3000
-CMD ["node", "server.js"]
+CMD ["node", "site/server.js"]
