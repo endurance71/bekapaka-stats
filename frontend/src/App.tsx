@@ -58,7 +58,7 @@ export default function App() {
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route path="/trends" element={<Trends />} />
                       <Route
-                        path="/ai"
+                        path="/ai/:categorySlug?"
                         element={
                           <ProtectedRoute requireAdmin>
                             <AiCenterPage />

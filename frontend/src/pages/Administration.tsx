@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import Modal from '../components/Modal';
 import { fetchJSON, postJSON, putJSON, deleteJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot } from 'lucide-react';
-import AiCatalogHub from '../components/ai/AiCatalogHub';
+import { Link } from 'react-router-dom';
+import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot, ChevronRight } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { cn } from '../shared/lib/utils';
@@ -168,9 +168,18 @@ export default function Administration() {
                 <BkpkCard
                     title="Centrum analiz AI"
                     icon={<Bot className="w-5 h-5 text-bkpk-primary" />}
-                    className="space-y-4"
+                    className="space-y-3"
                 >
-                    <AiCatalogHub embedded />
+                    <p className="text-bkpk-text-secondary text-sm">
+                        Generowanie i przegląd raportów Gemini przeniesiono do osobnego ekranu — krótszy panel administracyjny, czytelniejsze kategorie.
+                    </p>
+                    <Link
+                        to="/ai"
+                        className="inline-flex items-center gap-2 text-sm font-bold text-bkpk-primary hover:underline"
+                    >
+                        Otwórz centrum analiz AI
+                        <ChevronRight className="w-4 h-4" />
+                    </Link>
                 </BkpkCard>
 
                 <BkpkCard
