@@ -3607,7 +3607,6 @@
 
   .news-card--featured {
     grid-column: span 2;
-    grid-row: span 2;
   }
   
   .news-card--featured .news-card__body h2 {
