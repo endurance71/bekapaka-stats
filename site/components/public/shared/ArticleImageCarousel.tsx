@@ -28,7 +28,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Navigation: scroll to specific index
+  // Navigation for mobile carousel
   const scrollToIndex = useCallback((idx: number) => {
     const container = containerRef.current
     if (container) {
@@ -51,7 +51,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
     scrollToIndex(nextIdx)
   }, [currentIndex, images.length, scrollToIndex])
 
-  // Track scrolling to sync dots
+  // Track scrolling on mobile to sync dots
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const container = e.currentTarget
     const scrollLeft = container.scrollLeft
@@ -102,98 +102,134 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
   const displayCaption = activeImage.alt && !isFilename(activeImage.alt) ? activeImage.alt : null
 
   return (
-    <div className='article-carousel-wrapper' role='region' aria-label='Galeria zdjęć'>
-      {/* Main Container */}
-      <div className='article-carousel-container'>
-        <div 
-          ref={containerRef}
-          className='article-carousel'
-          onScroll={handleScroll}
-        >
-          {images.map((img, idx) => (
-            <div 
-              key={idx}
-              className='article-carousel__slide'
-              onClick={() => {
-                setCurrentIndex(idx)
-                setIsLightboxOpen(true)
-              }}
-              title='Kliknij, aby powiększyć'
-            >
-              <div className='article-carousel__image-wrapper'>
-                <img
-                  src={img.src}
-                  alt={img.alt || 'Zdjęcie w galerii'}
-                  className='article-carousel__image'
-                  draggable={false}
-                />
-                <div className='article-carousel__zoom-badge'>
-                  <svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-                    <circle cx='11' cy='11' r='8'></circle>
-                    <line x1='21' y1='21' x2='16.65' y2='16.65'></line>
-                    <line x1='11' y1='8' x2='11' y2='14'></line>
-                    <line x1='8' y1='11' x2='14' y2='11'></line>
-                  </svg>
-                  <span>Powiększ</span>
-                </div>
+    <div className='article-gallery-wrapper'>
+      {/* 1. DESKTOP GRID (visible on screen >= 768px) */}
+      <div className='article-gallery-grid' role='region' aria-label='Galeria zdjęć'>
+        {images.map((img, idx) => (
+          <div
+            key={idx}
+            className='article-gallery-grid__item'
+            onClick={() => {
+              setCurrentIndex(idx)
+              setIsLightboxOpen(true)
+            }}
+            title='Kliknij, aby powiększyć'
+          >
+            <div className='article-gallery-grid__image-wrapper'>
+              <img
+                src={img.src}
+                alt={img.alt || 'Zdjęcie w galerii'}
+                className='article-gallery-grid__image'
+                draggable={false}
+              />
+              <div className='article-gallery-grid__zoom-badge'>
+                <svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                  <circle cx='11' cy='11' r='8'></circle>
+                  <line x1='21' y1='21' x2='16.65' y2='16.65'></line>
+                  <line x1='11' y1='8' x2='11' y2='14'></line>
+                  <line x1='8' y1='11' x2='14' y2='11'></line>
+                </svg>
+                <span>Powiększ</span>
               </div>
             </div>
-          ))}
+            {img.alt && !isFilename(img.alt) && (
+              <p className='article-gallery-grid__caption'>{img.alt}</p>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 2. MOBILE CAROUSEL (visible on screen < 768px) */}
+      <div className='article-gallery-carousel' role='region' aria-label='Galeria zdjęć (karuzela)'>
+        <div className='article-carousel-container'>
+          <div 
+            ref={containerRef}
+            className='article-carousel'
+            onScroll={handleScroll}
+          >
+            {images.map((img, idx) => (
+              <div 
+                key={idx}
+                className='article-carousel__slide'
+                onClick={() => {
+                  setCurrentIndex(idx)
+                  setIsLightboxOpen(true)
+                }}
+                title='Kliknij, aby powiększyć'
+              >
+                <div className='article-carousel__image-wrapper'>
+                  <img
+                    src={img.src}
+                    alt={img.alt || 'Zdjęcie w galerii'}
+                    className='article-carousel__image'
+                    draggable={false}
+                  />
+                  <div className='article-carousel__zoom-badge'>
+                    <svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                      <circle cx='11' cy='11' r='8'></circle>
+                      <line x1='21' y1='21' x2='16.65' y2='16.65'></line>
+                      <line x1='11' y1='8' x2='11' y2='14'></line>
+                      <line x1='8' y1='11' x2='14' y2='11'></line>
+                    </svg>
+                    <span>Powiększ</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {images.length > 1 && (
+            <>
+              <button
+                onClick={handlePrev}
+                className='article-carousel__nav-btn article-carousel__nav-btn--prev'
+                aria-label='Poprzednie zdjęcie'
+                type='button'
+              >
+                <svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                  <polyline points='15 18 9 12 15 6'></polyline>
+                </svg>
+              </button>
+              <button
+                onClick={handleNext}
+                className='article-carousel__nav-btn article-carousel__nav-btn--next'
+                aria-label='Następne zdjęcie'
+                type='button'
+              >
+                <svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
+                  <polyline points='9 18 15 12 9 6'></polyline>
+                </svg>
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Carousel controls (hidden on desktop, shown on mobile/tablet if > 1 image) */}
-        {images.length > 1 && (
-          <>
-            <button
-              onClick={handlePrev}
-              className='article-carousel__nav-btn article-carousel__nav-btn--prev'
-              aria-label='Poprzednie zdjęcie'
-              type='button'
-            >
-              <svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                <polyline points='15 18 9 12 15 6'></polyline>
-              </svg>
-            </button>
-            <button
-              onClick={handleNext}
-              className='article-carousel__nav-btn article-carousel__nav-btn--next'
-              aria-label='Następne zdjęcie'
-              type='button'
-            >
-              <svg viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-                <polyline points='9 18 15 12 9 6'></polyline>
-              </svg>
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Footer / Captions / Indicators */}
-      <div className='article-carousel__footer'>
-        {displayCaption && (
-          <p className='article-carousel__caption'>{displayCaption}</p>
-        )}
-        {images.length > 1 && (
-          <div className='article-carousel__indicators'>
-            <span className='article-carousel__counter'>
-              {currentIndex + 1} / {images.length}
-            </span>
-            <div className='article-carousel__dots'>
-              {images.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => scrollToIndex(idx)}
-                  className={`article-carousel__dot ${idx === currentIndex ? 'article-carousel__dot--active' : ''}`}
-                  aria-label={`Przejdź do zdjęcia ${idx + 1}`}
-                  type='button'
-                />
-              ))}
+        <div className='article-carousel__footer'>
+          {displayCaption && (
+            <p className='article-carousel__caption'>{displayCaption}</p>
+          )}
+          {images.length > 1 && (
+            <div className='article-carousel__indicators'>
+              <span className='article-carousel__counter'>
+                {currentIndex + 1} / {images.length}
+              </span>
+              <div className='article-carousel__dots'>
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => scrollToIndex(idx)}
+                    className={`article-carousel__dot ${idx === currentIndex ? 'article-carousel__dot--active' : ''}`}
+                    aria-label={`Przejdź do zdjęcia ${idx + 1}`}
+                    type='button'
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Fullscreen Lightbox Modal */}
+      {/* 3. LIGHTBOX MODAL (shared fullscreen overlay) */}
       {isLightboxOpen && (
         <div 
           className='article-lightbox' 
@@ -225,7 +261,6 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               draggable={false}
             />
 
-            {/* Lightbox Navigation */}
             {images.length > 1 && (
               <>
                 <button
@@ -251,7 +286,6 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               </>
             )}
 
-            {/* Lightbox Caption */}
             {(displayCaption || images.length > 1) && (
               <div className='article-lightbox__caption-panel'>
                 {displayCaption && <p className='article-lightbox__caption'>{displayCaption}</p>}
