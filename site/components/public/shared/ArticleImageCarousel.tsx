@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 
 interface ImageInfo {
   src: string
@@ -11,37 +11,76 @@ interface ArticleImageCarouselProps {
   images: ImageInfo[]
 }
 
+// Helper to check if a caption is just a filename (and should be hidden)
+function isFilename(text: string): boolean {
+  if (!text) return true
+  // File extensions check
+  if (/\.(png|jpg|jpeg|gif|webp|svg|PNG|JPG|JPEG|GIF|WEBP|SVG)$/i.test(text)) return true
+  // UUIDs or hashes (long alphanumeric strings with dashes/underscores)
+  if (/^[a-f0-9-]{12,}$/i.test(text)) return true
+  // Common automated export naming structures
+  if (/^[a-zA-Z0-9_-]+$/i.test(text) && (text.includes('-') || text.includes('_')) && text.length > 10) return true
+  return false
+}
+
 export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const [touchStartX, setTouchStartX] = useState<number | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
 
-  // Navigation handlers
+  // Navigation: scroll to specific index
+  const scrollToIndex = useCallback((idx: number) => {
+    const container = containerRef.current
+    if (container) {
+      const itemWidth = container.offsetWidth
+      container.scrollTo({
+        left: idx * itemWidth,
+        behavior: 'smooth'
+      })
+      setCurrentIndex(idx)
+    }
+  }, [])
+
   const handlePrev = useCallback(() => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? images.length - 1 : prevIndex - 1))
-  }, [images.length])
+    const nextIdx = currentIndex === 0 ? images.length - 1 : currentIndex - 1
+    scrollToIndex(nextIdx)
+  }, [currentIndex, images.length, scrollToIndex])
 
   const handleNext = useCallback(() => {
-    setCurrentIndex((prevIndex) => (prevIndex === images.length - 1 ? 0 : prevIndex + 1))
-  }, [images.length])
+    const nextIdx = currentIndex === images.length - 1 ? 0 : currentIndex + 1
+    scrollToIndex(nextIdx)
+  }, [currentIndex, images.length, scrollToIndex])
 
-  // Keyboard navigation for Lightbox and Carousel
+  // Track scrolling to sync dots
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const container = e.currentTarget
+    const scrollLeft = container.scrollLeft
+    const width = container.offsetWidth
+    if (width > 0) {
+      const idx = Math.round(scrollLeft / width)
+      if (idx !== currentIndex && idx >= 0 && idx < images.length) {
+        setCurrentIndex(idx)
+      }
+    }
+  }
+
+  // Keyboard navigation for Lightbox
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isLightboxOpen) {
         if (e.key === 'Escape') {
           setIsLightboxOpen(false)
         } else if (e.key === 'ArrowRight') {
-          handleNext()
+          setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))
         } else if (e.key === 'ArrowLeft') {
-          handlePrev()
+          setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))
         }
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isLightboxOpen, handleNext, handlePrev])
+  }, [isLightboxOpen, images.length])
 
   // Scroll lock when lightbox is open
   useEffect(() => {
@@ -55,63 +94,54 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
     }
   }, [isLightboxOpen])
 
-  // Touch Swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setTouchStartX(e.touches[0].clientX)
-    }
-  }
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null || e.changedTouches.length !== 1) return
-    const touchEndX = e.changedTouches[0].clientX
-    const diffX = touchStartX - touchEndX
-
-    if (Math.abs(diffX) > 50) {
-      if (diffX > 0) {
-        handleNext()
-      } else {
-        handlePrev()
-      }
-    }
-    setTouchStartX(null)
-  }
-
   if (!images || images.length === 0) return null
 
   const activeImage = images[currentIndex]
 
+  // Filter out filename captions
+  const displayCaption = activeImage.alt && !isFilename(activeImage.alt) ? activeImage.alt : null
+
   return (
     <div className='article-carousel-wrapper' role='region' aria-label='Galeria zdjęć'>
-      {/* Main Slider Container */}
-      <div 
-        className='article-carousel'
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
+      {/* Main Container */}
+      <div className='article-carousel-container'>
         <div 
-          className='article-carousel__image-wrapper'
-          onClick={() => setIsLightboxOpen(true)}
-          title='Kliknij, aby powiększyć'
+          ref={containerRef}
+          className='article-carousel'
+          onScroll={handleScroll}
         >
-          <img
-            src={activeImage.src}
-            alt={activeImage.alt || 'Zdjęcie w galerii'}
-            className='article-carousel__image'
-            draggable={false}
-          />
-          <div className='article-carousel__zoom-badge'>
-            <svg viewBox='0 0 24 24' width='20' height='20' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
-              <circle cx='11' cy='11' r='8'></circle>
-              <line x1='21' y1='21' x2='16.65' y2='16.65'></line>
-              <line x1='11' y1='8' x2='11' y2='14'></line>
-              <line x1='8' y1='11' x2='14' y2='11'></line>
-            </svg>
-            <span>Powiększ</span>
-          </div>
+          {images.map((img, idx) => (
+            <div 
+              key={idx}
+              className='article-carousel__slide'
+              onClick={() => {
+                setCurrentIndex(idx)
+                setIsLightboxOpen(true)
+              }}
+              title='Kliknij, aby powiększyć'
+            >
+              <div className='article-carousel__image-wrapper'>
+                <img
+                  src={img.src}
+                  alt={img.alt || 'Zdjęcie w galerii'}
+                  className='article-carousel__image'
+                  draggable={false}
+                />
+                <div className='article-carousel__zoom-badge'>
+                  <svg viewBox='0 0 24 24' width='16' height='16' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round' strokeLinejoin='round'>
+                    <circle cx='11' cy='11' r='8'></circle>
+                    <line x1='21' y1='21' x2='16.65' y2='16.65'></line>
+                    <line x1='11' y1='8' x2='11' y2='14'></line>
+                    <line x1='8' y1='11' x2='14' y2='11'></line>
+                  </svg>
+                  <span>Powiększ</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Carousel controls (if > 1 image) */}
+        {/* Carousel controls (hidden on desktop, shown on mobile/tablet if > 1 image) */}
         {images.length > 1 && (
           <>
             <button
@@ -138,10 +168,10 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
         )}
       </div>
 
-      {/* Caption & Info Panel */}
+      {/* Footer / Captions / Indicators */}
       <div className='article-carousel__footer'>
-        {activeImage.alt && (
-          <p className='article-carousel__caption'>{activeImage.alt}</p>
+        {displayCaption && (
+          <p className='article-carousel__caption'>{displayCaption}</p>
         )}
         {images.length > 1 && (
           <div className='article-carousel__indicators'>
@@ -152,7 +182,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               {images.map((_, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setCurrentIndex(idx)}
+                  onClick={() => scrollToIndex(idx)}
                   className={`article-carousel__dot ${idx === currentIndex ? 'article-carousel__dot--active' : ''}`}
                   aria-label={`Przejdź do zdjęcia ${idx + 1}`}
                   type='button'
@@ -171,7 +201,6 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
           aria-modal='true'
           aria-label='Powiększone zdjęcie'
         >
-          {/* Scrim Background */}
           <div className='article-lightbox__scrim' onClick={() => setIsLightboxOpen(false)} />
 
           {/* Close Button */}
@@ -188,11 +217,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
           </button>
 
           {/* Lightbox Content Area */}
-          <div 
-            className='article-lightbox__content'
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
+          <div className='article-lightbox__content'>
             <img
               src={activeImage.src}
               alt={activeImage.alt || 'Powiększone zdjęcie'}
@@ -200,11 +225,11 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               draggable={false}
             />
 
-            {/* Lightbox Controls (if > 1 image) */}
+            {/* Lightbox Navigation */}
             {images.length > 1 && (
               <>
                 <button
-                  onClick={handlePrev}
+                  onClick={() => setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1))}
                   className='article-lightbox__nav-btn article-lightbox__nav-btn--prev'
                   aria-label='Poprzednie zdjęcie'
                   type='button'
@@ -214,7 +239,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
                   </svg>
                 </button>
                 <button
-                  onClick={handleNext}
+                  onClick={() => setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1))}
                   className='article-lightbox__nav-btn article-lightbox__nav-btn--next'
                   aria-label='Następne zdjęcie'
                   type='button'
@@ -227,9 +252,9 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
             )}
 
             {/* Lightbox Caption */}
-            {activeImage.alt && (
+            {(displayCaption || images.length > 1) && (
               <div className='article-lightbox__caption-panel'>
-                <p className='article-lightbox__caption'>{activeImage.alt}</p>
+                {displayCaption && <p className='article-lightbox__caption'>{displayCaption}</p>}
                 {images.length > 1 && (
                   <span className='article-lightbox__counter'>
                     {currentIndex + 1} / {images.length}

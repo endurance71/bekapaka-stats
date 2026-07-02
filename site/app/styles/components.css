@@ -4436,14 +4436,33 @@
   gap: var(--space-3);
 }
 
-.article-carousel {
+.article-carousel-container {
   position: relative;
   width: 100%;
-  background: var(--bg-elevated);
+}
+
+.article-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge */
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  overflow: hidden;
+  background: var(--bg-elevated);
   box-shadow: var(--shadow-sm);
+}
+
+.article-carousel::-webkit-scrollbar {
+  display: none; /* Safari/Chrome */
+}
+
+.article-carousel__slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  cursor: zoom-in;
+  outline: none;
 }
 
 .article-carousel__image-wrapper {
@@ -4453,7 +4472,6 @@
   align-items: center;
   min-height: 240px;
   max-height: 500px;
-  cursor: zoom-in;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.15);
 }
@@ -4581,6 +4599,44 @@
 .article-carousel__dot--active {
   background: var(--accent);
   transform: scale(1.25);
+}
+
+/* ==========================================
+   DESKTOP GRID OVERRIDE (IF IMAGES FIT)
+   ========================================== */
+@media (min-width: 768px) {
+  .article-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+    box-shadow: none;
+  }
+
+  .article-carousel__slide {
+    flex: none;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+
+  .article-carousel__slide:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--accent);
+  }
+
+  .article-carousel__nav-btn,
+  .article-carousel__indicators,
+  .article-carousel__dots {
+    display: none !important;
+  }
 }
 
 /* ==========================================
