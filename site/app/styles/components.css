@@ -4470,16 +4470,15 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 240px;
-  max-height: 500px;
+  width: 100%;
+  height: 480px;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.15);
 }
 
 .article-carousel__image {
   width: 100%;
-  height: auto;
-  max-height: 500px;
+  height: 100%;
   object-fit: contain;
   display: block;
   user-select: none;
@@ -4821,9 +4820,8 @@
 
 /* Mobile responsive fixes */
 @media (max-width: 640px) {
-  .article-carousel__image-wrapper,
-  .article-carousel__image {
-    max-height: 320px;
+  .article-carousel__image-wrapper {
+    height: 320px;
   }
   
   .article-carousel__nav-btn {
