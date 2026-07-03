@@ -4699,6 +4699,9 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  /* Zapobiega flashowi/migotaniu przy otwieraniu */
+  will-change: opacity;
+  isolation: isolate;
 }
 
 .article-lightbox__scrim {
@@ -4754,6 +4757,9 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
   border-radius: 4px;
   pointer-events: auto;
+  /* Stabilizuje rendering zdjęcia, zapobiega flash przy zmianie */
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .article-lightbox__nav-btn {
@@ -4771,15 +4777,18 @@
   justify-content: center;
   cursor: pointer;
   z-index: 20;
-  transition: all var(--transition);
+  /* Nie używamy 'all' żeby nie animować transform bazowego */
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
   pointer-events: auto;
+  will-change: transform;
 }
 
 .article-lightbox__nav-btn:hover {
   background: var(--accent);
   color: #000;
   border-color: var(--accent);
-  transform: scale(1.05);
+  /* WAŻNE: musi zawierać translateY(-50%) żeby nie skakał przycisk przy hover! */
+  transform: translateY(-50%) scale(1.05);
 }
 
 .article-lightbox__nav-btn--prev {

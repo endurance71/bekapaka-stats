@@ -255,11 +255,13 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
           {/* Lightbox Content Area */}
           <div className='article-lightbox__content'>
             <img
+              key={currentIndex}
               src={activeImage.src}
               alt={activeImage.alt || 'Powiększone zdjęcie'}
               className='article-lightbox__image'
               draggable={false}
             />
+
 
             {images.length > 1 && (
               <>
