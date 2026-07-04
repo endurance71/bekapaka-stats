@@ -4484,6 +4484,7 @@
   user-select: none;
 }
 
+
 .article-carousel__zoom-badge {
   position: absolute;
   bottom: var(--space-3);
@@ -4499,8 +4500,12 @@
   font-size: 0.75rem;
   font-weight: 500;
   opacity: 0;
+  /* Tylko opacity — nie reūywamy transform żeby uniknąć reflow */
   transition: opacity var(--transition);
   pointer-events: none;
+  /* Promocja na osobną warstwę GPU zapobiega mignięciu — badge jest poza flow */
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .article-carousel__image-wrapper:hover .article-carousel__zoom-badge {
@@ -4512,8 +4517,8 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(11, 11, 12, 0.75);
-  backdrop-filter: blur(4px);
+  /* Bez backdrop-filter — powodujeł ciągły repaint i miganie przy hover/scroll */
+  background: rgba(11, 11, 12, 0.85);
   border: 1px solid var(--border);
   color: var(--text-primary);
   width: 44px;
@@ -4524,14 +4529,20 @@
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: all var(--transition);
+  /* Nie animujemy transform, tylko kolory */
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
   box-shadow: var(--shadow-sm);
+  /* Stała warstwa GPU — eliminuje recomposite przy hover */
+  will-change: background;
+  transform: translateY(-50%) translateZ(0);
 }
 
 .article-carousel__nav-btn:hover {
   background: var(--accent);
   color: #000;
   border-color: var(--accent);
+  /* Nie dodajemy scale — żeby translateY(-50%) nie skakało */
+  transform: translateY(-50%) translateZ(0);
 }
 
 .article-carousel__nav-btn--prev {
@@ -4601,7 +4612,8 @@
 
 /* Carousel default (mobile) and Grid default (desktop) visibility */
 .article-gallery-grid {
-  display: none;
+  /* Ukryty na mobile — !important zapobiega nadpisaniu przez inne reguły */
+  display: none !important;
 }
 
 .article-gallery-carousel {
@@ -4617,7 +4629,8 @@
   }
 
   .article-gallery-grid {
-    display: grid;
+    /* Przywrócenie display: grid na desktop — nadpisuje !important z mobile */
+    display: grid !important;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: var(--space-4);
     margin: var(--space-5) 0;
