@@ -3,6 +3,7 @@ import { ArticleImageCarousel } from './ArticleImageCarousel'
 
 const isListLine = (line: string) => /^[-*]\s+/.test(line)
 const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
+const isHorizontalRule = (line: string) => /^[-*_]{3,}$/.test(line)
 
 interface ImageInfo {
   src: string
@@ -108,7 +109,7 @@ function normalizeNewsMarkdown(content: string): string {
       flush()
       continue
     }
-    if (isListLine(trimmed) || isHeadingLine(trimmed)) {
+    if (isListLine(trimmed) || isHeadingLine(trimmed) || isHorizontalRule(trimmed)) {
       flush()
       blocks.push(trimmed)
       continue
