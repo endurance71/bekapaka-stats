@@ -3496,6 +3496,14 @@
   font-weight: 700;
 }
 
+.article-markdown hr {
+  border: 0;
+  height: 1px;
+  background: var(--border-strong);
+  margin: var(--space-5) 0;
+  opacity: 0.5;
+}
+
 .article-markdown ul,
 .article-markdown ol {
   margin: 0;
