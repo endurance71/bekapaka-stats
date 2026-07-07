@@ -3114,6 +3114,7 @@
   line-height: 1.6;
   color: var(--text-muted);
   font-style: italic;
+  white-space: pre-wrap;
 }
 
 /* Helper utility text layouts */
@@ -3487,6 +3488,7 @@
 
 .article-markdown p {
   margin: 0;
+  white-space: pre-wrap;
 }
 
 .article-markdown strong {

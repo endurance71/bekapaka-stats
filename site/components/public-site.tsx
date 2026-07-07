@@ -104,7 +104,7 @@ export function HomepageCmsSectionsTile({ sections }: { sections: HomepageSectio
           <article key={section.id} className='content-card'>
             <h3>{section.title}</h3>
             {section.subtitle ? <p className='muted'>{section.subtitle}</p> : null}
-            {section.body ? <p>{section.body}</p> : null}
+            {section.body ? <p style={{ whiteSpace: 'pre-wrap' }}>{section.body}</p> : null}
           </article>
         ))}
       </div>
@@ -170,7 +170,7 @@ export function EventsTile({ events }: { events: EventItem[] }) {
               <div>
                 <h3>{event.title}</h3>
                 <p className='muted'>{formatDateTime(event.startAt)}{event.location ? ` | ${event.location}` : ''}</p>
-                {event.description ? <p>{event.description}</p> : null}
+                {event.description ? <p style={{ whiteSpace: 'pre-wrap' }}>{event.description}</p> : null}
               </div>
             </article>
           ))
