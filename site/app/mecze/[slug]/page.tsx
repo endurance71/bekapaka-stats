@@ -40,7 +40,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
       parentHref='/mecze'
       content={
         <>
-          {item.description ? <p>{item.description}</p> : null}
+          {item.description ? <p style={{ whiteSpace: 'pre-wrap' }}>{item.description}</p> : null}
           {item.registrationUrl ? (
             <p>
               <a href={item.registrationUrl} target='_blank' rel='noreferrer'>

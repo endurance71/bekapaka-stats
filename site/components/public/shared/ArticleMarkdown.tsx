@@ -113,7 +113,7 @@ function normalizeNewsMarkdown(content: string): string {
       blocks.push(trimmed)
       continue
     }
-    buffer = buffer ? `${buffer} ${trimmed}` : trimmed
+    buffer = buffer ? `${buffer}\n${trimmed}` : trimmed
   }
   flush()
 
