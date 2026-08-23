@@ -236,18 +236,30 @@ export async function archiveSeason(seasonId) {
   });
 }
 
+const BEKAPAKA_SUMMARY_MATCH_OR = [
+  { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { guestTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+  { homeTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } },
+  { guestTeamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+];
+
 export async function getSeasonSummary(seasonId) {
   const season = await getSeasonById(seasonId);
   if (!season) return null;
 
   const [
-    gamesCount,
+    bekapakaMatchesCount,
     leagueMatchesCount,
     finishedMatchesCount,
     kalkPlayersCount,
     kalkTeamsCount
   ] = await Promise.all([
-    prisma.game.count({ where: { seasonId: season.id } }),
+    prisma.kalkMatch.count({
+      where: {
+        seasonId: season.id,
+        OR: BEKAPAKA_SUMMARY_MATCH_OR
+      }
+    }),
     prisma.leagueMatch.count({ where: { seasonId: season.id } }),
     prisma.kalkMatch.count({ where: { seasonId: season.id, isFinished: true } }),
     prisma.kalkPlayer.count({ where: { seasonId: season.id } }),
@@ -257,7 +269,8 @@ export async function getSeasonSummary(seasonId) {
   return {
     season,
     stats: {
-      gamesCount,
+      bekapakaMatchesCount,
+      gamesCount: bekapakaMatchesCount,
       leagueMatchesCount,
       finishedMatchesCount,
       kalkPlayersCount,

@@ -14,6 +14,7 @@ export interface SeasonWithStats {
   isActive: boolean;
   startsAt: string | null;
   endsAt: string | null;
+  bekapakaMatchesCount?: number;
   gamesCount: number;
   leagueMatchesCount: number;
   finishedMatchesCount: number;
@@ -278,11 +279,11 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
 
               <div className="grid grid-cols-3 gap-2 p-3 bg-bkpk-overlay-medium rounded-xl border border-bkpk-border-subtle text-center text-xs">
                 <div>
-                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze w bazie</span>
-                  <span className="text-sm font-black text-bkpk-text-primary">{season.gamesCount}</span>
+                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze BeKaPaKa</span>
+                  <span className="text-sm font-black text-bkpk-primary">{season.bekapakaMatchesCount ?? season.gamesCount}</span>
                 </div>
                 <div>
-                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze w KALK</span>
+                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze w lidze</span>
                   <span className="text-sm font-black text-bkpk-text-primary">{season.finishedMatchesCount} / {season.leagueMatchesCount}</span>
                 </div>
                 <div>

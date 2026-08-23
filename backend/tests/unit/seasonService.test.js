@@ -121,4 +121,25 @@ describe('seasonService.js', () => {
       });
     });
   });
+
+  describe('getSeasonSummary', () => {
+    it('returns season stats including bekapaka matches count and league counts', async () => {
+      const season = { id: 'season_2025-2026', label: 'Sezon 2025/2026' };
+      prismaMock.kalkSeason.findUnique.mockResolvedValue(season);
+      prismaMock.kalkMatch.count.mockResolvedValueOnce(15); // bekapakaMatchesCount
+      prismaMock.leagueMatch.count.mockResolvedValueOnce(83); // leagueMatchesCount
+      prismaMock.kalkMatch.count.mockResolvedValueOnce(73); // finishedMatchesCount
+      prismaMock.kalkPlayer.count.mockResolvedValueOnce(149); // kalkPlayersCount
+      prismaMock.kalkTeam.count.mockResolvedValueOnce(10); // kalkTeamsCount
+
+      const result = await seasonService.getSeasonSummary('season_2025-2026');
+
+      expect(result.stats.bekapakaMatchesCount).toBe(15);
+      expect(result.stats.leagueMatchesCount).toBe(83);
+      expect(result.stats.finishedMatchesCount).toBe(73);
+      expect(result.stats.kalkPlayersCount).toBe(149);
+      expect(result.stats.kalkTeamsCount).toBe(10);
+    });
+  });
 });
+
