@@ -53,6 +53,15 @@ import {
   getActiveSeason
 } from './dataStore.js';
 import {
+  createSeason,
+  updateSeason,
+  activateSeason,
+  archiveSeason,
+  getSeasonSummary,
+  rolloverRoster,
+  getSeasonById
+} from './seasonService.js';
+import {
   generateGameAnalysis,
   generatePlayerDevelopment,
   generateScoutingReport,
@@ -214,7 +223,7 @@ app.get(['/api/games', '/games'], async (req, res) => {
       result: req.query.result,
       homeAway: req.query.homeAway
     };
-    const games = await listGames(filters);
+    const games = await listGames(filters, req.query.seasonId);
     res.json(games);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania meczów' });
@@ -261,7 +270,7 @@ app.delete(['/api/games/:id', '/games/:id'], async (req, res) => {
 // --- PLAYERS API ---
 app.get(['/api/roster', '/roster'], async (req, res) => {
   try {
-    const roster = await getRoster();
+    const roster = await getRoster(req.query.seasonId);
     res.json(roster);
   } catch (err) {
     console.error('Roster error:', err);
@@ -271,7 +280,7 @@ app.get(['/api/roster', '/roster'], async (req, res) => {
 
 app.get(['/api/players', '/players'], async (req, res) => {
   try {
-    const players = await listAllPlayers();
+    const players = await listAllPlayers(req.query.seasonId);
     res.json(players);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania zawodników' });
@@ -324,10 +333,68 @@ app.put(['/api/players/:id/season', '/players/:id/season'], authenticateToken, a
   }
 });
 
-// --- TRENDS \u0026 ANALYTICS ---
+// --- ADMIN SEASONS MANAGEMENT ---
+app.get(['/api/admin/seasons', '/admin/seasons'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const seasons = await listSeasons();
+    const summaries = await Promise.all(seasons.map((s) => getSeasonSummary(s.id)));
+    res.json(summaries.map((s) => ({ ...s.season, ...s.stats })));
+  } catch (err) {
+    console.error('Admin seasons error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post(['/api/admin/seasons', '/admin/seasons'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const newSeason = await createSeason(req.body);
+    res.status(201).json(newSeason);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.put(['/api/admin/seasons/:id', '/admin/seasons/:id'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const updated = await updateSeason(req.params.id, req.body);
+    res.json(updated);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post(['/api/admin/seasons/:id/activate', '/admin/seasons/:id/activate'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const activated = await activateSeason(req.params.id);
+    res.json({ success: true, season: activated });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post(['/api/admin/seasons/:id/archive', '/admin/seasons/:id/archive'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const archived = await archiveSeason(req.params.id);
+    res.json({ success: true, season: archived });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post(['/api/admin/seasons/rollover', '/admin/seasons/rollover'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { targetSeasonId, activePlayerIds, resetGoals } = req.body;
+    const result = await rolloverRoster({ targetSeasonId, activePlayerIds, resetGoals });
+    res.json({ success: true, ...result });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// --- TRENDS & ANALYTICS ---
 app.get(['/api/trends/team', '/trends/team'], async (req, res) => {
   try {
-    const trends = await getTeamTrends();
+    const trends = await getTeamTrends(req.query.seasonId);
     res.json(trends);
   } catch (err) {
     res.status(500).json({ error: 'Błąd trendów' });
@@ -336,7 +403,7 @@ app.get(['/api/trends/team', '/trends/team'], async (req, res) => {
 
 app.get(['/api/trends/league', '/trends/league'], async (req, res) => {
   try {
-    const comparison = await getLeagueComparison();
+    const comparison = await getLeagueComparison(req.query.seasonId);
     res.json(comparison);
   } catch (err) {
     res.status(500).json({ error: 'Błąd porównania' });
@@ -345,7 +412,7 @@ app.get(['/api/trends/league', '/trends/league'], async (req, res) => {
 
 app.get(['/api/team/stats', '/team/stats'], async (req, res) => {
   try {
-    const stats = await getTeamStatsSummary();
+    const stats = await getTeamStatsSummary(req.query.seasonId);
     res.json(stats);
   } catch (err) {
     console.error('Team stats error:', err);
@@ -550,32 +617,47 @@ async function ensureDefaultAdminUser() {
   console.log(`[AUTH] Created default admin user: ${username}`);
 }
 
-async function runScrapeImportPipeline(triggerLabel = 'manual') {
+async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId = undefined) {
   if (scraperRunning) {
     throw new Error('Scraper już działa.');
   }
 
+  const activeSeason = targetSeasonId
+    ? await getSeasonById(targetSeasonId)
+    : await getActiveSeason();
+  const divisionPath = activeSeason?.divisionPath || 'dzial,dywizja-2,4.html';
+  const seasonSlug = activeSeason?.slug || '2025-2026';
+
   scraperRunning = true;
   scraperState.running = true;
-  scraperState.lastLog = `[${new Date().toLocaleTimeString()}] System: Inicjalizacja...` + '\n';
+  scraperState.lastLog = `[${new Date().toLocaleTimeString()}] System: Inicjalizacja dla sezonu ${seasonSlug}...` + '\n';
   scraperState.step = 'inicjalizacja';
-  scraperState.message = 'Uruchamianie scrapera...';
+  scraperState.message = `Uruchamianie scrapera (${seasonSlug})...`;
   scraperState.progressCurrent = 0;
   scraperState.progressTotal = 0;
 
-  updateScraperLog('Rozpoczynanie pełnego importu danych...');
+  updateScraperLog(`Rozpoczynanie pełnego importu danych (sezon: ${seasonSlug}, ścieżka: ${divisionPath})...`);
 
   try {
     scraperState.step = 'pobieranie';
     scraperState.message = 'Pobieranie danych przez Scrapling...';
     updateScraperLog(`Trigger: ${triggerLabel}`);
-    updateScraperLog('Uruchamiam scrapling script (Python)...');
+    updateScraperLog(`Uruchamiam scrapling script dla ${divisionPath}...`);
 
-    const child = execFileCb('python3', [KALK_SCRAPLING_SCRIPT], {
-      cwd: __dirname,
-      timeout: 15 * 60 * 1000,
-      maxBuffer: 10 * 1024 * 1024
-    });
+    const child = execFileCb(
+      'python3',
+      [KALK_SCRAPLING_SCRIPT, '--division-path', divisionPath, '--season', seasonSlug],
+      {
+        cwd: __dirname,
+        timeout: 15 * 60 * 1000,
+        maxBuffer: 10 * 1024 * 1024,
+        env: {
+          ...process.env,
+          KALK_DIVISION_PATH: divisionPath,
+          KALK_SEASON_SLUG: seasonSlug
+        }
+      }
+    );
 
     child.stdout.on('data', (data) => {
       const text = data.toString();

@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+
 interface Player {
   id: string;
   firstName: string;
@@ -29,18 +31,20 @@ export default function Roster() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { seasonId } = useSeasonPreferenceContext();
 
   const fetchRoster = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchJSON<Player[]>(`/api/roster?t=${Date.now()}`);
+      const q = seasonId ? `&seasonId=${encodeURIComponent(seasonId)}` : '';
+      const data = await fetchJSON<Player[]>(`/api/roster?t=${Date.now()}${q}`);
       setPlayers(data.sort((a, b) => a.number - b.number));
     } catch (error) {
       console.error('Error fetching roster:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [seasonId]);
 
   useEffect(() => {
     fetchRoster();

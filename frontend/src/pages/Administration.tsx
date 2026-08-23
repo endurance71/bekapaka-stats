@@ -3,7 +3,7 @@ import Modal from '../components/Modal';
 import { fetchJSON, postJSON, putJSON, deleteJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot } from 'lucide-react';
+import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot, Layers } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { cn } from '../shared/lib/utils';
@@ -20,6 +20,7 @@ import {
     getActivityRecency,
     activityRecencyClass
 } from '../lib/formatLastActivity';
+import SeasonManagement from '../features/admin/SeasonManagement';
 
 type ScraperStatus = {
     running: boolean;
@@ -180,6 +181,14 @@ export default function Administration() {
                         Otwórz centrum analiz AI
                         <ChevronRight className="w-4 h-4" />
                     </Link>
+                </BkpkCard>
+
+                <BkpkCard
+                    title="Sezony i Rozgrywki"
+                    icon={<Layers className="w-5 h-5 text-bkpk-primary" />}
+                    className="space-y-6"
+                >
+                    <SeasonManagement onSeasonChanged={refreshStatus} />
                 </BkpkCard>
 
                 <BkpkCard

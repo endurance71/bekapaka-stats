@@ -46,16 +46,21 @@ interface LeagueComparison {
   };
 }
 
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+
 export default function Trends() {
   const [trends, setTrends] = useState<TeamTrend[]>([]);
   const [comparison, setComparison] = useState<LeagueComparison | null>(null);
   const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
+  const { seasonId } = useSeasonPreferenceContext();
 
   useEffect(() => {
+    setLoading(true);
+    const q = seasonId ? `?seasonId=${encodeURIComponent(seasonId)}` : '';
     Promise.all([
-      fetchJSON<TeamTrend[]>('/api/trends/team'),
-      fetchJSON<LeagueComparison>('/api/trends/league')
+      fetchJSON<TeamTrend[]>(`/api/trends/team${q}`),
+      fetchJSON<LeagueComparison>(`/api/trends/league${q}`)
     ]).then(([trendsData, compData]) => {
       setTrends((trendsData || []).filter(t => t !== null && t !== undefined).map(t => ({
         ...t,
@@ -68,7 +73,7 @@ export default function Trends() {
       setComparison(compData);
     }).catch(err => console.error('Error fetching trends:', err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [seasonId]);
 
   const radarData = useMemo(() => {
     if (!comparison) return [];

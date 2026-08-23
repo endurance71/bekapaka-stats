@@ -62,14 +62,14 @@ export default function Dashboard() {
     if (!seasonId) return;
     setLoading(true);
     try {
-      const scoutingQ = new URLSearchParams({ seasonId });
+      const q = new URLSearchParams({ seasonId }).toString();
       const settled = await Promise.allSettled([
-        fetchJSON<Game[]>('/api/games'),
-        fetchJSON<Player[]>('/api/players'),
-        fetchJSON<any[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`),
-        fetchJSON<any>(`/api/scouting/next?${scoutingQ.toString()}`),
-        fetchJSON<any>('/api/team/stats'),
-        fetchJSON<any>('/api/ai/briefing')
+        fetchJSON<Game[]>(`/api/games?${q}`),
+        fetchJSON<Player[]>(`/api/players?${q}`),
+        fetchJSON<any[]>(`/api/league/schedule?${q}`),
+        fetchJSON<any>(`/api/scouting/next?${q}`),
+        fetchJSON<any>(`/api/team/stats?${q}`),
+        fetchJSON<any>(`/api/ai/briefing?${q}`)
       ]);
 
       const pick = <T,>(idx: number, fallback: T): T =>
