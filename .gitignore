@@ -4,6 +4,8 @@ data/pgdata/
 data/pgdata_backup*/
 project.tar.gz
 *.tar.gz
+kalk_stats.json
+backend/kalk_stats.json
 
 # Python
 __pycache__/
@@ -17,6 +19,11 @@ node_modules/
 site/node_modules/
 site/.next/
 cms/node_modules/
+cms-app/node_modules/
+cms-app/.tmp/
+cms-app/build/
+cms-app/dist/
+cms-app/types/
 dist/
 dist-ssr/
 backend/generated/
@@ -42,10 +49,14 @@ ENV/
 
 # Credentials & Sensitive
 VPS-dane/
+Sponsorzy/
 *.ini
 *.json.bak
 *.sql.bak
 
-# OS
+# macOS & OS artifacts
 .DS_Store
 Thumbs.db
+* 2*
+* 3*
+

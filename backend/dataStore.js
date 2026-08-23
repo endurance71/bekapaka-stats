@@ -22,7 +22,8 @@ import {
   setPlayerSeasonPreference,
   findKalkPlayerForRoster,
   filterGamesBySeason,
-  buildKalkPlayerDbId
+  buildKalkPlayerDbId,
+  getSeasonById
 } from './seasonService.js';
 import { resolveSeasonIdForDate } from './lib/kalkSeason.js';
 import {
@@ -291,10 +292,11 @@ function rosterGameFromKalkLog(entry, stats) {
   };
 }
 
-export async function getRoster() {
+export async function getRoster(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
+  const targetSeason = await getSeasonById(targetSeasonId);
 
   const rows = await prisma.rosterPlayer.findMany({
     include: { kalkPlayer: true },
@@ -306,12 +308,12 @@ export async function getRoster() {
     const base = r.data || {};
 
     const playerGames = [];
-    const kalkPlayer = await findKalkPlayerForRoster(r, activeSeason?.id);
+    const kalkPlayer = await findKalkPlayerForRoster(r, targetSeason?.id);
     const kalkPlayerId = r.kalkPlayerId || kalkPlayer?.id;
 
-    if (kalkPlayerId && activeSeason?.id) {
+    if (kalkPlayerId && targetSeason?.id) {
       const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
-        where: { seasonId: activeSeason.id, kalkPlayerId },
+        where: { seasonId: targetSeason.id, kalkPlayerId },
         include: { kalkMatch: true },
         orderBy: { kalkMatch: { date: 'desc' } }
       });
@@ -736,7 +738,6 @@ function buildTeamShootingMetrics(team, context = {}) {
  * @param {number} teamVal
  * @param {number} leagueVal
  * @param {boolean} higherIsBetter
- */
 function ratingLeagueTier(teamVal, leagueVal, higherIsBetter) {
   const delta = higherIsBetter ? teamVal - leagueVal : leagueVal - teamVal;
   if (delta >= RATING_LEAGUE_TIER_DELTA) return 'elite';
@@ -747,14 +748,14 @@ function ratingLeagueTier(teamVal, leagueVal, higherIsBetter) {
 /**
  * Średnie ORtg / DefRtg / NetRtg dywizji z zakończonych meczów KALK (box score).
  */
-export async function getLeagueRatingBenchmarks() {
+export async function getLeagueRatingBenchmarks(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
-  if (!activeSeason) return null;
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
+  if (!targetSeasonId) return null;
 
   const kalkMatches = await prisma.kalkMatch.findMany({
-    where: { seasonId: activeSeason.id, isFinished: true },
+    where: { seasonId: targetSeasonId, isFinished: true },
     orderBy: { date: 'asc' }
   });
 
@@ -797,6 +798,58 @@ export async function getLeagueRatingBenchmarks() {
 }
 
 /**
+ * Zwraca podsumowanie statystyk zespołu do kafelków na Dashboardzie.
+ */
+export async function getTeamStatsSummary(querySeasonId = undefined) {
+  const [trends, league] = await Promise.all([
+    getTeamTrends(querySeasonId),
+    getLeagueRatingBenchmarks(querySeasonId)
+  ]);
+  if (trends.length === 0) {
+    return {
+      ppg: 0,
+      trend: 0,
+      offRating: 0,
+      defRating: 0,
+      netRating: 0,
+      league: league || null,
+      tiers: null
+    };
+  }
+
+  const seasonAvg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+
+  const allPpg = trends.map(t => t.scoreUs || 0);
+  const ppg = seasonAvg(allPpg);
+
+  // Trend: ostatnie 3 mecze vs sezon
+  const recentPpg = seasonAvg(allPpg.slice(-3));
+  const trend = ppg > 0 ? ((recentPpg - ppg) / ppg) * 100 : 0;
+
+  const offRating = seasonAvg(trends.map((t) => t.offRtg || 0));
+  const defRating = seasonAvg(trends.map((t) => t.defRtg || 0));
+  const netRating = offRating - defRating;
+
+  const tiers = league
+    ? {
+        off: ratingLeagueTier(offRating, league.offRating, true),
+        def: ratingLeagueTier(defRating, league.defRating, false),
+        net: ratingLeagueTier(netRating, league.netRating, true)
+      }
+    : null;
+
+  return {
+    ppg: Number(ppg.toFixed(1)),
+    trend: Number(trend.toFixed(1)),
+    offRating: Number(offRating.toFixed(1)),
+    defRating: Number(defRating.toFixed(1)),
+    netRating: Number(netRating.toFixed(1)),
+    league,
+    tiers
+  };
+}
+
+/**
  * Agreguje trendy zespołowe (Four Factors) na przestrzeni sezonu.
  */
 function teamTrendFromBekapakaTeam(bekapaka, meta) {
@@ -821,15 +874,15 @@ function teamTrendFromBekapakaTeam(bekapaka, meta) {
   };
 }
 
-export async function getTeamTrends() {
+export async function getTeamTrends(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
 
-  if (activeSeason) {
+  if (targetSeasonId) {
     const kalkMatches = await prisma.kalkMatch.findMany({
       where: {
-        seasonId: activeSeason.id,
+        seasonId: targetSeasonId,
         isFinished: true,
         OR: BEKAPAKA_KALK_MATCH_OR
       },
@@ -1054,73 +1107,25 @@ export async function getLoginLogs(filters = {}) {
 /**
  * Zwraca historię logowań
  */
-/**
- * Zwraca podsumowanie statystyk zespołu do kafelków na Dashboardzie.
- */
-export async function getTeamStatsSummary() {
-  const [trends, league] = await Promise.all([getTeamTrends(), getLeagueRatingBenchmarks()]);
-  if (trends.length === 0) {
-    return {
-      ppg: 0,
-      trend: 0,
-      offRating: 0,
-      defRating: 0,
-      netRating: 0,
-      league: league || null,
-      tiers: null
-    };
-  }
-
-  const seasonAvg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
-
-  const allPpg = trends.map(t => t.scoreUs || 0);
-  const ppg = seasonAvg(allPpg);
-
-  // Trend: ostatnie 3 mecze vs sezon
-  const recentPpg = seasonAvg(allPpg.slice(-3));
-  const trend = ppg > 0 ? ((recentPpg - ppg) / ppg) * 100 : 0;
-
-  const offRating = seasonAvg(trends.map((t) => t.offRtg || 0));
-  const defRating = seasonAvg(trends.map((t) => t.defRtg || 0));
-  const netRating = offRating - defRating;
-
-  const tiers = league
-    ? {
-        off: ratingLeagueTier(offRating, league.offRating, true),
-        def: ratingLeagueTier(defRating, league.defRating, false),
-        net: ratingLeagueTier(netRating, league.netRating, true)
-      }
-    : null;
-
-  return {
-    ppg: Number(ppg.toFixed(1)),
-    trend: Number(trend.toFixed(1)),
-    offRating: Number(offRating.toFixed(1)),
-    defRating: Number(defRating.toFixed(1)),
-    netRating: Number(netRating.toFixed(1)),
-    league,
-    tiers
-  };
-}
 
 /**
  * Calculates training priorities based on team stats vs league average (approximated by opponent stats).
  */
-export async function getTrainingPriorities() {
+export async function getTrainingPriorities(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
 
   const empty = {
     team: { ftPercentage: 0, turnovers: 0, assists: 0 },
     league: { ftPercentage: 0, turnovers: 0, assists: 0 }
   };
 
-  if (!activeSeason) return empty;
+  if (!targetSeasonId) return empty;
 
   const kalkMatches = await prisma.kalkMatch.findMany({
     where: {
-      seasonId: activeSeason.id,
+      seasonId: targetSeasonId,
       isFinished: true,
       OR: BEKAPAKA_KALK_MATCH_OR
     },
@@ -1149,43 +1154,53 @@ export async function getTrainingPriorities() {
       const teamTotalPF = (team.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
       const oppTotalPF = (opp.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
 
-      teamStatsSum.ftm += team.fourFactors.ftm || 0;
-      teamStatsSum.fta += team.fourFactors.fta || 0;
-      teamStatsSum.tov += team.fourFactors.tov || 0;
-      teamStatsSum.ast += team.fourFactors.ast || 0;
-      teamStatsSum.fga += team.fourFactors.fga || 0;
-      teamStatsSum.fgm += team.fourFactors.fgm || 0;
-      teamStatsSum.three_pm += team.fourFactors.three_pm || 0;
-      teamStatsSum.orb += team.fourFactors.orb || 0;
-      teamStatsSum.oppDrb += opp.fourFactors.drb || 0;
+      teamStatsSum.ftm += team.fourFactors.ftm;
+      teamStatsSum.fta += team.fourFactors.fta;
+      teamStatsSum.tov += team.fourFactors.turnovers;
+      teamStatsSum.ast += team.fourFactors.ast;
+      teamStatsSum.fga += team.fourFactors.fga;
+      teamStatsSum.fgm += team.fourFactors.fgm;
+      teamStatsSum.three_pm += team.fourFactors.three_pm;
+      teamStatsSum.orb += team.fourFactors.oreb;
+      teamStatsSum.oppDrb += (opp.fourFactors.reb - opp.fourFactors.oreb);
       teamStatsSum.pf += teamTotalPF;
-      teamStatsSum.ptsAgainst += opp.fourFactors.pts || oppPts || 0;
+      teamStatsSum.ptsAgainst += oppPts;
       teamStatsSum.count++;
 
-      oppStatsSum.ftm += opp.fourFactors.ftm || 0;
-      oppStatsSum.fta += opp.fourFactors.fta || 0;
-      oppStatsSum.tov += opp.fourFactors.tov || 0;
-      oppStatsSum.ast += opp.fourFactors.ast || 0;
-      oppStatsSum.fga += opp.fourFactors.fga || 0;
-      oppStatsSum.fgm += opp.fourFactors.fgm || 0;
-      oppStatsSum.three_pm += opp.fourFactors.three_pm || 0;
-      oppStatsSum.orb += opp.fourFactors.orb || 0;
-      oppStatsSum.oppDrb += team.fourFactors.drb || 0;
+      oppStatsSum.ftm += opp.fourFactors.ftm;
+      oppStatsSum.fta += opp.fourFactors.fta;
+      oppStatsSum.tov += opp.fourFactors.turnovers;
+      oppStatsSum.ast += opp.fourFactors.ast;
+      oppStatsSum.fga += opp.fourFactors.fga;
+      oppStatsSum.fgm += opp.fourFactors.fgm;
+      oppStatsSum.three_pm += opp.fourFactors.three_pm;
+      oppStatsSum.orb += opp.fourFactors.oreb;
+      oppStatsSum.oppDrb += (team.fourFactors.reb - team.fourFactors.oreb);
       oppStatsSum.pf += oppTotalPF;
-      oppStatsSum.ptsAgainst += team.fourFactors.pts || teamPts || 0;
+      oppStatsSum.ptsAgainst += teamPts;
       oppStatsSum.count++;
     }
   }
 
-  const calcAvg = (sum) => ({
-    ftPercentage: sum.fta > 0 ? Math.round((sum.ftm / sum.fta) * 100) : 0,
-    turnovers: sum.count > 0 ? Number((sum.tov / sum.count).toFixed(1)) : 0,
-    assists: sum.count > 0 ? Number((sum.ast / sum.count).toFixed(1)) : 0,
-    efg: sum.fga > 0 ? Math.round(((sum.fgm + 0.5 * sum.three_pm) / sum.fga) * 100) : 0,
-    rebounds: (sum.orb + sum.oppDrb) > 0 ? Math.round((sum.orb / (sum.orb + sum.oppDrb)) * 100) : 0,
-    fouls: sum.count > 0 ? Number((sum.pf / sum.count).toFixed(1)) : 0,
-    defense: sum.count > 0 ? Math.round(sum.ptsAgainst / sum.count) : 0
-  });
+  if (teamStatsSum.count === 0) return empty;
+
+  const calcAvg = (sum) => {
+    const fga = sum.fga / sum.count;
+    const fta = sum.fta / sum.count;
+    const pts = ((sum.fgm * 2) + sum.three_pm + sum.ftm) / sum.count;
+    const tsD = 2 * (fga + 0.44 * fta);
+    const orbD = (sum.orb + sum.oppDrb) / sum.count;
+
+    return {
+      ftPercentage: sum.fta > 0 ? (sum.ftm / sum.fta) * 100 : 0,
+      turnovers: sum.tov / sum.count,
+      assists: sum.ast / sum.count,
+      tsPercentage: tsD > 0 ? (pts / tsD) * 100 : 0,
+      orbPercentage: orbD > 0 ? ((sum.orb / sum.count) / orbD) * 100 : 0,
+      fouls: sum.pf / sum.count,
+      pointsAgainst: sum.ptsAgainst / sum.count
+    };
+  };
 
   return {
     team: calcAvg(teamStatsSum),
@@ -1196,11 +1211,14 @@ export async function getTrainingPriorities() {
 /**
  * Pobiera dane do porównania z ligą.
  */
-export async function getLeagueComparison() {
+export async function getLeagueComparison(querySeasonId = undefined) {
   await ensureSeeded();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
 
-  // 1. Get real league table data
-  const allTeams = await prisma.leagueTeam.findMany();
+  // 1. Get real league table data for requested season
+  const allTeams = await prisma.leagueTeam.findMany({
+    where: targetSeasonId ? { seasonId: targetSeasonId } : undefined
+  });
 
   if (allTeams.length === 0) {
     return null;
@@ -1273,15 +1291,15 @@ export async function upsertRoster(player) {
 }
 
 // MECZE - Lista meczów BeKaPaKa (priorytet KalkMatch)
-export async function listGames(filters = {}) {
+export async function listGames(filters = {}, querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = await resolveSeasonId(querySeasonId || filters.seasonId);
 
-  if (activeSeason) {
+  if (targetSeasonId) {
     const kalkMatches = await prisma.kalkMatch.findMany({
       where: {
-        seasonId: activeSeason.id,
+        seasonId: targetSeasonId,
         OR: BEKAPAKA_KALK_MATCH_OR
       },
       orderBy: { date: 'desc' }

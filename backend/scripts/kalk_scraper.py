@@ -9,8 +9,10 @@ Wynik trafia do `kalk_stats.json`.
 Wymaga: requests, beautifulsoup4, opcjonalnie scrapling
 """
 
+import argparse
 import json
 import logging
+import os
 import re
 import time
 import unicodedata
@@ -371,18 +373,27 @@ def extract_team_schedule(soup: BeautifulSoup) -> List[Dict[str, any]]:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description='KALK Scraper')
+    parser.add_argument('--division-path', default=os.getenv('KALK_DIVISION_PATH', DIVISION_PATH), help='KALK division URL path')
+    parser.add_argument('--season', default=os.getenv('KALK_SEASON_SLUG', '2025-2026'), help='Season slug')
+    args, _ = parser.parse_known_args()
+
+    effective_division_path = args.division_path or DIVISION_PATH
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s %(levelname)s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
+    logging.info('Scraper KALK — Sezon: %s, Ścieżka: %s', args.season, effective_division_path)
+
     session = requests.Session()
     section_urls: Dict[str, Optional[str]] = {}
     try:
-        division_soup = fetch_soup(session, urljoin(BASE_URL, DIVISION_PATH))
+        division_soup = fetch_soup(session, urljoin(BASE_URL, effective_division_path))
     except requests.RequestException as exc:
-        logging.error('Nie udało się pobrać strony dywizji: %s', exc)
+        logging.error('Nie udało się pobrać strony dywizji (%s): %s', effective_division_path, exc)
         return
 
     for name, keywords in SECTION_KEYWORDS.items():

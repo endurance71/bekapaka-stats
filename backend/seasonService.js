@@ -127,11 +127,187 @@ export async function filterGamesBySeason(allGames, seasonId) {
   });
 }
 
-export async function assignSeasonToGameData(gameData) {
-  const seasons = await listSeasons();
-  const date = gameData.date ? new Date(gameData.date) : new Date();
-  const seasonId = resolveSeasonIdForDate(date, seasons);
-  return { ...gameData, seasonId };
+export async function createSeason({
+  slug,
+  label,
+  divisionPath = 'dzial,dywizja-2,4.html',
+  startsAt,
+  endsAt,
+  activateNow = false
+}) {
+  if (!slug || !label) {
+    throw new Error('Slug i etykieta sezonu są wymagane');
+  }
+
+  const normalizedSlug = slug.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '-');
+  const id = seasonRowId(normalizedSlug);
+
+  const existing = await prisma.kalkSeason.findUnique({ where: { id } });
+  if (existing) {
+    throw new Error(`Sezon o identyfikatorze "${id}" już istnieje.`);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    if (activateNow) {
+      await tx.kalkSeason.updateMany({
+        data: { isActive: false }
+      });
+    }
+
+    return tx.kalkSeason.create({
+      data: {
+        id,
+        slug: normalizedSlug,
+        label: label.trim(),
+        divisionPath: divisionPath?.trim() || 'dzial,dywizja-2,4.html',
+        isActive: Boolean(activateNow),
+        startsAt: startsAt ? new Date(startsAt) : null,
+        endsAt: endsAt ? new Date(endsAt) : null
+      }
+    });
+  });
+}
+
+export async function updateSeason(seasonId, data) {
+  const existing = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
+  if (!existing) {
+    throw new Error('Sezon nie istnieje');
+  }
+
+  const updateData = {};
+  if (data.label !== undefined) updateData.label = data.label.trim();
+  if (data.divisionPath !== undefined) updateData.divisionPath = data.divisionPath.trim();
+  if (data.startsAt !== undefined) updateData.startsAt = data.startsAt ? new Date(data.startsAt) : null;
+  if (data.endsAt !== undefined) updateData.endsAt = data.endsAt ? new Date(data.endsAt) : null;
+
+  if (data.isActive === true) {
+    return prisma.$transaction(async (tx) => {
+      await tx.kalkSeason.updateMany({
+        where: { id: { not: seasonId } },
+        data: { isActive: false }
+      });
+      return tx.kalkSeason.update({
+        where: { id: seasonId },
+        data: { ...updateData, isActive: true }
+      });
+    });
+  }
+
+  if (data.isActive === false) {
+    updateData.isActive = false;
+  }
+
+  return prisma.kalkSeason.update({
+    where: { id: seasonId },
+    data: updateData
+  });
+}
+
+export async function activateSeason(seasonId) {
+  const existing = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
+  if (!existing) {
+    throw new Error('Sezon nie istnieje');
+  }
+
+  return prisma.$transaction(async (tx) => {
+    await tx.kalkSeason.updateMany({
+      where: { id: { not: seasonId } },
+      data: { isActive: false }
+    });
+    return tx.kalkSeason.update({
+      where: { id: seasonId },
+      data: { isActive: true }
+    });
+  });
+}
+
+export async function archiveSeason(seasonId) {
+  const existing = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
+  if (!existing) {
+    throw new Error('Sezon nie istnieje');
+  }
+
+  return prisma.kalkSeason.update({
+    where: { id: seasonId },
+    data: {
+      isActive: false,
+      endsAt: existing.endsAt || new Date()
+    }
+  });
+}
+
+export async function getSeasonSummary(seasonId) {
+  const season = await getSeasonById(seasonId);
+  if (!season) return null;
+
+  const [
+    gamesCount,
+    leagueMatchesCount,
+    finishedMatchesCount,
+    kalkPlayersCount,
+    kalkTeamsCount
+  ] = await Promise.all([
+    prisma.game.count({ where: { seasonId: season.id } }),
+    prisma.leagueMatch.count({ where: { seasonId: season.id } }),
+    prisma.kalkMatch.count({ where: { seasonId: season.id, isFinished: true } }),
+    prisma.kalkPlayer.count({ where: { seasonId: season.id } }),
+    prisma.kalkTeam.count({ where: { seasonId: season.id } })
+  ]);
+
+  return {
+    season,
+    stats: {
+      gamesCount,
+      leagueMatchesCount,
+      finishedMatchesCount,
+      kalkPlayersCount,
+      kalkTeamsCount
+    }
+  };
+}
+
+export async function rolloverRoster({ targetSeasonId, activePlayerIds = [], resetGoals = false }) {
+  const targetSeason = await getSeasonById(targetSeasonId);
+  if (!targetSeason) {
+    throw new Error('Docelowy sezon nie istnieje');
+  }
+
+  const allPlayers = await prisma.rosterPlayer.findMany();
+
+  return prisma.$transaction(async (tx) => {
+    const results = [];
+
+    for (const player of allPlayers) {
+      const isSelected = activePlayerIds.includes(player.id);
+
+      const updatePayload = {};
+      if (resetGoals) {
+        updatePayload.goals = null;
+      }
+
+      // Aktualizujemy preferencję sezonu gracza na nowy sezon
+      await tx.playerSeasonPreference.upsert({
+        where: { rosterPlayerId: player.id },
+        create: { rosterPlayerId: player.id, seasonId: targetSeason.id },
+        update: { seasonId: targetSeason.id }
+      });
+
+      if (Object.keys(updatePayload).length > 0) {
+        await tx.rosterPlayer.update({
+          where: { id: player.id },
+          data: updatePayload
+        });
+      }
+
+      results.push({ id: player.id, name: `${player.firstName} ${player.lastName}`, active: isSelected });
+    }
+
+    return {
+      targetSeason,
+      playersCount: results.length,
+      activeInNewSeason: results.filter((p) => p.active).length
+    };
+  });
 }
 
 export {
@@ -140,3 +316,4 @@ export {
   seasonRowId,
   DEFAULT_SEASON_SLUG
 };
+
