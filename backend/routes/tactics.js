@@ -11,6 +11,7 @@ import {
 } from '../ai/prompts/pregameBriefingCard.pl.js';
 import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting } from '../dataStore.js';
+import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
 
 export const tacticsRouter = express.Router();
 
@@ -26,10 +27,31 @@ tacticsRouter.get('/plays', async (req, res) => {
     if (category) where.category = String(category);
     if (targetDefense) where.targetDefense = { contains: String(targetDefense), mode: 'insensitive' };
 
-    const plays = await prisma.play.findMany({
+    let plays = await prisma.play.findMany({
       where,
       orderBy: { createdAt: 'desc' }
     });
+
+    // Auto-seed jeśli baza zagrywek jest pusta
+    if (plays.length === 0 && !category && !targetDefense) {
+      await Promise.all(
+        DEFAULT_PLAYBOOK_PRESETS.map((p) =>
+          prisma.play.create({
+            data: {
+              name: p.name,
+              category: p.category,
+              targetDefense: p.targetDefense,
+              description: p.description,
+              diagramData: p.diagramData,
+              tags: p.tags || [],
+              isAiGenerated: false
+            }
+          })
+        )
+      );
+      plays = await prisma.play.findMany({ orderBy: { createdAt: 'desc' } });
+    }
+
     res.json(plays);
   } catch (err) {
     console.error('Error fetching plays:', err);
