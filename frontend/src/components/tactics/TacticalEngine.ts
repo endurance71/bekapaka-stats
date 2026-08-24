@@ -285,16 +285,18 @@ export function interpolateBall(
   const x = startX + (endX - startX) * smoothProgress;
   const y = startY + (endY - startY) * smoothProgress;
 
-  const isShot = Boolean(next.isShot || prev.isShot);
-  const peakHeight = next.arcHeight ?? (isShot ? 1.0 : 0.25);
-  const z = Math.sin(progress * Math.PI) * peakHeight;
+  const isShot = Boolean(next.isShot);
+  const isPass = Boolean(next.isPass);
+  const isAirborne = Boolean(isShot || isPass || (Math.hypot(endX - startX, endY - startY) > 2));
+  const peakHeight = next.arcHeight ?? (isShot ? 1.1 : isPass ? 0.25 : 0.0);
+  const z = (isShot || isPass) ? Math.sin(progress * Math.PI) * peakHeight : 0;
 
   return {
     x: Math.round(x * 100) / 100,
     y: Math.round(y * 100) / 100,
     z: Math.round(z * 100) / 100,
     holderId: progress > 0.95 ? (next.holderId ?? null) : null,
-    isAirborne: true,
+    isAirborne,
     isShot
   };
 }

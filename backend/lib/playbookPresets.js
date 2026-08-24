@@ -89,7 +89,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
             { time: 1.5, x: 84, y: 62, heading: 0, action: 'idle' },
             { time: 3.2, x: 70, y: 60, heading: 240, action: 'cut' },
             { time: 5.5, x: 90, y: 16, heading: 270, action: 'catch' },
-            { time: 6.8, x: 90, y: 16, heading: 270, action: 'shoot' },
+            { time: 6.5, x: 90, y: 16, heading: 270, action: 'shoot' },
             { time: 8.5, x: 90, y: 16, heading: 270, action: 'idle' }
           ]
         },
@@ -196,8 +196,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           { time: 3.5, x: 66, y: 72, holderId: 'O1' },
           { time: 4.5, x: 66, y: 72, holderId: 'O1' },
           { time: 5.5, x: 90, y: 16, holderId: 'O3', isPass: true, arcHeight: 0.2 },
-          { time: 6.8, x: 90, y: 16, holderId: 'O3' },
-          { time: 7.8, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.3 },
+          { time: 6.5, x: 90, y: 16, holderId: 'O3' },
+          { time: 7.5, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.1 },
           { time: 8.5, x: 50, y: 12.5, holderId: null }
         ]
       }
@@ -311,7 +311,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
             { time: 1.5, x: 56, y: 72, heading: 0, action: 'idle' },
             { time: 3.0, x: 46, y: 74, heading: 270, action: 'set_screen' },
             { time: 5.5, x: 50, y: 18, heading: 0, action: 'roll' },
-            { time: 6.8, x: 50, y: 13, heading: 0, action: 'catch' },
+            { time: 6.5, x: 50, y: 13, heading: 0, action: 'catch' },
             { time: 8.5, x: 50, y: 12.5, heading: 0, action: 'shoot' }
           ]
         },
@@ -386,9 +386,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           { time: 1.5, x: 50, y: 80, holderId: 'O1' },
           { time: 3.5, x: 36, y: 62, holderId: 'O1' },
           { time: 4.5, x: 36, y: 62, holderId: 'O1' },
-          { time: 6.0, x: 50, y: 14, holderId: 'O5', isPass: true, arcHeight: 0.8 },
-          { time: 6.8, x: 50, y: 13, holderId: 'O5' },
-          { time: 7.6, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 0.1 },
+          { time: 5.8, x: 50, y: 14, holderId: 'O5', isPass: true, arcHeight: 0.8 },
+          { time: 6.5, x: 50, y: 13, holderId: 'O5' },
+          { time: 7.2, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 0.1 },
           { time: 8.5, x: 50, y: 12.5, holderId: null }
         ]
       }
@@ -569,8 +569,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           { time: 1.5, x: 50, y: 2, holderId: 'O1' },
           { time: 4.5, x: 50, y: 2, holderId: 'O1' },
           { time: 5.5, x: 44, y: 14, holderId: 'O5', isPass: true, arcHeight: 0.1 },
-          { time: 6.8, x: 46, y: 13, holderId: 'O5' },
-          { time: 7.6, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 0.2 },
+          { time: 6.5, x: 46, y: 13, holderId: 'O5' },
+          { time: 7.2, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 0.15 },
           { time: 8.5, x: 50, y: 12.5, holderId: null }
         ]
       }
@@ -656,8 +656,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
             { time: 0.0, x: 22, y: 65, heading: 0, action: 'idle' },
             { time: 3.5, x: 18, y: 48, heading: 0, action: 'cut' },
             { time: 4.5, x: 10, y: 16, heading: 270, action: 'cut' },
-            { time: 6.2, x: 10, y: 16, heading: 90, action: 'catch' },
-            { time: 8.5, x: 10, y: 16, heading: 90, action: 'shoot' }
+            { time: 5.8, x: 10, y: 16, heading: 90, action: 'catch' },
+            { time: 6.5, x: 10, y: 16, heading: 90, action: 'shoot' },
+            { time: 8.5, x: 10, y: 16, heading: 90, action: 'idle' }
           ]
         },
         {
@@ -749,9 +750,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           { time: 0.0, x: 98, y: 60, holderId: 'O1' },
           { time: 1.5, x: 75, y: 68, holderId: 'O2', isPass: true, arcHeight: 0.2 },
           { time: 5.0, x: 78, y: 20, holderId: 'O2' },
-          { time: 6.2, x: 10, y: 16, holderId: 'O3', isPass: true, arcHeight: 0.3 },
-          { time: 6.8, x: 10, y: 16, holderId: 'O3' },
-          { time: 7.8, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.2 },
+          { time: 5.8, x: 10, y: 16, holderId: 'O3', isPass: true, arcHeight: 0.3 },
+          { time: 6.5, x: 10, y: 16, holderId: 'O3' },
+          { time: 7.5, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.1 },
           { time: 8.5, x: 50, y: 12.5, holderId: null }
         ]
       }
@@ -824,7 +825,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
             { time: 1.5, x: 50, y: 24, heading: 0, action: 'idle' },
             { time: 3.5, x: 50, y: 50, heading: 0, action: 'cut' },
             { time: 5.5, x: 50, y: 78, heading: 270, action: 'catch' },
-            { time: 6.8, x: 50, y: 78, heading: 0, action: 'shoot' },
+            { time: 6.5, x: 50, y: 78, heading: 0, action: 'shoot' },
             { time: 8.5, x: 50, y: 78, heading: 0, action: 'idle' }
           ]
         },
@@ -929,8 +930,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           { time: 0.0, x: 22, y: 75, holderId: 'O1' },
           { time: 4.5, x: 22, y: 75, holderId: 'O1' },
           { time: 5.5, x: 50, y: 78, holderId: 'O2', isPass: true, arcHeight: 0.2 },
-          { time: 6.8, x: 50, y: 78, holderId: 'O2' },
-          { time: 7.8, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.3 },
+          { time: 6.5, x: 50, y: 78, holderId: 'O2' },
+          { time: 7.5, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.1 },
           { time: 8.5, x: 50, y: 12.5, holderId: null }
         ]
       }
