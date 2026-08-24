@@ -232,7 +232,7 @@ app.get(['/api/games', '/games'], async (req, res) => {
 
 app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
   try {
-    const game = await getGameById(req.params.id);
+    const game = await getGameById(req.params.id, req.query.seasonId);
     if (!game) return res.status(404).json({ error: 'Mecz nie znaleziony' });
     res.json(game);
   } catch (err) {
@@ -553,18 +553,18 @@ const updateScraperLog = (msg) => {
 
 app.get(['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'], authenticateToken, requireAdmin, (req, res) => res.json(scraperState));
 
-app.get(['/api/kalk/ingest-summary', '/kalk/ingest-summary'], authenticateToken, requireAdmin, async (_req, res) => {
+app.get(['/api/kalk/ingest-summary', '/kalk/ingest-summary'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const summary = await getKalkIngestSummary();
+    const summary = await getKalkIngestSummary(req.query.seasonId);
     res.json(summary);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-app.get(['/api/kalk/audit', '/kalk/audit'], authenticateToken, requireAdmin, async (_req, res) => {
+app.get(['/api/kalk/audit', '/kalk/audit'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const report = await getKalkDataAuditReport();
+    const report = await getKalkDataAuditReport(req.query.seasonId);
     res.json(report);
   } catch (err) {
     console.error('KALK audit error:', err);
