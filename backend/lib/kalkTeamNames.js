@@ -5,6 +5,14 @@
 const BEKAPAKA_ALIASES = ['bekapaka', 'bobolice', 'be ka paka'];
 
 /**
+ * @param {string | null | undefined} str
+ */
+export function stripDiacritics(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+/**
  * @param {string | null | undefined} name
  */
 export function normalizeTeamNameForMatch(name) {
