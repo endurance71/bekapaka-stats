@@ -105,7 +105,9 @@ app.use((req, res, next) => {
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 app.get('/ping', (req, res) => res.send('pong'));
+app.get('/api/ping', (req, res) => res.send('pong'));
 
 // --- AUTHENTICATION ---
 // Imports moved to top

@@ -11,7 +11,6 @@ import {
 } from '../ai/prompts/pregameBriefingCard.pl.js';
 import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting } from '../dataStore.js';
-import { stripDiacritics } from '../lib/kalkTeamNames.js';
 
 export const tacticsRouter = express.Router();
 
