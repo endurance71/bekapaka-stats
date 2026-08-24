@@ -208,39 +208,44 @@ export default function Dashboard() {
           {(() => {
             const fiveMinute = lastGameFull?.data?.fiveMinute;
             const quarters = lastGameFull?.quarters ?? lastGameFull?.data?.quarters;
-            if (!fiveMinute && !quarters) return null;
-            return (
-            <DashboardMomentum
-              data={fiveMinute || (() => {
-                const isHome = lastGameFull.homeAway === 'home';
-                let homeSum = 0;
-                let awaySum = 0;
-                const homePoints: number[] = [];
-                const awayPoints: number[] = [];
+            if (fiveMinute || quarters) {
+              return (
+                <DashboardMomentum
+                  data={fiveMinute || (() => {
+                    const isHome = lastGameFull.homeAway === 'home';
+                    let homeSum = 0;
+                    let awaySum = 0;
+                    const homePoints: number[] = [];
+                    const awayPoints: number[] = [];
 
-                quarters.forEach((q: { home: number; away: number }) => {
-                  homeSum += q.home;
-                  awaySum += q.away;
-                  homePoints.push(homeSum);
-                  awayPoints.push(awaySum);
-                });
+                    quarters.forEach((q: { home: number; away: number }) => {
+                      homeSum += q.home;
+                      awaySum += q.away;
+                      homePoints.push(homeSum);
+                      awayPoints.push(awaySum);
+                    });
 
-                return [
-                  { team: 'BB', points: isHome ? homePoints : awayPoints },
-                  { team: 'OP', points: isHome ? awayPoints : homePoints }
-                ];
-              })()}
-              bkCode="BB"
-              oppCode="OP"
-              step={fiveMinute ? 5 : 10}
-            />
-            );
-          })() || (!loading && (
-            <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
-              <Database className="w-4 h-4 text-bkpk-text-muted" />
-              <span className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest">Brak danych o dynamice meczu</span>
-            </div>
-          ))}
+                    return [
+                      { team: 'BB', points: isHome ? homePoints : awayPoints },
+                      { team: 'OP', points: isHome ? awayPoints : homePoints }
+                    ];
+                  })()}
+                  bkCode="BB"
+                  oppCode="OP"
+                  step={fiveMinute ? 5 : 10}
+                />
+              );
+            }
+            if (!loading && games.some(g => g.result)) {
+              return (
+                <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
+                  <Database className="w-4 h-4 text-bkpk-text-muted" />
+                  <span className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest">Brak danych o dynamice meczu</span>
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           <ScoutingCard data={scoutingData} loading={loading} />
         </div>

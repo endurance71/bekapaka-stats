@@ -60,7 +60,6 @@ export function BkpkCard({
                 !overflowVisible && 'overflow-hidden',
                 variants[variant],
                 paddings[padding],
-                paddings[padding],
                 onClick && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
                 className
             )}
