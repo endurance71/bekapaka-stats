@@ -223,19 +223,70 @@ export default function BasketballCourtCanvas({
   const isLoopRef = useRef<boolean>(true);
   const durationRef = useRef<number>(duration);
   const lastTimeUpdateUiRef = useRef<number>(0);
+  const prevPlayNameRef = useRef<string | null>(null);
 
-  isPlayingRef.current = isPlaying;
   speedRef.current = speed;
   isLoopRef.current = isLoop;
   durationRef.current = duration;
 
+  // Reset odtwarzacza tylko gdy użytkownik wybierze inny schemat taktyczny
   useEffect(() => {
+    if (prevPlayNameRef.current !== playName) {
+      prevPlayNameRef.current = playName;
+      timeRef.current = 0;
+      setActiveUiTime(0);
+      isPlayingRef.current = true;
+      setIsPlaying(true);
+    }
+  }, [playName]);
+
+  // Bezpieczny przełącznik Play/Pause
+  const togglePlay = () => {
+    setIsPlaying((prev) => {
+      const next = !prev;
+      isPlayingRef.current = next;
+      // Jeśli jesteśmy na końcu akcji i włączamy Play, zrestartuj od początku
+      if (next && timeRef.current >= durationRef.current) {
+        timeRef.current = 0;
+        setActiveUiTime(0);
+      }
+      return next;
+    });
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseFloat(e.target.value);
+    timeRef.current = newTime;
+    setActiveUiTime(newTime);
+  };
+
+  const handleStepDelta = (delta: number) => {
+    const next = Math.max(0, Math.min(duration, timeRef.current + delta));
+    timeRef.current = next;
+    setActiveUiTime(next);
+  };
+
+  const handleReset = () => {
     timeRef.current = 0;
     setActiveUiTime(0);
+    isPlayingRef.current = true;
     setIsPlaying(true);
-  }, [initialData]);
+  };
 
-  // Główna pętla renderowania HTML5 Canvas 2D
+  const handleSpeedChange = (newSpeed: number) => {
+    setSpeed(newSpeed);
+    speedRef.current = newSpeed;
+  };
+
+  const handleLoopToggle = () => {
+    setIsLoop((prev) => {
+      const next = !prev;
+      isLoopRef.current = next;
+      return next;
+    });
+  };
+
+  // Główna pętla renderowania HTML5 Canvas 2D (60 FPS z ochroną delta i płynnym odświeżaniem)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -246,28 +297,33 @@ export default function BasketballCourtCanvas({
     let lastFrameTime = performance.now();
 
     const render = (now: number) => {
-      const delta = ((now - lastFrameTime) / 1000) * speedRef.current;
+      // Ochrona przed dużymi skokami delta (np. po powrocie z innej karty lub po pauzie)
+      const rawDelta = (now - lastFrameTime) / 1000;
+      const safeDelta = Math.min(0.08, Math.max(0, rawDelta)) * speedRef.current;
       lastFrameTime = now;
 
       if (isPlayingRef.current) {
-        timeRef.current += delta;
-        // 2-sekundowa pauza po zakończeniu akcji (na obejrzenie trafienia i wyniku)
+        timeRef.current += safeDelta;
         const totalDurationWithHold = durationRef.current + 2.0;
         if (timeRef.current >= totalDurationWithHold) {
           if (isLoopRef.current) {
             timeRef.current = 0;
           } else {
             timeRef.current = durationRef.current;
-            setIsPlaying(false);
+            if (isPlayingRef.current) {
+              isPlayingRef.current = false;
+              setIsPlaying(false);
+            }
           }
         }
       }
 
-      // Ogranicz czas przekazywany do renderera do maksimum duration dla płynności
+      // Renderowanie klatki
       const effectiveRenderTime = Math.min(timeRef.current, durationRef.current);
       const t = effectiveRenderTime;
 
-      if (now - lastTimeUpdateUiRef.current > 80) {
+      // Płynne aktualizowanie paska postępu React (15 FPS, by nie obciążać procesora)
+      if (now - lastTimeUpdateUiRef.current > 66) {
         setActiveUiTime(effectiveRenderTime);
         lastTimeUpdateUiRef.current = now;
       }
@@ -661,18 +717,6 @@ export default function BasketballCourtCanvas({
     );
   }, [timelineData.phaseDirectives, activeUiTime]);
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newTime = parseFloat(e.target.value);
-    timeRef.current = newTime;
-    setActiveUiTime(newTime);
-  };
-
-  const handleStepDelta = (delta: number) => {
-    const next = Math.max(0, Math.min(duration, timeRef.current + delta));
-    timeRef.current = next;
-    setActiveUiTime(next);
-  };
-
   return (
     <div className="space-y-4">
       {/* Pasek Nagłówkowy */}
@@ -711,6 +755,7 @@ export default function BasketballCourtCanvas({
                   onClick={() => {
                     timeRef.current = ph.startTime;
                     setActiveUiTime(ph.startTime);
+                    isPlayingRef.current = true;
                     setIsPlaying(true);
                   }}
                   className={cn(
@@ -733,7 +778,7 @@ export default function BasketballCourtCanvas({
         <canvas
           ref={canvasRef}
           className="w-full h-full block cursor-pointer"
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={togglePlay}
         />
       </div>
 
@@ -785,7 +830,7 @@ export default function BasketballCourtCanvas({
             <BkpkButton
               variant={isPlaying ? 'primary' : 'outline'}
               size="sm"
-              onClick={() => setIsPlaying(!isPlaying)}
+              onClick={togglePlay}
             >
               {isPlaying ? (
                 <>
@@ -815,11 +860,7 @@ export default function BasketballCourtCanvas({
               <SkipForward className="w-4 h-4" />
             </button>
             <button
-              onClick={() => {
-                timeRef.current = 0;
-                setActiveUiTime(0);
-                setIsPlaying(true);
-              }}
+              onClick={handleReset}
               className="p-2 rounded-xl text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-surface-tint-2 transition-colors"
               title="Resetuj do początku"
             >
@@ -827,7 +868,7 @@ export default function BasketballCourtCanvas({
             </button>
 
             <button
-              onClick={() => setIsLoop(!isLoop)}
+              onClick={handleLoopToggle}
               className={cn(
                 "p-2 rounded-xl transition-colors",
                 isLoop ? "text-bkpk-primary bg-bkpk-primary/10" : "text-bkpk-text-muted hover:text-bkpk-text-primary"
@@ -846,7 +887,7 @@ export default function BasketballCourtCanvas({
               {[0.25, 0.5, 1.0, 1.5].map((spd) => (
                 <button
                   key={spd}
-                  onClick={() => setSpeed(spd)}
+                  onClick={() => handleSpeedChange(spd)}
                   className={cn(
                     "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
                     speed === spd
