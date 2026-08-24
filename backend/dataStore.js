@@ -738,6 +738,7 @@ function buildTeamShootingMetrics(team, context = {}) {
  * @param {number} teamVal
  * @param {number} leagueVal
  * @param {boolean} higherIsBetter
+ */
 function ratingLeagueTier(teamVal, leagueVal, higherIsBetter) {
   const delta = higherIsBetter ? teamVal - leagueVal : leagueVal - teamVal;
   if (delta >= RATING_LEAGUE_TIER_DELTA) return 'elite';
@@ -2278,45 +2279,30 @@ function extractOpponentFromLeagueMatch(match) {
   return isHome ? match.guestTeam : match.homeTeam;
 }
 
-/** Nadchodzący mecz BeKaPaKa lub — gdy brak — ostatni rozegrany (fallback scoutingu). */
+/** Nadchodzący mecz BeKaPaKa z terminarza ligowego. */
 async function findBekapakaLeagueMatchContext(seasonIdParam) {
   await ensureSeeded();
   const seasonId = await resolveSeasonId(seasonIdParam);
 
-  const tryFind = async (whereExtra) => {
-    const upcoming = await prisma.leagueMatch.findFirst({
-      where: { OR: BEKAPAKA_MATCH_OR, isFinished: false, ...whereExtra },
-      orderBy: { date: 'asc' }
-    });
-    if (upcoming) {
-      return {
-        match: upcoming,
-        scoutingMode: 'upcoming',
-        opponentName: extractOpponentFromLeagueMatch(upcoming),
-        seasonId: upcoming.seasonId
-      };
-    }
+  const upcoming = await prisma.leagueMatch.findFirst({
+    where: {
+      OR: BEKAPAKA_MATCH_OR,
+      isFinished: false,
+      ...(seasonId ? { seasonId } : {})
+    },
+    orderBy: { date: 'asc' }
+  });
 
-    const lastFinished = await prisma.leagueMatch.findFirst({
-      where: { OR: BEKAPAKA_MATCH_OR, isFinished: true, ...whereExtra },
-      orderBy: { date: 'desc' }
-    });
-    if (lastFinished) {
-      return {
-        match: lastFinished,
-        scoutingMode: 'lastFinished',
-        opponentName: extractOpponentFromLeagueMatch(lastFinished),
-        seasonId: lastFinished.seasonId
-      };
-    }
-    return null;
-  };
-
-  if (seasonId) {
-    return tryFind({ seasonId });
+  if (upcoming) {
+    return {
+      match: upcoming,
+      scoutingMode: 'upcoming',
+      opponentName: extractOpponentFromLeagueMatch(upcoming),
+      seasonId: upcoming.seasonId
+    };
   }
 
-  return tryFind({});
+  return null;
 }
 
 async function buildOpponentScoutingCard(opponentName, seasonId, meta = {}) {
