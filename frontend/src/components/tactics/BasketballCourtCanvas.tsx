@@ -8,8 +8,7 @@ import {
   Repeat,
   Target,
   Shield,
-  Sparkles,
-  HelpCircle
+  Sparkles
 } from 'lucide-react';
 import { cn } from '../../shared/lib/utils';
 import BkpkButton from '../../shared/ui/BkpkButton';
@@ -35,13 +34,13 @@ interface BasketballCourtCanvasProps {
 const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O1',
-    number: 10,
-    name: 'Damian',
+    number: 1,
+    name: 'PG',
     role: 'PG',
     isOffense: true,
     keyframes: [
-      { time: 0.0, x: 50, y: 82, heading: 180, action: 'idle' },
-      { time: 1.5, x: 50, y: 82, heading: 180, action: 'idle' },
+      { time: 0.0, x: 50, y: 80, heading: 180, action: 'idle' },
+      { time: 1.5, x: 50, y: 80, heading: 180, action: 'idle' },
       { time: 3.5, x: 68, y: 72, heading: 140, action: 'dribble' },
       { time: 5.5, x: 68, y: 72, heading: 110, action: 'idle' },
       { time: 8.5, x: 64, y: 76, heading: 0, action: 'idle' }
@@ -49,56 +48,56 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   },
   {
     id: 'O2',
-    number: 7,
-    name: 'Kaszub',
+    number: 2,
+    name: 'SG',
     role: 'SG',
     isOffense: true,
     keyframes: [
-      { time: 0.0, x: 18, y: 65, heading: 180, action: 'idle' },
-      { time: 1.5, x: 18, y: 65, heading: 180, action: 'idle' },
-      { time: 4.5, x: 22, y: 75, heading: 90, action: 'idle' },
-      { time: 8.5, x: 25, y: 78, heading: 0, action: 'idle' }
+      { time: 0.0, x: 16, y: 60, heading: 180, action: 'idle' },
+      { time: 1.5, x: 16, y: 60, heading: 180, action: 'idle' },
+      { time: 4.5, x: 20, y: 72, heading: 90, action: 'idle' },
+      { time: 8.5, x: 22, y: 76, heading: 0, action: 'idle' }
     ]
   },
   {
     id: 'O3',
-    number: 24,
-    name: 'Jędrzej',
+    number: 3,
+    name: 'SF',
     role: 'SF',
     isOffense: true,
     keyframes: [
-      { time: 0.0, x: 82, y: 65, heading: 180, action: 'idle' },
-      { time: 1.5, x: 82, y: 65, heading: 180, action: 'idle' },
-      { time: 3.5, x: 78, y: 60, heading: 220, action: 'cut' },
-      { time: 5.5, x: 90, y: 22, heading: 270, action: 'catch' },
-      { time: 6.8, x: 90, y: 22, heading: 270, action: 'shoot' },
-      { time: 8.5, x: 90, y: 22, heading: 270, action: 'idle' }
+      { time: 0.0, x: 84, y: 60, heading: 180, action: 'idle' },
+      { time: 1.5, x: 84, y: 60, heading: 180, action: 'idle' },
+      { time: 3.5, x: 78, y: 55, heading: 220, action: 'cut' },
+      { time: 5.5, x: 90, y: 16, heading: 270, action: 'catch' },
+      { time: 6.8, x: 90, y: 16, heading: 270, action: 'shoot' },
+      { time: 8.5, x: 90, y: 16, heading: 270, action: 'idle' }
     ]
   },
   {
     id: 'O4',
-    number: 15,
-    name: 'Maciej',
+    number: 4,
+    name: 'PF',
     role: 'PF',
     isOffense: true,
     keyframes: [
-      { time: 0.0, x: 35, y: 40, heading: 180, action: 'idle' },
-      { time: 1.5, x: 35, y: 40, heading: 180, action: 'idle' },
-      { time: 4.5, x: 42, y: 35, heading: 90, action: 'idle' },
+      { time: 0.0, x: 36, y: 42, heading: 180, action: 'idle' },
+      { time: 1.5, x: 36, y: 42, heading: 180, action: 'idle' },
+      { time: 4.5, x: 40, y: 35, heading: 90, action: 'idle' },
       { time: 8.5, x: 45, y: 25, heading: 0, action: 'roll' }
     ]
   },
   {
     id: 'O5',
-    number: 33,
-    name: 'Filip',
+    number: 5,
+    name: 'C',
     role: 'C',
     isOffense: true,
     keyframes: [
-      { time: 0.0, x: 65, y: 40, heading: 180, action: 'idle' },
-      { time: 1.5, x: 65, y: 40, heading: 180, action: 'idle' },
-      { time: 3.5, x: 75, y: 58, heading: 180, action: 'set_screen' },
-      { time: 5.5, x: 75, y: 58, heading: 180, action: 'set_screen' },
+      { time: 0.0, x: 64, y: 42, heading: 180, action: 'idle' },
+      { time: 1.5, x: 64, y: 42, heading: 180, action: 'idle' },
+      { time: 3.5, x: 75, y: 56, heading: 180, action: 'set_screen' },
+      { time: 5.5, x: 75, y: 56, heading: 180, action: 'set_screen' },
       { time: 7.0, x: 55, y: 22, heading: 0, action: 'roll' },
       { time: 8.5, x: 50, y: 18, heading: 0, action: 'idle' }
     ]
@@ -111,9 +110,9 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
     role: 'PG',
     isOffense: false,
     keyframes: [
-      { time: 0.0, x: 42, y: 70, heading: 0, action: 'defend' },
-      { time: 1.5, x: 42, y: 70, heading: 0, action: 'defend' },
-      { time: 4.0, x: 52, y: 68, heading: 90, action: 'defend' },
+      { time: 0.0, x: 50, y: 70, heading: 0, action: 'defend' },
+      { time: 1.5, x: 50, y: 70, heading: 0, action: 'defend' },
+      { time: 4.0, x: 54, y: 66, heading: 90, action: 'defend' },
       { time: 8.5, x: 55, y: 65, heading: 90, action: 'defend' }
     ]
   },
@@ -124,11 +123,11 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
     role: 'SG',
     isOffense: false,
     keyframes: [
-      { time: 0.0, x: 58, y: 70, heading: 0, action: 'defend' },
-      { time: 1.5, x: 58, y: 70, heading: 0, action: 'defend' },
-      { time: 3.5, x: 66, y: 65, heading: 90, action: 'defend' },
-      { time: 5.5, x: 72, y: 56, heading: 90, action: 'defend' },
-      { time: 8.5, x: 74, y: 50, heading: 0, action: 'defend' }
+      { time: 0.0, x: 28, y: 54, heading: 0, action: 'defend' },
+      { time: 1.5, x: 28, y: 54, heading: 0, action: 'defend' },
+      { time: 3.5, x: 66, y: 62, heading: 90, action: 'defend' },
+      { time: 5.5, x: 72, y: 52, heading: 90, action: 'defend' },
+      { time: 8.5, x: 74, y: 48, heading: 0, action: 'defend' }
     ]
   },
   {
@@ -138,8 +137,8 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
     role: 'SF',
     isOffense: false,
     keyframes: [
-      { time: 0.0, x: 22, y: 40, heading: 0, action: 'defend' },
-      { time: 1.5, x: 22, y: 40, heading: 0, action: 'defend' },
+      { time: 0.0, x: 72, y: 54, heading: 0, action: 'defend' },
+      { time: 1.5, x: 72, y: 54, heading: 0, action: 'defend' },
       { time: 8.5, x: 28, y: 32, heading: 90, action: 'defend' }
     ]
   },
@@ -150,10 +149,10 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
     role: 'PF',
     isOffense: false,
     keyframes: [
-      { time: 0.0, x: 50, y: 30, heading: 0, action: 'defend' },
-      { time: 1.5, x: 50, y: 30, heading: 0, action: 'defend' },
-      { time: 5.0, x: 52, y: 26, heading: 90, action: 'defend' },
-      { time: 8.5, x: 50, y: 20, heading: 0, action: 'defend' }
+      { time: 0.0, x: 38, y: 28, heading: 0, action: 'defend' },
+      { time: 1.5, x: 38, y: 28, heading: 0, action: 'defend' },
+      { time: 5.0, x: 52, y: 24, heading: 90, action: 'defend' },
+      { time: 8.5, x: 50, y: 18, heading: 0, action: 'defend' }
     ]
   },
   {
@@ -163,24 +162,24 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
     role: 'C',
     isOffense: false,
     keyframes: [
-      { time: 0.0, x: 78, y: 40, heading: 0, action: 'defend' },
-      { time: 1.5, x: 78, y: 40, heading: 0, action: 'defend' },
-      { time: 5.5, x: 74, y: 32, heading: 0, action: 'defend' },
-      { time: 8.5, x: 84, y: 24, heading: 90, action: 'defend' }
+      { time: 0.0, x: 62, y: 28, heading: 0, action: 'defend' },
+      { time: 1.5, x: 62, y: 28, heading: 0, action: 'defend' },
+      { time: 5.5, x: 74, y: 28, heading: 0, action: 'defend' },
+      { time: 8.5, x: 84, y: 20, heading: 90, action: 'defend' }
     ]
   }
 ];
 
 const FALLBACK_BALL: BallTrack = {
   keyframes: [
-    { time: 0.0, x: 50, y: 82, holderId: 'O1' },
-    { time: 1.5, x: 50, y: 82, holderId: 'O1' },
+    { time: 0.0, x: 50, y: 80, holderId: 'O1' },
+    { time: 1.5, x: 50, y: 80, holderId: 'O1' },
     { time: 3.5, x: 68, y: 72, holderId: 'O1' },
-    { time: 5.5, x: 68, y: 72, holderId: 'O1' },
-    { time: 6.0, x: 90, y: 22, holderId: 'O3', isPass: true, arcHeight: 0.2 },
-    { time: 6.8, x: 90, y: 22, holderId: 'O3' },
-    { time: 8.0, x: 50, y: 14, holderId: null, isShot: true, arcHeight: 1.2 },
-    { time: 8.5, x: 50, y: 14, holderId: null }
+    { time: 5.0, x: 68, y: 72, holderId: 'O1' },
+    { time: 5.8, x: 90, y: 16, holderId: 'O3', isPass: true, arcHeight: 0.2 },
+    { time: 6.8, x: 90, y: 16, holderId: 'O3' },
+    { time: 7.8, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.3 },
+    { time: 8.5, x: 50, y: 12.5, holderId: null }
   ]
 };
 
@@ -192,7 +191,6 @@ export default function BasketballCourtCanvas({
 }: BasketballCourtCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Normalizacja danych do formatu PlayTimelineData
   const timelineData: PlayTimelineData = useMemo(() => {
     const raw = initialData || {};
     const duration = raw.duration || 8.5;
@@ -214,13 +212,11 @@ export default function BasketballCourtCanvas({
 
   const duration = timelineData.duration;
 
-  // Stany sterowania
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speed, setSpeed] = useState<number>(1.0);
   const [isLoop, setIsLoop] = useState<boolean>(true);
   const [activeUiTime, setActiveUiTime] = useState<number>(0);
 
-  // Refy dla pętli 60 FPS w Canvasie bez zbędnych re-renderów
   const timeRef = useRef<number>(0);
   const isPlayingRef = useRef<boolean>(true);
   const speedRef = useRef<number>(1.0);
@@ -233,14 +229,13 @@ export default function BasketballCourtCanvas({
   isLoopRef.current = isLoop;
   durationRef.current = duration;
 
-  // Reset przy zmianie presetu
   useEffect(() => {
     timeRef.current = 0;
     setActiveUiTime(0);
     setIsPlaying(true);
   }, [initialData]);
 
-  // Główna pętla renderowania HTML5 Canvas 2D (60-120 FPS)
+  // Główna pętla renderowania HTML5 Canvas 2D
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -268,13 +263,11 @@ export default function BasketballCourtCanvas({
 
       const t = timeRef.current;
 
-      // Aktualizacja suwaka UI raz na 100ms
       if (now - lastTimeUpdateUiRef.current > 80) {
         setActiveUiTime(t);
         lastTimeUpdateUiRef.current = now;
       }
 
-      // Rozmiar i obsługa Retina Display
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       const width = rect.width;
@@ -288,11 +281,10 @@ export default function BasketballCourtCanvas({
       ctx.save();
       ctx.scale(dpr, dpr);
 
-      // Konwersja współrzędnych % (0-100) na piksele Canvasa
       const px = (xPct: number) => (xPct / 100) * width;
       const py = (yPct: number) => (yPct / 100) * height;
 
-      // 1. TŁO PARKIETU (Dark Obsidian Basketball Hardwood)
+      // 1. TŁO PARKIETU (Obsidian Black Dark Hardwood)
       const grad = ctx.createLinearGradient(0, 0, 0, height);
       grad.addColorStop(0, '#15151a');
       grad.addColorStop(0.5, '#101014');
@@ -300,7 +292,7 @@ export default function BasketballCourtCanvas({
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
-      // Subtelny wzór desek parkietu
+      // Subtelny wzór desek
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
       ctx.lineWidth = 1;
       const plankStep = width / 18;
@@ -311,98 +303,122 @@ export default function BasketballCourtCanvas({
         ctx.stroke();
       }
 
-      // 2. WEKTOROWE LINIE BOISKA FIBA / KALK (Złoto i Biel)
+      // 2. WEKTOROWE LINIE BOISKA FIBA (Złoto i Biel)
       const gold = '#ECA72C';
       const lineWhite = 'rgba(255, 255, 255, 0.28)';
 
-      // Obramowanie boiska
+      // Obramowanie boiska (Baseline top y=4, Sidelines x=4..96, Midcourt y=96)
       ctx.strokeStyle = lineWhite;
       ctx.lineWidth = 2;
-      ctx.strokeRect(px(2), py(2), px(96), py(96));
+      ctx.strokeRect(px(4), py(4), px(92), py(92));
 
-      // Trumna (Key / Paint) z subtelnym złotym wypełnieniem
+      // Trumna (Key / Paint) od y=4% do y=42%, x=33% do x=67%
       ctx.fillStyle = 'rgba(236, 167, 44, 0.04)';
-      ctx.fillRect(px(33), py(2), px(34), py(40));
+      ctx.fillRect(px(33), py(4), px(34), py(38));
       ctx.strokeStyle = 'rgba(236, 167, 44, 0.45)';
       ctx.lineWidth = 1.5;
-      ctx.strokeRect(px(33), py(2), px(34), py(40));
+      ctx.strokeRect(px(33), py(4), px(34), py(38));
 
-      // Koło rzutów wolnych
+      // Linia rzutów wolnych (y=42%)
       ctx.beginPath();
-      ctx.arc(px(50), py(42), px(14), 0, Math.PI * 2);
+      ctx.moveTo(px(33), py(42));
+      ctx.lineTo(px(67), py(42));
+      ctx.strokeStyle = 'rgba(236, 167, 44, 0.6)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Koło rzutów wolnych (promień 12%, środek 50, 42)
+      // Dolne półkole (w stronę połowy) - linia ciągła
+      ctx.beginPath();
+      ctx.arc(px(50), py(42), px(12), 0, Math.PI, false);
       ctx.strokeStyle = 'rgba(236, 167, 44, 0.4)';
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Linia rzutów wolnych
+      // Górne półkole (wewnątrz trumny) - linia przerywana
+      ctx.save();
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(px(33), py(42));
-      ctx.lineTo(px(67), py(42));
+      ctx.arc(px(50), py(42), px(12), Math.PI, 0, false);
+      ctx.stroke();
+      ctx.restore();
+
+      // Tablica (y=8%, x: 44% do 56%)
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(px(44), py(8));
+      ctx.lineTo(px(56), py(8));
       ctx.stroke();
 
-      // Łuk bez szarży (Restricted area)
+      // Mocowanie kosza (od tablicy y=8% do obręczy y=10.5%)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(px(50), py(14), px(6), 0, Math.PI);
+      ctx.moveTo(px(50), py(8));
+      ctx.lineTo(px(50), py(10.5));
+      ctx.stroke();
+
+      // Łuk bez szarży (Restricted area - półkole ze środkiem w koszu 50, 12.5)
+      ctx.beginPath();
+      ctx.arc(px(50), py(12.5), px(5.5), 0, Math.PI, false);
       ctx.strokeStyle = lineWhite;
       ctx.lineWidth = 1.2;
       ctx.stroke();
 
-      // Łuk za 3 punkty FIBA (6.75m)
-      ctx.beginPath();
-      ctx.moveTo(px(8), py(2));
-      ctx.lineTo(px(8), py(24));
-      ctx.arc(px(50), py(14), px(42), Math.PI * 0.76, Math.PI * 0.24, true);
-      ctx.lineTo(px(92), py(2));
-      ctx.strokeStyle = 'rgba(236, 167, 44, 0.75)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Linia połowy i koło środkowe
-      ctx.beginPath();
-      ctx.moveTo(px(2), py(98));
-      ctx.lineTo(px(98), py(98));
-      ctx.strokeStyle = lineWhite;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(px(50), py(98), px(14), Math.PI, 0, false);
-      ctx.strokeStyle = lineWhite;
-      ctx.stroke();
-
-      // Kosz i tablica
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(px(42), py(6));
-      ctx.lineTo(px(58), py(6));
-      ctx.stroke();
-
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(px(50), py(6));
-      ctx.lineTo(px(50), py(12));
-      ctx.stroke();
-
       // Siatka kosza
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
       ctx.beginPath();
-      ctx.moveTo(px(47.5), py(14));
-      ctx.lineTo(px(52.5), py(14));
-      ctx.lineTo(px(51.5), py(18));
-      ctx.lineTo(px(48.5), py(18));
+      ctx.moveTo(px(48), py(12.5));
+      ctx.lineTo(px(52), py(12.5));
+      ctx.lineTo(px(51), py(16));
+      ctx.lineTo(px(49), py(16));
       ctx.closePath();
       ctx.fill();
 
-      // Pomarańczowa stalowa obręcz
+      // Pomarańczowa stalowa obręcz kosza (środek 50, 12.5)
       ctx.strokeStyle = '#FF5722';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
-      ctx.arc(px(50), py(14), px(2.8), 0, Math.PI * 2);
+      ctx.arc(px(50), py(12.5), px(2.2), 0, Math.PI * 2);
       ctx.stroke();
 
-      // 3. OBLICZENIE STANU ZAWODNIKÓW I PIŁKI W CHWILI t
+      // LINIA ZA 3 PUNKTY FIBA (Perfekcyjna geometria z prostymi narożnikami)
+      const basketX = px(50);
+      const basketY = py(12.5);
+      const cornerLeftX = px(8);
+      const cornerRightX = px(92);
+      const cornerY = py(22);
+      const baselineY = py(4);
+
+      // Obliczenie kątów łuku 3PT od punktów połączenia
+      const dX = px(42);
+      const dY = cornerY - basketY;
+      const arcRadius = Math.hypot(dX, dY);
+      const startAngle = Math.atan2(dY, dX); // prawy róg ~ 0.22 rad
+      const endAngle = Math.PI - startAngle;  // lewy róg ~ 2.92 rad
+
+      ctx.beginPath();
+      // 1. Lewy róg od linii końcowej w dół
+      ctx.moveTo(cornerLeftX, baselineY);
+      ctx.lineTo(cornerLeftX, cornerY);
+      // 2. Łuk 3PT wokół kosza
+      ctx.arc(basketX, basketY, arcRadius, endAngle, startAngle, true);
+      // 3. Prawy róg pionowo w górę do linii końcowej
+      ctx.lineTo(cornerRightX, baselineY);
+
+      ctx.strokeStyle = 'rgba(236, 167, 44, 0.8)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Linia środkowa i koło środkowe na dole (y=96%)
+      ctx.beginPath();
+      ctx.arc(px(50), py(96), px(12), Math.PI, 0, false);
+      ctx.strokeStyle = lineWhite;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // 3. OBLICZENIE POZYCJI ZAWODNIKÓW I PIŁKI W CHWILI t
       const renderedPlayers = timelineData.players.map((p) => interpolatePlayer(p, t));
       const playersMap = new Map<string, RenderedPlayerState>();
       for (const rp of renderedPlayers) {
@@ -410,34 +426,32 @@ export default function BasketballCourtCanvas({
       }
       const renderedBall = interpolateBall(timelineData.ball, playersMap, t);
 
-      // 4. SYMBOLE TAKTYCZNE NA PARKIECIE (Zasłony T-Bar, Podania, Ścięcia)
+      // 4. SYMBOLE ZASŁON (T-Bar)
       for (const player of renderedPlayers) {
-        // A) OFICJALNA BELKA ZASŁONY (T-Bar / Screen Barrier)
         if (player.isScreening) {
           const sx = px(player.x);
           const sy = py(player.y);
-          const barLength = px(5.5);
+          const barLength = px(4.5);
 
           ctx.save();
           ctx.translate(sx, sy);
-          // Obrót prostopadle do kierunku zwrotu
           const barAngleRad = (player.heading * Math.PI) / 180;
           ctx.rotate(barAngleRad);
 
-          // Świetlny efekt strefy blokady
-          ctx.strokeStyle = 'rgba(236, 167, 44, 0.9)';
-          ctx.lineWidth = 4;
+          // Belka blokująca T-Bar
+          ctx.strokeStyle = '#F59E0B';
+          ctx.lineWidth = 3.5;
           ctx.lineCap = 'round';
           ctx.beginPath();
-          ctx.moveTo(-barLength, -px(2.5));
-          ctx.lineTo(barLength, -px(2.5));
+          ctx.moveTo(-barLength, -px(2.2));
+          ctx.lineTo(barLength, -px(2.2));
           ctx.stroke();
 
-          // Pionowy łącznik T-Bar
-          ctx.lineWidth = 2.5;
+          // Trzonek T-Bar
+          ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(0, -px(2.5));
-          ctx.lineTo(0, px(1.0));
+          ctx.moveTo(0, -px(2.2));
+          ctx.lineTo(0, px(0.8));
           ctx.stroke();
 
           // Pulsujący ring zasłony
@@ -445,15 +459,15 @@ export default function BasketballCourtCanvas({
           ctx.strokeStyle = `rgba(245, 158, 11, ${0.3 + pulse * 0.4})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.arc(0, 0, px(3.2 + pulse * 0.8), 0, Math.PI * 2);
+          ctx.arc(0, 0, px(2.8 + pulse * 0.6), 0, Math.PI * 2);
           ctx.stroke();
 
           ctx.restore();
         }
       }
 
-      // 5. RYSOWANIE TOKENÓW ZAWODNIKÓW Z POZYCJAMI (PG, SG, SF, PF, C / D1-D5)
-      const tokenRadius = Math.max(14, px(2.5));
+      // 5. RYSOWANIE TOKENÓW Z NUMERAMI POZYCJI (1-5 / D1-D5 - ZERO IMION I NAZWISK)
+      const tokenRadius = Math.max(13, px(2.2));
 
       for (const player of renderedPlayers) {
         const cx = px(player.x);
@@ -461,27 +475,28 @@ export default function BasketballCourtCanvas({
         const isOffense = player.isOffense;
         const hasBall = renderedBall.holderId === player.id;
 
-        // Cień pod zawodnikiem
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+        // Cień pod tokenem
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
         ctx.beginPath();
-        ctx.ellipse(cx, cy + tokenRadius * 0.6, tokenRadius * 0.8, tokenRadius * 0.4, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy + tokenRadius * 0.5, tokenRadius * 0.8, tokenRadius * 0.4, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Wskaźnik zwrotu ciała (Heading Pointer)
+        // Wskaźnik zwrotu ciała (Subtelny biały punkt)
         const headingRad = (player.heading * Math.PI) / 180;
-        const hx = cx + Math.sin(headingRad) * (tokenRadius + 3);
-        const hy = cy - Math.cos(headingRad) * (tokenRadius + 3);
+        const hx = cx + Math.sin(headingRad) * (tokenRadius + 2.5);
+        const hy = cy - Math.cos(headingRad) * (tokenRadius + 2.5);
 
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#FFFFFF';
         ctx.beginPath();
-        ctx.arc(hx, hy, 2.2, 0, Math.PI * 2);
+        ctx.arc(hx, hy, 2, 0, Math.PI * 2);
         ctx.fill();
 
-        // Kółko Tokena (Złoty dla Ataku, Karmazynowy dla Obrony)
+        // Kółko Tokena
         ctx.beginPath();
         ctx.arc(cx, cy, tokenRadius, 0, Math.PI * 2);
 
         if (isOffense) {
+          // Złoty gradient dla ataku
           const tGrad = ctx.createLinearGradient(cx, cy - tokenRadius, cx, cy + tokenRadius);
           tGrad.addColorStop(0, '#FDE047');
           tGrad.addColorStop(0.5, '#ECA72C');
@@ -490,57 +505,49 @@ export default function BasketballCourtCanvas({
           ctx.fill();
 
           ctx.strokeStyle = hasBall ? '#FFFFFF' : '#000000';
-          ctx.lineWidth = hasBall ? 3 : 2;
+          ctx.lineWidth = hasBall ? 2.5 : 1.8;
           ctx.stroke();
 
-          // Posiadanie piłki - świecący ring
           if (hasBall) {
-            ctx.strokeStyle = 'rgba(253, 224, 71, 0.8)';
+            ctx.strokeStyle = 'rgba(253, 224, 71, 0.9)';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.arc(cx, cy, tokenRadius + 4, 0, Math.PI * 2);
+            ctx.arc(cx, cy, tokenRadius + 3.5, 0, Math.PI * 2);
             ctx.stroke();
           }
         } else {
+          // Karmazynowy gradient dla obrony
           const dGrad = ctx.createLinearGradient(cx, cy - tokenRadius, cx, cy + tokenRadius);
           dGrad.addColorStop(0, '#F43F5E');
           dGrad.addColorStop(1, '#9F1239');
           ctx.fillStyle = dGrad;
           ctx.fill();
 
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
           ctx.lineWidth = 1.5;
           ctx.stroke();
         }
 
-        // NAPIS POZYCJI (PG, SG, SF, PF, C / D1-D5)
+        // TYLKO NUMER POZYCJI (1, 2, 3, 4, 5 dla ataku / D1, D2, D3, D4, D5 dla obrony)
         ctx.fillStyle = isOffense ? '#000000' : '#FFFFFF';
-        ctx.font = `900 ${Math.round(tokenRadius * 0.95)}px Outfit, sans-serif`;
+        ctx.font = `900 ${Math.round(tokenRadius * (isOffense ? 1.15 : 0.9))}px Outfit, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        const positionLabel = isOffense
-          ? player.role || 'PG'
-          : `D${player.number}`;
+        const positionNumber = isOffense
+          ? String(player.number || 1)
+          : `D${player.number || 1}`;
 
-        ctx.fillText(positionLabel, cx, cy + 0.5);
-
-        // PODPIS IMIENIA ZAWODNIKA PONIŻEJ TOKENA
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.font = `700 ${Math.max(10, Math.round(tokenRadius * 0.7))}px Outfit, sans-serif`;
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-        ctx.shadowBlur = 4;
-        ctx.fillText(player.name.split(' ')[0], cx, cy + tokenRadius + 9);
-        ctx.shadowBlur = 0;
+        ctx.fillText(positionNumber, cx, cy + 0.5);
       }
 
       // 6. RYSOWANIE PIŁKI (2.5D z wysokością łuku)
       const bx = px(renderedBall.x);
       const groundBy = py(renderedBall.y);
-      const airBy = py(renderedBall.y - renderedBall.z * 18);
-      const ballRadius = Math.max(8, px(1.3)) * (1.0 + renderedBall.z * 0.4);
+      const airBy = py(renderedBall.y - renderedBall.z * 16);
+      const ballRadius = Math.max(7.5, px(1.2)) * (1.0 + renderedBall.z * 0.4);
 
-      // Cień piłki na parkiecie
+      // Cień piłki
       ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.2, 0.7 - renderedBall.z * 0.4)})`;
       ctx.beginPath();
       ctx.ellipse(
@@ -584,12 +591,12 @@ export default function BasketballCourtCanvas({
       ctx.lineTo(bx, airBy + ballRadius);
       ctx.stroke();
 
-      // Efekt Swish / Trafienia do kosza pod koniec akcji
+      // Efekt trafienia do kosza (Swish)
       if (t >= 7.2 && t <= 8.5) {
         ctx.fillStyle = '#10B981';
         ctx.font = '900 13px Outfit, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('✨ SWISH! +3 PTS', px(50), py(9));
+        ctx.fillText('✨ SWISH! +3 PTS', px(50), py(6));
       }
 
       ctx.restore();
@@ -600,7 +607,6 @@ export default function BasketballCourtCanvas({
     return () => cancelAnimationFrame(animId);
   }, [timelineData]);
 
-  // Aktywna faza taktyczna
   const currentPhase = useMemo(() => {
     if (!timelineData.phaseDirectives || timelineData.phaseDirectives.length === 0) {
       return null;
@@ -626,7 +632,7 @@ export default function BasketballCourtCanvas({
 
   return (
     <div className="space-y-4">
-      {/* Pasek Nagłówkowy z Nazwą i Fazą */}
+      {/* Pasek Nagłówkowy */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-bkpk-glass border border-bkpk-border-strong rounded-2xl">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-bkpk-primary/20 border border-bkpk-primary/40 flex items-center justify-center text-bkpk-primary shadow-bkpk-glow">
@@ -651,7 +657,7 @@ export default function BasketballCourtCanvas({
           </div>
         </div>
 
-        {/* Fazy Akcji jako Pigułki */}
+        {/* Fazy Akcji */}
         {timelineData.phaseDirectives && timelineData.phaseDirectives.length > 0 && (
           <div className="flex items-center gap-1.5 bg-bkpk-surface-tint-2 p-1 rounded-xl border border-bkpk-border-subtle overflow-x-auto no-scrollbar">
             {timelineData.phaseDirectives.map((ph, idx) => {
@@ -679,7 +685,7 @@ export default function BasketballCourtCanvas({
         )}
       </div>
 
-      {/* Kontener HTML5 Canvas 2D (Płynność 60-120 FPS bez zacięć) */}
+      {/* Kontener Canvas 2D (Perfekcyjna Wektorowa Geometria FIBA) */}
       <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-[850px] mx-auto border-2 border-bkpk-primary/40 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
         <canvas
           ref={canvasRef}
@@ -688,19 +694,19 @@ export default function BasketballCourtCanvas({
         />
       </div>
 
-      {/* Legenda Symboli Taktycznych */}
+      {/* Czysta Legenda Pozycji Koszykarskich */}
       <div className="flex flex-wrap items-center justify-center gap-4 py-2 px-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl text-[11px] font-bold text-bkpk-text-secondary">
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-full bg-bkpk-primary text-black text-[9px] font-black flex items-center justify-center">
-            PG
+          <span className="w-4 h-4 rounded-full bg-bkpk-primary text-black text-[10px] font-black flex items-center justify-center">
+            1-5
           </span>
-          <span>Pozycje Ataku (PG/SG/SF/PF/C)</span>
+          <span>Pozycje Ataku (1: PG, 2: SG, 3: SF, 4: PF, 5: C)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center">
-            D1
+          <span className="w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center">
+            D1-5
           </span>
-          <span>Obrońcy (D1-D5)</span>
+          <span>Obrońcy</span>
         </div>
         <div className="flex items-center gap-1.5 text-amber-400">
           <span className="font-black text-sm">⊥</span>
@@ -712,9 +718,8 @@ export default function BasketballCourtCanvas({
         </div>
       </div>
 
-      {/* Pasek Sterowania i Suwak Czasu (Interactive Timeline Scrubber) */}
+      {/* Pasek Sterowania i Suwak Czasu */}
       <div className="p-4 bg-bkpk-surface border border-bkpk-border-strong rounded-2xl shadow-xl space-y-3">
-        {/* Suwak Czasu (Timeline Slider) */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-bkpk-text-muted">
             <span>Ustawienie (0.0s)</span>
@@ -732,7 +737,6 @@ export default function BasketballCourtCanvas({
           />
         </div>
 
-        {/* Kontrolki Odtwarzania */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
           <div className="flex items-center gap-2">
             <BkpkButton
@@ -791,7 +795,6 @@ export default function BasketballCourtCanvas({
             </button>
           </div>
 
-          {/* Wybór Prędkości */}
           <div className="flex items-center gap-1.5">
             <span className="text-[11px] font-bold text-bkpk-text-muted uppercase tracking-wider hidden sm:inline">
               Tempo:
@@ -816,7 +819,7 @@ export default function BasketballCourtCanvas({
         </div>
       </div>
 
-      {/* Synchronizowany Panel Trenerski dla Bieżącej Sekundy */}
+      {/* Synchronizowany Panel Trenerski */}
       {currentPhase && (
         <BkpkCard variant="glass" className="p-5 border-bkpk-primary/30 shadow-lg">
           <div className="flex items-start gap-3">
