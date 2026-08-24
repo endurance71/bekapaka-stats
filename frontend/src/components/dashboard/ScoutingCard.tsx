@@ -53,11 +53,19 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
 
     if (!data) {
         return (
-            <KalkEmptyState
-                title="Brak danych scoutingu"
-                message="Nie znaleziono danych o nadchodzącym rywalu. Uruchom scraper, aby pobrać aktualny terminarz i statystyki."
-                className="h-full border-none shadow-none bg-transparent p-6"
-            />
+            <BkpkCard
+                title="Scouting Rywala"
+                icon={<Users className="w-5 h-5 text-bkpk-primary" />}
+                className="h-full flex flex-col"
+            >
+                <div className="flex-1 flex items-center justify-center min-h-[220px]">
+                    <KalkEmptyState
+                        title="Brak nadchodzącego rywala"
+                        message="Brak zaplanowanych meczów w terminarzu wybranego sezonu."
+                        className="border-none shadow-none bg-transparent p-4 text-center"
+                    />
+                </div>
+            </BkpkCard>
         );
     }
 
