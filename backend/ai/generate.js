@@ -38,14 +38,11 @@ async function findMatchAiTarget(gameId) {
   });
   if (game) return { kind: 'game', id: gameId, existing: game };
 
-  const season = await getActiveSeason();
-  if (!season) return null;
-
-  const kalk = await prisma.kalkMatch.findUnique({
-    where: { seasonId_id: { seasonId: season.id, id: String(gameId) } },
-    select: aiSummarySelect
+  const kalk = await prisma.kalkMatch.findFirst({
+    where: { id: String(gameId) },
+    select: { ...aiSummarySelect, seasonId: true }
   });
-  if (kalk) return { kind: 'kalk', id: String(gameId), seasonId: season.id, existing: kalk };
+  if (kalk) return { kind: 'kalk', id: String(gameId), seasonId: kalk.seasonId, existing: kalk };
 
   return null;
 }

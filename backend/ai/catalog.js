@@ -226,9 +226,9 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
   }
 
   const opponentNames = new Set();
-  if (season) {
+  if (targetSeasonId) {
     const leagueTeams = await prisma.leagueTeam.findMany({
-      where: { seasonId: season.id, phase: 'regular' },
+      where: { seasonId: targetSeasonId, phase: 'regular' },
       select: { name: true }
     });
     for (const t of leagueTeams) {
