@@ -1,11 +1,13 @@
 /**
  * Silnik Matematyczny Animacji Taktycznych (TacticalEngine)
  * Odpowiada za ciągłą interpolację klatek kluczowych, krzywe Béziera,
- * trajektorię piłki w 2.5D z wysokością łuku, kąt zwrotu ciała oraz fizykę zasłon.
+ * trajektorię piłki w 2.5D z wysokością łuku, kąt zwrotu ciała,
+ * oficjalne symbole taktyczne koszykówki (zasłony T-Bar, podania, ścięcia, kozioł)
+ * oraz obsługę pełnego cyklu akcji (0.0s - 8.5s).
  */
 
 export interface KeyframePosition {
-  time: number; // sekundy (np. 0.0, 1.5, 3.2, 5.0)
+  time: number; // sekundy (np. 0.0, 1.5, 4.5, 6.5, 8.5)
   x: number;    // 0-100%
   y: number;    // 0-100%
   heading?: number; // kąt zwrotu ciała w stopniach (0-360, 0 = w stronę kosza)
@@ -25,7 +27,7 @@ export interface BallKeyframe {
   time: number;
   x: number;
   y: number;
-  holderId?: string | null; // Id gracza trzymającego piłkę (lub null w trakcie lotu)
+  holderId?: string | null;
   isPass?: boolean;
   isShot?: boolean;
   arcHeight?: number; // 0-100 (wysokość wzniesienia paraboli)
@@ -35,10 +37,21 @@ export interface BallTrack {
   keyframes: BallKeyframe[];
 }
 
+export interface TacticalStroke {
+  id: string;
+  from: { x: number; y: number };
+  to: { x: number; y: number };
+  type: 'pass' | 'cut' | 'screen' | 'dribble';
+  screenAngle?: number; // kąt belki T-Bar (w stopniach)
+  startTime?: number;
+  endTime?: number;
+}
+
 export interface PlayTimelineData {
-  duration: number; // np. 5.5s
+  duration: number; // domyślnie 8.5s
   players: PlayerTrack[];
   ball: BallTrack;
+  strokes?: TacticalStroke[];
   phaseDirectives?: Array<{
     startTime: number;
     endTime: number;
@@ -53,7 +66,7 @@ export interface RenderedPlayerState {
   id: string;
   number: number;
   name: string;
-  role: string;
+  role: 'PG' | 'SG' | 'SF' | 'PF' | 'C' | string;
   isOffense: boolean;
   x: number;
   y: number;
@@ -74,13 +87,12 @@ export interface RenderedBallState {
 }
 
 /**
- * Oblicza kąt zwrotu (heading) między dwoma punktami (w stopniach)
+ * Oblicza kąt zwrotu między dwoma punktami w stopniach
  */
 export function calculateHeading(fromX: number, fromY: number, toX: number, toY: number): number {
   const dx = toX - fromX;
   const dy = toY - fromY;
   if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) return 0;
-  // Kąt w stopniach (0° = góra / w stronę linii końcowej przeciwnej)
   let angle = Math.atan2(dx, -dy) * (180 / Math.PI);
   if (angle < 0) angle += 360;
   return angle;
@@ -94,7 +106,7 @@ export function easeInOutCubic(t: number): number {
 }
 
 /**
- * Interpolacja pozycji i stanu zawodnika w czasie t
+ * Interpolacja stanu zawodnika w czasie t
  */
 export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlayerState {
   const kfs = player.keyframes;
@@ -115,7 +127,6 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
     };
   }
 
-  // Przed pierwszą klatką
   if (t <= kfs[0].time) {
     const first = kfs[0];
     return {
@@ -134,7 +145,6 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
     };
   }
 
-  // Po ostatniej klatce
   if (t >= kfs[kfs.length - 1].time) {
     const last = kfs[kfs.length - 1];
     return {
@@ -153,7 +163,6 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
     };
   }
 
-  // Znajdź segment klatek między którymi znajduje się czas t
   let prev = kfs[0];
   let next = kfs[1];
   for (let i = 0; i < kfs.length - 1; i++) {
@@ -168,17 +177,14 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
   const progress = duration > 0 ? (t - prev.time) / duration : 0;
   const smoothProgress = easeInOutCubic(progress);
 
-  // Interpolowane współrzędne
   const x = prev.x + (next.x - prev.x) * smoothProgress;
   const y = prev.y + (next.y - prev.y) * smoothProgress;
 
-  // Prędkość w % boiska na sekundę
   const dist = Math.hypot(next.x - prev.x, next.y - prev.y);
   const speed = duration > 0 ? dist / duration : 0;
 
-  // Wyliczanie zwrotu ciała
   let heading = prev.heading ?? calculateHeading(prev.x, prev.y, next.x, next.y);
-  if (speed > 1.5) {
+  if (speed > 1.2) {
     heading = calculateHeading(prev.x, prev.y, next.x, next.y);
   } else if (next.heading != null) {
     heading = next.heading;
@@ -203,7 +209,7 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
 }
 
 /**
- * Interpolacja pozycji i trajektorii piłki w czasie t
+ * Interpolacja trajektorii piłki w czasie t
  */
 export function interpolateBall(
   ball: BallTrack,
@@ -246,12 +252,11 @@ export function interpolateBall(
   const duration = next.time - prev.time;
   const progress = duration > 0 ? (t - prev.time) / duration : 0;
 
-  // Sprawdź czy piłka jest trzymana przez tego samego gracza
+  // Gracz prowadzi piłkę
   if (prev.holderId && prev.holderId === next.holderId && playersMap.has(prev.holderId)) {
     const p = playersMap.get(prev.holderId)!;
-    // Subtelny kozioł piłki w trakcie biegu
-    const dribblePhase = Math.sin(t * 8);
-    const offsetX = 1.2 + dribblePhase * 0.4;
+    const dribblePhase = Math.sin(t * 7);
+    const offsetX = 1.4 + dribblePhase * 0.4;
     const offsetY = -0.8 + Math.abs(dribblePhase) * 0.3;
     return {
       x: p.x + offsetX,
@@ -263,20 +268,19 @@ export function interpolateBall(
     };
   }
 
-  // Piłka leci w powietrzu (Podanie lub Rzut)
+  // Piłka leci w powietrzu
   const startX = prev.holderId && playersMap.has(prev.holderId) ? playersMap.get(prev.holderId)!.x : prev.x;
   const startY = prev.holderId && playersMap.has(prev.holderId) ? playersMap.get(prev.holderId)!.y : prev.y;
 
   const endX = next.holderId && playersMap.has(next.holderId) ? playersMap.get(next.holderId)!.x : next.x;
   const endY = next.holderId && playersMap.has(next.holderId) ? playersMap.get(next.holderId)!.y : next.y;
 
-  // Liniowa interpolacja pozycji XY w locie
-  const x = startX + (endX - startX) * progress;
-  const y = startY + (endY - startY) * progress;
+  const smoothProgress = easeInOutCubic(progress);
+  const x = startX + (endX - startX) * smoothProgress;
+  const y = startY + (endY - startY) * smoothProgress;
 
-  // Parabola wysokości łuku Z (0 na początku, szczyt w połowie lotu, 0 na końcu)
   const isShot = Boolean(next.isShot || prev.isShot);
-  const peakHeight = next.arcHeight ?? (isShot ? 1.0 : 0.3);
+  const peakHeight = next.arcHeight ?? (isShot ? 1.0 : 0.25);
   const z = Math.sin(progress * Math.PI) * peakHeight;
 
   return {
