@@ -84,6 +84,9 @@ export default function Trends() {
     ];
   }, [comparison]);
 
+  const hasTrends = trends.length > 0;
+  const hasLeagueData = Boolean(comparison && (comparison.bekapaka.ppg > 0 || comparison.league.ppg > 0));
+
   if (loading) {
     return (
       <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
@@ -136,87 +139,98 @@ export default function Trends() {
                   <Activity className="w-5 h-5 text-bkpk-primary" />
                   <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Ewolucja Efektywności</h3>
                 </div>
-                <div className="flex gap-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-bkpk-primary shadow-bkpk-glow" />
-                    <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Rtg Ofensywny</span>
+                {hasTrends && (
+                  <div className="flex gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-bkpk-primary shadow-bkpk-glow" />
+                      <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Rtg Ofensywny</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-bkpk-warning shadow-bkpk-glow" />
+                      <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Tempo</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-bkpk-warning shadow-bkpk-glow" />
-                    <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Tempo</span>
-                  </div>
-                </div>
+                )}
               </div>
 
-
               <div className="w-full mt-4" style={{ height: isMobile ? '220px' : '400px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={trends}>
-                    <defs>
-                      <linearGradient id="colorOffRtgTrends" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="var(--color-bkpk-primary)" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="var(--color-bkpk-primary)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-3)" />
-                    <XAxis
-                      dataKey="formattedDate"
-                      stroke="var(--bkpk-text-muted)"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      dy={10}
-                      interval={isMobile ? Math.ceil(trends.length / 4) : 0}
-                    />
-                    <YAxis
-                      yAxisId="left"
-                      stroke="var(--bkpk-text-muted)"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      dx={-10}
-                      width={isMobile ? 25 : 40}
-                    />
-                    <YAxis
-                      yAxisId="right"
-                      orientation="right"
-                      stroke="var(--bkpk-text-muted)"
-                      fontSize={10}
-                      tickLine={false}
-                      axisLine={false}
-                      width={isMobile ? 25 : 40}
-                    />
-                    <Tooltip
-                      trigger={isMobile ? 'click' : 'hover'}
-                      contentStyle={{
-                        backgroundColor: 'var(--bkpk-color-surface-elevated)',
-                        border: '1px solid var(--bkpk-border-strong)',
-                        borderRadius: '12px',
-                        backdropFilter: 'blur(10px)',
-                        fontSize: '12px'
-                      }}
-                      itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
-                    />
-                    <Area
-                      yAxisId="left"
-                      type="monotone"
-                      dataKey="offRtg"
-                      stroke="var(--color-bkpk-primary)"
-                      strokeWidth={3}
-                      fillOpacity={1}
-                      fill="url(#colorOffRtgTrends)"
-                    />
-                    <Area
-                      yAxisId="right"
-                      type="monotone"
-                      dataKey="pace"
-                      stroke="var(--color-bkpk-warning)"
-                      strokeWidth={2}
-                      strokeDasharray="5 5"
-                      fill="transparent"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+                {hasTrends ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trends}>
+                      <defs>
+                        <linearGradient id="colorOffRtgTrends" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="var(--color-bkpk-primary)" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="var(--color-bkpk-primary)" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-3)" />
+                      <XAxis
+                        dataKey="formattedDate"
+                        stroke="var(--bkpk-text-muted)"
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        dy={10}
+                        interval={isMobile ? Math.ceil(trends.length / 4) : 0}
+                      />
+                      <YAxis
+                        yAxisId="left"
+                        stroke="var(--bkpk-text-muted)"
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        dx={-10}
+                        width={isMobile ? 25 : 40}
+                      />
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="var(--bkpk-text-muted)"
+                        fontSize={10}
+                        tickLine={false}
+                        axisLine={false}
+                        width={isMobile ? 25 : 40}
+                      />
+                      <Tooltip
+                        trigger={isMobile ? 'click' : 'hover'}
+                        contentStyle={{
+                          backgroundColor: 'var(--bkpk-color-surface-elevated)',
+                          border: '1px solid var(--bkpk-border-strong)',
+                          borderRadius: '12px',
+                          backdropFilter: 'blur(10px)',
+                          fontSize: '12px'
+                        }}
+                        itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
+                      />
+                      <Area
+                        yAxisId="left"
+                        type="monotone"
+                        dataKey="offRtg"
+                        stroke="var(--color-bkpk-primary)"
+                        strokeWidth={3}
+                        fillOpacity={1}
+                        fill="url(#colorOffRtgTrends)"
+                      />
+                      <Area
+                        yAxisId="right"
+                        type="monotone"
+                        dataKey="pace"
+                        stroke="var(--color-bkpk-warning)"
+                        strokeWidth={2}
+                        strokeDasharray="5 5"
+                        fill="transparent"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-3">
+                    <Activity className="w-10 h-10 text-bkpk-text-muted opacity-30" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-sm text-bkpk-text-primary uppercase tracking-tight">Brak danych o efektywności</p>
+                      <p className="text-xs text-bkpk-text-muted max-w-sm">Wykres ewolucji ratingu ofensywnego i tempa gry pojawi się po rozegraniu pierwszych meczów w tym sezonie.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </BkpkCard>
 
@@ -228,7 +242,7 @@ export default function Trends() {
               </div>
 
               <div className="w-full" style={{ height: isMobile ? '200px' : '300px' }}>
-                {trends.length > 0 && trends.some(t => (t.benchPoints || 0) + (t.fastBreakPoints || 0) + (t.pointsOffTO || 0) + (t.secondChancePoints || 0) > 0) ? (
+                {hasTrends && trends.some(t => (t.benchPoints || 0) + (t.fastBreakPoints || 0) + (t.pointsOffTO || 0) + (t.secondChancePoints || 0) > 0) ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={trends}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-3)" />
@@ -251,8 +265,12 @@ export default function Trends() {
                     </BarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-bkpk-text-muted text-sm italic">
-                    Brak szczegółowych danych o punktach dla tego okresu.
+                  <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-3">
+                    <PieChart className="w-10 h-10 text-bkpk-text-muted opacity-30" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-sm text-bkpk-text-primary uppercase tracking-tight">Brak szczegółowych danych o punktach</p>
+                      <p className="text-xs text-bkpk-text-muted max-w-sm">Struktura punktów (ławka, szybki atak, punkty po stratach) zostanie wygenerowana z protokołów meczowych.</p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -268,30 +286,40 @@ export default function Trends() {
                 <p className="text-xs text-bkpk-text-secondary uppercase tracking-widest font-bold">Względem średniej (100%)</p>
               </div>
               <div className="w-full" style={{ height: isMobile ? '220px' : '300px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '65%' : '80%'} data={radarData}>
-                    <PolarGrid stroke="var(--bkpk-surface-tint-3)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: isMobile ? 9 : 11, fontWeight: 'bold' }} />
-                    <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
-                    <Radar
-                      name="BeKaPaKa"
-                      dataKey="A"
-                      stroke="var(--color-bkpk-primary)"
-                      fill="var(--color-bkpk-primary)"
-                      fillOpacity={0.3}
-                      strokeWidth={3}
-                    />
-                    <Tooltip
-                      trigger={isMobile ? 'click' : 'hover'}
-                      contentStyle={{
-                        backgroundColor: 'var(--bkpk-color-surface-elevated)',
-                        border: '1px solid var(--bkpk-border-strong)',
-                        borderRadius: '12px',
-                        fontSize: '12px'
-                      }}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
+                {hasLeagueData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius={isMobile ? '65%' : '80%'} data={radarData}>
+                      <PolarGrid stroke="var(--bkpk-surface-tint-3)" />
+                      <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: isMobile ? 9 : 11, fontWeight: 'bold' }} />
+                      <PolarRadiusAxis angle={30} domain={[0, 150]} tick={false} axisLine={false} />
+                      <Radar
+                        name="BeKaPaKa"
+                        dataKey="A"
+                        stroke="var(--color-bkpk-primary)"
+                        fill="var(--color-bkpk-primary)"
+                        fillOpacity={0.3}
+                        strokeWidth={3}
+                      />
+                      <Tooltip
+                        trigger={isMobile ? 'click' : 'hover'}
+                        contentStyle={{
+                          backgroundColor: 'var(--bkpk-color-surface-elevated)',
+                          border: '1px solid var(--bkpk-border-strong)',
+                          borderRadius: '12px',
+                          fontSize: '12px'
+                        }}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-6 space-y-3">
+                    <Target className="w-10 h-10 text-bkpk-text-muted opacity-30" />
+                    <div className="space-y-1">
+                      <p className="font-bold text-sm text-bkpk-text-primary uppercase tracking-tight">Brak danych porównawczych</p>
+                      <p className="text-xs text-bkpk-text-muted max-w-xs">Porównanie parametrów z ligą wymaga rozegrania spotkań w tym sezonie.</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </BkpkCard>
 
@@ -302,17 +330,17 @@ export default function Trends() {
                 <div className="flex items-center justify-between p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
                   <div className="space-y-1">
                     <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Status Ataku</div>
-                    <div className="text-sm font-bold text-bkpk-text-primary">{comparison?.rankings.points || 'Ładowanie...'}</div>
+                    <div className="text-sm font-bold text-bkpk-text-primary">{hasLeagueData ? comparison?.rankings.points : 'Brak danych'}</div>
                   </div>
-                  <Target className={cn("w-8 h-8", comparison?.rankings.points === 'Powyżej średniej' ? "text-bkpk-success" : "text-bkpk-text-danger")} />
+                  <Target className={cn("w-8 h-8", hasLeagueData && comparison?.rankings.points === 'Powyżej średniej' ? "text-bkpk-success" : "text-bkpk-text-muted")} />
                 </div>
 
                 <div className="flex items-center justify-between p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
                   <div className="space-y-1">
                     <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Status Obrony</div>
-                    <div className="text-sm font-bold text-bkpk-text-primary">{comparison?.rankings.defense || 'Ładowanie...'}</div>
+                    <div className="text-sm font-bold text-bkpk-text-primary">{hasLeagueData ? comparison?.rankings.defense : 'Brak danych'}</div>
                   </div>
-                  <Zap className={cn("w-8 h-8", comparison?.rankings.defense === 'Lepsza niż średnia' ? "text-bkpk-success" : "text-bkpk-text-danger")} />
+                  <Zap className={cn("w-8 h-8", hasLeagueData && comparison?.rankings.defense === 'Lepsza niż średnia' ? "text-bkpk-success" : "text-bkpk-text-muted")} />
                 </div>
               </div>
 
@@ -321,13 +349,15 @@ export default function Trends() {
                   <span className="text-xs font-bold uppercase tracking-widest">Wnioski Trenerskie</span>
                 </div>
                 <p className="text-xs text-bkpk-text-secondary leading-relaxed italic">
-                  {comparison?.rankings.points === 'Powyżej średniej' && comparison?.rankings.defense === 'Lepsza niż średnia'
-                    ? "Wykryto dominację. Drużyna radzi sobie lepiej niż reszta ligi po obu stronach parkietu. Utrzymać tempo."
-                    : comparison?.rankings.points === 'Powyżej średniej'
-                      ? "Atak powyżej średniej ligi — utrzymać jakość rzutów. Obrona wymaga pracy: stracone punkty przewyższają średnią dywizji."
-                      : comparison?.rankings.defense === 'Lepsza niż średnia'
-                        ? "Obrona lepsza niż średnia ligi. Priorytet: poprawa skuteczności ataku i konwersji posiadań na punkty."
-                        : "Atak i obrona poniżej średniej ligi. Skup się na redukcji strat i skuteczności rzutów z gry oraz spod kosza."}
+                  {!hasLeagueData
+                    ? "Brak danych meczowych do wyciągnięcia wniosków taktycznych. Rozegraj pierwsze mecze w sezonie, aby aktywować analizę kwadrantu."
+                    : comparison?.rankings.points === 'Powyżej średniej' && comparison?.rankings.defense === 'Lepsza niż średnia'
+                      ? "Wykryto dominację. Drużyna radzi sobie lepiej niż reszta ligi po obu stronach parkietu. Utrzymać tempo."
+                      : comparison?.rankings.points === 'Powyżej średniej'
+                        ? "Atak powyżej średniej ligi — utrzymać jakość rzutów. Obrona wymaga pracy: stracone punkty przewyższają średnią dywizji."
+                        : comparison?.rankings.defense === 'Lepsza niż średnia'
+                          ? "Obrona lepsza niż średnia ligi. Priorytet: poprawa skuteczności ataku i konwersji posiadań na punkty."
+                          : "Atak i obrona poniżej średniej ligi. Skup się na redukcji strat i skuteczności rzutów z gry oraz spod kosza."}
                 </p>
               </div>
             </BkpkCard>
@@ -336,13 +366,13 @@ export default function Trends() {
             <div className="grid grid-cols-2 gap-4">
               <BkpkCard variant="glass" className="text-center py-6">
                 <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest mb-1">Śr. Punktów</div>
-                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{comparison?.bekapaka.ppg.toFixed(1)}</div>
-                <div className="text-xs font-medium text-bkpk-text-muted">średnia {comparison?.league.ppg.toFixed(1)}</div>
+                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.ppg ? comparison.bekapaka.ppg.toFixed(1) : '0.0'}</div>
+                <div className="text-xs font-medium text-bkpk-text-muted">średnia {hasLeagueData && comparison?.league.ppg ? comparison.league.ppg.toFixed(1) : '0.0'}</div>
               </BkpkCard>
               <BkpkCard variant="glass" className="text-center py-6">
                 <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest mb-1">Obrona</div>
-                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{comparison?.bekapaka.oppg.toFixed(1)}</div>
-                <div className="text-xs font-medium text-bkpk-text-muted">średnia {comparison?.league.oppg.toFixed(1)}</div>
+                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.oppg ? comparison.bekapaka.oppg.toFixed(1) : '0.0'}</div>
+                <div className="text-xs font-medium text-bkpk-text-muted">średnia {hasLeagueData && comparison?.league.oppg ? comparison.league.oppg.toFixed(1) : '0.0'}</div>
               </BkpkCard>
             </div>
           </div>

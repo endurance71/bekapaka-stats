@@ -342,6 +342,55 @@ export async function getRoster(querySeasonId = undefined) {
 
     const plusMinusAvg = resolveSeasonPlusMinusAverage(playerGames, r);
 
+    let ppg = r.ppg ?? 0;
+    let rpg = r.rpg ?? 0;
+    let apg = r.apg ?? 0;
+    let gamesPlayed = r.gamesPlayed ?? 0;
+    let fgPercentage = r.fgPercentage;
+    let threePercentage = r.threePercentage;
+    let ftPercentage = r.ftPercentage;
+    let twoPm = (r.fgm || 0) - (r.threePm || 0);
+    let threePm = r.threePm || 0;
+    let ftm = r.ftm || 0;
+
+    if (targetSeason?.id) {
+      if (playerGames.length > 0) {
+        const gp = playerGames.length;
+        const totalPts = playerGames.reduce((sum, g) => sum + (g.pts || 0), 0);
+        const totalReb = playerGames.reduce((sum, g) => sum + (g.reb || 0), 0);
+        const totalAst = playerGames.reduce((sum, g) => sum + (g.ast || 0), 0);
+        const totalFgm = playerGames.reduce((sum, g) => sum + (g.fgm || 0), 0);
+        const totalFga = playerGames.reduce((sum, g) => sum + (g.fga || 0), 0);
+        const total3pm = playerGames.reduce((sum, g) => sum + (g.threePm || g.three_pm || 0), 0);
+        const total3pa = playerGames.reduce((sum, g) => sum + (g.threePa || g.three_pa || 0), 0);
+        const totalFtm = playerGames.reduce((sum, g) => sum + (g.ftm || 0), 0);
+        const totalFta = playerGames.reduce((sum, g) => sum + (g.fta || 0), 0);
+
+        gamesPlayed = gp;
+        ppg = parseFloat((totalPts / gp).toFixed(1));
+        rpg = parseFloat((totalReb / gp).toFixed(1));
+        apg = parseFloat((totalAst / gp).toFixed(1));
+        fgPercentage = totalFga > 0 ? parseFloat(((totalFgm / totalFga) * 100).toFixed(1)) : 0;
+        threePercentage = total3pa > 0 ? parseFloat(((total3pm / total3pa) * 100).toFixed(1)) : 0;
+        ftPercentage = totalFta > 0 ? parseFloat(((totalFtm / totalFta) * 100).toFixed(1)) : 0;
+        twoPm = totalFgm - total3pm;
+        threePm = total3pm;
+        ftm = totalFtm;
+      } else {
+        gamesPlayed = 0;
+        ppg = 0;
+        rpg = 0;
+        apg = 0;
+        evalAvg = null;
+        fgPercentage = 0;
+        threePercentage = 0;
+        ftPercentage = 0;
+        twoPm = 0;
+        threePm = 0;
+        ftm = 0;
+      }
+    }
+
     return {
       ...base,
       id: r.id,
@@ -350,25 +399,25 @@ export async function getRoster(querySeasonId = undefined) {
       number: r.number,
       position: r.position,
       starter: r.starter,
-      ppg: r.ppg ?? 0,
-      rpg: r.rpg ?? 0,
-      apg: r.apg ?? 0,
+      ppg,
+      rpg,
+      apg,
       eval: evalAvg,
-      fgPercentage: r.fgPercentage,
-      threePercentage: r.threePercentage,
-      ftPercentage: r.ftPercentage,
+      fgPercentage,
+      threePercentage,
+      ftPercentage,
       tsPercentage: r.tsPercentage,
       eFgPercentage: r.eFgPercentage,
       plusMinus: plusMinusAvg,
-      gamesPlayed: r.gamesPlayed,
+      gamesPlayed,
       birthDate: r.birthDate,
       heightCm: r.heightCm,
       aiDevelopmentSummary: r.aiDevelopmentSummary,
 
       // Raw stats for Shot Selection
-      twoPm: (r.fgm || 0) - (r.threePm || 0),
-      threePm: r.threePm || 0,
-      ftm: r.ftm || 0,
+      twoPm,
+      threePm,
+      ftm,
 
       // Game Log
       games: playerGames,

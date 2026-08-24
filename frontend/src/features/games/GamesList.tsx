@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
+import { Calendar } from 'lucide-react';
 import MatchCard from '../../shared/ui/MatchCard';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';
@@ -81,8 +82,12 @@ export default function GamesList({ games, loading }: GamesListProps) {
                 ))}
 
                 {filteredGames.length === 0 && (
-                    <div className="text-center py-20 bg-bkpk-glass border border-bkpk-glass-border rounded-bkpk-lg">
-                        <p className="text-bkpk-text-muted font-medium">Nie znaleziono meczów spełniających kryteria.</p>
+                    <div className="flex flex-col items-center justify-center py-20 bg-bkpk-glass border border-bkpk-glass-border rounded-bkpk-lg text-center space-y-3 px-4">
+                        <Calendar className="w-12 h-12 text-bkpk-text-muted opacity-30" />
+                        <div className="space-y-1">
+                            <p className="text-bkpk-text-primary font-bold text-base">Brak meczów w wybranym sezonie</p>
+                            <p className="text-bkpk-text-muted text-xs max-w-sm">Mecze pojawią się w terminarzu po pobraniu danych z ligi KALK lub dodaniu ich w panelu administracyjnym.</p>
+                        </div>
                     </div>
                 )}
             </div>

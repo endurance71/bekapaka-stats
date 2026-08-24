@@ -2,8 +2,9 @@ import { prisma } from '../lib/prisma.js';
 import { listGames } from '../dataStore.js';
 import { kalkMatchToGameDetail } from '../kalk/kalkGameView.js';
 import { isBekapakaTeamName } from '../kalk/parseMatchBoxScore.js';
-import { getActiveSeason } from '../seasonService.js';
+import { getActiveSeason, resolveSeasonId } from '../seasonService.js';
 import { buildBriefingContext } from './buildBriefingContext.js';
+import { getTeamBriefingCached } from './generate.js';
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
 import { hasCompleteMatchAnalysisMarkdown } from './matchAnalysisMarkdown.js';
@@ -36,6 +37,7 @@ function kalkMatchHasBoxScore(km) {
 
 /**
  * Katalog wszystkich analiz AI w panelu (hub + admin).
+ * @param {string} [querySeasonId]
  * @returns {Promise<{
  *   configured: boolean;
  *   model: string;
@@ -56,17 +58,18 @@ function kalkMatchHasBoxScore(km) {
  *   }>;
  * }>}
  */
-export async function getAiAnalysesCatalog() {
+export async function getAiAnalysesCatalog(querySeasonId = undefined) {
   const configured = isGeminiConfigured();
   const defaultModel = getGeminiModelName();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
   /** @type {Awaited<ReturnType<typeof getAiAnalysesCatalog>>['items']} */
   const items = [];
 
-  const briefing = await prisma.teamBriefing.findUnique({ where: { id: 'default' } });
+  const briefing = await getTeamBriefingCached(targetSeasonId);
   let briefingStale = false;
   if (briefing?.contentMd?.trim() && briefing.sourceHash) {
     try {
-      const ctx = await buildBriefingContext();
+      const ctx = await buildBriefingContext(targetSeasonId);
       briefingStale =
         briefing.sourceHash !== ctx.hash || !hasCompleteBriefingMarkdown(briefing.contentMd);
     } catch {
@@ -75,7 +78,7 @@ export async function getAiAnalysesCatalog() {
   }
 
   items.push({
-    id: 'briefing:default',
+    id: `briefing:${targetSeasonId || 'default'}`,
     type: 'briefing',
     category: 'Zespół',
     title: 'Briefing tygodniowy (AI)',
@@ -90,14 +93,13 @@ export async function getAiAnalysesCatalog() {
     generateTarget: null
   });
 
-  const season = await getActiveSeason();
-  const games = await listGames();
+  const games = await listGames({}, targetSeasonId);
   /** @type {Map<string, import('@prisma/client').KalkMatch>} */
   const kalkById = new Map();
 
-  if (season) {
+  if (targetSeasonId) {
     const kalkRows = await prisma.kalkMatch.findMany({
-      where: { seasonId: season.id, OR: BEKAPAKA_KALK_MATCH_OR },
+      where: { seasonId: targetSeasonId, OR: BEKAPAKA_KALK_MATCH_OR },
       orderBy: { date: 'desc' }
     });
     for (const row of kalkRows) {
