@@ -2072,14 +2072,8 @@ export async function updateRosterStats() {
   console.log('[Info] Roster stats updated.');
 }
 
-export async function listAllPlayers() {
-  await ensureSeeded();
-  return await prisma.rosterPlayer.findMany({
-    include: {
-      kalkPlayer: true
-    },
-    orderBy: { lastName: 'asc' }
-  });
+export async function listAllPlayers(querySeasonId = undefined) {
+  return await getRoster(querySeasonId);
 }
 
 // ZAWODNICY - Pobierz pojedynczego zawodnika
