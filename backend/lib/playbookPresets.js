@@ -1,6 +1,6 @@
 /**
  * Biblioteka Gotowych Presetów Animowanych Zagrywek Koszykarskich (BeKaPaKa Stats)
- * Format oparty o pełny cykl życia akcji (8.5s), czyste numery pozycji 1-5 oraz perfekcyjną geometrię FIBA
+ * Format oparty o pełny cykl życia akcji (8.5s), czyste numery pozycji 1-5, poprawny wynik punktowy (+2 / +3 PKT)
  */
 
 export const DEFAULT_PLAYBOOK_PRESETS = [
@@ -12,6 +12,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
     tags: ['Horns', 'Strefa 2-3', 'Corner 3', 'Rzut za 3'],
     diagramData: {
       duration: 8.5,
+      outcomeText: '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)',
       coachingKeys: [
         'Ustawienie wyjściowe Horns zmusza obronę do rozciągnięcia linii',
         'Zasłona na szczycie (T-Bar) musi zablokować powrót górnego obrońcy strefy',
@@ -44,7 +45,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           startTime: 6.5,
           endTime: 8.5,
           title: 'Faza 4: Czysty Rzut za 3, Trafienie i Zbiórka',
-          description: '3 (SF) oddaje czysty rzut za 3 punkty. Piłka wpada do kosza, a 5 (C) zbiega pod kosz na zbiórkę.',
+          description: '3 (SF) oddaje czysty rzut za 3 punkty. Piłka wpada do kosza (+3 PKT), a 5 (C) zbiega pod kosz na zbiórkę.',
           coachingCues: ['Catch & Shoot w tempie', '5 (C) zabezpiecza deskę']
         }
       ],
@@ -208,6 +209,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
     tags: ['Spain PnR', 'Pick & Roll', 'Backscreen', 'EuroLeague'],
     diagramData: {
       duration: 8.5,
+      outcomeText: '✨ WSAD / PUNKTY Z GÓRY (+2 PKT)',
       coachingKeys: [
         'Zasłona z pleców (T-Bar) musi być precyzyjnie wklejona w obrońcę podkoszowego',
         'Strzelec po zasłonie natychmiast ucieka na szczyt (Pop na 3PT)',
@@ -239,7 +241,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           startTime: 6.5,
           endTime: 8.5,
           title: 'Faza 4: Potężny Wsad i Powrót do Obrony',
-          description: '5 (C) łapie piłkę w powietrzu i pakuje ją z góry do kosza (+2 PTS!).',
+          description: '5 (C) łapie piłkę w powietrzu i pakuje ją z góry do kosza (+2 PKT).',
           coachingCues: ['Pewne wykończenie', 'Natychmiastowy powrót do obrony']
         }
       ],
@@ -394,6 +396,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
     tags: ['BLOB', 'Box Set', 'Layup', 'Punkty z pomalowanego'],
     diagramData: {
       duration: 8.5,
+      outcomeText: '✨ LAYUP SPOD KOSZA (+2 PKT)',
       coachingKeys: [
         'Ustawienie wyjściowe w kwadrat (Box) wymusza błąd krycia obrony',
         'Zasłona na linii końcowej (T-Bar) musi być postawiona z mocnym kontaktem',
@@ -425,8 +428,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Czysty Layup do Kosza (+2 PTS)',
-          description: '5 (C) bez obrońcy wykańcza akcję łatwym layupem do kosza.',
+          title: 'Faza 4: Czysty Layup do Kosza (+2 PKT)',
+          description: '5 (C) bez obrońcy wykańcza akcję łatwym layupem do kosza (+2 PKT).',
           coachingCues: ['Wysokie wyjście w górę', 'Punkty z pomalowanego']
         }
       ],
@@ -574,6 +577,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
     tags: ['SLOB', 'Hammer Action', 'Spurs System', 'Corner 3'],
     diagramData: {
       duration: 8.5,
+      outcomeText: '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)',
       coachingKeys: [
         'Wprowadzenie piłki do wjeżdżającego pod kosz',
         'Zasłona Hammer (T-Bar) musi odciąć obrońcę w rogu boiska',
@@ -605,7 +609,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           startTime: 6.5,
           endTime: 8.5,
           title: 'Faza 4: Czysta Trójka w Rogu i Zbiórka',
-          description: '3 (SF) trafia czysty rzut za 3 punkty (+3 PTS!). Wysocy zabezpieczają deskę.',
+          description: '3 (SF) trafia czysty rzut za 3 punkty (+3 PKT). Wysocy zabezpieczają deskę.',
           coachingCues: ['Catch & Shoot', 'Zbiórka ofensywna']
         }
       ],
@@ -752,6 +756,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
     tags: ['ATO', 'Elevator Screen', 'Clutch', 'Warriors Action'],
     diagramData: {
       duration: 8.5,
+      outcomeText: '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)',
       coachingKeys: [
         'Zasłaniający muszą zamknąć przestrzeń w ułamku sekundy po przebiegnięciu strzelca',
         'Podanie musi być natychmiastowe (Catch & Shoot bez kozła)',
@@ -782,8 +787,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Decydujący Rzut za 3 Punkty (+3 PTS)',
-          description: '2 (SG) oddaje rzut za 3 punkty. Piłka wpada czysto do kosza.',
+          title: 'Faza 4: Decydujący Rzut za 3 Punkty (+3 PKT)',
+          description: '2 (SG) oddaje rzut za 3 punkty. Piłka wpada czysto do kosza (+3 PKT).',
           coachingCues: ['Czysty rzut', 'Celebracja i powrót']
         }
       ],
