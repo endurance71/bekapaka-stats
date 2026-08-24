@@ -464,7 +464,7 @@ app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
 
 app.get(['/api/ai/catalog', '/ai/catalog'], authenticateToken, async (req, res) => {
   try {
-    const catalog = await getAiAnalysesCatalog();
+    const catalog = await getAiAnalysesCatalog(req.query.seasonId);
     res.json(catalog);
   } catch (err) {
     handleAiRouteError(err, res);
@@ -473,11 +473,12 @@ app.get(['/api/ai/catalog', '/ai/catalog'], authenticateToken, async (req, res) 
 
 app.get(['/api/ai/briefing', '/ai/briefing'], authenticateToken, async (req, res) => {
   try {
-    const briefing = await getTeamBriefingCached();
+    const seasonId = req.query.seasonId;
+    const briefing = await getTeamBriefingCached(seasonId);
     let stale = false;
     if (briefing?.contentMd && briefing.sourceHash) {
       const { buildBriefingContext } = await import('./ai/buildBriefingContext.js');
-      const ctx = await buildBriefingContext();
+      const ctx = await buildBriefingContext(seasonId);
       stale = briefing.sourceHash !== ctx.hash;
     }
     res.json({
@@ -493,7 +494,8 @@ app.get(['/api/ai/briefing', '/ai/briefing'], authenticateToken, async (req, res
 
 app.post(['/api/ai/briefing/generate', '/ai/briefing/generate'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await generateTeamBriefing({ force: Boolean(req.body?.force) });
+    const seasonId = req.body?.seasonId || req.query.seasonId;
+    const result = await generateTeamBriefing({ force: Boolean(req.body?.force), seasonId });
     res.json(result);
   } catch (err) {
     handleAiRouteError(err, res);

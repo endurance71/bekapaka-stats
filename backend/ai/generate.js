@@ -21,7 +21,7 @@ import {
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
 import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
 import { hasCompleteMatchAnalysisMarkdown } from './matchAnalysisMarkdown.js';
-import { getActiveSeason } from '../seasonService.js';
+import { getActiveSeason, resolveSeasonId } from '../seasonService.js';
 
 
 const aiSummarySelect = {
@@ -358,12 +358,15 @@ export async function generateScoutingReport(opponentQuery, options = {}) {
 }
 
 /**
- * @param {{ force?: boolean }} options
+ * @param {{ force?: boolean, seasonId?: string }} options
  */
 export async function generateTeamBriefing(options = {}) {
-  return withAiLock('briefing:default', async () => {
-    const ctx = await buildBriefingContext();
-    const existing = await prisma.teamBriefing.findUnique({ where: { id: 'default' } });
+  const targetSeasonId = await resolveSeasonId(options.seasonId);
+  const lockKey = `briefing:${targetSeasonId || 'default'}`;
+
+  return withAiLock(lockKey, async () => {
+    const ctx = await buildBriefingContext(targetSeasonId);
+    const existing = await prisma.teamBriefing.findUnique({ where: { id: targetSeasonId || 'default' } });
 
     const requireUpcomingOpponent = Boolean(ctx.payload.hasUpcomingMatch);
 
@@ -393,10 +396,11 @@ export async function generateTeamBriefing(options = {}) {
 
     const model = getGeminiModelName();
     const now = new Date();
+    const briefingId = targetSeasonId || 'default';
     await prisma.teamBriefing.upsert({
-      where: { id: 'default' },
+      where: { id: briefingId },
       create: {
-        id: 'default',
+        id: briefingId,
         contentMd: text,
         model,
         sourceHash: ctx.hash,
@@ -414,6 +418,18 @@ export async function generateTeamBriefing(options = {}) {
   });
 }
 
-export async function getTeamBriefingCached() {
-  return prisma.teamBriefing.findUnique({ where: { id: 'default' } });
+export async function getTeamBriefingCached(querySeasonId = undefined) {
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
+  if (!targetSeasonId) {
+    return prisma.teamBriefing.findUnique({ where: { id: 'default' } });
+  }
+
+  const bySeason = await prisma.teamBriefing.findUnique({ where: { id: targetSeasonId } });
+  if (bySeason) return bySeason;
+
+  if (targetSeasonId === 'season_2025-2026') {
+    return prisma.teamBriefing.findUnique({ where: { id: 'default' } });
+  }
+
+  return null;
 }

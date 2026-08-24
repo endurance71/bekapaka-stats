@@ -130,7 +130,7 @@ export default function Dashboard() {
     try {
       const result = await postJSON<{ contentMd: string; generatedAt: string; model?: string }>(
         '/api/ai/briefing/generate',
-        { force }
+        { force, seasonId }
       );
       setBriefing({
         contentMd: result.contentMd,

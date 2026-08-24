@@ -15,12 +15,12 @@ function roundStat(value, digits = 1) {
 /**
  * Aggregated context for dashboard weekly briefing.
  */
-export async function buildBriefingContext() {
+export async function buildBriefingContext(seasonIdParam = undefined) {
   const [games, trends, priorities, nextOpponentRaw] = await Promise.all([
-    listGames(),
-    getTeamTrends(),
-    getTrainingPriorities(),
-    getNextOpponentScouting()
+    listGames({}, seasonIdParam),
+    getTeamTrends(seasonIdParam),
+    getTrainingPriorities(seasonIdParam),
+    getNextOpponentScouting(seasonIdParam)
   ]);
 
   /** Tylko faktyczny mecz z terminarza — bez fallbacku na ostatniego rywala (scouting). */

@@ -47,12 +47,15 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
         );
     }
 
-    if (topPlayers.length === 0) {
+    const hasAnyStats = topPlayers.some((p) => (p.ppg ?? 0) > 0 || (resolvePlayerEval(p) ?? 0) > 0);
+
+    if (topPlayers.length === 0 || !hasAnyStats) {
         return (
             <BkpkCard title="Top 3 Zawodnicy" icon={<Star className="w-5 h-5 text-bkpk-primary" />}>
-                <div className="flex flex-col items-center justify-center py-12 text-bkpk-text-muted">
-                    <Trophy className="w-12 h-12 mb-4 opacity-10" />
-                    <p className="font-bold text-sm uppercase tracking-widest">Brak danych o zawodnikach</p>
+                <div className="flex flex-col items-center justify-center py-12 text-bkpk-text-muted text-center px-4">
+                    <Trophy className="w-12 h-12 mb-4 opacity-20 text-bkpk-primary" />
+                    <p className="font-bold text-sm uppercase tracking-widest text-bkpk-text-primary">Brak statystyk meczowych</p>
+                    <p className="text-xs text-bkpk-text-muted mt-1">Liderzy zespołu pojawią się po rozegraniu pierwszych meczów w sezonie.</p>
                 </div>
             </BkpkCard>
         );
