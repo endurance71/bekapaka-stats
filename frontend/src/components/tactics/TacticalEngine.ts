@@ -183,14 +183,20 @@ export function interpolatePlayer(player: PlayerTrack, t: number): RenderedPlaye
   const dist = Math.hypot(next.x - prev.x, next.y - prev.y);
   const speed = duration > 0 ? dist / duration : 0;
 
-  let heading = prev.heading ?? calculateHeading(prev.x, prev.y, next.x, next.y);
-  if (speed > 1.2) {
+  const currentAction = progress > 0.5 ? (next.action ?? prev.action ?? 'idle') : (prev.action ?? 'idle');
+
+  // Płynna interpolacja kąta zwrotu (Heading) z zachowaniem postawy obrońców i kąta zasłon
+  let heading = prev.heading ?? 0;
+  if (prev.heading != null && next.heading != null) {
+    let diff = next.heading - prev.heading;
+    while (diff < -180) diff += 360;
+    while (diff > 180) diff -= 360;
+    heading = (prev.heading + diff * smoothProgress + 360) % 360;
+  } else if (speed > 1.0 && currentAction !== 'set_screen' && currentAction !== 'defend') {
     heading = calculateHeading(prev.x, prev.y, next.x, next.y);
   } else if (next.heading != null) {
     heading = next.heading;
   }
-
-  const currentAction = progress > 0.6 ? (next.action ?? prev.action ?? 'idle') : (prev.action ?? 'idle');
 
   return {
     id: player.id,
