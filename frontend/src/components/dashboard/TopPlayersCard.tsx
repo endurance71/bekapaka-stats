@@ -14,6 +14,7 @@ interface Player {
     rpg?: number;
     apg?: number;
     eval?: number | null;
+    gamesPlayed?: number;
     photo?: string | null;
     data?: any;
     kalkPlayer?: any;
@@ -24,10 +25,9 @@ interface TopPlayersCardProps {
     loading?: boolean;
 }
 
-function resolvePlayerEval(player: Player): number | null | undefined {
+function resolvePlayerEval(player: Player): number | null {
     if (player.eval != null) return player.eval;
-    const fromKalk = player.kalkPlayer?.eval;
-    return fromKalk != null ? fromKalk : null;
+    return null;
 }
 
 export default function TopPlayersCard({ players, loading }: TopPlayersCardProps) {
@@ -47,7 +47,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
         );
     }
 
-    const hasAnyStats = topPlayers.some((p) => (p.ppg ?? 0) > 0 || (resolvePlayerEval(p) ?? 0) > 0);
+    const hasAnyStats = topPlayers.some((p) => (p.ppg ?? 0) > 0 || (p.gamesPlayed ?? 0) > 0);
 
     if (topPlayers.length === 0 || !hasAnyStats) {
         return (
