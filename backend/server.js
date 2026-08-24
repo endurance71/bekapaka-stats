@@ -432,7 +432,7 @@ app.get(['/api/scouting/next', '/scouting/next'], async (req, res) => {
 app.get(['/api/scouting/detailed', '/scouting/detailed'], async (req, res) => {
   try {
     const opponent = req.query.opponent;
-    const scouting = await getDetailedScouting(opponent);
+    const scouting = await getDetailedScouting(opponent, req.query.seasonId);
     res.json(scouting);
   } catch (err) {
     console.error('Detailed scouting error:', err);

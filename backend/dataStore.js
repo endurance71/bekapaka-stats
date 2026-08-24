@@ -2312,7 +2312,11 @@ async function findBekapakaLeagueMatchContext(seasonIdParam) {
     return null;
   };
 
-  return (await tryFind({ seasonId })) ?? (await tryFind({}));
+  if (seasonId) {
+    return tryFind({ seasonId });
+  }
+
+  return tryFind({});
 }
 
 async function buildOpponentScoutingCard(opponentName, seasonId, meta = {}) {
@@ -2446,18 +2450,18 @@ function teamNameMatchesOpponent(teamName, simplifiedName) {
 }
 
 // Helper: statystyki zaawansowane rywala z box score KALK (LeagueMatch.details)
-async function getOpponentAdvancedStats(opponentName) {
+async function getOpponentAdvancedStats(opponentName, seasonIdParam = undefined) {
   if (!opponentName) return null;
 
   const simplifiedName = opponentName.split('-')[0].trim();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = await resolveSeasonId(seasonIdParam);
 
   let kalkDerived = [];
-  if (activeSeason) {
+  if (targetSeasonId) {
     const kalkMatches = await prisma.kalkMatch.findMany({
       where: {
-        seasonId: activeSeason.id,
+        seasonId: targetSeasonId,
         isFinished: true,
         OR: [
           { homeTeamName: { contains: simplifiedName, mode: 'insensitive' } },
@@ -2478,6 +2482,7 @@ async function getOpponentAdvancedStats(opponentName) {
 
   const matches = await prisma.leagueMatch.findMany({
     where: {
+      seasonId: targetSeasonId || undefined,
       OR: [
         { homeTeam: { contains: simplifiedName, mode: 'insensitive' } },
         { guestTeam: { contains: simplifiedName, mode: 'insensitive' } }
@@ -2517,7 +2522,8 @@ async function getOpponentAdvancedStats(opponentName) {
       sourceMatchDate: latestFinished.date
         ? latestFinished.date.toISOString().split('T')[0]
         : null,
-      sourceMatchLabel: `${latestFinished.homeTeam} — ${latestFinished.guestTeam} (${latestFinished.scoreHome ?? '–'}:${latestFinished.scoreAway ?? '–'})`
+      sourceMatchLabel: `${latestFinished.homeTeam} — ${latestFinished.guestTeam} (${latestFinished.scoreHome ?? '–'}:${latestFinished.scoreAway ?? '–'})`,
+      threePointAccuracy: 0
     };
   }
 
@@ -2540,8 +2546,10 @@ async function getOpponentAdvancedStats(opponentName) {
       ? sourceMatch.date.toISOString().split('T')[0]
       : null,
     sourceMatchLabel: sourceMatch
-      ? `${sourceMatch.homeTeam} — ${sourceMatch.guestTeam} (${sourceMatch.scoreHome}:${sourceMatch.scoreAway})`
-      : null
+      ? `${sourceMatch.homeTeam} — ${sourceMatch.guestTeam} (${sourceMatch.scoreHome ?? '–'}:${sourceMatch.scoreAway ?? '–'})`
+      : null,
+    threePointAccuracy: 0,
+    dataSource: kalkDerived.length ? 'kalk' : 'league'
   };
 
   let totalPoss = 0;
@@ -2554,15 +2562,16 @@ async function getOpponentAdvancedStats(opponentName) {
   const playerStatsMap = {};
 
   for (const match of matchesToProcess) {
-    const details = match.details;
-    if (!hasValidLeagueMatchDetails(match)) continue;
-
     stats.matchesScraped++;
 
-    // Identify which team is the opponent
-    const isHome = match.homeTeam.toLowerCase().includes(simplifiedName.toLowerCase());
-    const oppTeamRaw = isHome ? details.teams[0] : details.teams[1];
-    const enemyTeamRaw = isHome ? details.teams[1] : details.teams[0];
+    const details = match.details || {};
+    const teams = details.teams || [];
+
+    const isHome = teamNameMatchesOpponent(match.homeTeam, simplifiedName);
+    const oppTeamRaw = teams.find((t) =>
+      teamNameMatchesOpponent(t?.name, simplifiedName)
+    ) || (isHome ? teams[0] : teams[1]);
+    const enemyTeamRaw = teams.find((t) => t !== oppTeamRaw) || (isHome ? teams[1] : teams[0]);
 
     if (!oppTeamRaw || !enemyTeamRaw) continue;
 
@@ -2644,7 +2653,9 @@ async function getOpponentAdvancedStats(opponentName) {
     stats.fourFactors.orb = Number(((totalORB / denominatorORB) * 100).toFixed(2));
   }
 
-  stats.situational.fourthQuarterDiff = Number((q4DiffSum / stats.matchesScraped).toFixed(2));
+  // Situational Defaults
+  stats.situational.fourthQuarterDiff = stats.matchesScraped > 0 ? Number((q4DiffSum / stats.matchesScraped).toFixed(1)) : 0;
+  stats.situational.clutchPlay = stats.situational.fourthQuarterDiff > 2 ? 'Dominujący (Mocne końcówki)' : (stats.situational.fourthQuarterDiff < -2 ? 'Wrażliwy (Traci przewagi)' : 'Stabilny (Równa gra)');
 
   // 3PT Accuracy
   stats.threePointAccuracy = total3PA > 0 ? Number(((total3PM / total3PA) * 100).toFixed(2)) : 0;
@@ -2681,10 +2692,10 @@ async function getOpponentAdvancedStats(opponentName) {
   return stats;
 }
 
-export async function getDetailedScouting(opponentName) {
+export async function getDetailedScouting(opponentName, seasonIdParam = undefined) {
   await ensureSeeded();
 
-  let seasonId = await resolveSeasonId();
+  let seasonId = await resolveSeasonId(seasonIdParam);
 
   if (!opponentName) {
     const ctx = await findBekapakaLeagueMatchContext(seasonId);
@@ -2724,6 +2735,7 @@ export async function getDetailedScouting(opponentName) {
   // 3. Recent Matches (Opponent)
   const oppMatches = await prisma.leagueMatch.findMany({
     where: {
+      seasonId,
       OR: [
         { homeTeam: { contains: opponentName, mode: 'insensitive' } },
         { guestTeam: { contains: opponentName, mode: 'insensitive' } }
@@ -2736,8 +2748,8 @@ export async function getDetailedScouting(opponentName) {
 
   // Get Advanced Stats (Moved UP)
   const [advancedStats, bekapakaAdvancedStats] = await Promise.all([
-    getOpponentAdvancedStats(opponentName),
-    getOpponentAdvancedStats(bekapaka?.name || 'BeKaPaKa')
+    getOpponentAdvancedStats(opponentName, seasonId),
+    getOpponentAdvancedStats(bekapaka?.name || 'BeKaPaKa', seasonId)
   ]);
 
   const oppPpg = opponent?.matches > 0 ? (opponent.pointsFor / opponent.matches) : 0;
