@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Target,
   Sparkles,
   Users,
   Shield,
-  Plus,
-  ArrowLeft,
-  Save,
   BookOpen,
-  Compass,
-  Check
+  Film,
+  Layers,
+  ArrowUpRight
 } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
@@ -19,24 +17,17 @@ import PlaybookList, { PlayItem } from '../components/tactics/PlaybookList';
 import AiPlayGeneratorModal from '../components/tactics/AiPlayGeneratorModal';
 import SynergyMatrix, { DuoRecord } from '../components/tactics/SynergyMatrix';
 import PreGameMatchCard, { PreGameData } from '../components/tactics/PreGameMatchCard';
-import { fetchJSON, postJSON, putJSON } from '../lib/api';
+import { fetchJSON } from '../lib/api';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { cn } from '../shared/lib/utils';
 
 export default function TacticsHub() {
   const [activeTab, setActiveTab] = useState<'playbook' | 'synergy' | 'pregame'>('playbook');
-  
+
   // Playbook State
   const [plays, setPlays] = useState<PlayItem[]>([]);
   const [selectedPlay, setSelectedPlay] = useState<PlayItem | null>(null);
-  const [isEditingCanvas, setIsEditingCanvas] = useState(false);
-  const [canvasData, setCanvasData] = useState<DiagramData | null>(null);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
-  const [savingPlay, setSavingPlay] = useState(false);
-  const [playName, setPlayName] = useState('');
-  const [playCategory, setPlayCategory] = useState('half_court');
-  const [playTargetDefense, setPlayTargetDefense] = useState('Strefa 2-3');
-  const [playDescription, setPlayDescription] = useState('');
 
   // Synergy State
   const [synergyData, setSynergyData] = useState<{
@@ -52,15 +43,19 @@ export default function TacticsHub() {
   const [pregameOpponent, setPregameOpponent] = useState<string | null>(null);
 
   const { seasonId } = useSeasonPreferenceContext();
+  const playerSectionRef = useRef<HTMLDivElement>(null);
 
   const loadPlays = useCallback(async () => {
     try {
       const data = await fetchJSON<PlayItem[]>('/api/tactics/plays');
       setPlays(data || []);
+      if (data && data.length > 0 && !selectedPlay) {
+        setSelectedPlay(data[0]);
+      }
     } catch (err) {
       console.error('Error fetching plays:', err);
     }
-  }, []);
+  }, [selectedPlay]);
 
   const loadSynergy = useCallback(async () => {
     setLoadingSynergy(true);
@@ -95,54 +90,8 @@ export default function TacticsHub() {
 
   const handleSelectPlay = (play: PlayItem) => {
     setSelectedPlay(play);
-    setCanvasData(play.diagramData || null);
-    setPlayName(play.name);
-    setPlayCategory(play.category);
-    setPlayTargetDefense(play.targetDefense || 'Strefa 2-3');
-    setPlayDescription(play.description || '');
-    setIsEditingCanvas(true);
-  };
-
-  const handleCreateNewPlay = () => {
-    setSelectedPlay(null);
-    setCanvasData(null);
-    setPlayName('Nowa Zagrywka');
-    setPlayCategory('half_court');
-    setPlayTargetDefense('Strefa 2-3');
-    setPlayDescription('');
-    setIsEditingCanvas(true);
-  };
-
-  const handleSaveCurrentPlay = async () => {
-    if (!playName.trim()) return;
-    setSavingPlay(true);
-    try {
-      if (selectedPlay?.id) {
-        const updated = await putJSON<PlayItem>(`/api/tactics/plays/${selectedPlay.id}`, {
-          name: playName,
-          category: playCategory,
-          targetDefense: playTargetDefense,
-          description: playDescription,
-          diagramData: canvasData
-        });
-        setPlays((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-        setSelectedPlay(updated);
-      } else {
-        const created = await postJSON<PlayItem>('/api/tactics/plays', {
-          name: playName,
-          category: playCategory,
-          targetDefense: playTargetDefense,
-          description: playDescription,
-          diagramData: canvasData
-        });
-        setPlays((prev) => [created, ...prev]);
-        setSelectedPlay(created);
-      }
-      setIsEditingCanvas(false);
-    } catch (err) {
-      console.error('Error saving play:', err);
-    } finally {
-      setSavingPlay(false);
+    if (playerSectionRef.current) {
+      playerSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -162,7 +111,7 @@ export default function TacticsHub() {
         {/* Zakładki Nawigacyjne (Pill Tabs) */}
         <div className="flex items-center gap-1.5 p-1 bg-bkpk-surface-tint-1 rounded-2xl border border-bkpk-border-strong self-start md:self-auto overflow-x-auto no-scrollbar">
           <button
-            onClick={() => { setActiveTab('playbook'); setIsEditingCanvas(false); }}
+            onClick={() => setActiveTab('playbook')}
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
               activeTab === 'playbook'
@@ -170,12 +119,12 @@ export default function TacticsHub() {
                 : "text-bkpk-text-muted hover:text-bkpk-text-primary"
             )}
           >
-            <BookOpen className="w-4 h-4" />
-            Tablica &amp; Playbook
+            <Film className="w-4 h-4" />
+            Animowane Zagrywki
           </button>
 
           <button
-            onClick={() => { setActiveTab('synergy'); setIsEditingCanvas(false); }}
+            onClick={() => setActiveTab('synergy')}
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
               activeTab === 'synergy'
@@ -188,7 +137,7 @@ export default function TacticsHub() {
           </button>
 
           <button
-            onClick={() => { setActiveTab('pregame'); setIsEditingCanvas(false); }}
+            onClick={() => setActiveTab('pregame')}
             className={cn(
               "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
               activeTab === 'pregame'
@@ -210,136 +159,62 @@ export default function TacticsHub() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="space-y-6"
+            className="space-y-8"
           >
-            {!isEditingCanvas ? (
-              <>
-                {/* Pasek akcji Playbooka */}
-                <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-bkpk-glass border border-bkpk-border-strong rounded-2xl">
-                  <div>
-                    <h3 className="text-sm font-bold text-bkpk-text-primary uppercase tracking-wider">
-                      Baza Zagrań Taktycznych ({plays.length})
-                    </h3>
-                    <p className="text-xs text-bkpk-text-muted">
-                      Wybierz zagrywkę do analizy lub stwórz nową z pomocą AI
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-2.5">
-                    <BkpkButton variant="outline" size="sm" onClick={handleCreateNewPlay}>
-                      <Plus className="w-4 h-4 mr-1.5" />
-                      Rysuj na Tablicy
-                    </BkpkButton>
-                    <BkpkButton variant="primary" size="sm" onClick={() => setIsAiModalOpen(true)}>
-                      <Sparkles className="w-4 h-4 mr-1.5" />
-                      Generator Zagrywek AI
-                    </BkpkButton>
-                  </div>
-                </div>
-
-                {/* Lista Zagrań */}
-                <PlaybookList
-                  plays={plays}
-                  onSelectPlay={handleSelectPlay}
-                  onPlayDeleted={(id) => setPlays((prev) => prev.filter((p) => p.id !== id))}
-                  onPlayUpdated={(updated) =>
-                    setPlays((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
-                  }
-                />
-              </>
-            ) : (
-              /* Widok Edycji i Podglądu na Tablicy */
-              <div className="space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-bkpk-border-strong">
-                  <BkpkButton
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingCanvas(false)}
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-1.5" />
-                    Wróć do Katalogu
-                  </BkpkButton>
-
-                  <div className="flex items-center gap-2">
-                    <BkpkButton
-                      variant="primary"
-                      size="sm"
-                      onClick={handleSaveCurrentPlay}
-                      loading={savingPlay}
-                    >
-                      <Save className="w-4 h-4 mr-1.5" />
-                      Zapisz Zagrywkę
-                    </BkpkButton>
-                  </div>
-                </div>
-
-                {/* Pola edycyjne metadanych zagrywki */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-2xl">
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted block mb-1">
-                      Nazwa Zagrywki
-                    </label>
-                    <input
-                      type="text"
-                      value={playName}
-                      onChange={(e) => setPlayName(e.target.value)}
-                      placeholder="np. Horns Flare vs Strefa"
-                      className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-2 text-xs text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary font-bold"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted block mb-1">
-                      Kategoria
-                    </label>
-                    <select
-                      value={playCategory}
-                      onChange={(e) => setPlayCategory(e.target.value)}
-                      className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-2 text-xs text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
-                    >
-                      <option value="half_court">Atak pozycyjny</option>
-                      <option value="blob">BLOB (Aut końcowy)</option>
-                      <option value="slob">SLOB (Aut boczny)</option>
-                      <option value="ato">ATO (Po czasie)</option>
-                      <option value="fastbreak">Szybki atak</option>
-                      <option value="defense">Wariant obrony</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted block mb-1">
-                      Obrona Przeciwnika
-                    </label>
-                    <input
-                      type="text"
-                      value={playTargetDefense}
-                      onChange={(e) => setPlayTargetDefense(e.target.value)}
-                      placeholder="np. Strefa 2-3 / Drop PnR"
-                      className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-2 text-xs text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
-                    />
-                  </div>
-
-                  <div className="md:col-span-3">
-                    <label className="text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted block mb-1">
-                      Opis &amp; Wytyczne Trenerskie
-                    </label>
-                    <textarea
-                      value={playDescription}
-                      onChange={(e) => setPlayDescription(e.target.value)}
-                      placeholder="Krótki opis akcji..."
-                      rows={2}
-                      className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl p-3 text-xs text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Interaktywna Tablica */}
+            {/* Sekcja 1: Główny Odtwarzacz Animacji Zagrywki */}
+            <div ref={playerSectionRef} className="space-y-4">
+              {selectedPlay ? (
                 <BasketballCourtCanvas
-                  initialData={canvasData}
-                  onChange={(newData) => setCanvasData(newData)}
+                  initialData={selectedPlay.diagramData}
+                  playName={selectedPlay.name}
+                  category={selectedPlay.category}
+                  targetDefense={selectedPlay.targetDefense || undefined}
                 />
+              ) : (
+                <BkpkCard variant="glass" className="text-center py-16">
+                  <Film className="w-12 h-12 text-bkpk-primary/40 mx-auto mb-3" />
+                  <h3 className="text-sm font-bold text-bkpk-text-primary uppercase tracking-wider mb-2">
+                    Wybierz zagrywkę z katalogu poniżej
+                  </h3>
+                  <p className="text-xs text-bkpk-text-muted max-w-md mx-auto">
+                    Kliknij dowolny preset, aby uruchomić interaktywną animację ruchu zawodników na boisku.
+                  </p>
+                </BkpkCard>
+              )}
+            </div>
+
+            {/* Sekcja 2: Pasek Akcji i Katalog Gotowych Presetów */}
+            <div className="space-y-4 pt-4 border-t border-bkpk-border-strong">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-base font-black text-bkpk-text-primary uppercase tracking-wider">
+                    Biblioteka Gotowych Presetów ({plays.length})
+                  </h3>
+                  <p className="text-xs text-bkpk-text-muted">
+                    Wybierz zagrywkę taktyczną lub wygeneruj nowy wariant z pomocą AI
+                  </p>
+                </div>
+
+                <BkpkButton variant="primary" size="sm" onClick={() => setIsAiModalOpen(true)}>
+                  <Sparkles className="w-4 h-4 mr-1.5" />
+                  Generuj Nowy Preset AI
+                </BkpkButton>
               </div>
-            )}
+
+              {/* Lista Presetów */}
+              <PlaybookList
+                plays={plays}
+                selectedPlayId={selectedPlay?.id}
+                onSelectPlay={handleSelectPlay}
+                onPlayDeleted={(id) => {
+                  setPlays((prev) => prev.filter((p) => p.id !== id));
+                  if (selectedPlay?.id === id) setSelectedPlay(null);
+                }}
+                onPlayUpdated={(updated) =>
+                  setPlays((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
+                }
+              />
+            </div>
           </motion.div>
         )}
 

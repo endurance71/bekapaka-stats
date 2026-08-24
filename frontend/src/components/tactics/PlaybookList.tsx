@@ -7,11 +7,11 @@ import {
   Zap,
   Play as PlayIcon,
   Trash2,
-  ExternalLink,
   Tag,
   CheckCircle2,
   XCircle,
-  Eye
+  Eye,
+  Layers
 } from 'lucide-react';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
@@ -35,6 +35,7 @@ export interface PlayItem {
 
 interface PlaybookListProps {
   plays: PlayItem[];
+  selectedPlayId?: string | null;
   onSelectPlay: (play: PlayItem) => void;
   onPlayDeleted: (id: string) => void;
   onPlayUpdated: (play: PlayItem) => void;
@@ -51,6 +52,7 @@ const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function PlaybookList({
   plays,
+  selectedPlayId,
   onSelectPlay,
   onPlayDeleted,
   onPlayUpdated
@@ -71,7 +73,7 @@ export default function PlaybookList({
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Czy na pewno chcesz usunąć tę zagrywkę?')) return;
+    if (!window.confirm('Czy na pewno chcesz usunąć ten preset zagrywki?')) return;
     setDeletingId(id);
     try {
       await deleteJSON(`/api/tactics/plays/${id}`);
@@ -83,24 +85,9 @@ export default function PlaybookList({
     }
   };
 
-  const handleTrackExecution = async (play: PlayItem, success: boolean, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const newAttempts = (play.attempts || 0) + 1;
-    const newSuccesses = (play.successes || 0) + (success ? 1 : 0);
-    try {
-      const updated = await putJSON<PlayItem>(`/api/tactics/plays/${play.id}`, {
-        attempts: newAttempts,
-        successes: newSuccesses
-      });
-      onPlayUpdated(updated);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   return (
     <div className="space-y-6">
-      {/* Filtry i wyszukiwarka */}
+      {/* Filtry i Wyszukiwarka */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
           <button
@@ -134,12 +121,12 @@ export default function PlaybookList({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Szukaj zagrywki lub obrony..."
+          placeholder="Szukaj presetu zagrywki..."
           className="bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-1.5 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:outline-none focus:border-bkpk-primary w-full sm:w-64"
         />
       </div>
 
-      {/* Lista zagrywek w gridzie */}
+      {/* Grid Kart Presetów */}
       {filteredPlays.length === 0 ? (
         <BkpkCard variant="glass" className="text-center py-12">
           <Target className="w-12 h-12 text-bkpk-primary/40 mx-auto mb-3" />
@@ -147,7 +134,7 @@ export default function PlaybookList({
             Brak zagrywek w tej kategorii
           </h3>
           <p className="text-xs text-bkpk-text-muted max-w-sm mx-auto">
-            Użyj generatora AI lub stwórz własną zagrywkę na tablicy taktycznej.
+            Użyj 1-click Generatora AI, aby wygenerować animowaną zagrywkę pod dowolny scenariusz.
           </p>
         </BkpkCard>
       ) : (
@@ -155,9 +142,8 @@ export default function PlaybookList({
           <AnimatePresence>
             {filteredPlays.map((play) => {
               const catConfig = CATEGORY_LABELS[play.category] || CATEGORY_LABELS.half_court;
-              const attempts = play.attempts || 0;
-              const successes = play.successes || 0;
-              const effPercent = attempts > 0 ? Math.round((successes / attempts) * 100) : null;
+              const stepsCount = play.diagramData?.steps?.length || 1;
+              const isSelected = selectedPlayId === play.id;
 
               return (
                 <motion.div
@@ -171,10 +157,15 @@ export default function PlaybookList({
                 >
                   <BkpkCard
                     variant="glass"
-                    className="h-full flex flex-col justify-between p-5 border-bkpk-border-strong hover:border-bkpk-primary/50 transition-all group-hover:shadow-bkpk-card-hover group-hover:-translate-y-0.5"
+                    className={cn(
+                      "h-full flex flex-col justify-between p-5 border transition-all group-hover:shadow-bkpk-card-hover group-hover:-translate-y-0.5",
+                      isSelected
+                        ? "border-bkpk-primary bg-bkpk-primary/5 shadow-bkpk-glow"
+                        : "border-bkpk-border-strong hover:border-bkpk-primary/40"
+                    )}
                   >
                     <div>
-                      {/* Nagłówek karty */}
+                      {/* Nagłówek Karty */}
                       <div className="flex items-start justify-between gap-2 mb-3">
                         <span
                           className={cn(
@@ -185,22 +176,29 @@ export default function PlaybookList({
                           {catConfig.label}
                         </span>
 
-                        {play.isAiGenerated && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold text-bkpk-primary bg-bkpk-primary/10 px-2 py-0.5 rounded-full border border-bkpk-primary/20">
-                            <Sparkles className="w-3 h-3" />
-                            AI
+                        <div className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-bkpk-text-muted bg-bkpk-surface-tint-2 px-2 py-0.5 rounded-full border border-bkpk-border-subtle">
+                            <Layers className="w-3 h-3" />
+                            {stepsCount} {stepsCount === 1 ? 'faza' : 'fazy'}
                           </span>
-                        )}
+
+                          {play.isAiGenerated && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-bkpk-primary bg-bkpk-primary/10 px-2 py-0.5 rounded-full border border-bkpk-primary/20">
+                              <Sparkles className="w-3 h-3" />
+                              AI
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Tytuł i opis */}
+                      {/* Tytuł i Obrona */}
                       <h4 className="text-sm font-bold text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors mb-1.5">
                         {play.name}
                       </h4>
 
                       {play.targetDefense && (
                         <div className="flex items-center gap-1.5 text-xs text-bkpk-text-muted mb-2.5">
-                          <Shield className="w-3.5 h-3.5 text-bkpk-warning shrink-0" />
+                          <Shield className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                           <span className="font-medium truncate">vs {play.targetDefense}</span>
                         </div>
                       )}
@@ -212,48 +210,19 @@ export default function PlaybookList({
                       )}
                     </div>
 
-                    {/* Stopka karty ze skutecznością i akcjami */}
-                    <div className="pt-4 border-t border-bkpk-border-subtle flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        {effPercent !== null ? (
-                          <div className="text-[11px] font-bold text-bkpk-text-primary">
-                            Skuteczność:{' '}
-                            <span
-                              className={cn(
-                                effPercent >= 50 ? 'text-bkpk-success' : 'text-bkpk-warning'
-                              )}
-                            >
-                              {effPercent}%
-                            </span>{' '}
-                            <span className="text-bkpk-text-muted text-[10px]">
-                              ({successes}/{attempts})
-                            </span>
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-bkpk-text-muted">Nietestowana w meczu</span>
-                        )}
-                      </div>
+                    {/* Stopka Karty */}
+                    <div className="pt-3 border-t border-bkpk-border-subtle flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-bkpk-primary flex items-center gap-1">
+                        <PlayIcon className="w-3.5 h-3.5 fill-current" />
+                        {isSelected ? 'Odtwarzana teraz' : 'Kliknij, aby odtworzyć'}
+                      </span>
 
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <button
-                          onClick={(e) => handleTrackExecution(play, true, e)}
-                          className="p-1.5 rounded-lg text-bkpk-text-muted hover:text-bkpk-success hover:bg-bkpk-success/10 transition-colors"
-                          title="Oznacz udaną próbę (+1)"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={(e) => handleTrackExecution(play, false, e)}
-                          className="p-1.5 rounded-lg text-bkpk-text-muted hover:text-bkpk-danger hover:bg-bkpk-danger/10 transition-colors"
-                          title="Oznacz nieudaną próbę (+1)"
-                        >
-                          <XCircle className="w-4 h-4" />
-                        </button>
                         <button
                           onClick={(e) => handleDelete(play.id, e)}
                           disabled={deletingId === play.id}
                           className="p-1.5 rounded-lg text-bkpk-text-muted hover:text-bkpk-danger hover:bg-bkpk-danger/10 transition-colors"
-                          title="Usuń zagrywkę"
+                          title="Usuń preset"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
