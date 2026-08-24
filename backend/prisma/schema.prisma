@@ -27,6 +27,7 @@ model KalkSeason {
   preferences   PlayerSeasonPreference[]
   syncRuns      KalkSyncRun[]
   sectionSnapshots KalkSectionSnapshot[]
+  preGameBriefings PreGameBriefing[]
 }
 
 model Game {
@@ -317,19 +318,45 @@ model Training {
 }
 
 model Play {
-  id          String   @id @default(uuid())
-  name        String
-  category    String   // "offense" | "defense" | "fastbreak"
-  diagram     String?  // URL do diagramu lub SVG
-  description String?
-  videoUrl    String?
+  id            String   @id @default(uuid())
+  name          String
+  category      String   @default("half_court") // "half_court" | "blob" | "slob" | "ato" | "fastbreak" | "defense"
+  description   String?  @db.Text
+  targetDefense String?  // np. "2-3 Zone", "Man-to-Man", "Drop PnR"
+  diagramData   Json?    // { tokens: [...], strokes: [...], steps: [...] }
+  videoUrl      String?
+  tags          String[] @default([])
+  isAiGenerated Boolean  @default(false)
   
   // Statystyki skuteczności
-  attempts    Int      @default(0)
-  successes   Int      @default(0)
+  attempts      Int      @default(0)
+  successes     Int      @default(0)
   
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PreGameBriefing {
+  id            String      @id @default(uuid())
+  seasonId      String
+  season        KalkSeason  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  opponentName  String
+  matchDate     DateTime?
+  gatheringTime String?     // np. "17:45"
+  tipoffTime    String?     // np. "18:30"
+  jerseyColor   String      @default("Czarne")
+  venue         String      @default("Hala Sportowa, Bobolice")
+  
+  tacticalKeys  Json        // 3 kluczowe założenia [ { title, description, focus } ]
+  startingFive  Json        // [ { playerId, name, number, position, assignment } ]
+  benchKeys     String?     @db.Text
+  
+  generatedByAi Boolean     @default(true)
+  model         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@unique([seasonId, opponentName])
 }
 
 model LeagueTeam {
