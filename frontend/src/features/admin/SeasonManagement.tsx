@@ -165,6 +165,22 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
     }
   };
 
+  const handleArchiveAndOpenNewWizard = async () => {
+    if (!archivingSeason) return;
+    setArchiveSubmitting(true);
+    try {
+      await postJSON(`/api/admin/seasons/${archivingSeason.id}/archive`, {});
+      setArchivingSeason(null);
+      await fetchSeasons();
+      if (onSeasonChanged) onSeasonChanged();
+      await openNewSeasonWizard();
+    } catch (err: any) {
+      alert(`Błąd: ${err.message}`);
+    } finally {
+      setArchiveSubmitting(false);
+    }
+  };
+
   const openEditModal = (season: SeasonWithStats) => {
     setEditingSeason(season);
     setEditLabel(season.label);
@@ -654,12 +670,15 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-bkpk-border-strong">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-bkpk-border-strong">
               <BkpkButton variant="ghost" onClick={() => setArchivingSeason(null)} disabled={archiveSubmitting}>
                 Anuluj
               </BkpkButton>
-              <BkpkButton variant="primary" onClick={handleArchiveSeasonSubmit} disabled={archiveSubmitting}>
-                {archiveSubmitting ? 'Zamykanie...' : 'Potwierdzam, zamknij sezon'}
+              <BkpkButton variant="secondary" onClick={handleArchiveSeasonSubmit} disabled={archiveSubmitting}>
+                {archiveSubmitting ? 'Zamykanie...' : 'Tylko zamknij sezon'}
+              </BkpkButton>
+              <BkpkButton variant="primary" onClick={handleArchiveAndOpenNewWizard} disabled={archiveSubmitting}>
+                {archiveSubmitting ? 'Zamykanie...' : 'Zamknij i utwórz kolejny sezon'}
               </BkpkButton>
             </div>
           </div>

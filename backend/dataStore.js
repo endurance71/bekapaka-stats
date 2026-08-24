@@ -1310,7 +1310,7 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
 
     const scheduleOnly = await prisma.leagueMatch.findMany({
       where: {
-        seasonId: activeSeason.id,
+        seasonId: targetSeasonId,
         OR: BEKAPAKA_LEAGUE_MATCH_OR,
         isFinished: true,
         kalkMatchId: null
@@ -1350,7 +1350,7 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
     if (filters.homeAway) {
       items = items.filter((g) => g.homeAway === filters.homeAway);
     }
-    if (items.length) return items;
+    return items;
   }
 
   const where = {};
@@ -1372,63 +1372,64 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
   }));
 }
 
-export async function getGameById(id) {
+export async function getGameById(id, querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
+  const targetSeasonId = querySeasonId ? await resolveSeasonId(querySeasonId) : null;
 
-  if (activeSeason) {
-    const kalkMatch = await prisma.kalkMatch.findUnique({
-      where: { seasonId_id: { seasonId: activeSeason.id, id: String(id) } }
-    });
-    if (kalkMatch) {
-      return kalkMatchToGameDetail(kalkMatch);
+  const kalkMatch = await prisma.kalkMatch.findFirst({
+    where: {
+      id: String(id),
+      ...(targetSeasonId ? { seasonId: targetSeasonId } : {})
     }
+  });
+  if (kalkMatch) {
+    return kalkMatchToGameDetail(kalkMatch);
+  }
 
-    const leagueRow = await prisma.leagueMatch.findFirst({
-      where: {
-        seasonId: activeSeason.id,
-        OR: [{ id: String(id) }, { kalkMatchId: String(id) }]
-      }
-    });
-    if (leagueRow && (isBekapakaTeamName(leagueRow.homeTeam) || isBekapakaTeamName(leagueRow.guestTeam))) {
-      const isHome = isBekapakaTeamName(leagueRow.homeTeam);
-      const opponent = isHome ? leagueRow.guestTeam : leagueRow.homeTeam;
-      const scoreUs = isHome ? leagueRow.scoreHome : leagueRow.scoreAway;
-      const scoreThem = isHome ? leagueRow.scoreAway : leagueRow.scoreHome;
-      let result = null;
-      if (scoreUs != null && scoreThem != null) {
-        result = scoreUs > scoreThem ? 'W' : scoreThem > scoreUs ? 'L' : null;
-      }
-      return {
-        id: leagueRow.kalkMatchId || leagueRow.id,
-        leagueMatchId: leagueRow.id,
-        dataSource: 'league',
-        seasonId: leagueRow.seasonId,
-        date: leagueRow.date.toISOString(),
-        opponent,
-        homeAway: isHome ? 'home' : 'away',
-        result,
-        scoreUs,
-        scoreThem,
-        teams: [
-          {
-            name: leagueRow.homeTeam,
-            isBekapaka: isBekapakaTeamName(leagueRow.homeTeam),
-            players: [],
-            pts: leagueRow.scoreHome
-          },
-          {
-            name: leagueRow.guestTeam,
-            isBekapaka: isBekapakaTeamName(leagueRow.guestTeam),
-            players: [],
-            pts: leagueRow.scoreAway
-          }
-        ],
-        hasBoxScore: false,
-        boxScoreMissingHint: 'Brak box score w KALK — uruchom pełny sync w Administracji.'
-      };
+  const leagueRow = await prisma.leagueMatch.findFirst({
+    where: {
+      OR: [{ id: String(id) }, { kalkMatchId: String(id) }],
+      ...(targetSeasonId ? { seasonId: targetSeasonId } : {})
     }
+  });
+  if (leagueRow && (isBekapakaTeamName(leagueRow.homeTeam) || isBekapakaTeamName(leagueRow.guestTeam))) {
+    const isHome = isBekapakaTeamName(leagueRow.homeTeam);
+    const opponent = isHome ? leagueRow.guestTeam : leagueRow.homeTeam;
+    const scoreUs = isHome ? leagueRow.scoreHome : leagueRow.scoreAway;
+    const scoreThem = isHome ? leagueRow.scoreAway : leagueRow.scoreHome;
+    let result = null;
+    if (scoreUs != null && scoreThem != null) {
+      result = scoreUs > scoreThem ? 'W' : scoreThem > scoreUs ? 'L' : null;
+    }
+    return {
+      id: leagueRow.kalkMatchId || leagueRow.id,
+      leagueMatchId: leagueRow.id,
+      dataSource: 'league',
+      seasonId: leagueRow.seasonId,
+      date: leagueRow.date.toISOString(),
+      opponent,
+      homeAway: isHome ? 'home' : 'away',
+      result,
+      scoreUs,
+      scoreThem,
+      teams: [
+        {
+          name: leagueRow.homeTeam,
+          isBekapaka: isBekapakaTeamName(leagueRow.homeTeam),
+          players: [],
+          pts: leagueRow.scoreHome
+        },
+        {
+          name: leagueRow.guestTeam,
+          isBekapaka: isBekapakaTeamName(leagueRow.guestTeam),
+          players: [],
+          pts: leagueRow.scoreAway
+        }
+      ],
+      hasBoxScore: false,
+      boxScoreMissingHint: 'Brak box score w KALK — uruchom pełny sync w Administracji.'
+    };
   }
 
   const game = await prisma.game.findUnique({
@@ -1693,36 +1694,38 @@ export async function getLatestKalkScrapeRun() {
 }
 
 /** Podsumowanie importu KALK (panel Admin) + KPI braków z audytu. */
-export async function getKalkIngestSummary() {
+export async function getKalkIngestSummary(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
-  const activeSeason = await getActiveSeason();
-  if (!activeSeason) return null;
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
+  const targetSeason = targetSeasonId ? await getSeasonById(targetSeasonId) : await getActiveSeason();
+  if (!targetSeason) return null;
 
   const { runKalkDataAudit } = await import('./kalk/kalkDataAudit.js');
 
   const [kalkMatches, finishedMatches, playerGameLogs, kalkTeams, lastSync, audit] =
     await Promise.all([
-      prisma.kalkMatch.count({ where: { seasonId: activeSeason.id } }),
-      prisma.kalkMatch.count({ where: { seasonId: activeSeason.id, isFinished: true } }),
-      prisma.kalkPlayerGameLog.count({ where: { seasonId: activeSeason.id } }),
-      prisma.kalkTeam.count({ where: { seasonId: activeSeason.id } }),
+      prisma.kalkMatch.count({ where: { seasonId: targetSeason.id } }),
+      prisma.kalkMatch.count({ where: { seasonId: targetSeason.id, isFinished: true } }),
+      prisma.kalkPlayerGameLog.count({ where: { seasonId: targetSeason.id } }),
+      prisma.kalkTeam.count({ where: { seasonId: targetSeason.id } }),
       prisma.kalkSyncRun.findFirst({
-        where: { seasonId: activeSeason.id },
+        where: { seasonId: targetSeason.id },
         orderBy: { startedAt: 'desc' }
       }),
-      runKalkDataAudit({ seasonId: activeSeason.id })
+      runKalkDataAudit({ seasonId: targetSeason.id })
     ]);
 
   const leagueWithDetails = await prisma.leagueMatch.count({
     where: {
-      seasonId: activeSeason.id,
+      seasonId: targetSeason.id,
       kalkMatchId: { not: null }
     }
   });
 
   return {
-    seasonSlug: activeSeason.slug,
+    seasonSlug: targetSeason.slug,
+    seasonLabel: targetSeason.label,
     kalkMatches,
     finishedMatches,
     playerGameLogs,
@@ -1739,11 +1742,12 @@ export async function getKalkIngestSummary() {
 }
 
 /** Pełny raport audytu KALK (ADMIN). */
-export async function getKalkDataAuditReport() {
+export async function getKalkDataAuditReport(querySeasonId = undefined) {
   await ensureSeeded();
   await ensureDefaultSeason();
+  const targetSeasonId = await resolveSeasonId(querySeasonId);
   const { runKalkDataAudit } = await import('./kalk/kalkDataAudit.js');
-  return runKalkDataAudit();
+  return runKalkDataAudit({ seasonId: targetSeasonId });
 }
 
 // ============================================
