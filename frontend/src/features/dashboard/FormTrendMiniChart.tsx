@@ -13,7 +13,9 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
                     <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Aktualna Forma</span>
-                    <span className="text-bkpk-text-muted text-xs uppercase font-medium">Ostatnie {matches.length} meczów</span>
+                    <span className="text-bkpk-text-muted text-xs uppercase font-medium">
+                        {matches.length > 0 ? `Ostatnie ${matches.length} meczów` : 'Brak meczów'}
+                    </span>
                 </div>
 
                 <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
@@ -42,7 +44,9 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                     ))}
 
                     {matches.length === 0 && !loading && (
-                        <div className="py-4 text-bkpk-text-muted text-sm italic">Brak ostatnich meczów</div>
+                        <div className="py-2 text-bkpk-text-muted text-xs font-bold uppercase tracking-wider">
+                            Forma zespołu pojawi się po rozegraniu pierwszych meczów w sezonie.
+                        </div>
                     )}
                 </div>
             </div>

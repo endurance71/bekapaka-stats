@@ -95,7 +95,7 @@ export default function GameDetail() {
           <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </div>
-          <span className="font-bold uppercase tracking-wider text-xs">Powrót do Meczy</span>
+          <span className="font-bold uppercase tracking-wider text-xs">Powrót do meczów</span>
         </Link>
 
         {/* Immersive Scoreboard Header */}
