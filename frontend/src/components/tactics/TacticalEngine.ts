@@ -60,6 +60,7 @@ export interface PlayTimelineData {
     coachingCues?: string[];
   }>;
   coachingKeys?: string[];
+  outcomeText?: string;
 }
 
 export interface RenderedPlayerState {
