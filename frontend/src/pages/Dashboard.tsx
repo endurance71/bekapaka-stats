@@ -113,6 +113,8 @@ export default function Dashboard() {
       if (played.length > 0) {
         const full = await fetchJSON<any>(`/api/games/${played[0].id}`);
         setLastGameFull(full);
+      } else {
+        setLastGameFull(null);
       }
     } catch (error) {
       console.error('Błąd pobierania danych:', error);
