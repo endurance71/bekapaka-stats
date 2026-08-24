@@ -199,6 +199,7 @@ export default function BasketballCourtCanvas({
     const strokes: TacticalStroke[] = Array.isArray(raw.strokes) ? raw.strokes : [];
     const phaseDirectives = Array.isArray(raw.phaseDirectives) ? raw.phaseDirectives : [];
     const coachingKeys = Array.isArray(raw.coachingKeys) ? raw.coachingKeys : [];
+    const outcomeText = raw.outcomeText || undefined;
 
     return {
       duration,
@@ -206,7 +207,8 @@ export default function BasketballCourtCanvas({
       ball,
       strokes,
       phaseDirectives,
-      coachingKeys
+      coachingKeys,
+      outcomeText
     };
   }, [initialData]);
 
@@ -654,17 +656,15 @@ export default function BasketballCourtCanvas({
       // Efekt trafienia do kosza (Dopasowany do faktycznego rzutu +2 / +3 PKT)
       if (t >= 7.2) {
         // Określ czy rzut był za 2 czy za 3 punkty na podstawie pozycji wyjściowej strzelca
-        const shotKeyframe = timelineData.ball.keyframes.find((k) => k.isShot);
-        const prevKeyframe = timelineData.ball.keyframes[timelineData.ball.keyframes.length - 2];
+        const shotKeyframe = timelineData.ball?.keyframes?.find((k) => k.isShot);
+        const prevKeyframe = timelineData.ball?.keyframes?.[timelineData.ball.keyframes.length - 2];
         const shotX = shotKeyframe?.x ?? prevKeyframe?.x ?? 50;
         const shotY = shotKeyframe?.y ?? prevKeyframe?.y ?? 50;
+        const isThreePointer = Math.hypot(shotX - 50, shotY - 12.5) > 28 || shotY > 60;
 
-        const explicitOutcome = (timelineData as any).outcomeText;
-        const outcomeLabel = explicitOutcome
-          ? explicitOutcome
-          : isThreePointer
-            ? '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)'
-            : '✨ PUNKTY Z POMALOWANEGO (+2 PKT)';
+        const outcomeLabel = timelineData.outcomeText || (isThreePointer
+          ? '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)'
+          : '✨ PUNKTY Z POMALOWANEGO (+2 PKT)');
 
         // Pasek informacyjny z wynikiem na górze parkietu
         ctx.save();
