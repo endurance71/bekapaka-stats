@@ -21,7 +21,7 @@ export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) 
                     <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Bilans Sezonu</span>
                     <div className="flex items-baseline gap-2 mt-1">
                         <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
-                            {Math.round(winPercentage)}%
+                            {isNaN(winPercentage) || winPercentage <= 0 ? 0 : Math.round(winPercentage)}%
                         </h2>
                         <span className="text-bkpk-text-secondary text-sm font-bold uppercase tracking-tighter">Zwycięstw</span>
                     </div>

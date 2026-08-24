@@ -167,7 +167,11 @@ export default function Dashboard() {
       hero={
         <>
           <WinCard
-            winPercentage={recordStats.total > 0 ? (recordStats.wins / (recordStats.wins + recordStats.losses)) * 100 : 0}
+            winPercentage={
+              recordStats.wins + recordStats.losses > 0
+                ? (recordStats.wins / (recordStats.wins + recordStats.losses)) * 100
+                : 0
+            }
             wins={recordStats.wins}
             losses={recordStats.losses}
             loading={loading}

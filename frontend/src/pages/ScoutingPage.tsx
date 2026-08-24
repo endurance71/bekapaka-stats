@@ -17,6 +17,8 @@ import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
 import { usePortraitMobile } from '../hooks/useIsMobile';
 import { formatStatFixed } from '../shared/lib/formatStat';
 
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+
 interface KeyPlayerRow {
   name: string;
   matches: number;
@@ -32,6 +34,7 @@ export default function ScoutingPage() {
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
   const { user } = useAuth();
+  const { seasonId } = useSeasonPreferenceContext();
   const isAdmin = user?.role === 'ADMIN';
   const showPlayerCards = usePortraitMobile();
 
@@ -39,9 +42,11 @@ export default function ScoutingPage() {
     setLoading(true);
     try {
       const opponent = searchParams.get('opponent');
-      const res = await fetchJSON(
-        `/api/scouting/detailed${opponent ? `?opponent=${encodeURIComponent(opponent)}` : ''}`
-      );
+      const q = new URLSearchParams();
+      if (opponent) q.set('opponent', opponent);
+      if (seasonId) q.set('seasonId', seasonId);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      const res = await fetchJSON(`/api/scouting/detailed${queryStr}`);
       setData(res);
     } catch (err) {
       console.error(err);
@@ -52,16 +57,17 @@ export default function ScoutingPage() {
 
   useEffect(() => {
     loadScouting();
-  }, [searchParams]);
+  }, [searchParams, seasonId]);
 
   const handleGenerateScoutingAi = async (force = false) => {
     setAiLoading(true);
     try {
       const opponent = searchParams.get('opponent') || (data?.teamInfo as { opponent?: { name?: string } })?.opponent?.name;
-      await postJSON(
-        `/api/scouting/analyze${opponent ? `?opponent=${encodeURIComponent(opponent)}` : ''}`,
-        { force }
-      );
+      const q = new URLSearchParams();
+      if (opponent) q.set('opponent', opponent);
+      if (seasonId) q.set('seasonId', seasonId);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      await postJSON(`/api/scouting/analyze${queryStr}`, { force });
       await loadScouting();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Błąd generacji scoutingu AI';
