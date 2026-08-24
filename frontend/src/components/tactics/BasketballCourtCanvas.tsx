@@ -591,12 +591,32 @@ export default function BasketballCourtCanvas({
       ctx.lineTo(bx, airBy + ballRadius);
       ctx.stroke();
 
-      // Efekt trafienia do kosza (Swish)
+      // Efekt trafienia do kosza (Dopasowany do faktycznego rzutu +2 / +3 PKT)
       if (t >= 7.2 && t <= 8.5) {
+        // Określ czy rzut był za 2 czy za 3 punkty na podstawie pozycji wyjściowej strzelca
+        const shotKeyframe = timelineData.ball.keyframes.find((k) => k.isShot);
+        const prevKeyframe = timelineData.ball.keyframes[timelineData.ball.keyframes.length - 2];
+        const shotX = shotKeyframe?.x ?? prevKeyframe?.x ?? 50;
+        const shotY = shotKeyframe?.y ?? prevKeyframe?.y ?? 50;
+
+        const distToBasket = Math.hypot(shotX - 50, shotY - 12.5);
+        const isThreePointer = distToBasket > 38 || shotY > 52 || shotX < 15 || shotX > 85;
+
+        const explicitOutcome = (timelineData as any).outcomeText;
+        const outcomeLabel = explicitOutcome
+          ? explicitOutcome
+          : isThreePointer
+            ? '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)'
+            : '✨ PUNKTY Z POMALOWANEGO (+2 PKT)';
+
+        ctx.save();
         ctx.fillStyle = '#10B981';
-        ctx.font = '900 13px Outfit, sans-serif';
+        ctx.font = '900 12px Outfit, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('✨ SWISH! +3 PTS', px(50), py(6));
+        ctx.shadowColor = 'rgba(16, 185, 129, 0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(outcomeLabel, px(50), py(6));
+        ctx.restore();
       }
 
       ctx.restore();
