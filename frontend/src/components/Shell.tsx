@@ -15,6 +15,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  Target,
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
@@ -32,6 +33,7 @@ const allLinks = [
   { to: '/games', label: 'Mecze', icon: CalendarRange, public: true },
   { to: '/league', label: 'Liga KALK', icon: Trophy, public: true },
   { to: '/roster', label: 'Skład', icon: Users, public: true },
+  { to: '/tactics', label: 'Taktyka', icon: Target, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
   { to: '/ai', label: 'AI', icon: Bot, public: false, adminOnly: true },
   { to: '/profile', label: 'Mój Profil', icon: User, public: true },

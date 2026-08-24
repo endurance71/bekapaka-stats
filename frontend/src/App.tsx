@@ -22,6 +22,7 @@ const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
 const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 const AiCenterPage = lazy(() => import('./pages/AiCenterPage'));
+const TacticsHub = lazy(() => import('./pages/TacticsHub'));
 
 function PageLoader() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
                       <Route path="/league" element={<League />} />
                       <Route path="/scouting" element={<ScoutingPage />} />
                       <Route path="/roster" element={<Roster />} />
+                      <Route path="/tactics" element={<TacticsHub />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route path="/trends" element={<Trends />} />

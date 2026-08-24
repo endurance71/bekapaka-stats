@@ -75,6 +75,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prisma } from './lib/prisma.js';
 import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
+import { tacticsRouter } from './routes/tactics.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -88,6 +89,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
+app.use(['/api/tactics', '/tactics'], tacticsRouter);
 
 // Logging middleware
 app.use((req, res, next) => {
