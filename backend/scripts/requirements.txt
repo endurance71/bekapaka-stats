@@ -1,3 +1,4 @@
 requests
 beautifulsoup4
 scrapling
+curl_cffi
