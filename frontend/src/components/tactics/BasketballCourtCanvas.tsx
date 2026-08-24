@@ -599,9 +599,6 @@ export default function BasketballCourtCanvas({
         const shotX = shotKeyframe?.x ?? prevKeyframe?.x ?? 50;
         const shotY = shotKeyframe?.y ?? prevKeyframe?.y ?? 50;
 
-        const distToBasket = Math.hypot(shotX - 50, shotY - 12.5);
-        const isThreePointer = distToBasket > 38 || shotY > 52 || shotX < 15 || shotX > 85;
-
         const explicitOutcome = (timelineData as any).outcomeText;
         const outcomeLabel = explicitOutcome
           ? explicitOutcome
@@ -609,12 +606,34 @@ export default function BasketballCourtCanvas({
             ? '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)'
             : '✨ PUNKTY Z POMALOWANEGO (+2 PKT)';
 
+        // Pasek informacyjny z wynikiem na górze parkietu
         ctx.save();
-        ctx.fillStyle = '#10B981';
         ctx.font = '900 12px Outfit, sans-serif';
         ctx.textAlign = 'center';
-        ctx.shadowColor = 'rgba(16, 185, 129, 0.6)';
-        ctx.shadowBlur = 8;
+        ctx.textBaseline = 'middle';
+
+        const textMetrics = ctx.measureText(outcomeLabel);
+        const badgeW = textMetrics.width + 28;
+        const badgeH = 26;
+        const badgeX = px(50) - badgeW / 2;
+        const badgeY = py(6) - badgeH / 2;
+
+        // Tło kapsułki
+        ctx.fillStyle = 'rgba(10, 14, 23, 0.92)';
+        ctx.beginPath();
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 13);
+        ctx.fill();
+
+        // Obramowanie ze szmaragdowym blaskiem
+        ctx.strokeStyle = '#10B981';
+        ctx.lineWidth = 1.5;
+        ctx.shadowColor = 'rgba(16, 185, 129, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+
+        // Tekst
+        ctx.fillStyle = '#34D399';
+        ctx.shadowColor = 'transparent';
         ctx.fillText(outcomeLabel, px(50), py(6));
         ctx.restore();
       }
