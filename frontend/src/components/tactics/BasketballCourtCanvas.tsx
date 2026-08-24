@@ -251,7 +251,9 @@ export default function BasketballCourtCanvas({
 
       if (isPlayingRef.current) {
         timeRef.current += delta;
-        if (timeRef.current >= durationRef.current) {
+        // 2-sekundowa pauza po zakończeniu akcji (na obejrzenie trafienia i wyniku)
+        const totalDurationWithHold = durationRef.current + 2.0;
+        if (timeRef.current >= totalDurationWithHold) {
           if (isLoopRef.current) {
             timeRef.current = 0;
           } else {
@@ -261,10 +263,12 @@ export default function BasketballCourtCanvas({
         }
       }
 
-      const t = timeRef.current;
+      // Ogranicz czas przekazywany do renderera do maksimum duration dla płynności
+      const effectiveRenderTime = Math.min(timeRef.current, durationRef.current);
+      const t = effectiveRenderTime;
 
       if (now - lastTimeUpdateUiRef.current > 80) {
-        setActiveUiTime(t);
+        setActiveUiTime(effectiveRenderTime);
         lastTimeUpdateUiRef.current = now;
       }
 
@@ -592,7 +596,7 @@ export default function BasketballCourtCanvas({
       ctx.stroke();
 
       // Efekt trafienia do kosza (Dopasowany do faktycznego rzutu +2 / +3 PKT)
-      if (t >= 7.2 && t <= 8.5) {
+      if (t >= 7.2) {
         // Określ czy rzut był za 2 czy za 3 punkty na podstawie pozycji wyjściowej strzelca
         const shotKeyframe = timelineData.ball.keyframes.find((k) => k.isShot);
         const prevKeyframe = timelineData.ball.keyframes[timelineData.ball.keyframes.length - 2];
