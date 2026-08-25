@@ -3,6 +3,8 @@ import { formatVenue } from './venue'
 
 const DEFAULT_DURATION_MS = 2 * 60 * 60 * 1000
 
+export const ICS_FILENAME = 'bekapaka-wydarzenie.ics'
+
 export interface CalendarEventPayload {
   uid: string
   title: string
@@ -31,6 +33,19 @@ function resolveEndAt(startMs: number, endAtIso?: string): number {
     if (Number.isFinite(endMs) && endMs > startMs) return endMs
   }
   return startMs + DEFAULT_DURATION_MS
+}
+
+/** RFC 5545 — linie dłuższe niż 75 oktetów są łamane CRLF + spacja. */
+function foldIcsLine(line: string): string {
+  const max = 75
+  if (line.length <= max) return line
+  const parts = [line.slice(0, max)]
+  let rest = line.slice(max)
+  while (rest.length > 0) {
+    parts.push(` ${rest.slice(0, max - 1)}`)
+    rest = rest.slice(max - 1)
+  }
+  return parts.join('\r\n')
 }
 
 export function highlightToCalendarPayload(highlight: NearestHighlight): CalendarEventPayload | null {
@@ -62,13 +77,65 @@ export function highlightToCalendarPayload(highlight: NearestHighlight): Calenda
   }
 }
 
+const UID_RE = /^bekapaka-(kalk|event)-[^@\s]{1,80}@bekapaka\.pl$/
+const MAX_TEXT = {
+  title: 180,
+  description: 500,
+  location: 180
+} as const
+
+function clip(value: string, max: number): string {
+  return value.trim().slice(0, max)
+}
+
+export function calendarIcsHref(highlight: NearestHighlight): string | null {
+  const payload = highlightToCalendarPayload(highlight)
+  if (!payload) return null
+
+  const params = new URLSearchParams({
+    uid: payload.uid,
+    title: clip(payload.title, MAX_TEXT.title),
+    description: clip(payload.description, MAX_TEXT.description),
+    location: clip(payload.location, MAX_TEXT.location),
+    startAt: payload.startAt,
+    endAt: payload.endAt
+  })
+  return `/api/calendar?${params.toString()}`
+}
+
+export function parseCalendarPayloadFromSearchParams(
+  searchParams: URLSearchParams
+): CalendarEventPayload | null {
+  const uid = searchParams.get('uid')?.trim() || ''
+  const title = clip(searchParams.get('title') || '', MAX_TEXT.title)
+  const description = clip(searchParams.get('description') || '', MAX_TEXT.description)
+  const location = clip(searchParams.get('location') || '', MAX_TEXT.location)
+  const startAt = searchParams.get('startAt')?.trim() || ''
+  const endAt = searchParams.get('endAt')?.trim() || ''
+
+  if (!UID_RE.test(uid) || !title || !startAt || !endAt) return null
+
+  const startMs = new Date(startAt).getTime()
+  const endMs = new Date(endAt).getTime()
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null
+
+  return {
+    uid,
+    title,
+    description,
+    location: location || 'Bobolice',
+    startAt: new Date(startMs).toISOString(),
+    endAt: new Date(endMs).toISOString()
+  }
+}
+
 export function buildIcsDocument(payload: CalendarEventPayload): string {
   const start = toIcsUtc(new Date(payload.startAt))
   const end = toIcsUtc(new Date(payload.endAt))
   const stamp = toIcsUtc(new Date())
   if (!start || !end) return ''
 
-  return [
+  const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//BeKaPaKa Bobolice//PL',
@@ -84,76 +151,7 @@ export function buildIcsDocument(payload: CalendarEventPayload): string {
     `LOCATION:${escapeIcsText(payload.location)}`,
     'END:VEVENT',
     'END:VCALENDAR'
-  ].join('\r\n')
-}
+  ]
 
-const ICS_FILENAME = 'bekapaka-wydarzenie.ics'
-
-function isIosDevice(): boolean {
-  if (typeof navigator === 'undefined') return false
-  const ua = navigator.userAgent
-  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-}
-
-function isMobileDevice(): boolean {
-  if (typeof navigator === 'undefined') return false
-  return /Android|webOS|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
-}
-
-/** Safari / iOS — otwiera import w aplikacji Kalendarz (Apple). */
-function openAppleCalendarFromIcs(ics: string): void {
-  const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
-  window.location.assign(dataUrl)
-}
-
-async function shareIcsOnMobile(ics: string, payload: CalendarEventPayload): Promise<boolean> {
-  if (!isMobileDevice() || typeof navigator.share !== 'function') return false
-
-  const file = new File([ics], ICS_FILENAME, { type: 'text/calendar' })
-  if (navigator.canShare && !navigator.canShare({ files: [file] })) return false
-
-  try {
-    await navigator.share({
-      files: [file],
-      title: payload.title,
-      text: payload.description
-    })
-    return true
-  } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') return true
-    return false
-  }
-}
-
-function openIcsBlob(ics: string, forceDownload: boolean): void {
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement('a')
-  anchor.href = url
-  anchor.rel = 'noopener'
-  if (forceDownload) anchor.download = ICS_FILENAME
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
-/**
- * Jedna akcja „Dodaj do kalendarza”: iOS → Kalendarz Apple,
- * Android → udostępnienie pliku .ics (wybór aplikacji kalendarza),
- * desktop → pobranie .ics.
- */
-export async function addToCalendar(payload: CalendarEventPayload): Promise<void> {
-  const ics = buildIcsDocument(payload)
-  if (!ics) return
-
-  if (isIosDevice()) {
-    openAppleCalendarFromIcs(ics)
-    return
-  }
-
-  const shared = await shareIcsOnMobile(ics, payload)
-  if (shared) return
-
-  openIcsBlob(ics, !isMobileDevice())
+  return `${lines.map(foldIcsLine).join('\r\n')}\r\n`
 }
