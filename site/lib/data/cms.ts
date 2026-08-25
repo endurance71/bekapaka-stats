@@ -1,4 +1,5 @@
-import { cmsHeaders, cmsPath, fetchJsonState, hasCmsToken, toAbsoluteCmsUrl } from './client'
+import { cmsHeaders, cmsPath, fetchJsonState, toAbsoluteCmsUrl } from './client'
+import { resolveFallbackState } from './fallback'
 import {
   type DataState,
   documentSchema,
@@ -13,6 +14,7 @@ import {
 } from './schemas'
 import {
   excerptFromContent,
+  parseCollectionItems,
   resolveNewsSlug,
   sanitizeNumber,
   sanitizeText,
@@ -80,7 +82,7 @@ function sortNewsPostsByDate(items: NewsPost[]): NewsPost[] {
 }
 
 // ==========================================
-// FALLBACK DATA (CMS)
+// FALLBACK DATA (CMS) — only when SITE_ALLOW_FAKE_DATA=1
 // ==========================================
 
 const fallbackNews: NewsPost[] = [
@@ -197,39 +199,41 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
       cmsPath(
         `/api/news-posts?sort=publishedAtCustom:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
       ),
-      { headers: cmsHeaders(), revalidate: includeDrafts ? 0 : 300 }
+      {
+        headers: cmsHeaders(),
+        revalidate: includeDrafts ? 0 : 60,
+        tags: ['cms', 'cms-news']
+      }
     )
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackNews.slice(0, limit), source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackNews.slice(0, limit), [], response.message)
     }
 
-    const items = toNormalizedArray(response.payload)
-      .map((item, index) => {
-        const title = sanitizeText(item.title, 'Bez tytulu')
-        const content = sanitizeText(item.content, '')
-        const excerptRaw = sanitizeText(item.excerpt, sanitizeText(item.description, ''))
-        return {
-          id: sanitizeText(item.id, String(index)),
-          title,
-          slug: resolveNewsSlug(sanitizeText(item.slug, ''), title, index),
-          excerpt: excerptRaw || excerptFromContent(content),
-          content,
-          publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
-          coverImageUrl: mapMediaUrl(item.coverImage),
-          attachments: mapMediaAttachments(item.attachments)
-        }
-      })
-      .map((item) => newsPostSchema.parse(item))
-
+    const mapped = toNormalizedArray(response.payload).map((item, index) => {
+      const title = sanitizeText(item.title, 'Bez tytulu')
+      const content = sanitizeText(item.content, '')
+      const excerptRaw = sanitizeText(item.excerpt, sanitizeText(item.description, ''))
+      return {
+        id: sanitizeText(item.id, String(index)),
+        title,
+        slug: resolveNewsSlug(sanitizeText(item.slug, ''), title, index),
+        excerpt: excerptRaw || excerptFromContent(content),
+        content,
+        publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
+        coverImageUrl: mapMediaUrl(item.coverImage),
+        attachments: mapMediaAttachments(item.attachments)
+      }
+    })
+    const items = parseCollectionItems(mapped, newsPostSchema, 'news-post')
     const sorted = sortNewsPostsByDate(items)
 
     if (sorted.length === 0) {
-      return { status: 'empty', data: fallbackNews.slice(0, limit), source: 'fallback', message: 'Brak wpisów news w CMS.' }
+      return resolveFallbackState('empty', fallbackNews.slice(0, limit), [], 'Brak wpisów news w CMS.')
     }
 
     return stateFromArray(sorted)
   } catch {
-    return { status: 'error', data: fallbackNews.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać aktualności z CMS.' }
+    return resolveFallbackState('error', fallbackNews.slice(0, limit), [], 'Nie udało się pobrać aktualności z CMS.')
   }
 }
 
@@ -242,33 +246,32 @@ export async function getEventsState(limit = 6): Promise<DataState<EventItem[]>>
   try {
     const response = await fetchJsonState<unknown>(
       cmsPath(`/api/events?sort=startAt:asc&pagination[limit]=${limit}`),
-      { headers: cmsHeaders(), revalidate: 300 }
+      { headers: cmsHeaders(), revalidate: 60, tags: ['cms', 'cms-events'] }
     )
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackEvents.slice(0, limit), source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackEvents.slice(0, limit), [], response.message)
     }
 
-    const items = toNormalizedArray(response.payload)
-      .map((item, index) => ({
-        id: sanitizeText(item.id, String(index)),
-        title: sanitizeText(item.title, sanitizeText(item.name, 'Wydarzenie')),
-        slug: sanitizeText(item.slug, `event-${index}`),
-        type: sanitizeText(item.type, 'other'),
-        description: sanitizeText(item.description, ''),
-        location: sanitizeText(item.location, ''),
-        startAt: sanitizeText(item.startAt, ''),
-        endAt: sanitizeText(item.endAt, ''),
-        registrationUrl: sanitizeText(item.registrationUrl, '')
-      }))
-      .map((item) => eventSchema.parse(item))
+    const mapped = toNormalizedArray(response.payload).map((item, index) => ({
+      id: sanitizeText(item.id, String(index)),
+      title: sanitizeText(item.title, sanitizeText(item.name, 'Wydarzenie')),
+      slug: sanitizeText(item.slug, `event-${index}`),
+      type: sanitizeText(item.type, 'other'),
+      description: sanitizeText(item.description, ''),
+      location: sanitizeText(item.location, ''),
+      startAt: sanitizeText(item.startAt, ''),
+      endAt: sanitizeText(item.endAt, ''),
+      registrationUrl: sanitizeText(item.registrationUrl, '')
+    }))
+    const items = parseCollectionItems(mapped, eventSchema, 'event')
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackEvents.slice(0, limit), source: 'fallback', message: 'Brak wydarzeń w CMS.' }
+      return resolveFallbackState('empty', fallbackEvents.slice(0, limit), [], 'Brak wydarzeń w CMS.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackEvents.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać wydarzeń z CMS.' }
+    return resolveFallbackState('error', fallbackEvents.slice(0, limit), [], 'Nie udało się pobrać wydarzeń z CMS.')
   }
 }
 
@@ -281,30 +284,29 @@ export async function getDocumentsState(limit = 20): Promise<DataState<DocumentI
   try {
     const response = await fetchJsonState<unknown>(
       cmsPath(`/api/documents?sort=effectiveDate:desc&pagination[limit]=${limit}`),
-      { headers: cmsHeaders(), revalidate: 600 }
+      { headers: cmsHeaders(), revalidate: 600, tags: ['cms', 'cms-documents'] }
     )
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackDocuments.slice(0, limit), source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackDocuments.slice(0, limit), [], response.message)
     }
 
-    const items = toNormalizedArray(response.payload)
-      .map((item, index) => ({
-        id: sanitizeText(item.id, String(index)),
-        title: sanitizeText(item.title, 'Dokument'),
-        slug: sanitizeText(item.slug, `document-${index}`),
-        category: sanitizeText(item.category, 'other'),
-        effectiveDate: sanitizeText(item.effectiveDate, ''),
-        fileUrl: toAbsoluteCmsUrl(sanitizeText(item.fileUrl, ''))
-      }))
-      .map((item) => documentSchema.parse(item))
+    const mapped = toNormalizedArray(response.payload).map((item, index) => ({
+      id: sanitizeText(item.id, String(index)),
+      title: sanitizeText(item.title, 'Dokument'),
+      slug: sanitizeText(item.slug, `document-${index}`),
+      category: sanitizeText(item.category, 'other'),
+      effectiveDate: sanitizeText(item.effectiveDate, ''),
+      fileUrl: toAbsoluteCmsUrl(sanitizeText(item.fileUrl, ''))
+    }))
+    const items = parseCollectionItems(mapped, documentSchema, 'document')
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackDocuments.slice(0, limit), source: 'fallback', message: 'Brak dokumentów w CMS.' }
+      return resolveFallbackState('empty', fallbackDocuments.slice(0, limit), [], 'Brak dokumentów w CMS.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackDocuments.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać dokumentów z CMS.' }
+    return resolveFallbackState('error', fallbackDocuments.slice(0, limit), [], 'Nie udało się pobrać dokumentów z CMS.')
   }
 }
 
@@ -317,13 +319,13 @@ export async function getHomepageSectionsState(): Promise<DataState<HomepageSect
   try {
     const response = await fetchJsonState<unknown>(
       cmsPath('/api/homepage-sections?sort=order:asc&pagination[limit]=50'),
-      { headers: cmsHeaders(), revalidate: 300 }
+      { headers: cmsHeaders(), revalidate: 300, tags: ['cms', 'cms-homepage'] }
     )
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackHomepageSections, source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackHomepageSections, [], response.message)
     }
 
-    const items = toNormalizedArray(response.payload)
+    const mapped = toNormalizedArray(response.payload)
       .map((item, index) => ({
         id: sanitizeText(item.id, String(index)),
         key: sanitizeText(item.key, `section-${index}`),
@@ -334,14 +336,14 @@ export async function getHomepageSectionsState(): Promise<DataState<HomepageSect
         isEnabled: item.isEnabled !== false
       }))
       .filter((item) => item.isEnabled)
-      .map((item) => homepageSectionSchema.parse(item))
+    const items = parseCollectionItems(mapped, homepageSectionSchema, 'homepage-section')
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackHomepageSections, source: 'fallback', message: 'Brak sekcji homepage w CMS.' }
+      return resolveFallbackState('empty', fallbackHomepageSections, [], 'Brak sekcji homepage w CMS.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackHomepageSections, source: 'fallback', message: 'Nie udało się pobrać sekcji homepage z CMS.' }
+    return resolveFallbackState('error', fallbackHomepageSections, [], 'Nie udało się pobrać sekcji homepage z CMS.')
   }
 }

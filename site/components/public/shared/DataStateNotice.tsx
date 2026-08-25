@@ -11,19 +11,20 @@ export function DataStateNotice({
 }) {
   if (status === 'ok' && source === 'live') return null
 
-  if (status === 'error') {
+  if (source === 'fallback') {
     return (
-      <div className='data-state-notice data-state-notice--error' role='status' aria-live='polite'>
-        <strong>Uwaga:</strong> widzisz dane zastępcze, bo źródło danych jest chwilowo niedostępne.
+      <div className='data-state-notice data-state-notice--fallback' role='status' aria-live='polite'>
+        <strong>Informacja:</strong> wyświetlamy dane zastępcze — źródło live jest chwilowo niedostępne.
         {message ? <span> {message}</span> : null}
       </div>
     )
   }
 
-  if (source === 'fallback') {
+  if (status === 'error') {
     return (
-      <div className='data-state-notice data-state-notice--fallback' role='status' aria-live='polite'>
-        <strong>Informacja:</strong> wyświetlamy dane zastępcze — źródło live jest chwilowo niedostępne.
+      <div className='data-state-notice data-state-notice--error' role='status' aria-live='polite'>
+        <strong>Uwaga:</strong> nie udało się pobrać danych z źródła.
+        {message ? <span> {message}</span> : null}
       </div>
     )
   }
@@ -37,4 +38,8 @@ export function DataStateNotice({
   }
 
   return null
+}
+
+export function shouldShowHomeDataNotice(status: DataStateStatus, source: DataStateSource): boolean {
+  return status === 'error' || source === 'fallback'
 }

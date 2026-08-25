@@ -260,9 +260,22 @@
   overflow: hidden;
 }
 
+.data-state-notice--error {
+  border-color: rgba(230, 57, 70, 0.28);
+  background: rgba(230, 57, 70, 0.06);
+}
+
 .data-state-notice--fallback {
   border-color: rgba(236, 167, 44, 0.2);
   background: rgba(236, 167, 44, 0.02);
+}
+
+.dashboard-news > .data-state-notice,
+.dashboard-table > .data-state-notice,
+.dashboard-next--highlight > .next-event-data-notice {
+  position: relative;
+  z-index: 4;
+  margin: var(--space-3) var(--space-4) 0;
 }
 
 .notice-pulse {
@@ -437,7 +450,7 @@
   position: relative;
   z-index: 3;
   min-height: 100%;
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -471,13 +484,14 @@
 
 .next-event-hero__lower {
   position: relative;
-  flex: 0 0 var(--event-glass-height);
-  min-height: 0;
+  flex: 0 0 auto;
+  min-height: var(--event-glass-height);
+  overflow: visible;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4) var(--space-5) var(--space-5);
+  padding: var(--space-4) var(--space-5) var(--space-6);
   background: transparent;
   box-sizing: border-box;
 }
@@ -608,7 +622,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: 0;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .next-event-hero__calendar-btn {
@@ -663,7 +678,7 @@
     flex: 1 1 auto;
     width: 100%;
     min-height: 18.5rem;
-    height: 100%;
+    height: auto;
   }
 
   .next-event-hero__top {
@@ -710,13 +725,13 @@
   .next-event-hero__lower {
     position: relative;
     flex: 0 0 auto;
-    min-height: 0;
-    padding: var(--space-4) var(--space-4) var(--space-4);
+    min-height: var(--event-glass-height);
+    padding: var(--space-4) var(--space-4) var(--space-6);
     gap: var(--space-3);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow: hidden;
+    overflow: visible;
     background: transparent;
     box-sizing: border-box;
   }

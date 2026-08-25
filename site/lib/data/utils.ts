@@ -16,6 +16,24 @@ export function sanitizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+/** Parse collection items one-by-one so a single Zod failure does not drop the list. */
+export function parseCollectionItems<T>(
+  items: unknown[],
+  schema: { safeParse: (data: unknown) => { success: true; data: T } | { success: false; error: { issues: unknown[] } } },
+  label: string
+): T[] {
+  const parsed: T[] = []
+  for (const item of items) {
+    const result = schema.safeParse(item)
+    if (result.success) {
+      parsed.push(result.data)
+      continue
+    }
+    console.warn(`[site] Pominięto nieprawidłowy element (${label}).`, result.error.issues)
+  }
+  return parsed
+}
+
 export function toNormalizedArray(payload: unknown): Record<string, unknown>[] {
   const parsed = strapiCollectionSchema.safeParse(payload)
   if (!parsed.success) return []
