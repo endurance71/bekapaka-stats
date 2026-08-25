@@ -485,31 +485,20 @@ export default function BasketballCourtCanvas({
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // 2.5 WIZUALIZACJA STREF DEFENSYWNYCH (ZONE OVERLAYS)
+      // 3. OBLICZENIE POZYCJI ZAWODNIKÓW I PIŁKI W CHWILI t
+      const renderedPlayers = timelineData.players.map((p) => interpolatePlayer(p, t));
+      const playersMap = new Map<string, RenderedPlayerState>();
+      for (const rp of renderedPlayers) {
+        playersMap.set(rp.id, rp);
+      }
+      const renderedBall = interpolateBall(timelineData.ball, playersMap, t);
+
+      // 2.5 WYRAZISTA WIZUALIZACJA STREF DEFENSYWNYCH (ZONE OVERLAYS)
       if (showZonesRef.current && timelineData.zoneAreas && timelineData.zoneAreas.length > 0) {
         for (const zone of timelineData.zoneAreas) {
           if (!zone.polygon || zone.polygon.length < 3) continue;
 
-          ctx.save();
-          ctx.beginPath();
-          ctx.moveTo(px(zone.polygon[0].x), py(zone.polygon[0].y));
-          for (let i = 1; i < zone.polygon.length; i++) {
-            ctx.lineTo(px(zone.polygon[i].x), py(zone.polygon[i].y));
-          }
-          ctx.closePath();
-
-          // Subtelne wypełnienie kolorem strefy
-          ctx.fillStyle = zone.color || 'rgba(244, 63, 94, 0.08)';
-          ctx.fill();
-
-          // Przerywana neonowa granica strefy
-          ctx.strokeStyle = 'rgba(244, 63, 94, 0.35)';
-          ctx.lineWidth = 1.2;
-          ctx.setLineDash([5, 5]);
-          ctx.stroke();
-          ctx.setLineDash([]);
-
-          // Wyliczenie środka ciężkości (centroid) dla etykiety
+          // Wyliczenie środka ciężkości (centroid)
           let sumX = 0;
           let sumY = 0;
           for (const pt of zone.polygon) {
@@ -519,37 +508,71 @@ export default function BasketballCourtCanvas({
           const centX = px(sumX / zone.polygon.length);
           const centY = py(sumY / zone.polygon.length);
 
-          // Etykieta strefy
-          ctx.font = '800 9px Outfit, sans-serif';
+          const assignedPlayer = playersMap.get(zone.playerId);
+          const distToBall = Math.hypot(renderedBall.x - (sumX / zone.polygon.length), renderedBall.y - (sumY / zone.polygon.length));
+          const isBallInZone = distToBall < 26;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(px(zone.polygon[0].x), py(zone.polygon[0].y));
+          for (let i = 1; i < zone.polygon.length; i++) {
+            ctx.lineTo(px(zone.polygon[i].x), py(zone.polygon[i].y));
+          }
+          ctx.closePath();
+
+          // Wyraziste wypełnienie strefy
+          const baseColor = zone.color || 'rgba(244, 63, 94, 0.16)';
+          ctx.fillStyle = isBallInZone ? 'rgba(244, 63, 94, 0.28)' : baseColor;
+          ctx.fill();
+
+          // Wyrazista granica strefy
+          ctx.strokeStyle = isBallInZone ? '#F43F5E' : 'rgba(244, 63, 94, 0.7)';
+          ctx.lineWidth = isBallInZone ? 2.5 : 1.8;
+          ctx.setLineDash(isBallInZone ? [] : [6, 4]);
+          if (isBallInZone) {
+            ctx.shadowColor = 'rgba(244, 63, 94, 0.7)';
+            ctx.shadowBlur = 10;
+          }
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.shadowBlur = 0;
+
+          // Subtelna linia kotwicy łącząca obrońcę z centrum jego strefy
+          if (assignedPlayer) {
+            ctx.save();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(px(assignedPlayer.x), py(assignedPlayer.y));
+            ctx.lineTo(centX, centY);
+            ctx.stroke();
+            ctx.restore();
+          }
+
+          // Wyrazisty Badge Strefy
+          ctx.font = '900 10.5px Outfit, sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
 
           const textMetrics = ctx.measureText(zone.label);
-          const badgeW = textMetrics.width + 12;
-          const badgeH = 16;
+          const badgeW = textMetrics.width + 18;
+          const badgeH = 20;
 
-          ctx.fillStyle = 'rgba(10, 14, 23, 0.85)';
+          ctx.fillStyle = 'rgba(10, 14, 23, 0.94)';
           ctx.beginPath();
-          ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 5);
+          ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 6);
           ctx.fill();
 
-          ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
-          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = isBallInZone ? '#F43F5E' : 'rgba(244, 63, 94, 0.85)';
+          ctx.lineWidth = isBallInZone ? 1.8 : 1.2;
           ctx.stroke();
 
-          ctx.fillStyle = '#FDA4AF';
+          ctx.fillStyle = isBallInZone ? '#FECDD3' : '#FDA4AF';
           ctx.fillText(zone.label, centX, centY);
           ctx.restore();
         }
       }
-
-      // 3. OBLICZENIE POZYCJI ZAWODNIKÓW I PIŁKI W CHWILI t
-      const renderedPlayers = timelineData.players.map((p) => interpolatePlayer(p, t));
-      const playersMap = new Map<string, RenderedPlayerState>();
-      for (const rp of renderedPlayers) {
-        playersMap.set(rp.id, rp);
-      }
-      const renderedBall = interpolateBall(timelineData.ball, playersMap, t);
 
       // 4. SYMBOLE ZASŁON (T-Bar)
       for (const player of renderedPlayers) {
