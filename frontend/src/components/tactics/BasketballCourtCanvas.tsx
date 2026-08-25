@@ -200,6 +200,7 @@ export default function BasketballCourtCanvas({
     const phaseDirectives = Array.isArray(raw.phaseDirectives) ? raw.phaseDirectives : [];
     const coachingKeys = Array.isArray(raw.coachingKeys) ? raw.coachingKeys : [];
     const outcomeText = raw.outcomeText || undefined;
+    const zoneAreas = Array.isArray(raw.zoneAreas) ? raw.zoneAreas : [];
 
     return {
       duration,
@@ -208,7 +209,8 @@ export default function BasketballCourtCanvas({
       strokes,
       phaseDirectives,
       coachingKeys,
-      outcomeText
+      outcomeText,
+      zoneAreas
     };
   }, [initialData]);
 
@@ -217,18 +219,21 @@ export default function BasketballCourtCanvas({
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [speed, setSpeed] = useState<number>(1.0);
   const [isLoop, setIsLoop] = useState<boolean>(true);
+  const [showZones, setShowZones] = useState<boolean>(true);
   const [activeUiTime, setActiveUiTime] = useState<number>(0);
 
   const timeRef = useRef<number>(0);
   const isPlayingRef = useRef<boolean>(true);
   const speedRef = useRef<number>(1.0);
   const isLoopRef = useRef<boolean>(true);
+  const showZonesRef = useRef<boolean>(true);
   const durationRef = useRef<number>(duration);
   const lastTimeUpdateUiRef = useRef<number>(0);
   const prevPlayNameRef = useRef<string | null>(null);
 
   speedRef.current = speed;
   isLoopRef.current = isLoop;
+  showZonesRef.current = showZones;
   durationRef.current = duration;
 
   // Reset odtwarzacza tylko gdy użytkownik wybierze inny schemat taktyczny
@@ -479,6 +484,64 @@ export default function BasketballCourtCanvas({
       ctx.strokeStyle = lineWhite;
       ctx.lineWidth = 1.5;
       ctx.stroke();
+
+      // 2.5 WIZUALIZACJA STREF DEFENSYWNYCH (ZONE OVERLAYS)
+      if (showZonesRef.current && timelineData.zoneAreas && timelineData.zoneAreas.length > 0) {
+        for (const zone of timelineData.zoneAreas) {
+          if (!zone.polygon || zone.polygon.length < 3) continue;
+
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(px(zone.polygon[0].x), py(zone.polygon[0].y));
+          for (let i = 1; i < zone.polygon.length; i++) {
+            ctx.lineTo(px(zone.polygon[i].x), py(zone.polygon[i].y));
+          }
+          ctx.closePath();
+
+          // Subtelne wypełnienie kolorem strefy
+          ctx.fillStyle = zone.color || 'rgba(244, 63, 94, 0.08)';
+          ctx.fill();
+
+          // Przerywana neonowa granica strefy
+          ctx.strokeStyle = 'rgba(244, 63, 94, 0.35)';
+          ctx.lineWidth = 1.2;
+          ctx.setLineDash([5, 5]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+
+          // Wyliczenie środka ciężkości (centroid) dla etykiety
+          let sumX = 0;
+          let sumY = 0;
+          for (const pt of zone.polygon) {
+            sumX += pt.x;
+            sumY += pt.y;
+          }
+          const centX = px(sumX / zone.polygon.length);
+          const centY = py(sumY / zone.polygon.length);
+
+          // Etykieta strefy
+          ctx.font = '800 9px Outfit, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+
+          const textMetrics = ctx.measureText(zone.label);
+          const badgeW = textMetrics.width + 12;
+          const badgeH = 16;
+
+          ctx.fillStyle = 'rgba(10, 14, 23, 0.85)';
+          ctx.beginPath();
+          ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 5);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+
+          ctx.fillStyle = '#FDA4AF';
+          ctx.fillText(zone.label, centX, centY);
+          ctx.restore();
+        }
+      }
 
       // 3. OBLICZENIE POZYCJI ZAWODNIKÓW I PIŁKI W CHWILI t
       const renderedPlayers = timelineData.players.map((p) => interpolatePlayer(p, t));
@@ -744,6 +807,23 @@ export default function BasketballCourtCanvas({
           </div>
         </div>
 
+        {/* Przełącznik stref (jeśli schemat posiada zdefiniowane strefy) */}
+        {timelineData.zoneAreas && timelineData.zoneAreas.length > 0 && (
+          <button
+            onClick={() => setShowZones(!showZones)}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] border",
+              showZones
+                ? "bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm"
+                : "bg-bkpk-surface-tint-2 text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-subtle"
+            )}
+            title="Przełącz widoczność wyznaczonych stref defensywnych"
+          >
+            <Shield className="w-3.5 h-3.5" />
+            <span>Strefy: <strong className={showZones ? "text-rose-400" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
+          </button>
+        )}
+
         {/* Fazy Akcji */}
         {timelineData.phaseDirectives && timelineData.phaseDirectives.length > 0 && (
           <div className="flex items-center gap-1.5 bg-bkpk-surface-tint-2 p-1 rounded-xl border border-bkpk-border-subtle overflow-x-auto no-scrollbar">
@@ -796,6 +876,14 @@ export default function BasketballCourtCanvas({
           </span>
           <span>Obrońcy</span>
         </div>
+        {timelineData.zoneAreas && timelineData.zoneAreas.length > 0 && (
+          <div className="flex items-center gap-1.5 text-rose-400">
+            <span className="w-3.5 h-3.5 rounded border border-dashed border-rose-400 bg-rose-500/20 flex items-center justify-center text-[9px] font-mono">
+              ▨
+            </span>
+            <span>Strefy Odpowiedzialności</span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5 text-amber-400">
           <span className="font-black text-sm">⊥</span>
           <span>Zasłona (T-Bar)</span>
