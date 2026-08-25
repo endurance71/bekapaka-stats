@@ -8,11 +8,13 @@ import {
   Repeat,
   Target,
   Shield,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from 'lucide-react';
 import { cn } from '../../shared/lib/utils';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
+import ZoneDefenseGuideModal from './ZoneDefenseGuideModal';
 import {
   PlayTimelineData,
   PlayerTrack,
@@ -220,6 +222,7 @@ export default function BasketballCourtCanvas({
   const [speed, setSpeed] = useState<number>(1.0);
   const [isLoop, setIsLoop] = useState<boolean>(true);
   const [showZones, setShowZones] = useState<boolean>(true);
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
   const [activeUiTime, setActiveUiTime] = useState<number>(0);
 
   const timeRef = useRef<number>(0);
@@ -687,6 +690,63 @@ export default function BasketballCourtCanvas({
           : `D${player.number || 1}`;
 
         ctx.fillText(positionNumber, cx, cy + 0.5);
+
+        // 5.1 DYNAMICZNE ETYKIETY RÓL I STRZAŁKI PRZESUNIĘCIA DLA OBROŃCÓW (DLA NOWICJUSZY)
+        if (!isOffense) {
+          let roleTag = '';
+          const distToBall = Math.hypot(player.x - renderedBall.x, player.y - renderedBall.y);
+
+          if (player.action === 'dribble' || renderedBall.holderId === player.id) {
+            roleTag = 'PRZECHWYT';
+          } else if (distToBall < 15) {
+            if (renderedBall.y > 64) roleTag = 'ON-BALL PRESJA';
+            else if (renderedBall.y < 30) roleTag = 'ZAMKNIĘCIE ROGU';
+            else roleTag = 'CLOSEOUT';
+          } else if (player.id === 'D1') {
+            if (renderedBall.x > 62 || renderedBall.x < 38) roleTag = 'NAIL HELP';
+            else roleTag = 'SZCZYT 3PT';
+          } else if (player.id === 'D2') {
+            if (renderedBall.x < 38) roleTag = 'NAIL HELP';
+            else if (renderedBall.x > 65 && renderedBall.y > 45) roleTag = 'CLOSEOUT';
+            else roleTag = 'PRAWE SKRZYDŁO';
+          } else if (player.id === 'D3') {
+            if (renderedBall.x > 62) roleTag = 'WEAK-SIDE DROP';
+            else roleTag = 'LEWE SKRZYDŁO';
+          } else if (player.id === 'D4') {
+            if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ZAMKNIĘCIE ROGU';
+            else if (renderedBall.x < 38) roleTag = 'WEAK-SIDE DROP';
+            else roleTag = 'PRAWE SKRZYDŁO / DÓŁ';
+          } else if (player.id === 'D5') {
+            if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ODCIĘCIE LINII';
+            else if (renderedBall.x < 25 && renderedBall.y < 35) roleTag = 'ODCIĘCIE LINII';
+            else roleTag = 'OBRĘCZ & DESKA';
+          }
+
+          if (roleTag) {
+            ctx.save();
+            ctx.font = '800 8.5px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const tagMetrics = ctx.measureText(roleTag);
+            const tagW = tagMetrics.width + 10;
+            const tagH = 14;
+            const tagY = cy - tokenRadius - 9;
+
+            ctx.fillStyle = 'rgba(10, 14, 23, 0.92)';
+            ctx.beginPath();
+            ctx.roundRect(cx - tagW / 2, tagY - tagH / 2, tagW, tagH, 4);
+            ctx.fill();
+
+            ctx.strokeStyle = distToBall < 15 ? '#F43F5E' : 'rgba(244, 63, 94, 0.6)';
+            ctx.lineWidth = distToBall < 15 ? 1.2 : 0.8;
+            ctx.stroke();
+
+            ctx.fillStyle = distToBall < 15 ? '#FDA4AF' : '#FECDD3';
+            ctx.fillText(roleTag, cx, tagY);
+            ctx.restore();
+          }
+        }
       }
 
       // 6. RYSOWANIE PIŁKI (2.5D z wysokością łuku)
@@ -830,22 +890,34 @@ export default function BasketballCourtCanvas({
           </div>
         </div>
 
-        {/* Przełącznik stref (jeśli schemat posiada zdefiniowane strefy) */}
-        {timelineData.zoneAreas && timelineData.zoneAreas.length > 0 && (
+        <div className="flex items-center gap-2">
+          {/* Przycisk Podręcznika Zasad Strefy */}
           <button
-            onClick={() => setShowZones(!showZones)}
-            className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] border",
-              showZones
-                ? "bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm"
-                : "bg-bkpk-surface-tint-2 text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-subtle"
-            )}
-            title="Przełącz widoczność wyznaczonych stref defensywnych"
+            onClick={() => setIsGuideOpen(true)}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-1 text-bkpk-primary border border-bkpk-primary/40 shadow-sm"
+            title="Otwórz Podręcznik Taktyczny: Jak poruszać się po strefie"
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Strefy: <strong className={showZones ? "text-rose-400" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Poradnik Strefowy</span>
           </button>
-        )}
+
+          {/* Przełącznik stref (jeśli schemat posiada zdefiniowane strefy) */}
+          {timelineData.zoneAreas && timelineData.zoneAreas.length > 0 && (
+            <button
+              onClick={() => setShowZones(!showZones)}
+              className={cn(
+                "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] border",
+                showZones
+                  ? "bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm"
+                  : "bg-bkpk-surface-tint-2 text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-subtle"
+              )}
+              title="Przełącz widoczność wyznaczonych stref defensywnych"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>Strefy: <strong className={showZones ? "text-rose-400" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
+            </button>
+          )}
+        </div>
 
         {/* Fazy Akcji */}
         {timelineData.phaseDirectives && timelineData.phaseDirectives.length > 0 && (
@@ -1050,6 +1122,13 @@ export default function BasketballCourtCanvas({
           </div>
         </BkpkCard>
       )}
+
+      {/* Interaktywny Podręcznik Taktyczny Zasad Poruszania się po Strefie */}
+      <ZoneDefenseGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        initialZoneType={playName?.includes('3-2') ? '3-2' : '2-3'}
+      />
     </div>
   );
 }
