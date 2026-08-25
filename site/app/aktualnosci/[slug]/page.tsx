@@ -6,6 +6,7 @@ import { EditorialDetailTemplate } from '../../../components/public/templates/Ed
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { slugifyTitle } from '../../../lib/data/utils'
 import { formatDateTime } from '../../../lib/format'
+import { draftMode } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,8 @@ function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
 }
 
 async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
-  const items = await getNewsPosts(200)
+  const { isEnabled } = await draftMode()
+  const items = await getNewsPosts(200, { includeDrafts: isEnabled })
   return items.find((item) => matchesNewsSlug(item, slug)) || null
 }
 

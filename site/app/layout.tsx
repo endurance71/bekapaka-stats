@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Montserrat, Bebas_Neue } from 'next/font/google'
 import './globals.css'
 import { PublicShell } from '../components/public/layout/PublicShell'
-import { PreviewBanner } from '../components/public/layout/PreviewBanner'
 import { getSiteMetadataBase } from '../lib/data'
 
 const montserrat = Montserrat({
@@ -57,7 +56,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='pl' className={`${montserrat.variable} ${bebasNeue.variable}`}>
       <body className='site-body'>
-        <PreviewBanner />
         <PublicShell logoUrl='/logo.png'>{children}</PublicShell>
       </body>
     </html>

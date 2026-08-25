@@ -1,5 +1,4 @@
 import { cmsHeaders, cmsPath, fetchJsonState, hasCmsToken, toAbsoluteCmsUrl } from './client'
-import { draftMode } from 'next/headers'
 import {
   type DataState,
   documentSchema,
@@ -185,29 +184,20 @@ const fallbackHomepageSections: HomepageSection[] = [
 // FETCHING FUNCTIONS
 // ==========================================
 
-async function isCmsDraftPreview(): Promise<boolean> {
-  try {
-    const { isEnabled } = await draftMode()
-    return isEnabled
-  } catch {
-    return false
-  }
-}
-
-export async function getNewsPosts(limit = 6): Promise<NewsPost[]> {
-  const state = await getNewsPostsState(limit)
+export async function getNewsPosts(limit = 6, options?: { includeDrafts?: boolean }): Promise<NewsPost[]> {
+  const state = await getNewsPostsState(limit, options)
   return state.data
 }
 
-export async function getNewsPostsState(limit = 6): Promise<DataState<NewsPost[]>> {
+export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: boolean }): Promise<DataState<NewsPost[]>> {
   try {
-    const draftPreview = await isCmsDraftPreview()
-    const statusQuery = draftPreview ? '&status=draft' : ''
+    const includeDrafts = Boolean(options?.includeDrafts)
+    const statusQuery = includeDrafts ? '&status=draft' : ''
     const response = await fetchJsonState<unknown>(
       cmsPath(
         `/api/news-posts?sort=publishedAtCustom:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
       ),
-      { headers: cmsHeaders(), revalidate: draftPreview ? 0 : 300 }
+      { headers: cmsHeaders(), revalidate: includeDrafts ? 0 : 300 }
     )
     if (response.status === 'error') {
       return { status: 'error', data: fallbackNews.slice(0, limit), source: 'fallback', message: response.message }
