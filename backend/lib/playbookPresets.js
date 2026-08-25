@@ -1621,5 +1621,472 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         ]
       }
     }
+  },
+
+  // =========================================================================
+  // 9. NOWOŚĆ EDUKACYJNA: TRENING STREFY 2-3: ZASADY PRZESUNIĘĆ (SWING DRILL)
+  // =========================================================================
+  {
+    name: 'Trening Strefy 2-3: Zasady Przesunięć (Swing Drill)',
+    category: 'defense',
+    targetDefense: 'Edukacyjny Drill dla Zespołu i Nowicjuszy',
+    description: 'Instruktażowy trening obrony strefowej 2-3. Pokazuje krok po kroku ruch każdego z 5 obrońców (D1-D5) przy krążeniu piłki wokół całego obwodu (Lewe Skrzydło -> Szczyt -> Prawe Skrzydło -> Prawy Róg -> Środek). Idealny do nauki zasad Ball-You-Man i Nail Help.',
+    tags: ['Trening Strefy', 'Strefa 2-3', 'Drill Edukacyjny', 'Przesunięcia', 'Podręcznik'],
+    diagramData: {
+      duration: 8.5,
+      outcomeText: '🛡️ TRENING STREFY 2-3: ZAKOŃCZONY SUKCESEM • ZASADY OPANOWANE',
+      zoneAreas: [
+        {
+          id: 'Z_D1',
+          playerId: 'D1',
+          label: 'D1: Szczyt Lewy',
+          color: 'rgba(59, 130, 246, 0.16)',
+          polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
+        },
+        {
+          id: 'Z_D2',
+          playerId: 'D2',
+          label: 'D2: Szczyt Prawy',
+          color: 'rgba(14, 165, 233, 0.16)',
+          polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
+        },
+        {
+          id: 'Z_D3',
+          playerId: 'D3',
+          label: 'D3: Lewy Róg & Skrzydło',
+          color: 'rgba(244, 63, 94, 0.16)',
+          polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
+        },
+        {
+          id: 'Z_D4',
+          playerId: 'D4',
+          label: 'D4: Prawy Róg & Skrzydło',
+          color: 'rgba(236, 72, 153, 0.16)',
+          polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
+        },
+        {
+          id: 'Z_D5',
+          playerId: 'D5',
+          label: 'D5: Pomalowane & Deska',
+          color: 'rgba(168, 85, 247, 0.20)',
+          polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
+        }
+      ],
+      coachingKeys: [
+        'Zasada 1: Piłka dyktuje przesunięcie całej formacji (Ball-You-Man)',
+        'Zasada 2: Gdy D1 jest na piłce, D2 zbiega na Nail (środek linii rzutów wolnych)',
+        'Zasada 3: Dolna linia (D3, D4) podbija w skrzydło lub doskakuje do rogu bez skakania w przód',
+        'Zasada 4: Center D5 odcina linię końcową i zamyka wjazdy'
+      ],
+      phaseDirectives: [
+        {
+          startTime: 0.0,
+          endTime: 2.0,
+          title: 'Krok 1: Piłka na Lewym Skrzydle (Zagęszczenie Lewej Strony)',
+          description: 'O3 ma piłkę. D1 doskakuje na lewy szczyt, D3 zabezpiecza skrzydło, D2 schodzi na Nail (środek wolnych), D5 kontroluje lewy blok, D4 w weak-side drop.',
+          coachingCues: ['D2 na Nail zamyka środek', 'Zasada Ball-You-Man']
+        },
+        {
+          startTime: 2.0,
+          endTime: 4.2,
+          title: 'Krok 2: Swing Pass na Szczyt (O1) i Prawe Skrzydło (O2)',
+          description: 'Piłka wędruje przez szczyt do O2. Cała piątka wykonuje zgrany slide w prawo! D2 doskakuje, D1 na Nail, D4 podchodzi wyżej, D5 na prawy blok, D3 pod kosz.',
+          coachingCues: ['Błyskawiczny slide całej formacji', 'Brak dziury w środku']
+        },
+        {
+          startTime: 4.2,
+          endTime: 6.2,
+          title: 'Krok 3: Podanie w Prawy Róg do O4 & Zamknięcie Rogu',
+          description: 'O4 w rogu: D4 zamyka róg z rękami w górze, D5 odcina linię końcową, D2 opada na prawy łokieć trumny, D1 i D3 chronią pomalowane.',
+          coachingCues: ['Podwójne ryglowanie rogu', 'Ręce w górze bez faulu']
+        },
+        {
+          startTime: 6.2,
+          endTime: 8.5,
+          title: 'Krok 4: Wymuszone Złe Podanie & Zbiórka D5',
+          description: 'Wszystkie opcje odcięte! O4 próbuje desperackiego podania, D5 przejmuje piłkę i zabezpiecza posiadanie.',
+          coachingCues: ['Czyste przejęcie', 'Zbiórka defensywna']
+        }
+      ],
+      players: [
+        // Atak
+        {
+          id: 'O1',
+          number: 1,
+          name: '1 (PG)',
+          role: 'PG',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 50, y: 80, heading: 270, action: 'idle' },
+            { time: 2.2, x: 50, y: 80, heading: 270, action: 'catch' },
+            { time: 3.2, x: 50, y: 80, heading: 90, action: 'idle' },
+            { time: 8.5, x: 50, y: 80, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O2',
+          number: 2,
+          name: '2 (SG)',
+          role: 'SG',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 82, y: 64, heading: 270, action: 'idle' },
+            { time: 3.8, x: 82, y: 64, heading: 270, action: 'catch' },
+            { time: 4.8, x: 82, y: 64, heading: 180, action: 'idle' },
+            { time: 8.5, x: 80, y: 62, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O3',
+          number: 3,
+          name: '3 (SF)',
+          role: 'SF',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 18, y: 64, heading: 90, action: 'dribble' },
+            { time: 1.6, x: 18, y: 64, heading: 90, action: 'idle' },
+            { time: 8.5, x: 18, y: 60, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O4',
+          number: 4,
+          name: '4 (PF)',
+          role: 'PF',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 90, y: 20, heading: 270, action: 'idle' },
+            { time: 5.2, x: 90, y: 16, heading: 270, action: 'catch' },
+            { time: 6.2, x: 90, y: 16, heading: 220, action: 'idle' },
+            { time: 8.5, x: 90, y: 16, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O5',
+          number: 5,
+          name: '5 (C)',
+          role: 'C',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 42, y: 34, heading: 90, action: 'idle' },
+            { time: 4.5, x: 56, y: 28, heading: 90, action: 'cut' },
+            { time: 8.5, x: 54, y: 24, heading: 0, action: 'idle' }
+          ]
+        },
+        // Obrońcy
+        {
+          id: 'D1',
+          number: 1,
+          name: 'D1',
+          role: 'PG',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 34, y: 66, heading: 270, action: 'defend' },
+            { time: 2.2, x: 46, y: 72, heading: 180, action: 'defend' },
+            { time: 4.0, x: 50, y: 58, heading: 120, action: 'defend' },
+            { time: 8.5, x: 48, y: 52, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D2',
+          number: 2,
+          name: 'D2',
+          role: 'SG',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 54, y: 62, heading: 240, action: 'defend' },
+            { time: 2.2, x: 62, y: 68, heading: 180, action: 'defend' },
+            { time: 4.0, x: 76, y: 62, heading: 90, action: 'defend' },
+            { time: 5.5, x: 68, y: 46, heading: 140, action: 'defend' },
+            { time: 8.5, x: 68, y: 46, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D3',
+          number: 3,
+          name: 'D3',
+          role: 'SF',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 22, y: 52, heading: 270, action: 'defend' },
+            { time: 3.5, x: 30, y: 32, heading: 90, action: 'defend' },
+            { time: 5.5, x: 36, y: 20, heading: 90, action: 'defend' },
+            { time: 8.5, x: 36, y: 20, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D4',
+          number: 4,
+          name: 'D4',
+          role: 'PF',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 68, y: 22, heading: 270, action: 'defend' },
+            { time: 3.5, x: 80, y: 44, heading: 90, action: 'defend' },
+            { time: 5.5, x: 88, y: 20, heading: 90, action: 'defend' },
+            { time: 8.5, x: 88, y: 20, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D5',
+          number: 5,
+          name: 'D5',
+          role: 'C',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 44, y: 24, heading: 270, action: 'defend' },
+            { time: 3.5, x: 52, y: 24, heading: 180, action: 'defend' },
+            { time: 5.5, x: 62, y: 18, heading: 90, action: 'defend' },
+            { time: 6.8, x: 56, y: 24, heading: 45, action: 'defend' },
+            { time: 8.5, x: 50, y: 34, heading: 0, action: 'dribble' }
+          ]
+        }
+      ],
+      ball: {
+        keyframes: [
+          { time: 0.0, x: 18, y: 64, holderId: 'O3' },
+          { time: 1.6, x: 18, y: 64, holderId: 'O3' },
+          { time: 2.2, x: 50, y: 80, holderId: 'O1', isPass: true, arcHeight: 0.2 },
+          { time: 3.2, x: 50, y: 80, holderId: 'O1' },
+          { time: 3.8, x: 82, y: 64, holderId: 'O2', isPass: true, arcHeight: 0.2 },
+          { time: 4.8, x: 82, y: 64, holderId: 'O2' },
+          { time: 5.2, x: 90, y: 16, holderId: 'O4', isPass: true, arcHeight: 0.2 },
+          { time: 6.2, x: 90, y: 16, holderId: 'O4' },
+          { time: 6.8, x: 56, y: 24, holderId: 'D5', isPass: true, arcHeight: 0.15 },
+          { time: 8.5, x: 50, y: 34, holderId: 'D5' }
+        ]
+      }
+    }
+  },
+
+  // =========================================================================
+  // 10. NOWOŚĆ EDUKACYJNA: TRENING STREFY 3-2: MUR OBWODOWY (PERIMETER WALL DRILL)
+  // =========================================================================
+  {
+    name: 'Trening Strefy 3-2: Mur Obwodowy (Perimeter Wall Drill)',
+    category: 'defense',
+    targetDefense: 'Edukacyjny Drill dla Zespołu i Nowicjuszy',
+    description: 'Instruktażowy trening obrony strefowej 3-2. Demonstruje zasadę nieprzeniknionego muru obwodowego (D1-D2-D3) oraz rotacje dolnych graczy (D4-D5) przy przerzutach piłki na obwodzie i podaniach w rogi boiska.',
+    tags: ['Trening Strefy', 'Strefa 3-2', 'Drill Edukacyjny', 'Mur Obwodowy', 'Podręcznik'],
+    diagramData: {
+      duration: 8.5,
+      outcomeText: '🛡️ TRENING STREFY 3-2: ZAKOŃCZONY SUKCESEM • OBWÓD ZABLOKOWANY',
+      zoneAreas: [
+        {
+          id: 'Z_D1',
+          playerId: 'D1',
+          label: 'D1: Szczyt 3PT',
+          color: 'rgba(59, 130, 246, 0.18)',
+          polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
+        },
+        {
+          id: 'Z_D2',
+          playerId: 'D2',
+          label: 'D2: Prawe Skrzydło 3PT',
+          color: 'rgba(14, 165, 233, 0.18)',
+          polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
+        },
+        {
+          id: 'Z_D3',
+          playerId: 'D3',
+          label: 'D3: Lewe Skrzydło 3PT',
+          color: 'rgba(16, 185, 129, 0.18)',
+          polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
+        },
+        {
+          id: 'D4',
+          playerId: 'D4',
+          label: 'D4: Prawy Dół & Róg',
+          color: 'rgba(245, 158, 11, 0.18)',
+          polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
+        },
+        {
+          id: 'D5',
+          playerId: 'D5',
+          label: 'D5: Lewy Dół & Róg',
+          color: 'rgba(239, 68, 68, 0.18)',
+          polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
+        }
+      ],
+      coachingKeys: [
+        'Zasada 1: Trójka obwodowa (D1, D2, D3) nie pozwala na czyste zgięcie nóg do rzutu za 3',
+        'Zasada 2: Przy podaniu na skrzydło, D2 doskakuje, a D1 schodzi na łokieć',
+        'Zasada 3: Dolni wysocy (D4, D5) rotują pod koszem i przejmują narożniki boiska',
+        'Zasada 4: Wszyscy gracze zbiegają do walki o zbiórkę'
+      ],
+      phaseDirectives: [
+        {
+          startTime: 0.0,
+          endTime: 2.0,
+          title: 'Krok 1: Wyjściowy Mur na Łuku 3PT (Piłka u O3 na Lewym Skrzydle)',
+          description: 'O3 z piłką: D3 doskakuje na obwód z ręką w górze, D1 asekuruje lewy łokieć, D2 kontroluje środek, D5 pilnuje dołu.',
+          coachingCues: ['Wysokie ręce na obwodzie', 'Ciasny rozstaw trójki']
+        },
+        {
+          startTime: 2.0,
+          endTime: 4.2,
+          title: 'Krok 2: Przerzut przez Szczyt (O1) na Prawe Skrzydło (O2)',
+          description: 'O3 odgrywa do O1, a O1 natychmiast posyła piłkę do O2. D1 doskakuje na szczycie, a po podaniu D2 sprintuje w closeoucie do O2!',
+          coachingCues: ['Szybka rotacja górnej trójki', 'Brak miejsca na rzut']
+        },
+        {
+          startTime: 4.2,
+          endTime: 6.2,
+          title: 'Krok 3: Wymuszona Próba Rzutu za 3 i Blok D2',
+          description: 'O2 próbuje rzutu przez ręce. D2 wyskakuje pionowo w górę i blokuje rzut czubkami palców!',
+          coachingCues: ['Wyskok pionowy bez faulu', 'Czysty blok']
+        },
+        {
+          startTime: 6.2,
+          endTime: 8.5,
+          title: 'Krok 4: Zabezpieczenie Zbiórki przez D4 i D5',
+          description: 'Zablokowana piłka spada w trumnę — D4 i D5 odcinają atakujących i pewnie zbierają piłkę.',
+          coachingCues: ['Pewny chwyt oburącz', 'Zbiórka defensywna']
+        }
+      ],
+      players: [
+        // Atak
+        {
+          id: 'O1',
+          number: 1,
+          name: '1 (PG)',
+          role: 'PG',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 50, y: 82, heading: 270, action: 'idle' },
+            { time: 2.2, x: 50, y: 82, heading: 270, action: 'catch' },
+            { time: 3.8, x: 50, y: 82, heading: 90, action: 'idle' },
+            { time: 8.5, x: 50, y: 80, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O2',
+          number: 2,
+          name: '2 (SG)',
+          role: 'SG',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 80, y: 64, heading: 270, action: 'idle' },
+            { time: 4.5, x: 82, y: 62, heading: 270, action: 'catch' },
+            { time: 6.2, x: 82, y: 62, heading: 0, action: 'shoot' },
+            { time: 8.5, x: 82, y: 62, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O3',
+          number: 3,
+          name: '3 (SF)',
+          role: 'SF',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 20, y: 64, heading: 90, action: 'dribble' },
+            { time: 1.6, x: 20, y: 64, heading: 90, action: 'idle' },
+            { time: 8.5, x: 18, y: 62, heading: 0, action: 'idle' }
+          ]
+        },
+        {
+          id: 'O4',
+          number: 4,
+          name: '4 (PF)',
+          role: 'PF',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 84, y: 22, heading: 0, action: 'idle' },
+            { time: 8.5, x: 74, y: 16, heading: 0, action: 'cut' }
+          ]
+        },
+        {
+          id: 'O5',
+          number: 5,
+          name: '5 (C)',
+          role: 'C',
+          isOffense: true,
+          keyframes: [
+            { time: 0.0, x: 16, y: 22, heading: 0, action: 'idle' },
+            { time: 8.5, x: 26, y: 16, heading: 0, action: 'cut' }
+          ]
+        },
+        // Obrońcy
+        {
+          id: 'D1',
+          number: 1,
+          name: 'D1',
+          role: 'PG',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 38, y: 68, heading: 240, action: 'defend' },
+            { time: 2.2, x: 50, y: 75, heading: 180, action: 'defend' },
+            { time: 4.5, x: 62, y: 70, heading: 120, action: 'defend' },
+            { time: 8.5, x: 56, y: 68, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D2',
+          number: 2,
+          name: 'D2',
+          role: 'SG',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 62, y: 56, heading: 240, action: 'defend' },
+            { time: 2.2, x: 72, y: 66, heading: 180, action: 'defend' },
+            { time: 4.5, x: 76, y: 60, heading: 90, action: 'defend' },
+            { time: 6.4, x: 78, y: 60, heading: 90, action: 'defend' },
+            { time: 8.5, x: 76, y: 58, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D3',
+          number: 3,
+          name: 'D3',
+          role: 'SF',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 22, y: 60, heading: 270, action: 'defend' },
+            { time: 2.2, x: 28, y: 66, heading: 180, action: 'defend' },
+            { time: 4.5, x: 38, y: 58, heading: 140, action: 'defend' },
+            { time: 8.5, x: 36, y: 50, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D4',
+          number: 4,
+          name: 'D4',
+          role: 'PF',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 58, y: 22, heading: 270, action: 'defend' },
+            { time: 4.5, x: 68, y: 24, heading: 90, action: 'defend' },
+            { time: 7.0, x: 58, y: 20, heading: 0, action: 'defend' },
+            { time: 8.5, x: 54, y: 16, heading: 0, action: 'defend' }
+          ]
+        },
+        {
+          id: 'D5',
+          number: 5,
+          name: 'D5',
+          role: 'C',
+          isOffense: false,
+          keyframes: [
+            { time: 0.0, x: 30, y: 24, heading: 270, action: 'defend' },
+            { time: 2.2, x: 36, y: 26, heading: 180, action: 'defend' },
+            { time: 4.5, x: 46, y: 20, heading: 90, action: 'defend' },
+            { time: 8.5, x: 46, y: 16, heading: 0, action: 'defend' }
+          ]
+        }
+      ],
+      ball: {
+        keyframes: [
+          { time: 0.0, x: 20, y: 64, holderId: 'O3' },
+          { time: 1.6, x: 20, y: 64, holderId: 'O3' },
+          { time: 2.2, x: 50, y: 82, holderId: 'O1', isPass: true, arcHeight: 0.2 },
+          { time: 3.8, x: 50, y: 82, holderId: 'O1' },
+          { time: 4.5, x: 82, y: 62, holderId: 'O2', isPass: true, arcHeight: 0.25 },
+          { time: 6.2, x: 82, y: 62, holderId: 'O2' },
+          { time: 6.4, x: 78, y: 60, holderId: null, isShot: true, arcHeight: 0.2 },
+          { time: 7.4, x: 58, y: 22, holderId: null, isPass: true, arcHeight: 0.4 },
+          { time: 8.5, x: 54, y: 16, holderId: 'D4' }
+        ]
+      }
+    }
   }
 ];

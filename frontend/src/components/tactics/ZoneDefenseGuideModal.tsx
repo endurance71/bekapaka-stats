@@ -11,7 +11,8 @@ import {
   Layers,
   Zap,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Play
 } from 'lucide-react';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
@@ -23,6 +24,102 @@ interface ZoneDefenseGuideModalProps {
   initialZoneType?: '2-3' | '3-2';
 }
 
+interface DefenderState {
+  id: string;
+  x: number;
+  y: number;
+  baseX: number;
+  baseY: number;
+  role: string;
+  color: string;
+}
+
+const SCENARIO_CONFIGS_2_3: Record<string, { ball: { x: number; y: number }; defenders: DefenderState[] }> = {
+  top: {
+    ball: { x: 50, y: 80 },
+    defenders: [
+      { id: 'D1', x: 44, y: 72, baseX: 30, baseY: 70, role: 'ON-BALL', color: '#3B82F6' },
+      { id: 'D2', x: 56, y: 62, baseX: 70, baseY: 70, role: 'NAIL HELP', color: '#0EA5E9' },
+      { id: 'D3', x: 22, y: 32, baseX: 20, baseY: 25, role: 'LEWY BLOK', color: '#F43F5E' },
+      { id: 'D4', x: 78, y: 32, baseX: 80, baseY: 25, role: 'PRAWY BLOK', color: '#EC4899' },
+      { id: 'D5', x: 50, y: 24, baseX: 50, baseY: 25, role: 'OBRĘCZ & DESKA', color: '#A855F7' }
+    ]
+  },
+  wing: {
+    ball: { x: 82, y: 64 },
+    defenders: [
+      { id: 'D1', x: 50, y: 58, baseX: 30, baseY: 70, role: 'NAIL HELP', color: '#3B82F6' },
+      { id: 'D2', x: 76, y: 62, baseX: 70, baseY: 70, role: 'CLOSEOUT SKRZYDŁO', color: '#0EA5E9' },
+      { id: 'D3', x: 34, y: 20, baseX: 20, baseY: 25, role: 'WEAK-SIDE DROP', color: '#F43F5E' },
+      { id: 'D4', x: 80, y: 44, baseX: 80, baseY: 25, role: 'PODBICIE W SKRZYDŁO', color: '#EC4899' },
+      { id: 'D5', x: 60, y: 22, baseX: 50, baseY: 25, role: 'PRAWY BLOK', color: '#A855F7' }
+    ]
+  },
+  corner: {
+    ball: { x: 90, y: 16 },
+    defenders: [
+      { id: 'D1', x: 46, y: 52, baseX: 30, baseY: 70, role: 'ŚRODEK', color: '#3B82F6' },
+      { id: 'D2', x: 68, y: 46, baseX: 70, baseY: 70, role: 'PRAWY ŁOKIEĆ', color: '#0EA5E9' },
+      { id: 'D3', x: 36, y: 20, baseX: 20, baseY: 25, role: 'WEAK-SIDE DROP', color: '#F43F5E' },
+      { id: 'D4', x: 88, y: 20, baseX: 80, baseY: 25, role: 'ZAMKNIĘCIE ROGU', color: '#EC4899' },
+      { id: 'D5', x: 62, y: 18, baseX: 50, baseY: 25, role: 'ODCIĘCIE LINII', color: '#A855F7' }
+    ]
+  },
+  high_post: {
+    ball: { x: 50, y: 52 },
+    defenders: [
+      { id: 'D1', x: 44, y: 58, baseX: 30, baseY: 70, role: 'SANDWICH GÓRA', color: '#3B82F6' },
+      { id: 'D2', x: 56, y: 58, baseX: 70, baseY: 70, role: 'SANDWICH GÓRA', color: '#0EA5E9' },
+      { id: 'D3', x: 22, y: 28, baseX: 20, baseY: 25, role: 'ODCIĘCIE ROGU', color: '#F43F5E' },
+      { id: 'D4', x: 78, y: 28, baseX: 80, baseY: 25, role: 'ODCIĘCIE ROGU', color: '#EC4899' },
+      { id: 'D5', x: 50, y: 38, baseX: 50, baseY: 25, role: 'SANDWICH DÓŁ', color: '#A855F7' }
+    ]
+  }
+};
+
+const SCENARIO_CONFIGS_3_2: Record<string, { ball: { x: number; y: number }; defenders: DefenderState[] }> = {
+  top: {
+    ball: { x: 50, y: 82 },
+    defenders: [
+      { id: 'D1', x: 50, y: 75, baseX: 50, baseY: 78, role: 'ON-BALL SZCZYT', color: '#3B82F6' },
+      { id: 'D2', x: 72, y: 66, baseX: 78, baseY: 60, role: 'MUR PRAWE SKRZYDŁO', color: '#0EA5E9' },
+      { id: 'D3', x: 28, y: 66, baseX: 22, baseY: 60, role: 'MUR LEWE SKRZYDŁO', color: '#10B981' },
+      { id: 'D4', x: 64, y: 26, baseX: 70, baseY: 22, role: 'PRAWY DÓŁ', color: '#F59E0B' },
+      { id: 'D5', x: 36, y: 26, baseX: 30, baseY: 22, role: 'LEWY DÓŁ', color: '#EF4444' }
+    ]
+  },
+  wing: {
+    ball: { x: 82, y: 62 },
+    defenders: [
+      { id: 'D1', x: 62, y: 70, baseX: 50, baseY: 78, role: 'PRAWY ŁOKIEĆ', color: '#3B82F6' },
+      { id: 'D2', x: 76, y: 60, baseX: 78, baseY: 60, role: 'AGRESYWNY CLOSEOUT', color: '#0EA5E9' },
+      { id: 'D3', x: 38, y: 58, baseX: 22, baseY: 60, role: 'ŚRODEK OBWODU', color: '#10B981' },
+      { id: 'D4', x: 68, y: 24, baseX: 70, baseY: 22, role: 'WYJŚCIE W RÓG', color: '#F59E0B' },
+      { id: 'D5', x: 46, y: 20, baseX: 30, baseY: 22, role: 'OBRONA OBRĘCZY', color: '#EF4444' }
+    ]
+  },
+  corner: {
+    ball: { x: 90, y: 16 },
+    defenders: [
+      { id: 'D1', x: 56, y: 68, baseX: 50, baseY: 78, role: 'LINIA WOLNYCH', color: '#3B82F6' },
+      { id: 'D2', x: 76, y: 48, baseX: 78, baseY: 60, role: 'PRAWY ŁOKIEĆ', color: '#0EA5E9' },
+      { id: 'D3', x: 36, y: 50, baseX: 22, baseY: 60, role: 'ŚRODEK TRUMNY', color: '#10B981' },
+      { id: 'D4', x: 88, y: 20, baseX: 70, baseY: 22, role: 'ZAMKNIĘCIE ROGU', color: '#F59E0B' },
+      { id: 'D5', x: 50, y: 18, baseX: 30, baseY: 22, role: 'OBRONA OBRĘCZY', color: '#EF4444' }
+    ]
+  },
+  high_post: {
+    ball: { x: 50, y: 52 },
+    defenders: [
+      { id: 'D1', x: 50, y: 60, baseX: 50, baseY: 78, role: 'ZACIŚNIĘCIE GÓRA', color: '#3B82F6' },
+      { id: 'D2', x: 66, y: 56, baseX: 78, baseY: 60, role: 'ZACIŚNIĘCIE SKRZYDŁO', color: '#0EA5E9' },
+      { id: 'D3', x: 34, y: 56, baseX: 22, baseY: 60, role: 'ZACIŚNIĘCIE SKRZYDŁO', color: '#10B981' },
+      { id: 'D4', x: 60, y: 24, baseX: 70, baseY: 22, role: 'ODCIĘCIE POD KOSZEM', color: '#F59E0B' },
+      { id: 'D5', x: 40, y: 24, baseX: 30, baseY: 22, role: 'ODCIĘCIE POD KOSZEM', color: '#EF4444' }
+    ]
+  }
+};
+
 export default function ZoneDefenseGuideModal({
   isOpen,
   onClose,
@@ -33,14 +130,18 @@ export default function ZoneDefenseGuideModal({
 
   if (!isOpen) return null;
 
+  const currentConfig = selectedZone === '2-3'
+    ? SCENARIO_CONFIGS_2_3[activeScenario]
+    : SCENARIO_CONFIGS_3_2[activeScenario];
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-black/85 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-4xl bg-bkpk-surface border border-bkpk-border-strong rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[90vh] flex flex-col"
+          className="relative w-full max-w-4xl bg-bkpk-surface border border-bkpk-border-strong rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
         >
           {/* Header */}
           <div className="p-4 sm:p-6 border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1 flex items-center justify-between shrink-0">
@@ -50,7 +151,7 @@ export default function ZoneDefenseGuideModal({
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-widest text-rose-400 block font-outfit">
-                  Podręcznik Taktyczny Obrony
+                  Podręcznik Taktyczny &amp; Symulator Ruchu
                 </span>
                 <h2 className="text-lg sm:text-xl font-black text-bkpk-text-primary uppercase font-outfit tracking-tight">
                   Zasady Poruszania się po Strefie (Dla Nowicjusza)
@@ -125,12 +226,12 @@ export default function ZoneDefenseGuideModal({
               </div>
             </div>
 
-            {/* 2. Symulator Reakcji na Pozycję Piłki po Obwodzie */}
+            {/* 2. INTERAKTYWNY ANIMOWANY SYMULATOR BOISKA (MINI-COURT) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-black uppercase tracking-wider text-sm font-outfit text-bkpk-text-primary flex items-center gap-2">
                   <Compass className="w-4 h-4 text-bkpk-primary" />
-                  Gdzie jest piłka? (Instrukcja Ruchu dla Każdej Pozycji)
+                  Symulator Przesunięć: Wybierz Gdzie Znajduje się Piłka
                 </h3>
               </div>
 
@@ -138,9 +239,9 @@ export default function ZoneDefenseGuideModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { id: 'top', label: '1. Piłka na Szczycie' },
-                  { id: 'wing', label: '2. Piłka na Prawym Skrzydle' },
-                  { id: 'corner', label: '3. Piłka w Prawym Rogu' },
-                  { id: 'high_post', label: '4. Piłka w Środku (High Post)' }
+                  { id: 'wing', label: '2. Piłka na Skrzydle' },
+                  { id: 'corner', label: '3. Piłka w Rogu' },
+                  { id: 'high_post', label: '4. Piłka w High Post' }
                 ].map((sc) => (
                   <button
                     key={sc.id}
@@ -156,6 +257,117 @@ export default function ZoneDefenseGuideModal({
                     <div className="text-xs font-bold truncate">{sc.label}</div>
                   </button>
                 ))}
+              </div>
+
+              {/* Wektorowe Animowane Boisko 2D w Modalu */}
+              <div className="relative w-full aspect-[16/10] max-w-[650px] mx-auto bg-[#070A12] border-2 border-bkpk-border-strong rounded-3xl overflow-hidden shadow-2xl p-2">
+                <svg viewBox="0 0 100 100" className="w-full h-full">
+                  {/* Tło parkietu */}
+                  <rect x="0" y="0" width="100" height="100" fill="#0B0F19" />
+
+                  {/* Linie boiska FIBA */}
+                  <rect x="4" y="4" width="92" height="92" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="0.8" />
+                  
+                  {/* Trumna */}
+                  <rect x="33" y="4" width="34" height="38" fill="rgba(236,167,44,0.05)" stroke="rgba(236,167,44,0.4)" strokeWidth="0.8" />
+                  <line x1="33" y1="42" x2="67" y2="42" stroke="rgba(236,167,44,0.6)" strokeWidth="0.8" />
+                  <circle cx="50" cy="42" r="12" fill="none" stroke="rgba(236,167,44,0.4)" strokeWidth="0.8" />
+
+                  {/* Tablica i obręcz */}
+                  <line x1="44" y1="8" x2="56" y2="8" stroke="#FFFFFF" strokeWidth="1.2" />
+                  <circle cx="50" cy="12.5" r="3" fill="none" stroke="#F97316" strokeWidth="1" />
+
+                  {/* Łuk 3PT */}
+                  <path d="M 12 4 L 12 28 A 38 38 0 0 0 88 28 L 88 4" fill="none" stroke="rgba(236,167,44,0.5)" strokeWidth="0.8" />
+
+                  {/* Poligony Stref w Tle */}
+                  {selectedZone === '2-3' ? (
+                    <>
+                      {/* D1/D2 Top */}
+                      <rect x="6" y="50" width="44" height="42" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="50" y="50" width="44" height="42" fill="rgba(14,165,233,0.12)" stroke="rgba(14,165,233,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      {/* D3/D4 Bottom Wings */}
+                      <rect x="4" y="4" width="32" height="46" fill="rgba(244,63,94,0.12)" stroke="rgba(244,63,94,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="64" y="4" width="32" height="46" fill="rgba(236,72,153,0.12)" stroke="rgba(236,72,153,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      {/* D5 Center */}
+                      <rect x="36" y="4" width="28" height="46" fill="rgba(168,85,247,0.15)" stroke="rgba(168,85,247,0.5)" strokeDasharray="2,2" strokeWidth="0.6" />
+                    </>
+                  ) : (
+                    <>
+                      {/* 3-2 Zones */}
+                      <rect x="30" y="64" width="40" height="30" fill="rgba(59,130,246,0.12)" stroke="rgba(59,130,246,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="64" y="38" width="32" height="42" fill="rgba(14,165,233,0.12)" stroke="rgba(14,165,233,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="4" y="38" width="32" height="42" fill="rgba(16,185,129,0.12)" stroke="rgba(16,185,129,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="50" y="4" width="46" height="34" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                      <rect x="4" y="4" width="46" height="34" fill="rgba(239,68,68,0.12)" stroke="rgba(239,68,68,0.4)" strokeDasharray="2,2" strokeWidth="0.6" />
+                    </>
+                  )}
+
+                  {/* Animowane Wektory Przesunięć Obrońców */}
+                  {currentConfig.defenders.map((d) => (
+                    <motion.line
+                      key={`line-${d.id}`}
+                      initial={false}
+                      animate={{ x1: d.baseX, y1: d.baseY, x2: d.x, y2: d.y }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 160 }}
+                      stroke="rgba(255,255,255,0.3)"
+                      strokeWidth="0.6"
+                      strokeDasharray="1.5,1.5"
+                    />
+                  ))}
+
+                  {/* Animowana Piłka */}
+                  <motion.g
+                    initial={false}
+                    animate={{ cx: currentConfig.ball.x, cy: currentConfig.ball.y }}
+                    transition={{ type: 'spring', damping: 22, stiffness: 180 }}
+                  >
+                    <circle cx={currentConfig.ball.x} cy={currentConfig.ball.y} r="3.2" fill="#EA580C" stroke="#FFFFFF" strokeWidth="0.8" />
+                    <circle cx={currentConfig.ball.x} cy={currentConfig.ball.y} r="5.5" fill="none" stroke="rgba(251,146,60,0.5)" strokeWidth="0.6" />
+                  </motion.g>
+
+                  {/* Animowani Obrońcy (D1-D5) */}
+                  {currentConfig.defenders.map((d) => (
+                    <motion.g
+                      key={d.id}
+                      initial={false}
+                      animate={{ x: d.x, y: d.y }}
+                      transition={{ type: 'spring', damping: 20, stiffness: 160 }}
+                    >
+                      {/* Kółko gracza */}
+                      <circle cx={0} cy={0} r="3.8" fill={d.color} stroke="#FFFFFF" strokeWidth="0.8" />
+                      <text
+                        x={0}
+                        y={0.9}
+                        fill="#FFFFFF"
+                        fontSize="3"
+                        fontWeight="900"
+                        fontFamily="Outfit, sans-serif"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                      >
+                        {d.id}
+                      </text>
+
+                      {/* Etykieta roli nad graczem */}
+                      <g transform="translate(0, -6.5)">
+                        <rect x="-14" y="-2.5" width="28" height="5" rx="1.5" fill="rgba(10,14,23,0.9)" stroke={d.color} strokeWidth="0.4" />
+                        <text
+                          x={0}
+                          y={0.6}
+                          fill="#FFFFFF"
+                          fontSize="2.2"
+                          fontWeight="800"
+                          fontFamily="Outfit, sans-serif"
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          {d.role}
+                        </text>
+                      </g>
+                    </motion.g>
+                  ))}
+                </svg>
               </div>
 
               {/* Karta Ruchu Obrońców dla Wybranego Scenariusza */}
