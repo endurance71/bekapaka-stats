@@ -958,50 +958,50 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 6. NOWOŚĆ: OBRONA KAŻDY SWEGO 1VS1 (MAN-TO-MAN: HELP & RECOVER) (OBRONA)
+  // 6. OBRONA KAŻDY SWEGO 1VS1 (MAN-TO-MAN: HELP & RECOVER) (OBRONA)
   // =========================================================================
   {
     name: 'Obrona Każdy Swego 1vs1 (Help & Recover)',
     category: 'defense',
     targetDefense: 'Atak pozycyjny (Pick & Roll / Motion)',
-    description: 'Agresywna obrona indywidualna 1vs1 z zasadami Help & Recover. Presja na piłce (On-Ball), odcięcie linii podań (Deny) oraz zbiegnięcie ze słabej strony do asekuracji (Nail & Help Line).',
+    description: 'Agresywna obrona indywidualna 1vs1 z zasadami Help & Recover. Presja na piłce (On-Ball), odcięcie linii podań (Deny), asekuracja ze słabej strony (Nail Help) oraz dynamiczny doskok i zbiórka tablicy.',
     tags: ['Obrona 1vs1', 'Man-to-Man', 'Help & Recover', 'Nail Help', 'Zbiórka Defensywna'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ SKUTECZNA OBRONA: WYMUSZONY BŁĄD 24s & ZBIÓRKA D5',
+      outcomeText: '🛡️ SKUTECZNA OBRONA 1vs1: WYMUSZONY BŁĄD 24s & ZBIÓRKA D5',
       coachingKeys: [
         'Obrońca na piłce (D1) w niskiej postawie wywiera presję i odcina środek',
         'Obrońcy o 1 podanie (D2, D3) w pozycji Deny nie pozwalają na łatwe podanie',
-        'Obrońcy ze słabej strony (D4, D5) schodzą jedną nogą w trumnę (Help Line)',
-        'Przy próbie wjazdu obrona zamyka korytarz, a na podanie doskakuje z wyciągniętą ręką (Closeout)'
+        'Obrońca ze słabej strony (D3) schodzi na szczyt trumny (Nail Help) blokując wjazd',
+        'Doskok Closeout z ręką w górze i natychmiastowe zablokowanie powrotu (Recover)'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
-          endTime: 1.5,
-          title: 'Faza 1: Wyjściowe Ustawienie Defensywne & Presja On-Ball',
-          description: 'D1 wywiera presję na kozłującym O1 na szczycie. D2 i D3 w pozycji Deny na skrzydłach, D4 i D5 asekurują trumnę.',
-          coachingCues: ['Niski środek ciężkości', 'Aktywne ręce w korytarzu podania']
+          endTime: 2.0,
+          title: 'Faza 1: Presja On-Ball na Szczycie & Odcięcie Skrzydeł (Deny)',
+          description: 'O1 z piłką na szczycie. D1 wywiera agresywną presję on-ball. D2 i D3 w pozycji Deny odcinają linie podań.',
+          coachingCues: ['Niski środek ciężkości', 'Ręce w korytarzu podania']
         },
         {
-          startTime: 1.5,
-          endTime: 4.5,
-          title: 'Faza 2: Próba Wjazdu O1 & Asekuracja na Linii Nail (D3 Help)',
-          description: 'O1 próbuje ściąć w prawo. D3 schodzi z lewego skrzydła na linię rzutów wolnych (Nail Help) blokując wjazd. O1 zmuszony do podania na skrzydło do O2.',
-          coachingCues: ['Nail Help powstrzymuje wjazd', 'Komunikacja głosowa obrony']
+          startTime: 2.0,
+          endTime: 4.2,
+          title: 'Faza 2: Wjazd O1 w Środek & Zejście na Linię Pomocy (Nail Help D3)',
+          description: 'O1 próbuje wjazdu w prawo. D3 schodzi z lewego skrzydła na linię rzutów wolnych (Nail Help), blokując korytarz. O1 odgrywa na skrzydło do O2.',
+          coachingCues: ['Nail Help zatrzymuje kozłującego', 'Komunikacja głosowa obrony']
         },
         {
-          startTime: 4.5,
+          startTime: 4.2,
           endTime: 6.5,
-          title: 'Faza 3: Dynamiczny Closeout D2 & Powrót Asekuracji (Recover)',
-          description: 'Podanie do O2. D2 wykonuje dynamiczny doskok (Closeout) z ręką w górze. D3 natychmiast wraca (Recover) do swojego gracza O3. Korytarze odcięte!',
+          title: 'Faza 3: Dynamiczny Closeout D2, Przerzut na O3 & Recover D3',
+          description: 'D2 doskakuje do O2. O2 posyła skip pass przez całe boisko do O3. D3 błyskawicznie wraca (Recover) i ląduje w idealnym closeoucie przed O3!',
           coachingCues: ['Drobne kroki w closeoucie', 'Brak faulu przy wyskoku']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Wymuszony Niecelny Rzut pod Presją & Zbiórka D5',
-          description: 'O2 pod presją zegara 24s oddaje trudny rzut przez ręce D2. Piłka odbija się od obręczy, D5 i D4 twardo zastawiają tablicę i zbierają piłkę.',
+          title: 'Faza 4: Wymuszony Trudny Rzut pod Presją & Zbiórka D5',
+          description: 'O3 pod presją zegara 24s oddaje trudny rzut przez ręce D3. Piłka odbija się od obręczy, D5 twardo zastawia deskę i zbiera piłkę.',
           coachingCues: ['Twarde zastawienie tyłem', 'Zbiórka oburącz w wyskoku']
         }
       ],
@@ -1015,10 +1015,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 50, y: 78, heading: 0, action: 'dribble' },
-            { time: 1.5, x: 50, y: 78, heading: 0, action: 'dribble' },
-            { time: 3.5, x: 58, y: 64, heading: 45, action: 'dribble' },
-            { time: 5.0, x: 54, y: 68, heading: 90, action: 'idle' },
-            { time: 8.5, x: 52, y: 72, heading: 0, action: 'idle' }
+            { time: 2.0, x: 56, y: 64, heading: 45, action: 'dribble' },
+            { time: 3.2, x: 52, y: 68, heading: 90, action: 'idle' },
+            { time: 8.5, x: 50, y: 72, heading: 0, action: 'idle' }
           ]
         },
         {
@@ -1029,10 +1028,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 82, y: 60, heading: 270, action: 'idle' },
-            { time: 3.5, x: 84, y: 55, heading: 270, action: 'idle' },
-            { time: 5.5, x: 82, y: 52, heading: 270, action: 'catch' },
-            { time: 6.5, x: 82, y: 52, heading: 300, action: 'shoot' },
-            { time: 8.5, x: 82, y: 52, heading: 0, action: 'idle' }
+            { time: 3.2, x: 82, y: 56, heading: 270, action: 'catch' },
+            { time: 4.8, x: 82, y: 56, heading: 270, action: 'idle' },
+            { time: 8.5, x: 80, y: 56, heading: 0, action: 'idle' }
           ]
         },
         {
@@ -1043,8 +1041,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 18, y: 60, heading: 90, action: 'idle' },
-            { time: 4.5, x: 14, y: 55, heading: 90, action: 'idle' },
-            { time: 8.5, x: 14, y: 50, heading: 0, action: 'idle' }
+            { time: 4.8, x: 16, y: 56, heading: 90, action: 'idle' },
+            { time: 5.5, x: 16, y: 56, heading: 90, action: 'catch' },
+            { time: 6.6, x: 16, y: 56, heading: 45, action: 'shoot' },
+            { time: 8.5, x: 16, y: 56, heading: 0, action: 'idle' }
           ]
         },
         {
@@ -1055,8 +1055,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 26, y: 28, heading: 0, action: 'idle' },
-            { time: 4.5, x: 30, y: 22, heading: 0, action: 'idle' },
-            { time: 8.5, x: 40, y: 16, heading: 0, action: 'cut' }
+            { time: 5.0, x: 30, y: 22, heading: 0, action: 'idle' },
+            { time: 8.5, x: 36, y: 16, heading: 0, action: 'cut' }
           ]
         },
         {
@@ -1067,8 +1067,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 74, y: 28, heading: 0, action: 'idle' },
-            { time: 4.5, x: 70, y: 22, heading: 0, action: 'idle' },
-            { time: 8.5, x: 60, y: 16, heading: 0, action: 'cut' }
+            { time: 5.0, x: 70, y: 22, heading: 0, action: 'idle' },
+            { time: 8.5, x: 64, y: 16, heading: 0, action: 'cut' }
           ]
         },
         // Obrońcy 1vs1 (Man-to-Man)
@@ -1080,10 +1080,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: false,
           keyframes: [
             { time: 0.0, x: 50, y: 72, heading: 180, action: 'defend' },
-            { time: 1.5, x: 50, y: 72, heading: 180, action: 'defend' },
-            { time: 3.5, x: 56, y: 58, heading: 180, action: 'defend' },
-            { time: 5.5, x: 52, y: 62, heading: 140, action: 'defend' },
-            { time: 8.5, x: 50, y: 64, heading: 180, action: 'defend' }
+            { time: 2.0, x: 54, y: 58, heading: 180, action: 'defend' },
+            { time: 3.5, x: 50, y: 62, heading: 140, action: 'defend' },
+            { time: 8.5, x: 48, y: 64, heading: 180, action: 'defend' }
           ]
         },
         {
@@ -1094,10 +1093,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: false,
           keyframes: [
             { time: 0.0, x: 76, y: 58, heading: 180, action: 'defend' },
-            { time: 3.5, x: 72, y: 52, heading: 240, action: 'defend' },
-            { time: 5.5, x: 78, y: 48, heading: 90, action: 'defend' },
-            { time: 6.8, x: 80, y: 49, heading: 90, action: 'defend' },
-            { time: 8.5, x: 78, y: 48, heading: 0, action: 'defend' }
+            { time: 3.2, x: 78, y: 50, heading: 90, action: 'defend' }, // Closeout na O2
+            { time: 5.0, x: 68, y: 52, heading: 240, action: 'defend' }, // Przesunięcie asekuracyjne
+            { time: 8.5, x: 66, y: 48, heading: 0, action: 'defend' }
           ]
         },
         {
@@ -1108,9 +1106,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: false,
           keyframes: [
             { time: 0.0, x: 24, y: 58, heading: 180, action: 'defend' },
-            { time: 3.5, x: 42, y: 54, heading: 90, action: 'defend' }, // Nail Help!
-            { time: 5.5, x: 20, y: 52, heading: 270, action: 'defend' }, // Recover!
-            { time: 8.5, x: 22, y: 46, heading: 0, action: 'defend' }
+            { time: 2.0, x: 40, y: 54, heading: 90, action: 'defend' }, // Nail Help!
+            { time: 4.8, x: 22, y: 52, heading: 270, action: 'defend' }, // Recover sprint!
+            { time: 6.6, x: 20, y: 50, heading: 270, action: 'defend' }, // Closeout z blokiem
+            { time: 8.5, x: 20, y: 46, heading: 0, action: 'defend' }
           ]
         },
         {
@@ -1121,9 +1120,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: false,
           keyframes: [
             { time: 0.0, x: 30, y: 24, heading: 180, action: 'defend' },
-            { time: 3.5, x: 38, y: 26, heading: 90, action: 'defend' },
+            { time: 3.5, x: 36, y: 24, heading: 90, action: 'defend' },
             { time: 6.5, x: 38, y: 16, heading: 0, action: 'defend' },
-            { time: 8.5, x: 42, y: 14, heading: 0, action: 'defend' }
+            { time: 8.5, x: 40, y: 14, heading: 0, action: 'defend' }
           ]
         },
         {
@@ -1134,22 +1133,23 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: false,
           keyframes: [
             { time: 0.0, x: 68, y: 24, heading: 180, action: 'defend' },
-            { time: 3.5, x: 60, y: 24, heading: 270, action: 'defend' },
+            { time: 3.5, x: 58, y: 24, heading: 270, action: 'defend' },
             { time: 6.5, x: 54, y: 16, heading: 0, action: 'defend' },
-            { time: 8.5, x: 50, y: 14, heading: 0, action: 'defend' } // Zbiórka!
+            { time: 8.5, x: 50, y: 14, heading: 0, action: 'defend' } // Pewna zbiórka!
           ]
         }
       ],
       ball: {
         keyframes: [
           { time: 0.0, x: 50, y: 78, holderId: 'O1' },
-          { time: 1.5, x: 50, y: 78, holderId: 'O1' },
-          { time: 3.5, x: 58, y: 64, holderId: 'O1' },
-          { time: 5.0, x: 54, y: 68, holderId: 'O1' },
-          { time: 5.5, x: 82, y: 52, holderId: 'O2', isPass: true, arcHeight: 0.2 },
-          { time: 6.5, x: 82, y: 52, holderId: 'O2' },
-          { time: 7.2, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.2 }, // Niecelny rzut o tablicę
-          { time: 7.8, x: 52, y: 15, holderId: null, isPass: true, arcHeight: 0.3 }, // Odbicie od obręczy
+          { time: 2.0, x: 56, y: 64, holderId: 'O1' },
+          { time: 2.8, x: 52, y: 68, holderId: 'O1' },
+          { time: 3.5, x: 82, y: 56, holderId: 'O2', isPass: true, arcHeight: 0.2 },
+          { time: 4.8, x: 82, y: 56, holderId: 'O2' },
+          { time: 5.5, x: 16, y: 56, holderId: 'O3', isPass: true, arcHeight: 0.3 }, // Skip pass przez całe boisko!
+          { time: 6.6, x: 16, y: 56, holderId: 'O3' },
+          { time: 7.3, x: 50, y: 12.5, holderId: null, isShot: true, arcHeight: 1.2 }, // Rzut o obręcz
+          { time: 7.9, x: 52, y: 16, holderId: null, isPass: true, arcHeight: 0.3 }, // Odbicie
           { time: 8.5, x: 50, y: 14, holderId: 'D5' } // Chwyt piłki przez D5!
         ]
       }
@@ -1157,88 +1157,88 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 7. NOWOŚĆ: OBRONA STREFOWA 2-3 (PRZESUNIĘCIA & ZASTAWIENIE ROGÓW) (OBRONA)
+  // 7. OBRONA STREFOWA 2-3 (PRZESUNIĘCIA & ZASTAWIENIE ROGÓW) (OBRONA)
   // =========================================================================
   {
     name: 'Obrona Strefowa 2-3 (Przesunięcia & Zastawienie Rogów)',
     category: 'defense',
     targetDefense: 'Zespoły rzucające z dystansu i wjazdy w pomalowane',
-    description: 'Klasyczna strefa 2-3 z wyznaczonymi 5 strefami odpowiedzialności. Obrońcy przesuwają się harmonijnie w rytm ruchu piłki (szczyt -> skrzydło -> róg), zagęszczając stronę silną i odcinając linie podań pod kosz.',
+    description: 'Klasyczna strefa 2-3 z wyznaczonymi 5 wyrazistymi strefami odpowiedzialności. Obrońcy przesuwają się synchronicznie w rytm ruchu piłki po całym obwodzie (Lewe Skrzydło -> Szczyt -> Prawe Skrzydło -> Prawy Róg), zagęszczając stronę silną i odcinając podania pod kosz.',
     tags: ['Strefa 2-3', 'Zone Defense', 'Przesunięcia strefowe', 'Paint Protection', 'Siatka Stref'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ STREFA 2-3: PRZECHWYT PIŁKI PRZEZ D5 I KONTRATAK',
+      outcomeText: '🛡️ STREFA 2-3: SYNCHRONICZNE PRZESUNIĘCIE & PRZECHWYT D5',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt Lewy',
-          color: 'rgba(244, 63, 94, 0.08)',
-          polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 88 }, { x: 6, y: 88 }]
+          color: 'rgba(59, 130, 246, 0.16)',
+          polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Szczyt Prawy',
-          color: 'rgba(244, 63, 94, 0.08)',
-          polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 88 }, { x: 50, y: 88 }]
+          color: 'rgba(14, 165, 233, 0.16)',
+          polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewy Róg & Skrzydło',
-          color: 'rgba(236, 72, 153, 0.08)',
-          polygon: [{ x: 4, y: 4 }, { x: 38, y: 4 }, { x: 38, y: 50 }, { x: 4, y: 50 }]
+          color: 'rgba(244, 63, 94, 0.16)',
+          polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
         },
         {
           id: 'Z_D4',
           playerId: 'D4',
           label: 'D4: Prawy Róg & Skrzydło',
-          color: 'rgba(236, 72, 153, 0.08)',
-          polygon: [{ x: 62, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 62, y: 50 }]
+          color: 'rgba(236, 72, 153, 0.16)',
+          polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
         },
         {
           id: 'Z_D5',
           playerId: 'D5',
           label: 'D5: Pomalowane & Deska',
-          color: 'rgba(168, 85, 247, 0.10)',
-          polygon: [{ x: 38, y: 4 }, { x: 62, y: 4 }, { x: 62, y: 50 }, { x: 38, y: 50 }]
+          color: 'rgba(168, 85, 247, 0.20)',
+          polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
         }
       ],
       coachingKeys: [
-        'Górna linia (D1, D2) przesuwa się w tandemie na szczycie łuku 3PT',
+        'Piłka krąży po obwodzie (L-Skrzydło -> Szczyt -> P-Skrzydło -> Róg), cała strefa wykonuje zgrany slide',
         'Podanie na prawe skrzydło: D2 doskakuje do piłki, D1 schodzi na Nail, D4 podchodzi pod linię rzutu',
         'Podanie w róg: D4 natychmiast zamyka róg (Corner Contest), D5 asekuruje linię końcową',
-        'Center D5 w centrum trumny patroluje wjazdy i dominuje w walce na tablicach'
+        'Center D5 w centrum trumny patroluje podania inside i przecina piłkę w powietrzu'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
-          endTime: 1.5,
-          title: 'Faza 1: Wyjściowe Ustawienie w Strefie 2-3 (Piłka na Szczycie)',
-          description: 'D1 i D2 na szczycie łuku, D5 w środku trumny, D3 i D4 na dolnych blokach. Spójna formacja blokująca środek.',
-          coachingCues: ['Szerokie rozstawienie rąk', 'Wszyscy widzą piłkę']
+          endTime: 1.8,
+          title: 'Faza 1: Piłka na Lewym Skrzydle (O3) & Zagęszczenie Lewej Strony',
+          description: 'O3 trzyma piłkę na lewym skrzydle. D1 doskakuje na lewy szczyt, D3 zabezpiecza skrzydło, D2 zbiega na Nail, D5 kontroluje lewy blok, D4 zabezpiecza weak-side.',
+          coachingCues: ['Zagęszczenie lewej flanki', 'D2 na Nail zamyka środek']
         },
         {
-          startTime: 1.5,
-          endTime: 4.5,
-          title: 'Faza 2: Podanie na Prawe Skrzydło & Przesunięcie Strefowe',
-          description: 'O1 podaje do O2 na prawe skrzydło. D2 wykonuje doskok, D1 zbiega na Nail (szczyt trumny), D4 podchodzi wyżej, D5 przesuwa się na prawy blok.',
-          coachingCues: ['Brak dziury w środku', 'D1 na Nail pilnuje łokcia']
+          startTime: 1.8,
+          endTime: 4.2,
+          title: 'Faza 2: Swing Pass przez Szczyt (O1) na Prawe Skrzydło (O2) & Przesunięcie',
+          description: 'O3 odgrywa do O1, a O1 błyskawicznie przerzuca na prawe skrzydło do O2. Cała formacja 2-3 synchronicznie przesuwa się w prawo (D2 closeout, D1 na Nail, D4 podbija w skrzydło, D5 na prawy blok, D3 pod kosz).',
+          coachingCues: ['Błyskawiczny slide całej piątki', 'Brak wolnej przestrzeni na rzut']
         },
         {
-          startTime: 4.5,
-          endTime: 6.5,
-          title: 'Faza 3: Podanie w Prawy Róg do O4 & Podwójne Zamknięcie Rogu',
-          description: 'O2 podaje do O4 w róg. D4 doskakuje do rzutu, D5 blokuje korytarz wzdłuż linii końcowej, D2 cofa się do łokcia trumny, D3 pilnuje weak-side.',
-          coachingCues: ['Odcięcie linii końcowej', 'Brak faulu przy linii']
+          startTime: 4.2,
+          endTime: 6.2,
+          title: 'Faza 3: Podanie w Prawy Róg do O4 & Zamknięcie Linii Końcowej',
+          description: 'O2 podaje do O4 w narożnik. D4 sprintuje i zamyka róg, D5 odcina linię końcową, D2 cofa się do łokcia trumny, D1 i D3 chronią środek.',
+          coachingCues: ['Podwójne ryglowanie rogu', 'Ręce w górze bez faulu']
         },
         {
-          startTime: 6.5,
+          startTime: 6.2,
           endTime: 8.5,
-          title: 'Faza 4: Wymuszone Złe Podanie & Przechwyt Piłki przez D5',
-          description: 'O4 odcięty w rogu próbuje podać w pomalowane. D5 czyta intencję, przejmuje piłkę w powietrzu (Steal) i uruchamia szybki atak!',
-          coachingCues: ['Antycypacja podania', 'Natychmiastowe wyprowadzenie kontry']
+          title: 'Faza 4: Wymuszone Podanie Inside & Przechwyt Piłki przez D5',
+          description: 'O4 odcięty w rogu próbuje desperackiego podania w pomalowane. D5 wyczuwa intencję, przejmuje piłkę w wyskoku (Steal) i uruchamia szybki atak!',
+          coachingCues: ['Dominacja w trumnie', 'Błyskawiczne wyprowadzenie kontry']
         }
       ],
       players: [
@@ -1250,10 +1250,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PG',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 50, y: 80, heading: 0, action: 'idle' },
-            { time: 1.5, x: 50, y: 80, heading: 0, action: 'idle' },
-            { time: 3.5, x: 55, y: 78, heading: 60, action: 'idle' },
-            { time: 8.5, x: 52, y: 78, heading: 0, action: 'idle' }
+            { time: 0.0, x: 50, y: 80, heading: 270, action: 'idle' },
+            { time: 2.2, x: 50, y: 80, heading: 270, action: 'catch' },
+            { time: 3.2, x: 50, y: 80, heading: 90, action: 'idle' },
+            { time: 8.5, x: 50, y: 80, heading: 0, action: 'idle' }
           ]
         },
         {
@@ -1264,8 +1264,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 82, y: 64, heading: 270, action: 'idle' },
-            { time: 2.5, x: 82, y: 64, heading: 270, action: 'catch' },
-            { time: 4.5, x: 84, y: 60, heading: 180, action: 'idle' },
+            { time: 3.8, x: 82, y: 64, heading: 270, action: 'catch' },
+            { time: 4.8, x: 82, y: 64, heading: 180, action: 'idle' },
             { time: 8.5, x: 80, y: 62, heading: 0, action: 'idle' }
           ]
         },
@@ -1276,7 +1276,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SF',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 18, y: 64, heading: 90, action: 'idle' },
+            { time: 0.0, x: 18, y: 64, heading: 90, action: 'dribble' },
+            { time: 1.6, x: 18, y: 64, heading: 90, action: 'idle' },
             { time: 8.5, x: 18, y: 60, heading: 0, action: 'idle' }
           ]
         },
@@ -1287,9 +1288,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PF',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 90, y: 22, heading: 270, action: 'idle' },
-            { time: 4.5, x: 90, y: 16, heading: 270, action: 'catch' },
-            { time: 6.5, x: 90, y: 16, heading: 220, action: 'idle' },
+            { time: 0.0, x: 90, y: 20, heading: 270, action: 'idle' },
+            { time: 5.2, x: 90, y: 16, heading: 270, action: 'catch' },
+            { time: 6.2, x: 90, y: 16, heading: 220, action: 'idle' },
             { time: 8.5, x: 90, y: 16, heading: 0, action: 'idle' }
           ]
         },
@@ -1300,9 +1301,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'C',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 50, y: 38, heading: 0, action: 'idle' },
-            { time: 4.5, x: 58, y: 30, heading: 90, action: 'cut' },
-            { time: 8.5, x: 56, y: 24, heading: 0, action: 'idle' }
+            { time: 0.0, x: 42, y: 34, heading: 90, action: 'idle' },
+            { time: 4.5, x: 56, y: 28, heading: 90, action: 'cut' },
+            { time: 8.5, x: 54, y: 24, heading: 0, action: 'idle' }
           ]
         },
         // Obrońcy strefy 2-3 z przesunięciami
@@ -1313,11 +1314,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PG',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 42, y: 68, heading: 180, action: 'defend' },
-            { time: 1.5, x: 42, y: 68, heading: 180, action: 'defend' },
-            { time: 3.5, x: 48, y: 58, heading: 120, action: 'defend' }, // Przesunięcie na Nail
-            { time: 5.5, x: 46, y: 52, heading: 120, action: 'defend' },
-            { time: 8.5, x: 46, y: 52, heading: 0, action: 'defend' }
+            { time: 0.0, x: 34, y: 66, heading: 270, action: 'defend' }, // Lewy szczyt
+            { time: 2.2, x: 46, y: 72, heading: 180, action: 'defend' }, // Doskok do O1
+            { time: 4.0, x: 50, y: 58, heading: 120, action: 'defend' }, // Nail Help
+            { time: 8.5, x: 48, y: 52, heading: 0, action: 'defend' }
           ]
         },
         {
@@ -1327,11 +1327,11 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SG',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 58, y: 68, heading: 180, action: 'defend' },
-            { time: 1.5, x: 58, y: 68, heading: 180, action: 'defend' },
-            { time: 3.5, x: 74, y: 62, heading: 90, action: 'defend' }, // Doskok do skrzydła
-            { time: 5.5, x: 68, y: 48, heading: 140, action: 'defend' }, // Cofnięcie do łokcia
-            { time: 8.5, x: 68, y: 48, heading: 0, action: 'defend' }
+            { time: 0.0, x: 54, y: 62, heading: 240, action: 'defend' }, // Nail lewa strona
+            { time: 2.2, x: 62, y: 68, heading: 180, action: 'defend' },
+            { time: 4.0, x: 76, y: 62, heading: 90, action: 'defend' },  // Doskok do O2 na skrzydle
+            { time: 5.5, x: 68, y: 46, heading: 140, action: 'defend' }, // Łokieć trumny
+            { time: 8.5, x: 68, y: 46, heading: 0, action: 'defend' }
           ]
         },
         {
@@ -1341,9 +1341,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SF',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 22, y: 30, heading: 180, action: 'defend' },
-            { time: 3.5, x: 28, y: 26, heading: 90, action: 'defend' },
-            { time: 5.5, x: 36, y: 20, heading: 90, action: 'defend' }, // Zabezpieczenie słabej strony trumny
+            { time: 0.0, x: 22, y: 52, heading: 270, action: 'defend' }, // Lewe skrzydło pod piłką
+            { time: 3.5, x: 30, y: 32, heading: 90, action: 'defend' },
+            { time: 5.5, x: 36, y: 20, heading: 90, action: 'defend' }, // Weak-side drop pod kosz
             { time: 8.5, x: 36, y: 20, heading: 0, action: 'defend' }
           ]
         },
@@ -1354,9 +1354,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PF',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 78, y: 30, heading: 180, action: 'defend' },
-            { time: 3.5, x: 80, y: 42, heading: 90, action: 'defend' }, // Podbicie wyżej w skrzydło
-            { time: 5.5, x: 88, y: 20, heading: 90, action: 'defend' }, // Doskok w róg
+            { time: 0.0, x: 68, y: 22, heading: 270, action: 'defend' }, // Weak-side drop
+            { time: 3.5, x: 80, y: 44, heading: 90, action: 'defend' },  // Podbicie w prawe skrzydło
+            { time: 5.5, x: 88, y: 20, heading: 90, action: 'defend' },  // Zamknięcie prawego rogu
             { time: 8.5, x: 88, y: 20, heading: 0, action: 'defend' }
           ]
         },
@@ -1367,108 +1367,110 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'C',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 50, y: 24, heading: 180, action: 'defend' },
-            { time: 3.5, x: 54, y: 24, heading: 90, action: 'defend' },
-            { time: 5.5, x: 60, y: 18, heading: 90, action: 'defend' }, // Zabezpieczenie linii końcowej
-            { time: 6.8, x: 56, y: 22, heading: 45, action: 'defend' }, // Przechwyt podania!
-            { time: 8.5, x: 52, y: 30, heading: 0, action: 'dribble' } // Start kontrataku
+            { time: 0.0, x: 44, y: 24, heading: 270, action: 'defend' }, // Lewy blok
+            { time: 3.5, x: 52, y: 24, heading: 180, action: 'defend' }, // Środek
+            { time: 5.5, x: 62, y: 18, heading: 90, action: 'defend' },  // Zabezpieczenie linii końcowej
+            { time: 6.8, x: 56, y: 24, heading: 45, action: 'defend' },  // Przechwyt podania!
+            { time: 8.5, x: 50, y: 34, heading: 0, action: 'dribble' }  // Kontratak!
           ]
         }
       ],
       ball: {
         keyframes: [
-          { time: 0.0, x: 50, y: 80, holderId: 'O1' },
-          { time: 1.5, x: 50, y: 80, holderId: 'O1' },
-          { time: 2.5, x: 82, y: 64, holderId: 'O2', isPass: true, arcHeight: 0.2 },
-          { time: 4.5, x: 84, y: 60, holderId: 'O2' },
+          { time: 0.0, x: 18, y: 64, holderId: 'O3' },
+          { time: 1.6, x: 18, y: 64, holderId: 'O3' },
+          { time: 2.2, x: 50, y: 80, holderId: 'O1', isPass: true, arcHeight: 0.2 },
+          { time: 3.2, x: 50, y: 80, holderId: 'O1' },
+          { time: 3.8, x: 82, y: 64, holderId: 'O2', isPass: true, arcHeight: 0.2 },
+          { time: 4.8, x: 82, y: 64, holderId: 'O2' },
           { time: 5.2, x: 90, y: 16, holderId: 'O4', isPass: true, arcHeight: 0.2 },
           { time: 6.2, x: 90, y: 16, holderId: 'O4' },
-          { time: 6.8, x: 56, y: 22, holderId: 'D5', isPass: true, arcHeight: 0.15 }, // Przechwyt D5!
-          { time: 8.5, x: 52, y: 30, holderId: 'D5' }
+          { time: 6.8, x: 56, y: 24, holderId: 'D5', isPass: true, arcHeight: 0.15 }, // Przechwyt D5!
+          { time: 8.5, x: 50, y: 34, holderId: 'D5' }
         ]
       }
     }
   },
 
   // =========================================================================
-  // 8. NOWOŚĆ: OBRONA STREFOWA 3-2 (ODCIĘCIE OBWODU & ROTACJE PODKOSZOWE) (OBRONA)
+  // 8. OBRONA STREFOWA 3-2 (ODCIĘCIE OBWODU & ROTACJE PODKOSZOWE) (OBRONA)
   // =========================================================================
   {
     name: 'Obrona Strefowa 3-2 (Odcięcie Obwodu & Rotacje)',
     category: 'defense',
     targetDefense: 'Zespoły bazujące na rzutach za 3 (High Spacing / 5-Out)',
-    description: 'Agresywna strefa 3-2 nastawiona na całkowite zablokowanie rzutów za 3 punkty. Trzej górni obrońcy (D1, D2, D3) tworzą nieprzenikniony mur na łuku 3PT, a dwaj wysocy (D4, D5) rotują pod koszem i zabezpieczają zbiórkę.',
+    description: 'Agresywna strefa 3-2 nastawiona na całkowite zablokowanie rzutów za 3 punkty. Trzej górni obrońcy (D1, D2, D3) tworzą wyrazisty mur na łuku 3PT, przesuwając się za piłką po całym obwodzie, a dwaj wysocy (D4, D5) rotują pod koszem i zabezpieczają zbiórkę.',
     tags: ['Strefa 3-2', 'Zone Defense', 'Odcięcie 3PT', 'Perimeter Lock', 'Blok Rzutu'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ STREFA 3-2: ZABLOKOWANY RZUT ZA 3 (BLOK D2)',
+      outcomeText: '🛡️ STREFA 3-2: SZCZELNY MUR NA ŁUKU & BLOK RZUTU ZA 3 (D2)',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt 3PT',
-          color: 'rgba(59, 130, 246, 0.08)',
-          polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 92 }, { x: 30, y: 92 }]
+          color: 'rgba(59, 130, 246, 0.18)',
+          polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Prawe Skrzydło 3PT',
-          color: 'rgba(59, 130, 246, 0.08)',
-          polygon: [{ x: 65, y: 36 }, { x: 96, y: 36 }, { x: 96, y: 78 }, { x: 65, y: 78 }]
+          color: 'rgba(14, 165, 233, 0.18)',
+          polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewe Skrzydło 3PT',
-          color: 'rgba(59, 130, 246, 0.08)',
-          polygon: [{ x: 4, y: 36 }, { x: 35, y: 36 }, { x: 35, y: 78 }, { x: 4, y: 78 }]
+          color: 'rgba(16, 185, 129, 0.18)',
+          polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
         },
         {
-          id: 'Z_D4',
+          id: 'D4',
           playerId: 'D4',
           label: 'D4: Prawy Dół & Róg',
-          color: 'rgba(16, 185, 129, 0.08)',
-          polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 36 }, { x: 50, y: 36 }]
+          color: 'rgba(245, 158, 11, 0.18)',
+          polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
         },
         {
-          id: 'Z_D5',
+          id: 'D5',
           playerId: 'D5',
           label: 'D5: Lewy Dół & Róg',
-          color: 'rgba(16, 185, 129, 0.08)',
-          polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 36 }, { x: 4, y: 36 }]
+          color: 'rgba(239, 68, 68, 0.18)',
+          polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
         }
       ],
       coachingKeys: [
         'Trzej górni gracze (D1, D2, D3) ściśle kryją obwód – brak miejsca na rzut za 3',
-        'Przy podaniu na skrzydło: D2 doskakuje wysoko, D1 zabezpiecza środek, D4 pilnuje dołu',
-        'Przy próbie wymuszonego rzutu przez ręce: D2 wykonuje wyskok z blokiem',
+        'Piłka krąży z lewego skrzydła na szczyt i prawe skrzydło – trójka obwodowa przesuwa się jak jedna ściana',
+        'Przy próbie wymuszonego rzutu przez ręce: D2 wykonuje dynamiczny wyskok z blokiem',
         'D4 i D5 kontrolują strefę podkoszową i zabezpieczają zbiórkę'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
-          endTime: 1.5,
-          title: 'Faza 1: Wyjściowy Mur Obwodowy 3-2',
-          description: 'D1 na szczycie, D2 na prawym skrzydle, D3 na lewym skrzydle. D4 i D5 w trumnie. Pełne pokrycie linii rzutów za 3 punkty.',
+          endTime: 1.8,
+          title: 'Faza 1: Piłka na Lewym Skrzydle (O3) & Doskok D3',
+          description: 'O3 ma piłkę na lewym skrzydle. D3 natychmiast doskakuje na obwód, D1 asekuruje lewy łokieć, D2 schodzi na środek, D5 zabezpiecza dół.',
           coachingCues: ['Wysokie ręce na obwodzie', 'Ciasny rozstaw trójki obwodowej']
         },
         {
-          startTime: 1.5,
-          endTime: 4.5,
-          title: 'Faza 2: Krążenie Piłki po Obwodzie (O1 -> O3 -> O1)',
-          description: 'O1 podaje do O3 na lewe skrzydło. D3 natychmiast doskakuje, D1 asekuruje lewy łokieć. O3 nie ma miejsca na rzut i odgrywa z powrotem na szczyt.',
+          startTime: 1.8,
+          endTime: 4.0,
+          title: 'Faza 2: Podanie na Szczyt (O1) & Mur Trójki Obwodowej',
+          description: 'O3 odgrywa do O1 na szczyt. D1 natychmiast wychodzi na piłkę, D2 i D3 stają szeroko na skrzydłach, blokując wszelkie próby rzutu za 3.',
           coachingCues: ['Brak miejsca na rzut', 'Szybka rotacja górnej trójki']
         },
         {
-          startTime: 4.5,
-          endTime: 6.5,
+          startTime: 4.0,
+          endTime: 6.2,
           title: 'Faza 3: Przerzut na Prawe Skrzydło do O2 & Wyskoczenie D2',
-          description: 'O1 posyła szybkie podanie na prawe skrzydło do O2. D2 sprintuje w closeoucie, uniemożliwiając czyste złożenie się do rzutu.',
+          description: 'O1 posyła podanie do O2 na prawe skrzydło. D2 sprintuje w closeoucie, D1 przesuwa się na prawy łokieć, D4 pilnuje prawego dołu.',
           coachingCues: ['Sprint w obronie', 'Wyskok pionowy bez kontaktu ciał']
         },
         {
-          startTime: 6.5,
+          startTime: 6.2,
           endTime: 8.5,
           title: 'Faza 4: Efektowny Blok Rzutu za 3 przez D2 & Zabezpieczenie D4',
           description: 'O2 decyduje się na rzut z dystansu, lecz D2 blokuje piłkę w powietrzu! Odbitą piłkę pod koszem zbiera D4.',
@@ -1484,10 +1486,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PG',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 50, y: 82, heading: 0, action: 'idle' },
-            { time: 1.5, x: 50, y: 82, heading: 0, action: 'idle' },
-            { time: 3.5, x: 44, y: 80, heading: 270, action: 'idle' },
-            { time: 5.0, x: 50, y: 80, heading: 90, action: 'idle' },
+            { time: 0.0, x: 50, y: 82, heading: 270, action: 'idle' },
+            { time: 2.2, x: 50, y: 82, heading: 270, action: 'catch' },
+            { time: 3.8, x: 50, y: 82, heading: 90, action: 'idle' },
             { time: 8.5, x: 50, y: 80, heading: 0, action: 'idle' }
           ]
         },
@@ -1499,9 +1500,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           isOffense: true,
           keyframes: [
             { time: 0.0, x: 80, y: 64, heading: 270, action: 'idle' },
-            { time: 4.5, x: 82, y: 62, heading: 270, action: 'idle' },
-            { time: 5.5, x: 82, y: 62, heading: 270, action: 'catch' },
-            { time: 6.5, x: 82, y: 62, heading: 0, action: 'shoot' },
+            { time: 4.5, x: 82, y: 62, heading: 270, action: 'catch' },
+            { time: 6.2, x: 82, y: 62, heading: 0, action: 'shoot' },
             { time: 8.5, x: 82, y: 62, heading: 0, action: 'idle' }
           ]
         },
@@ -1512,9 +1512,8 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SF',
           isOffense: true,
           keyframes: [
-            { time: 0.0, x: 20, y: 64, heading: 90, action: 'idle' },
-            { time: 2.2, x: 18, y: 62, heading: 90, action: 'catch' },
-            { time: 3.5, x: 18, y: 62, heading: 45, action: 'idle' },
+            { time: 0.0, x: 20, y: 64, heading: 90, action: 'dribble' },
+            { time: 1.6, x: 20, y: 64, heading: 90, action: 'idle' },
             { time: 8.5, x: 18, y: 62, heading: 0, action: 'idle' }
           ]
         },
@@ -1548,10 +1547,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PG',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 50, y: 74, heading: 180, action: 'defend' },
-            { time: 1.5, x: 50, y: 74, heading: 180, action: 'defend' },
-            { time: 2.5, x: 38, y: 68, heading: 240, action: 'defend' }, // Asekuracja lewego skrzydła
-            { time: 5.0, x: 60, y: 70, heading: 120, action: 'defend' }, // Asekuracja prawego skrzydła
+            { time: 0.0, x: 38, y: 68, heading: 240, action: 'defend' }, // Lewy łokieć
+            { time: 2.2, x: 50, y: 75, heading: 180, action: 'defend' }, // Doskok do szczytu
+            { time: 4.5, x: 62, y: 70, heading: 120, action: 'defend' }, // Prawy łokieć
             { time: 8.5, x: 56, y: 68, heading: 0, action: 'defend' }
           ]
         },
@@ -1562,10 +1560,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SG',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 72, y: 62, heading: 180, action: 'defend' },
-            { time: 2.5, x: 62, y: 56, heading: 240, action: 'defend' }, // Przesunięcie do środka
-            { time: 5.5, x: 76, y: 60, heading: 90, action: 'defend' },  // Doskok w closeoucie
-            { time: 6.8, x: 78, y: 60, heading: 90, action: 'defend' },  // Blok rzutu!
+            { time: 0.0, x: 62, y: 56, heading: 240, action: 'defend' }, // Środek
+            { time: 2.2, x: 72, y: 66, heading: 180, action: 'defend' }, // Prawe skrzydło
+            { time: 4.5, x: 76, y: 60, heading: 90, action: 'defend' },  // Doskok w closeoucie
+            { time: 6.4, x: 78, y: 60, heading: 90, action: 'defend' },  // Blok rzutu w powietrzu!
             { time: 8.5, x: 76, y: 58, heading: 0, action: 'defend' }
           ]
         },
@@ -1576,9 +1574,9 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'SF',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 28, y: 62, heading: 180, action: 'defend' },
-            { time: 2.5, x: 22, y: 60, heading: 270, action: 'defend' }, // Doskok na lewym skrzydle
-            { time: 5.0, x: 34, y: 56, heading: 140, action: 'defend' }, // Przesunięcie do środka
+            { time: 0.0, x: 22, y: 60, heading: 270, action: 'defend' }, // Doskok na lewym skrzydle
+            { time: 2.2, x: 28, y: 66, heading: 180, action: 'defend' }, // Lewe skrzydło
+            { time: 4.5, x: 38, y: 58, heading: 140, action: 'defend' }, // Środek
             { time: 8.5, x: 36, y: 50, heading: 0, action: 'defend' }
           ]
         },
@@ -1589,10 +1587,10 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'PF',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 64, y: 26, heading: 180, action: 'defend' },
-            { time: 4.5, x: 66, y: 24, heading: 90, action: 'defend' },
+            { time: 0.0, x: 58, y: 22, heading: 270, action: 'defend' }, // Asekuracja kosza
+            { time: 4.5, x: 68, y: 24, heading: 90, action: 'defend' },  // Prawy dół
             { time: 7.0, x: 58, y: 20, heading: 0, action: 'defend' },
-            { time: 8.5, x: 54, y: 16, heading: 0, action: 'defend' } // Chwyt zablokowanej piłki
+            { time: 8.5, x: 54, y: 16, heading: 0, action: 'defend' }   // Zbiórka zablokowanej piłki!
           ]
         },
         {
@@ -1602,25 +1600,23 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           role: 'C',
           isOffense: false,
           keyframes: [
-            { time: 0.0, x: 36, y: 26, heading: 180, action: 'defend' },
-            { time: 2.5, x: 30, y: 24, heading: 270, action: 'defend' },
-            { time: 5.5, x: 44, y: 20, heading: 90, action: 'defend' },
+            { time: 0.0, x: 30, y: 24, heading: 270, action: 'defend' }, // Lewy dół
+            { time: 2.2, x: 36, y: 26, heading: 180, action: 'defend' },
+            { time: 4.5, x: 46, y: 20, heading: 90, action: 'defend' },  // Asekuracja kosza
             { time: 8.5, x: 46, y: 16, heading: 0, action: 'defend' }
           ]
         }
       ],
       ball: {
         keyframes: [
-          { time: 0.0, x: 50, y: 82, holderId: 'O1' },
-          { time: 1.5, x: 50, y: 82, holderId: 'O1' },
-          { time: 2.2, x: 18, y: 62, holderId: 'O3', isPass: true, arcHeight: 0.2 },
-          { time: 3.5, x: 18, y: 62, holderId: 'O3' },
-          { time: 4.2, x: 50, y: 80, holderId: 'O1', isPass: true, arcHeight: 0.2 },
-          { time: 4.8, x: 50, y: 80, holderId: 'O1' },
-          { time: 5.5, x: 82, y: 62, holderId: 'O2', isPass: true, arcHeight: 0.25 },
-          { time: 6.5, x: 82, y: 62, holderId: 'O2' },
-          { time: 6.8, x: 78, y: 60, holderId: null, isShot: true, arcHeight: 0.2 }, // Rzut zablokowany przez D2 na 78, 60
-          { time: 7.6, x: 58, y: 22, holderId: null, isPass: true, arcHeight: 0.4 }, // Zablokowana piłka leci w trumnę
+          { time: 0.0, x: 20, y: 64, holderId: 'O3' },
+          { time: 1.6, x: 20, y: 64, holderId: 'O3' },
+          { time: 2.2, x: 50, y: 82, holderId: 'O1', isPass: true, arcHeight: 0.2 },
+          { time: 3.8, x: 50, y: 82, holderId: 'O1' },
+          { time: 4.5, x: 82, y: 62, holderId: 'O2', isPass: true, arcHeight: 0.25 },
+          { time: 6.2, x: 82, y: 62, holderId: 'O2' },
+          { time: 6.4, x: 78, y: 60, holderId: null, isShot: true, arcHeight: 0.2 }, // Rzut zablokowany przez D2 na 78, 60
+          { time: 7.4, x: 58, y: 22, holderId: null, isPass: true, arcHeight: 0.4 }, // Zablokowana piłka leci w trumnę
           { time: 8.5, x: 54, y: 16, holderId: 'D4' } // Zabezpieczenie przez D4!
         ]
       }
