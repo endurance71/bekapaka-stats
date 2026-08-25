@@ -1,4 +1,5 @@
 import { backendPath, fetchJson, fetchJsonState } from './client'
+import { allowFakeData, resolveFallbackState } from './fallback'
 import { mapApiGameToSummary, mapApiGameToSummarySafe } from './map-game'
 import {
   rosterPlayerSchema,
@@ -8,7 +9,7 @@ import {
   type RosterPlayer,
   type TeamStanding
 } from './schemas'
-import { sanitizeNumber, sanitizeText } from './utils'
+import { parseCollectionItems, sanitizeNumber, sanitizeText } from './utils'
 
 export async function getLeagueTable(): Promise<TeamStanding[]> {
   const state = await getLeagueTableState()
@@ -22,7 +23,7 @@ function stateFromArray<T>(items: T[], errorMessage?: string): DataState<T[]> {
 }
 
 // ==========================================
-// FALLBACK DATA (BACKEND)
+// FALLBACK DATA (BACKEND) — only when SITE_ALLOW_FAKE_DATA=1
 // ==========================================
 
 const fallbackRoster: RosterPlayer[] = [
@@ -303,9 +304,12 @@ const fallbackGames: GameSummary[] = [
 
 export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> {
   try {
-    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), { revalidate: 900 })
+    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), {
+      revalidate: 900,
+      tags: ['backend', 'backend-table']
+    })
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackStandings, source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackStandings, [], response.message)
     }
 
     const rows = response.payload
@@ -320,36 +324,38 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
       }))
       .sort((a, b) => b.points - a.points)
 
-    const items = rows
-      .map((row, index) => {
-        const standing: Record<string, unknown> = {
-          name: row.name,
-          position: row.position > 0 ? row.position : index + 1,
-          wins: row.wins,
-          losses: row.losses
-        }
-        if (row.points > 0) standing.points = row.points
-        if (Number.isFinite(row.pointsFor)) standing.pointsFor = row.pointsFor
-        if (Number.isFinite(row.pointsAgainst)) standing.pointsAgainst = row.pointsAgainst
-        return standing
-      })
-      .map((item) => teamStandingSchema.parse(item))
+    const mapped = rows.map((row, index) => {
+      const standing: Record<string, unknown> = {
+        name: row.name,
+        position: row.position > 0 ? row.position : index + 1,
+        wins: row.wins,
+        losses: row.losses
+      }
+      if (row.points > 0) standing.points = row.points
+      if (Number.isFinite(row.pointsFor)) standing.pointsFor = row.pointsFor
+      if (Number.isFinite(row.pointsAgainst)) standing.pointsAgainst = row.pointsAgainst
+      return standing
+    })
+    const items = parseCollectionItems(mapped, teamStandingSchema, 'team-standing')
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackStandings, source: 'fallback', message: 'Brak danych tabeli z API.' }
+      return resolveFallbackState('empty', fallbackStandings, [], 'Brak danych tabeli z API.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackStandings, source: 'fallback', message: 'Nie udało się pobrać tabeli z backendu.' }
+    return resolveFallbackState('error', fallbackStandings, [], 'Nie udało się pobrać tabeli z backendu.')
   }
 }
 
 export async function getRecentGamesState(limit = 100): Promise<DataState<GameSummary[]>> {
   try {
-    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/games'), { revalidate: 300 })
+    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/games'), {
+      revalidate: 300,
+      tags: ['backend', 'backend-games']
+    })
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackGames.slice(0, limit), source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackGames.slice(0, limit), [], response.message)
     }
 
     const items = response.payload
@@ -357,12 +363,12 @@ export async function getRecentGamesState(limit = 100): Promise<DataState<GameSu
       .map((game, index) => mapApiGameToSummary(game, index))
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackGames.slice(0, limit), source: 'fallback', message: 'Brak meczów w API.' }
+      return resolveFallbackState('empty', fallbackGames.slice(0, limit), [], 'Brak meczów w API.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackGames.slice(0, limit), source: 'fallback', message: 'Nie udało się pobrać meczów z backendu.' }
+    return resolveFallbackState('error', fallbackGames.slice(0, limit), [], 'Nie udało się pobrać meczów z backendu.')
   }
 }
 
@@ -372,13 +378,15 @@ function findFallbackGameById(id: string): GameSummary | null {
 
 export async function getGameByIdState(id: string): Promise<DataState<GameSummary | null>> {
   const fallbackMatch = findFallbackGameById(id)
+  const allowFake = allowFakeData() && Boolean(fallbackMatch)
 
   try {
     const game = await fetchJson<Record<string, unknown>>(backendPath(`/api/games/${encodeURIComponent(id)}`), {
-      revalidate: 120
+      revalidate: 120,
+      tags: ['backend', 'backend-games']
     })
     if (!game) {
-      if (fallbackMatch) {
+      if (allowFake && fallbackMatch) {
         return {
           status: 'ok',
           data: fallbackMatch,
@@ -391,7 +399,7 @@ export async function getGameByIdState(id: string): Promise<DataState<GameSummar
 
     const mapped = mapApiGameToSummarySafe(game)
     if (!mapped) {
-      if (fallbackMatch) {
+      if (allowFake && fallbackMatch) {
         return {
           status: 'ok',
           data: fallbackMatch,
@@ -404,7 +412,7 @@ export async function getGameByIdState(id: string): Promise<DataState<GameSummar
 
     return { status: 'ok', data: mapped, source: 'live' }
   } catch {
-    if (fallbackMatch) {
+    if (allowFake && fallbackMatch) {
       return {
         status: 'ok',
         data: fallbackMatch,
@@ -428,44 +436,46 @@ export async function getRoster(): Promise<RosterPlayer[]> {
 
 export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
   try {
-    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/roster'), { revalidate: 900 })
+    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/roster'), {
+      revalidate: 900,
+      tags: ['backend', 'backend-roster']
+    })
     if (response.status === 'error') {
-      return { status: 'error', data: fallbackRoster, source: 'fallback', message: response.message }
+      return resolveFallbackState('error', fallbackRoster, [], response.message)
     }
 
-    const items = response.payload
-      .map((player, index) => ({
-        id: sanitizeText(player.id, String(index)),
-        firstName: sanitizeText(player.firstName, ''),
-        lastName: sanitizeText(player.lastName, ''),
-        position: sanitizeText(player.position, 'Brak'),
-        number: sanitizeText(player.number, '-'),
-        photo: player.photo ? String(player.photo) : null,
-        photoUrl: player.photo_url || player.photoUrl ? String(player.photo_url || player.photoUrl) : null,
-        ppg: player.ppg !== undefined ? sanitizeNumber(player.ppg, 0) : undefined,
-        rpg: player.rpg !== undefined ? sanitizeNumber(player.rpg, 0) : undefined,
-        apg: player.apg !== undefined ? sanitizeNumber(player.apg, 0) : undefined,
-        eval: player.eval !== undefined && player.eval !== null ? sanitizeNumber(player.eval, 0) : null,
-        fgPercentage: player.fgPercentage !== undefined ? sanitizeNumber(player.fgPercentage, 0) : undefined,
-        threePercentage: player.threePercentage !== undefined ? sanitizeNumber(player.threePercentage, 0) : undefined,
-        ftPercentage: player.ftPercentage !== undefined ? sanitizeNumber(player.ftPercentage, 0) : undefined,
-        tsPercentage: player.tsPercentage !== undefined ? sanitizeNumber(player.tsPercentage, 0) : undefined,
-        eFgPercentage: player.eFgPercentage !== undefined ? sanitizeNumber(player.eFgPercentage, 0) : undefined,
-        plusMinus: player.plusMinus !== undefined ? sanitizeNumber(player.plusMinus, 0) : undefined,
-        gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
-        birthDate: player.birthDate ? String(player.birthDate) : null,
-        heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,
-        aiDevelopmentSummary: player.aiDevelopmentSummary ? String(player.aiDevelopmentSummary) : null,
-        games: Array.isArray(player.games) ? player.games : undefined
-      }))
-      .map((item) => rosterPlayerSchema.parse(item))
+    const mapped = response.payload.map((player, index) => ({
+      id: sanitizeText(player.id, String(index)),
+      firstName: sanitizeText(player.firstName, ''),
+      lastName: sanitizeText(player.lastName, ''),
+      position: sanitizeText(player.position, 'Brak'),
+      number: sanitizeText(player.number, '-'),
+      photo: player.photo ? String(player.photo) : null,
+      photoUrl: player.photo_url || player.photoUrl ? String(player.photo_url || player.photoUrl) : null,
+      ppg: player.ppg !== undefined ? sanitizeNumber(player.ppg, 0) : undefined,
+      rpg: player.rpg !== undefined ? sanitizeNumber(player.rpg, 0) : undefined,
+      apg: player.apg !== undefined ? sanitizeNumber(player.apg, 0) : undefined,
+      eval: player.eval !== undefined && player.eval !== null ? sanitizeNumber(player.eval, 0) : null,
+      fgPercentage: player.fgPercentage !== undefined ? sanitizeNumber(player.fgPercentage, 0) : undefined,
+      threePercentage: player.threePercentage !== undefined ? sanitizeNumber(player.threePercentage, 0) : undefined,
+      ftPercentage: player.ftPercentage !== undefined ? sanitizeNumber(player.ftPercentage, 0) : undefined,
+      tsPercentage: player.tsPercentage !== undefined ? sanitizeNumber(player.tsPercentage, 0) : undefined,
+      eFgPercentage: player.eFgPercentage !== undefined ? sanitizeNumber(player.eFgPercentage, 0) : undefined,
+      plusMinus: player.plusMinus !== undefined ? sanitizeNumber(player.plusMinus, 0) : undefined,
+      gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
+      birthDate: player.birthDate ? String(player.birthDate) : null,
+      heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,
+      aiDevelopmentSummary: player.aiDevelopmentSummary ? String(player.aiDevelopmentSummary) : null,
+      games: Array.isArray(player.games) ? player.games : undefined
+    }))
+    const items = parseCollectionItems(mapped, rosterPlayerSchema, 'roster-player')
 
     if (items.length === 0) {
-      return { status: 'empty', data: fallbackRoster, source: 'fallback', message: 'Brak składu w API.' }
+      return resolveFallbackState('empty', fallbackRoster, [], 'Brak składu w API.')
     }
 
     return stateFromArray(items)
   } catch {
-    return { status: 'error', data: fallbackRoster, source: 'fallback', message: 'Nie udało się pobrać składu z backendu.' }
+    return resolveFallbackState('error', fallbackRoster, [], 'Nie udało się pobrać składu z backendu.')
   }
 }

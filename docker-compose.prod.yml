@@ -65,6 +65,7 @@ services:
       SITE_CMS_TOKEN: ${SITE_CMS_TOKEN:-}
       SITE_BASE_URL: ${SITE_BASE_URL:-https://bekapaka.pl}
       PREVIEW_SECRET: ${PREVIEW_SECRET:-}
+      SITE_REVALIDATE_SECRET: ${SITE_REVALIDATE_SECRET:-}
     ports:
       - "127.0.0.1:8082:3000"
     depends_on:

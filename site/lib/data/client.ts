@@ -35,15 +35,33 @@ function rewriteCmsHostForPublic(absoluteUrl: string): string {
   return absoluteUrl
 }
 
+type FetchCacheOptions = {
+  headers?: HeadersInit
+  revalidate?: number
+  tags?: string[]
+}
+
+function fetchInit(options?: FetchCacheOptions): RequestInit {
+  const revalidate = options?.revalidate ?? 300
+  const tags = options?.tags
+  if (revalidate === 0) {
+    return { headers: options?.headers, cache: 'no-store' }
+  }
+  return {
+    headers: options?.headers,
+    next: {
+      revalidate,
+      ...(tags && tags.length > 0 ? { tags } : {})
+    }
+  }
+}
+
 export async function fetchJson<T>(
   url: string,
-  options?: { headers?: HeadersInit; revalidate?: number }
+  options?: FetchCacheOptions
 ): Promise<T | null> {
   try {
-    const response = await fetch(url, {
-      headers: options?.headers,
-      next: { revalidate: options?.revalidate ?? 300 }
-    })
+    const response = await fetch(url, fetchInit(options))
     if (!response.ok) return null
     return (await response.json()) as T
   } catch {
@@ -53,14 +71,10 @@ export async function fetchJson<T>(
 
 export async function fetchJsonState<T>(
   url: string,
-  options?: { headers?: HeadersInit; revalidate?: number }
+  options?: FetchCacheOptions
 ): Promise<{ status: 'ok'; payload: T } | { status: 'error'; message: string }> {
   try {
-    const revalidate = options?.revalidate ?? 300
-    const response = await fetch(url, {
-      headers: options?.headers,
-      ...(revalidate === 0 ? { cache: 'no-store' as const } : { next: { revalidate } })
-    })
+    const response = await fetch(url, fetchInit(options))
     if (!response.ok) {
       return { status: 'error', message: `HTTP_${response.status}` }
     }

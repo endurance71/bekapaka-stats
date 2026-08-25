@@ -30,6 +30,24 @@
    - wydarzenie: 90-180 znakow
    - dokument: tytul do 80 znakow
 
+Cache tresci CMS: `revalidate` 60 s dla newsow i wydarzen (tagi `cms`, `cms-news`, `cms-events`). Bez webhooka nowy wpis moze pojawic sie z opoznieniem do ok. 60 s.
+
+## 1.2 Webhook Strapi → odswiezanie cache strony
+
+Endpoint: `POST` lub `GET` `https://bekapaka.pl/api/revalidate?secret=<PREVIEW_SECRET>`
+
+- Sekret: `SITE_REVALIDATE_SECRET` albo, gdy pusty, `PREVIEW_SECRET` (ten sam co podglad CMS).
+- Invaliduje tagi `cms`, `cms-news`, `cms-events` oraz sciezki `/` i `/aktualnosci`.
+- Nie wymaga zmian kodu `cms-app` — webhook ustawia sie w panelu Strapi.
+
+Konfiguracja w `https://cms.bekapaka.pl/admin` → Settings → Webhooks:
+
+1. URL: `https://bekapaka.pl/api/revalidate?secret=<wartosc PREVIEW_SECRET z VPS>`
+2. Zdarzenia: `entry.publish`, `entry.update`, `entry.delete`, `entry.unpublish` (minimum: News-post i Event).
+3. Po publikacji sprawdz homepage i `/aktualnosci` (twardy refresh).
+
+Dane zastępcze (fikcyjne newsy z maja/czerwca, tabela #6 5-6) **nie** pojawiaja sie na produkcji. Wlacza je wylacznie `SITE_ALLOW_FAKE_DATA=1` (lokalnie).
+
 ## 2. Smoke test po publikacji
 
 ### Krytyczne sciezki
@@ -84,8 +102,8 @@ Strona publiczna (`bkpk-site`) pobiera treści redakcyjne ze Strapi z nagłówki
 
 ### Objawy
 
-- Baner: „widzisz dane zastępcze…” z kodem `HTTP_401`
-- `/sponsorzy` (i inne sekcje CMS) pokazują fallback zamiast danych z panelu
+- Baner: „nie udało się pobrać danych z źródła” z kodem `HTTP_401` (fikcyjne newsy/tabela tylko przy `SITE_ALLOW_FAKE_DATA=1`)
+- `/sponsorzy` (i inne sekcje CMS) puste albo z komunikatem błędu zamiast danych z panelu
 
 ### Diagnostyka na VPS
 

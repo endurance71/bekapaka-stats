@@ -1,11 +1,30 @@
 import Link from 'next/link'
 import { SponsorLogoFrame } from '../sponsors/SponsorLogoFrame'
-import type { GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
+import type {
+  DataState,
+  EventItem,
+  GameSummary,
+  NearestHighlight,
+  NewsPost,
+  RosterPlayer,
+  SponsorItem,
+  TeamStanding
+} from '../../../lib/data'
 import { formatDateTime, formatPointBalance } from '../../../lib/format'
 import { NearestEventCard, NearestEventEmpty } from '../home/NearestEventCard'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 import { ArrowRightIcon } from '../shared/PublicIcons'
+import { DataStateNotice, shouldShowHomeDataNotice } from '../shared/DataStateNotice'
 import { FsmmSupportSection } from '../support/FsmmSupportSection'
+
+function rosterHasSeasonLeaders(roster: RosterPlayer[]): boolean {
+  if (roster.length === 0) return false
+  const anyGamesPlayed = roster.some((player) => (player.gamesPlayed ?? 0) > 0)
+  const anyNonZeroStat = roster.some(
+    (player) => (player.ppg ?? 0) > 0 || (player.rpg ?? 0) > 0 || (player.apg ?? 0) > 0
+  )
+  return anyGamesPlayed && anyNonZeroStat
+}
 
 export function MegaHomeTemplate({
   news,
@@ -14,6 +33,9 @@ export function MegaHomeTemplate({
   table,
   roster,
   sponsors,
+  newsState,
+  tableState,
+  eventsState,
 }: {
   news: NewsPost[]
   recentGames: GameSummary[]
@@ -21,17 +43,25 @@ export function MegaHomeTemplate({
   table: TeamStanding[]
   roster: RosterPlayer[]
   sponsors: SponsorItem[]
+  newsState?: DataState<NewsPost[]>
+  tableState?: DataState<TeamStanding[]>
+  eventsState?: DataState<EventItem[]>
 }) {
   const leadNews = news[0]
   const latestGames = recentGames.slice(0, 3)
   const hasRoster = roster.length > 0
-  const pointsLeader = hasRoster ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
-  const reboundsLeader = hasRoster ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
-  const assistsLeader = hasRoster ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
+  const hasSeasonLeaders = rosterHasSeasonLeaders(roster)
+  const pointsLeader = hasSeasonLeaders ? [...roster].sort((a, b) => (b.ppg || 0) - (a.ppg || 0))[0] : null
+  const reboundsLeader = hasSeasonLeaders ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
+  const assistsLeader = hasSeasonLeaders ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
   const normalizedSponsors = [...sponsors].sort((a, b) => (a.order || 999) - (b.order || 999))
   const tablePreview = table.slice(0, 5)
 
   const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka'))
+  const tableUnavailable = tableState?.status === 'error' || tableState?.source === 'fallback'
+  const showNewsNotice = newsState ? shouldShowHomeDataNotice(newsState.status, newsState.source) : false
+  const showTableNotice = tableState ? shouldShowHomeDataNotice(tableState.status, tableState.source) : false
+  const showEventsNotice = eventsState ? shouldShowHomeDataNotice(eventsState.status, eventsState.source) : false
 
   return (
     <div className='dashboard-home'>
@@ -53,7 +83,7 @@ export function MegaHomeTemplate({
               Gramy dla frajdy, rozwijamy pasję i pokazujemy, że basket jest dla każdego. Zobacz, jak radzi sobie nasza ekipa, sprawdź terminarz i zakochaj się w koszykówce razem z nami.
             </p>
             
-            {ourPosition && (
+            {ourPosition ? (
               <div className='hero-stats-row'>
                 <div className='hero-stat-badge'>
                   <span className='hero-stat-badge__label'>Pozycja</span>
@@ -70,6 +100,10 @@ export function MegaHomeTemplate({
                   </span>
                 </div>
               </div>
+            ) : (
+              <p className='hero-description muted'>
+                {tableUnavailable ? 'Tabela ligowa jest chwilowo niedostępna.' : 'Brak danych tabeli ligowej.'}
+              </p>
             )}
 
             <div className='hero-actions'>
@@ -88,6 +122,9 @@ export function MegaHomeTemplate({
             <h2>Najnowsze aktualności</h2>
             <Link href='/aktualnosci'>Zobacz wszystkie</Link>
           </div>
+          {showNewsNotice && newsState ? (
+            <DataStateNotice status={newsState.status} source={newsState.source} message={newsState.message} />
+          ) : null}
           {leadNews ? (
             <div className='news-feature'>
               {leadNews.coverImageUrl && (
@@ -118,13 +155,18 @@ export function MegaHomeTemplate({
             aria-hidden='true'
             style={{ backgroundImage: "url('/images/hero-event-basketball.jpg')" }}
           />
+          {showEventsNotice && eventsState ? (
+            <div className='next-event-data-notice'>
+              <DataStateNotice status={eventsState.status} source={eventsState.source} message={eventsState.message} />
+            </div>
+          ) : null}
           {nearestEvent ? <NearestEventCard highlight={nearestEvent} /> : <NearestEventEmpty />}
         </article>
 
         <article className='surface-card dashboard-leaders'>
           <p className='section-kicker'>Liderzy zespołu</p>
           <div className='leaders-list-v2'>
-            {pointsLeader && (
+            {hasSeasonLeaders && pointsLeader ? (
               <div className='leader-card-v2'>
                 <div className='leader-info'>
                   <span className='leader-label'>Punkty</span>
@@ -135,9 +177,9 @@ export function MegaHomeTemplate({
                   <div className='leader-progress-fill fill-points' style={{ width: `${Math.min((pointsLeader.ppg || 0) * 4, 100)}%` }}></div>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {reboundsLeader && (
+            {hasSeasonLeaders && reboundsLeader ? (
               <div className='leader-card-v2'>
                 <div className='leader-info'>
                   <span className='leader-label'>Zbiórki</span>
@@ -148,9 +190,9 @@ export function MegaHomeTemplate({
                   <div className='leader-progress-fill fill-rebounds' style={{ width: `${Math.min((reboundsLeader.rpg || 0) * 6, 100)}%` }}></div>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {assistsLeader && (
+            {hasSeasonLeaders && assistsLeader ? (
               <div className='leader-card-v2'>
                 <div className='leader-info'>
                   <span className='leader-label'>Asysty</span>
@@ -161,9 +203,11 @@ export function MegaHomeTemplate({
                   <div className='leader-progress-fill fill-assists' style={{ width: `${Math.min((assistsLeader.apg || 0) * 10, 100)}%` }}></div>
                 </div>
               </div>
-            )}
+            ) : null}
 
-            {!pointsLeader && <p className='muted'>Brak danych statystycznych.</p>}
+            {!hasSeasonLeaders && (
+              <p className='muted'>{hasRoster ? 'Brak statystyk sezonu' : 'Brak danych statystycznych.'}</p>
+            )}
           </div>
         </article>
 
@@ -173,6 +217,9 @@ export function MegaHomeTemplate({
             <h2>Tabela ligowa</h2>
             <Link href='/tabela'>Pełna tabela</Link>
           </div>
+          {showTableNotice && tableState ? (
+            <DataStateNotice status={tableState.status} source={tableState.source} message={tableState.message} />
+          ) : null}
           <div className='table-shell-v2'>
             <table className='data-table-v2'>
               <thead>
@@ -184,7 +231,13 @@ export function MegaHomeTemplate({
                 </tr>
               </thead>
               <tbody>
-                {tablePreview.map((row) => {
+                {tablePreview.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className='muted'>
+                      {tableUnavailable ? 'Tabela ligowa jest chwilowo niedostępna.' : 'Brak danych tabeli ligowej.'}
+                    </td>
+                  </tr>
+                ) : tablePreview.map((row) => {
                   const isBkp = row.name.toLowerCase().includes('bekapaka')
                   return (
                     <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight-row' : undefined}>
