@@ -21,3 +21,4 @@ Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 - Scraping wyłącznie przez **Scrapling** (`backend/scripts/kalk_scraper.py`)
 - Audyt danych KALK: `node backend/scripts/kalk-data-audit.js` — szczegóły w [docs/scraping.md](docs/scraping.md#audyt-danych-kalk)
 - Strapi MCP: `https://cms.bekapaka.pl/mcp` (wbudowany, `mcp.enabled` w `cms-app/config/server.js`). Auth: **Admin token** z panelu Strapi — nie `SITE_CMS_TOKEN`. Konfiguracja Cursora tylko lokalnie w `~/.cursor/mcp.json` (token nie w Git). Rotacja: [docs/security-rotation.md](docs/security-rotation.md)
+- Podgląd CMS: Preview w `cms-app/config/admin.js` → `https://bekapaka.pl/api/preview` (`PREVIEW_SECRET` na VPS). Szkice aktualności tylko w draft mode, nie na stronie publicznej.

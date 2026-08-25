@@ -63,6 +63,8 @@ services:
       SITE_CMS_PUBLIC_URL: ${SITE_CMS_PUBLIC_URL:-https://cms.bekapaka.pl}
       SITE_BACKEND_API_URL: ${SITE_BACKEND_API_URL:-http://bkpk-backend:4001}
       SITE_CMS_TOKEN: ${SITE_CMS_TOKEN:-}
+      SITE_BASE_URL: ${SITE_BASE_URL:-https://bekapaka.pl}
+      PREVIEW_SECRET: ${PREVIEW_SECRET:-}
     ports:
       - "127.0.0.1:8082:3000"
     depends_on:
@@ -86,6 +88,8 @@ services:
       ADMIN_JWT_SECRET: ${CMS_ADMIN_JWT_SECRET:?CMS_ADMIN_JWT_SECRET required}
       JWT_SECRET: ${CMS_JWT_SECRET:?CMS_JWT_SECRET required}
       TRANSFER_TOKEN_SALT: ${CMS_TRANSFER_TOKEN_SALT:?CMS_TRANSFER_TOKEN_SALT required}
+      CLIENT_URL: ${CLIENT_URL:-https://bekapaka.pl}
+      PREVIEW_SECRET: ${PREVIEW_SECRET:-}
     volumes:
       - ./data/cms-data:/opt/app/.tmp
       - ./data/cms-uploads:/opt/app/public/uploads

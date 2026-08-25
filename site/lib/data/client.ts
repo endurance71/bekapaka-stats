@@ -56,9 +56,10 @@ export async function fetchJsonState<T>(
   options?: { headers?: HeadersInit; revalidate?: number }
 ): Promise<{ status: 'ok'; payload: T } | { status: 'error'; message: string }> {
   try {
+    const revalidate = options?.revalidate ?? 300
     const response = await fetch(url, {
       headers: options?.headers,
-      next: { revalidate: options?.revalidate ?? 300 }
+      ...(revalidate === 0 ? { cache: 'no-store' as const } : { next: { revalidate } })
     })
     if (!response.ok) {
       return { status: 'error', message: `HTTP_${response.status}` }
