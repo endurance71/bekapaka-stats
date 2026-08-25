@@ -1,29 +1,19 @@
-'use client'
-
 import type { NearestHighlight } from '../../../lib/data'
-import { addToCalendar, highlightToCalendarPayload } from '../../../lib/calendar-ics'
+import { calendarIcsHref, ICS_FILENAME } from '../../../lib/calendar-ics'
 
 interface NearestEventCalendarActionsProps {
   highlight: NearestHighlight
 }
 
 export function NearestEventCalendarActions({ highlight }: NearestEventCalendarActionsProps) {
-  const payload = highlightToCalendarPayload(highlight)
-  if (!payload) return null
-
-  const handleAddToCalendar = () => {
-    void addToCalendar(payload)
-  }
+  const href = calendarIcsHref(highlight)
+  if (!href) return null
 
   return (
     <div className='next-event-hero__calendar-actions'>
-      <button
-        type='button'
-        className='next-event-hero__calendar-btn'
-        onClick={handleAddToCalendar}
-      >
+      <a className='next-event-hero__calendar-btn' href={href} download={ICS_FILENAME}>
         Dodaj do kalendarza
-      </button>
+      </a>
     </div>
   )
 }
