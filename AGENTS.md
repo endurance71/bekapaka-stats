@@ -20,3 +20,4 @@ Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 - MOYA: `~/apps/moya-native-app`, port `3000` — **nie modyfikować bez wyraźnej prośby użytkownika**
 - Scraping wyłącznie przez **Scrapling** (`backend/scripts/kalk_scraper.py`)
 - Audyt danych KALK: `node backend/scripts/kalk-data-audit.js` — szczegóły w [docs/scraping.md](docs/scraping.md#audyt-danych-kalk)
+- Strapi MCP: `https://cms.bekapaka.pl/mcp` (wbudowany, `mcp.enabled` w `cms-app/config/server.js`). Auth: **Admin token** z panelu Strapi — nie `SITE_CMS_TOKEN`. Konfiguracja Cursora tylko lokalnie w `~/.cursor/mcp.json` (token nie w Git). Rotacja: [docs/security-rotation.md](docs/security-rotation.md)

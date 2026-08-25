@@ -74,7 +74,16 @@ curl -fsS -X POST \
   "http://127.0.0.1:4001/api/internal/kalk/sync?mode=full"
 ```
 
-## 6. Weryfikacja
+## 6. Token MCP Strapi (Cursor)
+
+Endpoint: `https://cms.bekapaka.pl/mcp`. Używa **Admin token** z panelu Strapi (Settings → Admin tokens), nie `SITE_CMS_TOKEN`.
+
+Po wycieku lub rotacji:
+
+1. W [cms.bekapaka.pl/admin](https://cms.bekapaka.pl/admin) unieważnij token `cursor-mcp` i utwórz nowy (treści: news-posts, events, sponsors, documents, homepage-sections — CRUD + publish).
+2. Podmień wartość w lokalnym `~/.cursor/mcp.json` (`strapi-mcp` → `Authorization: Bearer …`). Nie commituj tokenu.
+
+## 7. Weryfikacja
 
 ```bash
 curl -s http://127.0.0.1:4001/health
