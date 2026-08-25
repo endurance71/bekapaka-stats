@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import { NewsCard } from '../../components/public/shared/NewsCard'
 import { getNewsPostsState, getSiteMetadataBase } from '../../lib/data'
+import { draftMode } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
 }
 
 export default async function NewsPage() {
-  const newsState = await getNewsPostsState(20)
+  const { isEnabled } = await draftMode()
+  const newsState = await getNewsPostsState(20, { includeDrafts: isEnabled })
   const news = newsState.data
 
   return (
