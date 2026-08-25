@@ -47,6 +47,14 @@ export interface TacticalStroke {
   endTime?: number;
 }
 
+export interface ZoneAreaDefinition {
+  id: string;
+  playerId: string;
+  label: string;
+  color?: string;
+  polygon: Array<{ x: number; y: number }>;
+}
+
 export interface PlayTimelineData {
   duration: number; // domyślnie 8.5s
   players: PlayerTrack[];
@@ -61,6 +69,7 @@ export interface PlayTimelineData {
   }>;
   coachingKeys?: string[];
   outcomeText?: string;
+  zoneAreas?: ZoneAreaDefinition[];
 }
 
 export interface RenderedPlayerState {
