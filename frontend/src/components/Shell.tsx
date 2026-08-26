@@ -25,6 +25,9 @@ import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { AppFooter } from './AppFooter';
 import { useBreakpoint } from '../hooks/useIsMobile';
+import { OfflineIndicator } from './pwa/OfflineIndicator';
+import { InstallPromptBanner } from './pwa/InstallPromptBanner';
+import { UpdateNotification } from './pwa/UpdateNotification';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
@@ -265,6 +268,10 @@ export default function Shell({ children }: { children: ReactNode }) {
           links={links}
           onLogout={handleLogout}
         />
+
+        <OfflineIndicator />
+        <InstallPromptBanner />
+        <UpdateNotification />
 
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-bkpk-primary/5 blur-[120px] rounded-full pointer-events-none -mr-48 -mt-48" />
         <div className="hidden md:block absolute bottom-0 left-0 w-[500px] h-[500px] bg-bkpk-success/5 blur-[120px] rounded-full pointer-events-none -ml-48 -mb-48" />

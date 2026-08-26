@@ -468,9 +468,13 @@ function LoginLogs() {
                         Szukaj użytkownika
                     </label>
                     <input
-                        type="text"
+                        type="search"
+                        inputMode="search"
+                        enterKeyHint="search"
+                        autoCorrect="off"
+                        autoCapitalize="none"
                         placeholder="Wpisz login..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
                         value={usernameFilter}
                         onChange={(e) => setUsernameFilter(e.target.value)}
                     />
@@ -846,9 +850,13 @@ function UserManagement() {
                         Szukaj (imię, nazwisko, login)
                     </label>
                     <input
-                        type="text"
+                        type="search"
+                        inputMode="search"
+                        enterKeyHint="search"
+                        autoCorrect="off"
+                        autoCapitalize="none"
                         placeholder="Szukaj..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />

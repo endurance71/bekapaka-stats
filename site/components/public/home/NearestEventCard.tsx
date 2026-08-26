@@ -55,11 +55,12 @@ function NearestEventCountdown({ startsAt, className = '' }: { startsAt: string;
   if (!Number.isFinite(targetMs)) return null
 
   return (
-    <p className={`next-event-hero__countdown ${className}`} aria-live='polite'>
+    <p className={`next-event-hero__countdown ${className}`}>
       <span className='next-event-hero__countdown-label'>Do startu</span>
-      <span className='next-event-hero__countdown-value' suppressHydrationWarning>
+      <span className='next-event-hero__countdown-value' suppressHydrationWarning aria-hidden='true'>
         {label}
       </span>
+      <span className='sr-only'>Odliczanie do rozpoczęcia wydarzenia</span>
     </p>
   )
 }

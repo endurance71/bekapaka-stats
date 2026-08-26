@@ -14,7 +14,13 @@ export function NewsCard({
       <Link href={`/aktualnosci/${item.slug}`} className='news-card__link'>
         <div className='news-card__media'>
           {item.coverImageUrl ? (
-            <img src={item.coverImageUrl} alt='' className='news-card__image' />
+            <img
+              src={item.coverImageUrl}
+              alt=''
+              className='news-card__image'
+              loading='lazy'
+              decoding='async'
+            />
           ) : (
             <div className='news-card__placeholder' aria-hidden='true'>
               <span>BKP</span>
