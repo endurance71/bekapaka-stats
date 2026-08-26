@@ -90,6 +90,8 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                          src={resolvePlayerPhoto(player)}
                                          onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
+                                         loading="lazy"
+                                         decoding="async"
                                          alt=""
                                      />
                                      <div className={cn(

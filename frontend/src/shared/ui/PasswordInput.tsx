@@ -40,18 +40,17 @@ export function PasswordInput({
           id={inputId}
           type={showPassword ? 'text' : 'password'}
           required={required}
-          className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 pr-12 text-sm text-bkpk-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+          className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 pr-12 text-base sm:text-sm text-bkpk-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
-          inputMode={showPassword ? 'text' : 'text'}
+          inputMode="text"
         />
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-bkpk-text-muted hover:text-bkpk-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center"
-          tabIndex={-1}
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-bkpk-text-muted hover:text-bkpk-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
         >
           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

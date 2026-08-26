@@ -56,6 +56,8 @@ export function RosterList({ roster }: RosterListProps) {
                       src={resolvePlayerPhoto(player)}
                       alt=''
                       className='player-card__photo'
+                      loading='lazy'
+                      decoding='async'
                     />
                   )}
                   <div className='player-card__scrim' />

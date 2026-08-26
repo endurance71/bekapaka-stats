@@ -195,6 +195,8 @@ export default function PlayerProfile() {
                                     src={playerPhoto}
                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                     className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all duration-300"
+                                    loading="lazy"
+                                    decoding="async"
                                     alt=""
                                 />
                                 <div className="absolute -bottom-1 -right-1 w-9 h-9 md:w-12 md:h-12 bg-bkpk-bg border border-bkpk-border-strong rounded-xl md:rounded-2xl flex items-center justify-center shadow-2xl">

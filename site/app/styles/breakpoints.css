@@ -34,4 +34,9 @@
     animation: none;
     background: var(--color-skeleton-from);
   }
+
+  .sponsors-slider-track-premium {
+    animation: none !important;
+    overflow-x: auto;
+  }
 }

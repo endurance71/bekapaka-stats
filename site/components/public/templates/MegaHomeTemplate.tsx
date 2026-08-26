@@ -129,7 +129,7 @@ export function MegaHomeTemplate({
             <div className='news-feature'>
               {leadNews.coverImageUrl && (
                 <div className='news-feature__image-wrap'>
-                  <img src={leadNews.coverImageUrl} alt='' />
+                  <img src={leadNews.coverImageUrl} alt='' loading='lazy' decoding='async' />
                 </div>
               )}
               <div className='news-feature__content'>
@@ -341,6 +341,8 @@ export function MegaHomeTemplate({
                             src={resolvePlayerPhoto(player)}
                             alt=''
                             className='home-player-card__image-premium'
+                            loading='lazy'
+                            decoding='async'
                           />
                         )}
                       </div>

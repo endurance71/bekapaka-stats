@@ -218,6 +218,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                         src={resolveLeaderPhoto(player)}
                                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                                         className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         alt=""
                                                     />
                                                 </div>
@@ -265,6 +267,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                         src={resolveLeaderPhoto(player)}
                                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                                         className="w-full h-full object-cover"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         alt=""
                                                     />
                                                 </div>
@@ -340,6 +344,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                                     src={resolveLeaderPhoto(player)}
                                                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                                                     className="w-full h-full object-cover"
+                                                                    loading="lazy"
+                                                                    decoding="async"
                                                                     alt=""
                                                                 />
                                                             </div>

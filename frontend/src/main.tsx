@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { initPwaSafeArea } from './lib/pwaSafeArea';
+import { registerServiceWorker } from './lib/pwa';
 import './styles/global.css';
 
 initPwaSafeArea();
+registerServiceWorker();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

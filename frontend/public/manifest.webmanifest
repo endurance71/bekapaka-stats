@@ -7,6 +7,7 @@
   "background_color": "#0B0B0C",
   "theme_color": "#0B0B0C",
   "orientation": "portrait-primary",
+  "categories": ["sports", "productivity"],
   "icons": [
     {
       "src": "/favicon.png",
@@ -16,9 +17,53 @@
     },
     {
       "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Pulpit Główny",
+      "short_name": "Pulpit",
+      "url": "/dashboard",
+      "icons": [{ "src": "/favicon.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Tabela i Liderzy",
+      "short_name": "Liga",
+      "url": "/league",
+      "icons": [{ "src": "/favicon.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Mecze i Statystyki",
+      "short_name": "Mecze",
+      "url": "/games",
+      "icons": [{ "src": "/favicon.png", "sizes": "32x32" }]
+    },
+    {
+      "name": "Mój Profil",
+      "short_name": "Profil",
+      "url": "/profile",
+      "icons": [{ "src": "/favicon.png", "sizes": "32x32" }]
     }
   ]
 }
