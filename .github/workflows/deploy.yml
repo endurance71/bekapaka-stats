@@ -195,25 +195,36 @@ jobs:
             export BKPK_IMAGE_TAG="$GITHUB_SHA"
             docker compose -f docker-compose.prod.yml config --quiet
             docker compose -f docker-compose.prod.yml pull bkpk-backend bkpk-frontend bkpk-site
-            if ! docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site; then
-              echo 'Deploy failed; restoring previous BeKaPaKa images.'
+            deployed=()
+            rollback() {
+              echo 'Wdrażanie nieudane; przywracam poprzednie obrazy zmienionych usług.' >&2
               export BKPK_IMAGE_TAG="$rollback_tag"
-              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
-              exit 1
-            fi
-            healthy=false
-            for attempt in $(seq 1 30); do
-              if curl -fsS --max-time 3 http://127.0.0.1:4001/api/health >/dev/null \
-                && curl -fsS --max-time 3 http://127.0.0.1:8081/ >/dev/null \
-                && curl -fsS --max-time 3 http://127.0.0.1:8082/ >/dev/null; then
-                healthy=true
-                break
+              for ((i=${#deployed[@]}-1; i>=0; i--)); do
+                docker compose -f docker-compose.prod.yml up -d --no-deps "bkpk-${deployed[i]}" || true
+              done
+            }
+            deploy_one() {
+              service="$1"
+              endpoint="$2"
+              deployed+=("$service")
+              if ! docker compose -f docker-compose.prod.yml up -d --no-deps "bkpk-$service"; then
+                rollback
+                exit 1
               fi
-              sleep 2
-            done
-            if [ "$healthy" != true ]; then
-              echo 'Health checks failed; restoring previous BeKaPaKa images.'
-              export BKPK_IMAGE_TAG="$rollback_tag"
-              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
-              exit 1
-            fi
+              healthy=false
+              for attempt in $(seq 1 30); do
+                if curl -fsS --max-time 3 "$endpoint" >/dev/null; then
+                  healthy=true
+                  break
+                fi
+                sleep 2
+              done
+              if [ "$healthy" != true ]; then
+                echo "Kontrola zdrowia usługi $service nie powiodła się." >&2
+                rollback
+                exit 1
+              fi
+            }
+            deploy_one backend http://127.0.0.1:4001/api/health
+            deploy_one site http://127.0.0.1:8082/
+            deploy_one frontend http://127.0.0.1:8081/

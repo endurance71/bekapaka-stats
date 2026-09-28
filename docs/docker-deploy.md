@@ -3,12 +3,12 @@
 ## Wymagania
 - Docker & Docker Compose na serwerze.
 - Skonfigurowane repozytorium GitHub z Actions.
-- Przekierowanie przez reverse proxy (np. Nginx w Moya Stacja).
+- Przekierowanie przez Caddy zgodnie z `vps-runbook.md`.
 
 ## Automatyzacja (GitHub Actions)
 Aplikacja jest wdrażana automatycznie po każdym `push` do gałęzi `main`, ale dopiero po przejściu testów backendu i panelu, kontroli migracji Prisma na pustym PostgreSQL oraz kontroli jakości strony. Ten sam zestaw sprawdzeń uruchamia się dla pull requestów do `main` bez deployu.
 
-Workflow sprawdza cztery aplikacje (w tym build CMS i regresje scrapera) oraz audytuje produkcyjne zależności z bramką dla podatności krytycznych. Buduje i publikuje obrazy **backend**, **frontend**, **site** i **cms** z tagiem SHA commita i `latest`. Automatyczny deploy pobiera tag SHA i aktualizuje tylko pierwsze trzy usługi. CMS wdraża się osobnym, ręcznie uruchamianym workflow **Deploy CMS to VPS** z tego samego commita; nie wymaga budowania na VPS.
+Workflow sprawdza cztery aplikacje (w tym build CMS i regresje scrapera) oraz audytuje produkcyjne zależności z bramką dla podatności krytycznych. Buduje i publikuje obrazy **backend**, **frontend**, **site** i **cms** z tagiem SHA commita i `latest`. Automatyczny deploy pobiera tag SHA i aktualizuje kolejno backend, witrynę i panel, sprawdzając zdrowie po każdym etapie; przy błędzie przywraca poprzedni obraz zmienionych usług. CMS wdraża się osobnym, ręcznie uruchamianym workflow **Deploy CMS to VPS** z tego samego commita; nie wymaga budowania na VPS.
 
 Backend stosuje wersjonowane migracje (`prisma migrate deploy`) przed uruchomieniem API. Błąd migracji zatrzymuje start; nie jest już ukrywany. Przed pierwszym wdrożeniem po zmianie migracji wykonaj backup bazy zgodnie z [vps-runbook.md](./vps-runbook.md) i sprawdź status migracji. Rollback obrazu **nie cofa schematu bazy** — nowe migracje muszą być kompatybilne wstecz.
 
@@ -44,9 +44,15 @@ Jeśli chcesz wymusić aktualizację ręcznie na VPS (po zalogowaniu do GHCR):
 cd /opt/bekapaka-stats
 echo "$CR_PAT" | docker login ghcr.io -u TWOJ_GITHUB_USER --password-stdin
 docker compose -f docker-compose.prod.yml pull bkpk-backend bkpk-frontend bkpk-site
-docker compose -f docker-compose.prod.yml up -d
-docker image prune -a -f   # po udanym starcie — oszczędność dysku
+docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend
+curl -fsS http://127.0.0.1:4001/api/health
+docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-site
+curl -fsS http://127.0.0.1:8082/
+docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-frontend
+curl -fsS http://127.0.0.1:8081/
 ```
+
+Nie uruchamiaj masowego `docker image prune -a` bez sprawdzenia zachowanych obrazów rollbacku.
 
 CMS (`bkpk-cms`) pobiera gotowy obraz GHCR. Domyślny tag `cms:legacy` jest przypisany na obecnym VPS do obrazu działającego przed migracją; zapobiega niezamierzonej aktualizacji CMS przy zwykłym `docker compose up`. Na nowym VPS przed uruchomieniem całości ustaw `BKPK_CMS_IMAGE_TAG` na istniejący tag obrazu. Przed ręcznym workflow sprawdź, czy obraz `cms:<SHA>` jest już opublikowany oraz czy na VPS jest co najmniej 1 GiB dostępnej pamięci i 2 GiB wolnego dysku. Workflow wykonuje spójny backup SQLite i uploadów do `/home/debian/backups/bekapaka-cms-*`, sprawdza `PRAGMA quick_check`, wdraża obraz, kontroluje `/_health` i dopiero wtedy zapisuje `BKPK_CMS_IMAGE_TAG=<SHA>` w produkcyjnym `.env`. Przy błędzie zachowuje backup oraz tag poprzedniego obrazu. **Nie przywracaj samego obrazu bez sprawdzenia kompatybilności bazy po migracji Strapi**; w razie potrzeby przywróć razem SQLite i uploady z tej samej kopii. Po automatycznej kontroli zdrowia zweryfikuj ręcznie panel `/admin`, MCP, publikację szkicu i podgląd CMS.
 
