@@ -91,6 +91,35 @@ jobs:
             echo '::endgroup::'
           done
 
+  docker-build-smoke:
+    if: github.event_name == 'pull_request'
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+          - name: frontend
+            context: .
+            dockerfile: ./frontend/Dockerfile.prod
+          - name: site
+            context: .
+            dockerfile: ./site/Dockerfile.prod
+          - name: cms
+            context: ./cms-app
+            dockerfile: ./cms-app/Dockerfile.prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.name }} image without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
+
   build-and-push:
     if: github.event_name != 'pull_request'
     needs: quality

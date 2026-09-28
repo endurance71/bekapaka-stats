@@ -41,7 +41,7 @@ kalk-koszalin.com
 kalk_scraper.py  (wyłącznie Scrapling Fetcher.get; błąd pobrania przerywa import)
         │
         ▼
-kalk_stats.json   (w katalogu nadrzędnym względem backend: ../kalk_stats.json)
+kalk_stats.json   (w katalogu backend: backend/kalk_stats.json)
         │
         ▼
 runScrapeImportPipeline()
