@@ -7,10 +7,10 @@ until PGPASSWORD=$DB_PASSWORD psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -c 
 done
 echo "PostgreSQL jest gotowy."
 
-# Uruchom Prisma DB push
-echo "Synchronizacja schematu bazy danych..."
+# Zastosuj wersjonowane migracje; błąd zatrzymuje start API.
+echo "Stosowanie migracji bazy danych..."
 npx prisma generate
-npx prisma db push || true
+npx prisma migrate deploy
 
 # Synchronizacja kodu z wolumenu (zapobieganie E-35 na Macu)
 if [ -d "/app_sync" ]; then

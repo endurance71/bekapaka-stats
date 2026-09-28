@@ -2,6 +2,7 @@
 # Data — never commit raw Postgres directories or backups
 data/pgdata/
 data/pgdata_backup*/
+data/pgdata_corrupted_*/
 project.tar.gz
 *.tar.gz
 kalk_stats.json
@@ -59,4 +60,3 @@ Sponsorzy/
 Thumbs.db
 * 2*
 * 3*
-

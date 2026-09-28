@@ -76,6 +76,8 @@ import { fileURLToPath } from 'node:url';
 import { prisma } from './lib/prisma.js';
 import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
+import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
+import { createLoginThrottle } from './lib/loginThrottle.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -84,12 +86,17 @@ const KALK_SCRAPLING_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scraper.py')
 const KALK_GAP_SCRAPE_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scrape_gaps.py');
 const KALK_SCRAPLING_OUTPUT = path.join(__dirname, 'kalk_stats.json');
 const app = express();
+const loginThrottle = createLoginThrottle();
+const allowedOrigins = new Set([
+  'https://panel.bekapaka.pl',
+  'https://bekapaka.pl',
+  ...(process.env.CORS_ALLOWED_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean),
+  ...(process.env.NODE_ENV === 'production' ? [] : ['http://localhost:5173', 'http://127.0.0.1:5173'])
+]);
 app.use(cors({
-  origin: true, // Reflect request origin
-  credentials: true
+  origin: (origin, callback) => callback(null, !origin || allowedOrigins.has(origin))
 }));
 app.use(express.json({ limit: '10mb' }));
-app.use(['/api/tactics', '/tactics'], tacticsRouter);
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -119,13 +126,11 @@ const authenticateToken = (req, res, next) => {
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    console.warn(`[AUTH] Missing token for ${req.url}. Headers:`, req.headers);
     return res.sendStatus(401);
   }
 
   jwt.verify(token, SECRET_KEY, (err, user) => {
     if (err) {
-      console.warn(`[AUTH] Token verification failed for ${req.url}: ${err.message}. Token prefix: ${token.substring(0, 10)}...`);
       return res.sendStatus(403);
     }
     req.user = user;
@@ -144,14 +149,27 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
+app.use(['/api/tactics', '/tactics'], authenticateToken, (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return requireAdmin(req, res, next);
+  }
+  next();
+}, tacticsRouter);
+
 app.post(['/api/auth/login', '/auth/login'], async (req, res) => {
-  console.log(`[AUTH] Login attempt for: ${req.body.username}`);
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Brak danych logowania' });
+  const { username, password } = req.body || {};
+  if (typeof username !== 'string' || typeof password !== 'string'
+    || !username || !password || username.length > 128 || password.length > 1024) {
+    return res.status(400).json({ error: 'Brak danych logowania' });
+  }
+  if (!loginThrottle.check(req.ip, username)) {
+    return res.status(429).json({ error: 'Zbyt wiele prób logowania. Spróbuj później.' });
+  }
 
   const result = await loginUser(username, password, req.ip);
   if (!result) return res.status(401).json({ error: 'Błędny login lub hasło' });
 
+  loginThrottle.clear(req.ip, username);
   res.json(result);
 });
 
@@ -244,7 +262,7 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
   }
 });
 
-app.post(['/api/games', '/games'], async (req, res) => {
+app.post(['/api/games', '/games'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const game = await createGame(req.body);
     res.status(201).json(game);
@@ -253,7 +271,7 @@ app.post(['/api/games', '/games'], async (req, res) => {
   }
 });
 
-app.put(['/api/games/:id', '/games/:id'], async (req, res) => {
+app.put(['/api/games/:id', '/games/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = await updateGame(req.params.id, req.body);
     res.json(updated);
@@ -262,7 +280,7 @@ app.put(['/api/games/:id', '/games/:id'], async (req, res) => {
   }
 });
 
-app.delete(['/api/games/:id', '/games/:id'], async (req, res) => {
+app.delete(['/api/games/:id', '/games/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     await deleteGame(req.params.id);
     res.json({ success: true });
@@ -275,7 +293,7 @@ app.delete(['/api/games/:id', '/games/:id'], async (req, res) => {
 app.get(['/api/roster', '/roster'], async (req, res) => {
   try {
     const roster = await getRoster(req.query.seasonId);
-    res.json(roster);
+    res.json(roster.map(toPublicRosterPlayer));
   } catch (err) {
     console.error('Roster error:', err);
     res.status(500).json({ error: 'Błąd pobierania składu' });
@@ -285,17 +303,19 @@ app.get(['/api/roster', '/roster'], async (req, res) => {
 app.get(['/api/players', '/players'], async (req, res) => {
   try {
     const players = await listAllPlayers(req.query.seasonId);
-    res.json(players);
+    res.json(players.map(toPublicRosterPlayer));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania zawodników' });
   }
 });
 
-app.get(['/api/players/:id', '/players/:id'], async (req, res) => {
+app.get(['/api/players/:id', '/players/:id'], authenticateToken, async (req, res) => {
   try {
     const player = await getPlayerById(req.params.id);
     if (!player) return res.status(404).json({ error: 'Zawodnik nie znaleziony' });
-    res.json(player);
+    res.json(toPlayerProfileResponse(player, {
+      includeDevelopment: req.user?.role === 'ADMIN' || req.user?.id === player.id
+    }));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania danych zawodnika' });
   }
@@ -1067,7 +1087,7 @@ app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requ
 });
 
 // --- REMAINING ROUTES ---
-app.get(['/api/plays', '/plays'], async (req, res) => res.json(await listAllPlays(req.query.category)));
+app.get(['/api/plays', '/plays'], authenticateToken, async (req, res) => res.json(await listAllPlays(req.query.category)));
 app.get(['/api/league/table', '/league/table'], async (req, res) => {
   const phase = req.query.phase || 'regular';
   res.json(await getLeagueTable(phase, req.query.seasonId));
@@ -1108,11 +1128,11 @@ app.post(['/api/internal/kalk/sync', '/internal/kalk/sync'], async (req, res) =>
   }
 });
 
-app.post(['/api/coach-notes/:gameId', '/coach-notes/:gameId'], async (req, res) => {
+app.post(['/api/coach-notes/:gameId', '/coach-notes/:gameId'], authenticateToken, requireAdmin, async (req, res) => {
   res.json(await updateCoachNote(req.params.gameId, req.body.note || ''));
 });
 
-app.post(['/api/tags/:gameId', '/tags/:gameId'], async (req, res) => {
+app.post(['/api/tags/:gameId', '/tags/:gameId'], authenticateToken, requireAdmin, async (req, res) => {
   res.json(await addTag(req.params.gameId, req.body.tag));
 });
 
@@ -1143,11 +1163,15 @@ async function bootstrapScrapingIfEmpty() {
   }
 }
 
-setTimeout(() => {
-  bootstrapScrapingIfEmpty().catch((error) => {
-    console.error('[Bootstrap] Unexpected error:', error.message);
-  });
-}, 5000);
+export { app };
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, '0.0.0.0', () => console.log(`API running on ${PORT}`));
+if (process.env.NODE_ENV !== 'test') {
+  setTimeout(() => {
+    bootstrapScrapingIfEmpty().catch((error) => {
+      console.error('[Bootstrap] Unexpected error:', error.message);
+    });
+  }, 5000);
+
+  const PORT = process.env.PORT || 4000;
+  app.listen(PORT, '0.0.0.0', () => console.log(`API running on ${PORT}`));
+}

@@ -20,6 +20,7 @@ import PreGameMatchCard, { PreGameData } from '../components/tactics/PreGameMatc
 import { fetchJSON } from '../lib/api';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { cn } from '../shared/lib/utils';
+import { useAuth } from '../context/AuthContext';
 
 export default function TacticsHub() {
   const [activeTab, setActiveTab] = useState<'playbook' | 'synergy' | 'pregame'>('playbook');
@@ -43,6 +44,8 @@ export default function TacticsHub() {
   const [pregameOpponent, setPregameOpponent] = useState<string | null>(null);
 
   const { seasonId } = useSeasonPreferenceContext();
+  const { user } = useAuth();
+  const canManageTactics = user?.role === 'ADMIN';
   const playerSectionRef = useRef<HTMLDivElement>(null);
 
   const loadPlays = useCallback(async () => {
@@ -195,10 +198,12 @@ export default function TacticsHub() {
                   </p>
                 </div>
 
-                <BkpkButton variant="primary" size="sm" onClick={() => setIsAiModalOpen(true)}>
-                  <Sparkles className="w-4 h-4 mr-1.5" />
-                  Generuj Nowy Preset AI
-                </BkpkButton>
+                {canManageTactics && (
+                  <BkpkButton variant="primary" size="sm" onClick={() => setIsAiModalOpen(true)}>
+                    <Sparkles className="w-4 h-4 mr-1.5" />
+                    Generuj Nowy Preset AI
+                  </BkpkButton>
+                )}
               </div>
 
               {/* Lista Presetów */}
@@ -213,6 +218,7 @@ export default function TacticsHub() {
                 onPlayUpdated={(updated) =>
                   setPlays((prev) => prev.map((p) => (p.id === updated.id ? updated : p)))
                 }
+                canManage={canManageTactics}
               />
             </div>
           </motion.div>
@@ -247,20 +253,21 @@ export default function TacticsHub() {
               opponent={pregameOpponent}
               seasonId={seasonId}
               onRefresh={loadPreGame}
+              canGenerate={canManageTactics}
             />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Modal Generatora AI */}
-      <AiPlayGeneratorModal
+      {canManageTactics && <AiPlayGeneratorModal
         isOpen={isAiModalOpen}
         onClose={() => setIsAiModalOpen(false)}
         onPlayGenerated={(generatedPlay) => {
           setPlays((prev) => [generatedPlay, ...prev]);
           handleSelectPlay(generatedPlay);
         }}
-      />
+      />}
     </div>
   );
 }

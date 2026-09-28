@@ -2081,7 +2081,21 @@ export async function getPlayerById(id) {
   await ensureSeeded();
   return await prisma.rosterPlayer.findUnique({
     where: { id },
-    include: { kalkPlayer: true }
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      number: true,
+      position: true,
+      starter: true,
+      birthDate: true,
+      heightCm: true,
+      data: true,
+      aiDevelopmentSummary: true,
+      aiDevelopmentAt: true,
+      aiDevelopmentModel: true,
+      kalkPlayer: { select: { id: true, name: true, raw: true } }
+    }
   });
 }
 
@@ -2956,4 +2970,3 @@ export async function wipeGamesTable() {
   console.log('[DataStore] Game table wiped.');
   return result.count;
 }
-

@@ -41,13 +41,15 @@ interface PreGameMatchCardProps {
   opponent: string | null;
   seasonId: string;
   onRefresh: () => void;
+  canGenerate?: boolean;
 }
 
 export default function PreGameMatchCard({
   briefing,
   opponent,
   seasonId,
-  onRefresh
+  onRefresh,
+  canGenerate = false
 }: PreGameMatchCardProps) {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -128,7 +130,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
               </BkpkButton>
             </>
           )}
-          <BkpkButton
+          {canGenerate && <BkpkButton
             variant="primary"
             size="sm"
             onClick={() => handleGenerate(!!briefing)}
@@ -136,7 +138,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
           >
             <Sparkles className="w-4 h-4 mr-1.5" />
             {briefing ? 'Wygeneruj Ponownie AI' : 'Generuj Odprawę AI'}
-          </BkpkButton>
+          </BkpkButton>}
         </div>
       </div>
 
@@ -150,10 +152,12 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
           <p className="text-xs text-bkpk-text-muted max-w-md mx-auto mb-6">
             Kliknij poniższy przycisk, aby Gemini AI przygotowało 3 kluczowe założenia, wyjściową piątkę i krycie indywidualne na podstawie scoutingu.
           </p>
-          <BkpkButton variant="primary" onClick={() => handleGenerate(false)} loading={generating}>
-            <Sparkles className="w-4 h-4 mr-2" />
-            Przygotuj Odprawę Przedmeczową
-          </BkpkButton>
+          {canGenerate && (
+            <BkpkButton variant="primary" onClick={() => handleGenerate(false)} loading={generating}>
+              <Sparkles className="w-4 h-4 mr-2" />
+              Przygotuj Odprawę Przedmeczową
+            </BkpkButton>
+          )}
         </BkpkCard>
       ) : (
         <motion.div

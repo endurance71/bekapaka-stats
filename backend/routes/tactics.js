@@ -33,7 +33,7 @@ tacticsRouter.get('/plays', async (req, res) => {
     });
 
     // Auto-seed jeśli baza zagrywek jest pusta
-    if (plays.length === 0 && !category && !targetDefense) {
+    if (plays.length === 0 && !category && !targetDefense && req.user?.role === 'ADMIN') {
       await Promise.all(
         DEFAULT_PLAYBOOK_PRESETS.map((p) =>
           prisma.play.create({

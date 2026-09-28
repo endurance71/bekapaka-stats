@@ -1,16 +1,77 @@
 name: Deploy to VPS
 
 on:
+  pull_request:
+    branches: ['main']
   push:
     branches: ['main']
   workflow_dispatch:
+
+concurrency:
+  group: bekapaka-production
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U test -d test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+            site/package-lock.json
+            packages/safari-overlay/package-lock.json
+      - name: Shared Safari overlay dependencies
+        working-directory: packages/safari-overlay
+        run: npm ci
+      - name: Backend tests and Prisma schema
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/test
+        run: |
+          npm ci
+          npx prisma validate
+          npx prisma generate
+          npx prisma migrate deploy
+          npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+          npm test -- --run
+      - name: Frontend tests and build
+        working-directory: frontend
+        run: |
+          npm ci
+          npm test -- --run
+          npm run build
+      - name: Public site quality
+        working-directory: site
+        run: |
+          npm ci
+          npm run quality
+
   build-and-push:
+    if: github.event_name != 'pull_request'
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -33,7 +94,9 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
 
       - name: Build and push Frontend image
         uses: docker/build-push-action@v6
@@ -41,7 +104,9 @@ jobs:
           context: .
           file: ./frontend/Dockerfile.prod
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
 
       - name: Build and push public Site image
         uses: docker/build-push-action@v6
@@ -49,9 +114,12 @@ jobs:
           context: .
           file: ./site/Dockerfile.prod
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:latest
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:latest
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -75,24 +143,45 @@ jobs:
           CR_PAT: ${{ secrets.CR_PAT }}
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          envs: CR_PAT,GITHUB_ACTOR,GITHUB_REPOSITORY
+          envs: CR_PAT,GITHUB_ACTOR,GITHUB_REPOSITORY,GITHUB_SHA,GITHUB_RUN_ID
           script: |
             set -euo pipefail
             echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
             cd /opt/bekapaka-stats
-            docker pull "ghcr.io/${GITHUB_REPOSITORY}/backend:latest"
-            docker pull "ghcr.io/${GITHUB_REPOSITORY}/frontend:latest"
-            docker pull "ghcr.io/${GITHUB_REPOSITORY}/site:latest"
-            # Usuń osierocone kontenery po nieudanym recreate (np. abc123_bkpk-backend-prod)
-            # grep zwraca 1 gdy brak dopasowań — nie może zabić skryptu przy set -o pipefail
-            orphans="$(docker ps -a --format '{{.Names}}' | grep -E '^[0-9a-f]+_bkpk-(backend|frontend|site|cms)-prod$' || true)"
-            if [ -n "$orphans" ]; then
-              echo "$orphans" | xargs -r docker rm -f
+            rollback_tag="rollback-${GITHUB_RUN_ID}"
+            for service in backend frontend site; do
+              old_image="$(docker inspect --format '{{.Image}}' "bkpk-${service}-prod")"
+              docker tag "$old_image" "ghcr.io/${GITHUB_REPOSITORY}/${service}:${rollback_tag}"
+            done
+            export BKPK_IMAGE_TAG="$GITHUB_SHA"
+            docker compose -f docker-compose.prod.yml config --quiet
+            docker compose -f docker-compose.prod.yml pull bkpk-backend bkpk-frontend bkpk-site
+            if ! docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site; then
+              echo 'Deploy failed; restoring previous BeKaPaKa images.'
+              export BKPK_IMAGE_TAG="$rollback_tag"
+              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
+              exit 1
             fi
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
-            docker image prune -f
+            healthy=false
+            for attempt in $(seq 1 30); do
+              if curl -fsS --max-time 3 http://127.0.0.1:4001/api/health >/dev/null \
+                && curl -fsS --max-time 3 http://127.0.0.1:8081/ >/dev/null \
+                && curl -fsS --max-time 3 http://127.0.0.1:8082/ >/dev/null; then
+                healthy=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$healthy" != true ]; then
+              echo 'Health checks failed; restoring previous BeKaPaKa images.'
+              export BKPK_IMAGE_TAG="$rollback_tag"
+              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
+              exit 1
+            fi

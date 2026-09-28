@@ -16,7 +16,7 @@ import {
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';
-import { deleteJSON, putJSON } from '../../lib/api';
+import { deleteJSON } from '../../lib/api';
 
 export interface PlayItem {
   id: string;
@@ -39,6 +39,7 @@ interface PlaybookListProps {
   onSelectPlay: (play: PlayItem) => void;
   onPlayDeleted: (id: string) => void;
   onPlayUpdated: (play: PlayItem) => void;
+  canManage?: boolean;
 }
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
@@ -55,7 +56,8 @@ export default function PlaybookList({
   selectedPlayId,
   onSelectPlay,
   onPlayDeleted,
-  onPlayUpdated
+  onPlayUpdated,
+  canManage = false
 }: PlaybookListProps) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -218,14 +220,14 @@ export default function PlaybookList({
                       </span>
 
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <button
+                        {canManage && <button
                           onClick={(e) => handleDelete(play.id, e)}
                           disabled={deletingId === play.id}
                           className="p-1.5 rounded-lg text-bkpk-text-muted hover:text-bkpk-danger hover:bg-bkpk-danger/10 transition-colors"
                           title="Usuń preset"
                         >
                           <Trash2 className="w-4 h-4" />
-                        </button>
+                        </button>}
                       </div>
                     </div>
                   </BkpkCard>

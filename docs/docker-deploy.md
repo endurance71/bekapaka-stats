@@ -6,9 +6,13 @@
 - Przekierowanie przez reverse proxy (np. Nginx w Moya Stacja).
 
 ## Automatyzacja (GitHub Actions)
-Aplikacja jest wdrażana automatycznie po każdym `push` do gałęzi `main`.
+Aplikacja jest wdrażana automatycznie po każdym `push` do gałęzi `main`, ale dopiero po przejściu testów backendu i panelu, kontroli migracji Prisma na pustym PostgreSQL oraz kontroli jakości strony. Ten sam zestaw sprawdzeń uruchamia się dla pull requestów do `main` bez deployu.
 
-Workflow buduje i publikuje obrazy **backend**, **frontend** (panel) oraz **site** (strona publiczna), następnie aktualizuje kontenery na VPS.
+Workflow buduje i publikuje obrazy **backend**, **frontend** (panel) oraz **site** (strona publiczna) z tagiem SHA commita i `latest`. Deploy pobiera tag SHA, aktualizuje tylko te trzy kontenery BeKaPaKa, sprawdza ich endpointy i przy niepowodzeniu przywraca poprzednie obrazy. Nie odtwarza kontenerów bazy ani CMS i nie usuwa obrazów potrzebnych do rollbacku.
+
+Backend stosuje wersjonowane migracje (`prisma migrate deploy`) przed uruchomieniem API. Błąd migracji zatrzymuje start; nie jest już ukrywany. Przed pierwszym wdrożeniem po zmianie migracji wykonaj backup bazy zgodnie z [vps-runbook.md](./vps-runbook.md) i sprawdź status migracji. Rollback obrazu **nie cofa schematu bazy** — nowe migracje muszą być kompatybilne wstecz.
+
+Jeśli `latest` zostanie ręcznie wdrożony po automatycznym deployu, pamiętaj, że `BKPK_IMAGE_TAG` w compose domyślnie wskazuje `latest`. Do ręcznego odtworzenia konkretnego wydania ustaw `BKPK_IMAGE_TAG=<SHA>` tylko dla komendy `docker compose`.
 
 Szczegóły sekretów i diagnostyka: **[github-deploy-setup.md](./github-deploy-setup.md)**.
 
