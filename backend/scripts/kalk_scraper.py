@@ -6,7 +6,7 @@ Pobiera: tabelę, play-out, terminarz (z linkami do meczów), wszystkie kategori
 drużyny, przewinienia, box score każdego zakończonego meczu oraz log „mecz po meczu” kadry BeKaPaKa.
 Wynik trafia do `kalk_stats.json`.
 
-Wymaga: requests, beautifulsoup4, opcjonalnie scrapling
+Wymaga: scrapling i beautifulsoup4
 """
 
 import argparse
@@ -20,8 +20,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
 
-import requests
 from bs4 import BeautifulSoup
+
+from kalk_fetch import KalkFetchError, fetch_html
 
 from kalk_parsers import (
     PARSER_VERSION,
@@ -37,23 +38,10 @@ from kalk_parsers import (
     parse_player_game_log_page,
 )
 
-try:
-    from scrapling.fetchers import Fetcher
-    HAS_SCRAPLING = True
-except ImportError as exc:
-    import logging
-    logging.warning('Scrapling import failed (%s). Falling back to requests only.', exc)
-    HAS_SCRAPLING = False
-
 BASE_URL = 'https://www.kalk-koszalin.com/'
 DIVISION_PATH = 'dzial,dywizja-2,4.html'
 RATE_LIMIT_SECONDS = 1.0
-PAGE_ENCODING = 'utf-8'
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                  'Chrome/127.0.0.0 Safari/537.36',
-    'Accept-Language': 'pl-PL,pl;q=0.9,en-US;q=0.8,en;q=0.7'
-}
+FETCH_ERRORS: List[str] = []
 # Zapis obok backendu (/app/kalk_stats.json w kontenerze) — zgodnie z server.js
 OUTPUT_FILE = Path(__file__).resolve().parents[1] / 'kalk_stats.json'
 
@@ -140,8 +128,8 @@ def get_total_requests() -> int:
     return total
 
 
-def fetch_soup(session: requests.Session, url: str) -> BeautifulSoup:
-    """Pobierz stronę przez Scrapling (z fallbackiem) i zwróć BeautifulSoup."""
+def fetch_soup(url: str) -> BeautifulSoup:
+    """Pobierz stronę przez Scrapling i zapamiętaj każdy błąd pobrania."""
     global CURRENT_REQUESTS
     CURRENT_REQUESTS += 1
     total = get_total_requests()
@@ -149,28 +137,11 @@ def fetch_soup(session: requests.Session, url: str) -> BeautifulSoup:
 
     logging.info('Pobieram %s', url)
     time.sleep(RATE_LIMIT_SECONDS)
-    text = None
-
-    if HAS_SCRAPLING:
-        try:
-            page = Fetcher.get(url, timeout=5000, stealthy_headers=True)
-            text = (
-                getattr(page, 'html', None)
-                or getattr(page, 'content', None)
-                or str(page)
-            )
-            if text:
-                logging.info('Pobrano przez Scrapling')
-        except Exception as exc:
-            logging.warning('Scrapling failed (%s), fallback to requests', exc)
-
-    if not text:
-        response = session.get(url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
-        response.encoding = 'utf-8'
-        text = response.text
-
-    return BeautifulSoup(text, 'html.parser')
+    try:
+        return BeautifulSoup(fetch_html(url), 'html.parser')
+    except KalkFetchError as exc:
+        FETCH_ERRORS.append(str(exc))
+        raise
 
 
 def find_section_url(soup: BeautifulSoup, keywords: List[str]) -> Optional[str]:
@@ -208,7 +179,7 @@ def extract_profile_stats(soup: BeautifulSoup) -> Dict[str, Optional[float]]:
                     stats[key] = parse_number(match.group(1))
     return stats
 
-def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[Dict[str, any]]:
+def extract_all_players(soup: BeautifulSoup) -> List[Dict[str, any]]:
     """Pobiera skrócone dane wszystkich zawodników (do rankingu)."""
     table = soup.find('table')
     if not table:
@@ -250,9 +221,9 @@ def extract_all_players(session: requests.Session, soup: BeautifulSoup) -> List[
     return players
 
 
-def fetch_category_stats(session: requests.Session, url: str, category_name: str) -> Dict[str, Dict[str, any]]:
+def fetch_category_stats(url: str, category_name: str) -> Dict[str, Dict[str, any]]:
     try:
-        soup = fetch_soup(session, url)
+        soup = fetch_soup(url)
     except Exception as exc:
         logging.error('Błąd pobierania statystyk dla %s: %s', category_name, exc)
         return {}
@@ -388,13 +359,13 @@ def main() -> None:
 
     logging.info('Scraper KALK — Sezon: %s, Ścieżka: %s', args.season, effective_division_path)
 
-    session = requests.Session()
+    FETCH_ERRORS.clear()
     section_urls: Dict[str, Optional[str]] = {}
     try:
-        division_soup = fetch_soup(session, urljoin(BASE_URL, effective_division_path))
-    except requests.RequestException as exc:
+        division_soup = fetch_soup(urljoin(BASE_URL, effective_division_path))
+    except KalkFetchError as exc:
         logging.error('Nie udało się pobrać strony dywizji (%s): %s', effective_division_path, exc)
-        return
+        raise
 
     for name, keywords in SECTION_KEYWORDS.items():
         section_urls[name] = find_section_url(division_soup, keywords)
@@ -405,12 +376,15 @@ def main() -> None:
         else:
             logging.info('Znaleziono sekcję "%s": %s', name, url)
 
+    if not section_urls.get('tabela') or not section_urls.get('terminarz'):
+        raise ValueError('Przerwano import: strona dywizji KALK nie zawiera wymaganych sekcji tabeli i terminarza (możliwa przerwa techniczna)')
+
     # --- TABELA ---
     table_url = section_urls.get('tabela')
     league_table = []
     if table_url:
         try:
-            table_soup = fetch_soup(session, table_url)
+            table_soup = fetch_soup(table_url)
             # Debug
             table_node = table_soup.find('table')
             if table_node:
@@ -432,7 +406,7 @@ def main() -> None:
     playout_table = []
     if playout_url:
         try:
-            playout_soup = fetch_soup(session, playout_url)
+            playout_soup = fetch_soup(playout_url)
             playout_table = extract_league_table(playout_soup)
             logging.info('Pobrano tabelę play-out: %d drużyn', len(playout_table))
         except Exception as exc:
@@ -444,7 +418,7 @@ def main() -> None:
     if schedule_url:
         try:
             # 1. Pobierz stronę główną terminarza, aby znaleźć linki do kolejek
-            schedule_soup = fetch_soup(session, schedule_url)
+            schedule_soup = fetch_soup(schedule_url)
             
             # Znajdź linki do kolejek (keyword: '?kolejka_id=')
             round_links = set()
@@ -463,7 +437,7 @@ def main() -> None:
 
             for round_url in sorted_rounds:
                 try:
-                    r_soup = fetch_soup(session, round_url)
+                    r_soup = fetch_soup(round_url)
                     
                     # Parsowanie meczów z divów (klasa .pusty2)
                     # Struktura:
@@ -551,7 +525,7 @@ def main() -> None:
     team_schedule_url = 'https://www.kalk-koszalin.com/klub,bekapaka-bobolice,222,2.html'
     try:
         logging.info('Pobieram dedykowany terminarz zespołu BeKaPaKa...')
-        team_soup = fetch_soup(session, team_schedule_url)
+        team_soup = fetch_soup(team_schedule_url)
         team_matches = extract_team_schedule(team_soup)
         logging.info(f'Pobrano {len(team_matches)} meczów z terminarza zespołu')
         
@@ -614,8 +588,8 @@ def main() -> None:
     stats_url = section_urls.get('statystyki')
     if stats_url:
         try:
-            stats_soup = fetch_soup(session, stats_url)
-            players_list = extract_all_players(session, stats_soup)
+            stats_soup = fetch_soup(stats_url)
+            players_list = extract_all_players(stats_soup)
             players_dict = {p['id_zawodnika']: p for p in players_list}
             logging.info('Pobrano listę podstawową %d zawodników.', len(players_list))
             
@@ -637,7 +611,7 @@ def main() -> None:
             for cat_name, cat_url in cat_urls.items():
                 ingest_key = category_key_map.get(cat_name, cat_name)
                 logging.info('Pobieram statystyki: %s', cat_name)
-                cat_stats = fetch_category_stats(session, cat_url, ingest_key)
+                cat_stats = fetch_category_stats(cat_url, ingest_key)
                 for p_id, stats_data in cat_stats.items():
                     if p_id in players_dict:
                         players_dict[p_id].update(stats_data)
@@ -658,14 +632,14 @@ def main() -> None:
     teams_enriched: List[Dict[str, any]] = []
     try:
         druzyny_url = section_urls.get('druzyny') or urljoin(BASE_URL, 'poddzial,druzyny,31.html')
-        druzyny_soup = fetch_soup(session, druzyny_url)
+        druzyny_soup = fetch_soup(druzyny_url)
         teams_index = extract_teams_index(druzyny_soup, BASE_URL)
         global actual_teams_count
         actual_teams_count = len(teams_index)
         logging.info('Indeks drużyn: %d', len(teams_index))
         for team in teams_index:
             try:
-                club_soup = fetch_soup(session, team['profile_url'])
+                club_soup = fetch_soup(team['profile_url'])
                 extra = extract_team_page(club_soup)
                 teams_enriched.append({**team, **extra})
             except Exception as exc:
@@ -678,7 +652,7 @@ def main() -> None:
     violations: List[Dict[str, any]] = []
     try:
         viol_url = urljoin(BASE_URL, 'poddzial,przewinienia,69.html')
-        viol_soup = fetch_soup(session, viol_url)
+        viol_soup = fetch_soup(viol_url)
         violations = extract_violations(viol_soup)
         logging.info('Przewinienia: %d wierszy', len(violations))
     except Exception as exc:
@@ -702,7 +676,7 @@ def main() -> None:
         seen_match_ids.add(mid)
         mecz_url = m['meczUrl']
         try:
-            match_soup = fetch_soup(session, mecz_url)
+            match_soup = fetch_soup(mecz_url)
             parsed = parse_match_page(match_soup, mecz_url)
             parsed['scheduleDate'] = m.get('date')
             parsed['roundUrl'] = m.get('roundUrl')
@@ -726,7 +700,7 @@ def main() -> None:
         if log_url == profile_url:
             log_url = profile_url.replace(',0.html', ',3.html')
         try:
-            log_soup = fetch_soup(session, log_url)
+            log_soup = fetch_soup(log_url)
             rows = parse_player_game_log_page(log_soup, p.get('imie_nazwisko', ''))
             for row in rows:
                 row['kalk_player_id'] = p.get('id_zawodnika')
@@ -758,6 +732,11 @@ def main() -> None:
         'violations': violations,
         'playerGameLogs': player_game_logs,
     }
+
+    if FETCH_ERRORS:
+        raise KalkFetchError(f'Przerwano import: {len(FETCH_ERRORS)} stron nie udało się pobrać; pierwszy błąd: {FETCH_ERRORS[0]}')
+    if not league_table or not schedule_matches:
+        raise ValueError('Przerwano import: tabela lub terminarz KALK są puste; dane nie zostaną nadpisane')
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with OUTPUT_FILE.open('w', encoding='utf-8') as handle:

@@ -78,6 +78,7 @@ import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
+import { validateScrapeOutput } from './kalk/validateScrapeOutput.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -670,6 +671,13 @@ async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId =
     updateScraperLog(`Trigger: ${triggerLabel}`);
     updateScraperLog(`Uruchamiam scrapling script dla ${divisionPath}...`);
 
+    const previousOutputMtime = await fs.stat(KALK_SCRAPLING_OUTPUT)
+      .then((stat) => stat.mtimeMs)
+      .catch((err) => {
+        if (err.code === 'ENOENT') return null;
+        throw err;
+      });
+
     const child = execFileCb(
       'python3',
       [KALK_SCRAPLING_SCRIPT, '--division-path', divisionPath, '--season', seasonSlug],
@@ -730,6 +738,8 @@ async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId =
 
     const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
     const stats = JSON.parse(statsRaw);
+    const currentOutputMtime = (await fs.stat(KALK_SCRAPLING_OUTPUT)).mtimeMs;
+    validateScrapeOutput(stats, previousOutputMtime, currentOutputMtime);
     await ingestLeagueTable(stats.table || [], 'regular');
     if (stats.playout_table) {
       await ingestLeagueTable(stats.playout_table, 'playout');

@@ -9,30 +9,22 @@ Użycie:
 import json
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
 from typing import Dict, List
 
-import requests
 from bs4 import BeautifulSoup
 
+from kalk_fetch import fetch_html
 from kalk_parsers import parse_match_page
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 OUTPUT_FILE = Path(__file__).resolve().parents[1] / 'kalk_stats.json'
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (compatible; BeKaPaKa-stats-gap-scraper/1.0)',
-    'Accept-Language': 'pl-PL,pl;q=0.9'
-}
-
-
 def fetch_soup(url: str) -> BeautifulSoup:
-    resp = requests.get(url, headers=HEADERS, timeout=60)
-    resp.raise_for_status()
-    resp.encoding = 'utf-8'
-    return BeautifulSoup(resp.text, 'html.parser')
+    return BeautifulSoup(fetch_html(url), 'html.parser')
 
 
 def load_existing() -> Dict:
@@ -58,7 +50,8 @@ def merge_matches(existing: Dict, new_matches: List[Dict]) -> None:
 
 def collect_urls() -> List[str]:
     env = os.environ.get('KALK_GAP_URLS', '').strip()
-    urls = [u.strip() for u in env.split(',') if u.strip()]
+    # Przecinki są częścią ścieżki /mecz,...,0.html — nie rozdzielaj po przecinku.
+    urls = re.findall(r'https?://[^\s]+?\.html', env)
     urls.extend(arg.strip() for arg in sys.argv[1:] if arg.strip().startswith('http'))
     return list(dict.fromkeys(urls))
 
@@ -70,6 +63,7 @@ def main() -> None:
         sys.exit(1)
 
     scraped: List[Dict] = []
+    failures: List[str] = []
     for url in urls:
         try:
             soup = fetch_soup(url)
@@ -77,10 +71,11 @@ def main() -> None:
             scraped.append(parsed)
             logging.info('OK %s → id=%s', url, parsed.get('id'))
         except Exception as exc:
-            logging.warning('Błąd %s: %s', url, exc)
+            failures.append(url)
+            logging.error('Błąd %s: %s', url, exc)
 
-    if not scraped:
-        logging.error('Nie pobrano żadnego meczu')
+    if failures or not scraped:
+        logging.error('Przerwano import: błędy dla %d z %d adresów; istniejący plik pozostaje bez zmian', len(failures), len(urls))
         sys.exit(2)
 
     data = load_existing()

@@ -4,8 +4,8 @@ WORKDIR /app/frontend
 COPY packages/design-tokens /app/packages/design-tokens
 COPY packages/safari-overlay /app/packages/safari-overlay
 RUN cd /app/packages/safari-overlay && npm ci
-COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm install
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
 COPY frontend/ .
 ENV VITE_COPY_FULL_PUBLIC=1
 RUN npm run build

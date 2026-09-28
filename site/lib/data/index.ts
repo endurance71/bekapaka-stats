@@ -1,15 +1,11 @@
-import { getLeagueTable, getLeagueTableState, getRecentGamesState, getRoster, getRosterState } from './backend'
+import { getLeagueTableState, getRecentGamesState, getRosterState } from './backend'
 import {
-  getDocuments,
   getDocumentsState,
-  getEvents,
   getEventsState,
-  getHomepageSections,
   getHomepageSectionsState,
-  getNewsPosts,
   getNewsPostsState
 } from './cms'
-import { getSponsors, getSponsorsState } from './sponsors'
+import { getSponsorsState } from './sponsors'
 import { siteBaseUrl } from './client'
 import { pickNearestUpcomingHighlight, type NearestHighlight } from './nearest-event'
 

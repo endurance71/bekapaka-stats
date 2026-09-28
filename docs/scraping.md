@@ -11,7 +11,7 @@ Dokumentacja pipeline pobierania danych z [kalk-koszalin.com](https://www.kalk-k
 | Import | `backend/dataStore.js`, `backend/kalk/kalkIngest.js` | Liga + `ingestKalkTeams`, `ingestKalkMatches`, `ingestKalkPlayerGameLogs`, `syncPlayersFromKalk` |
 | Parser meczu | `backend/kalk/parseMatchBoxScore.js` | HTML `/mecz,...,0.html` → box score JSON |
 | UI | `frontend/src/pages/Administration.tsx` | Przycisk „Uruchom pełny import danych” |
-| Zależności | `backend/scripts/requirements.txt` | `scrapling`, `beautifulsoup4`, `requests` |
+| Zależności | `backend/scripts/requirements.txt` | `scrapling[fetchers]`, `beautifulsoup4` |
 
 **Wyłącznie Scrapling (D4Vinci).** Katalog `backend/scrapers/` i scraper Node.js (`kalkScraper.js`, `kalkDiv2.js`) zostały usunięte — nie dodawaj ponownie `cheerio`/`axios` pod scraping KALK.
 
@@ -38,7 +38,7 @@ Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols
 kalk-koszalin.com
         │
         ▼
-kalk_scraper.py  (Scrapling Fetcher.get + fallback requests)
+kalk_scraper.py  (wyłącznie Scrapling Fetcher.get; błąd pobrania przerywa import)
         │
         ▼
 kalk_stats.json   (w katalogu nadrzędnym względem backend: ../kalk_stats.json)
@@ -215,6 +215,10 @@ Kody błędów:
 
 - `409` — scraper już działa
 - `500` — błąd Pythona, brak `kalk_stats.json`, błąd importu (szczegóły w `lastLog` ze statusu)
+
+Jeżeli choć jedno pobranie strony KALK nie powiedzie się, skrypt kończy się błędem przed zapisem JSON. Backend nie importuje wtedy starego pliku. Targeted scrape luk zachowuje się tak samo: przy błędzie któregokolwiek URL-a nie zapisuje częściowego wyniku. Testy regresyjne: `cd backend/scripts && python3 -m unittest -v test_kalk_fetch` (po instalacji `requirements.txt`).
+
+Skrypt odrzuca również stronę przerwy technicznej (brak sekcji tabeli i terminarza) oraz pustą tabelę/terminarz. Jeśli serwis KALK jest niedostępny, zachowaj ostatnie poprawne dane i ponów sync po przywróceniu źródła; nie obchodź tego warunku ręcznym importem pustego JSON.
 
 ## Uruchomienie lokalne (dev)
 

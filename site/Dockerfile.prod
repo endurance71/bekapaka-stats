@@ -1,7 +1,7 @@
 FROM node:22-alpine AS deps
 WORKDIR /app/site
-COPY site/package.json site/package-lock.json* ./
-RUN npm install
+COPY site/package.json site/package-lock.json ./
+RUN npm ci
 
 FROM node:22-alpine AS build
 WORKDIR /app/site

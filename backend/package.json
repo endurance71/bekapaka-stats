@@ -14,8 +14,8 @@
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
-    "@prisma/adapter-pg": "^7.8.0",
-    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
@@ -23,7 +23,7 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "prisma": "^7.8.0",
+    "prisma": "^7.10.0",
     "vitest": "^4.1.8",
     "vitest-mock-extended": "^4.0.0"
   }
