@@ -18,9 +18,9 @@ export interface BkpkCardProps {
 
 const paddings = {
     none: 'p-0',
-    sm: 'p-3 sm:p-4',
-    md: 'p-4 sm:p-6',
-    lg: 'p-5 sm:p-8',
+    sm: 'p-2.5 sm:p-4',
+    md: 'p-3.5 sm:p-5 md:p-6',
+    lg: 'p-4 sm:p-6 md:p-8',
 };
 
 const variants = {
@@ -75,9 +75,9 @@ export function BkpkCard({
             transition={animateEntrance && !prefersReducedMotion ? { duration: 0.25, ease: [0.16, 1, 0.3, 1] } : undefined}
         >
             {(title || icon) && (
-                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-bkpk-border-strong">
-                    {icon && <div className="p-2 rounded-xl bg-bkpk-surface-tint-1 text-bkpk-primary">{icon}</div>}
-                    {title && <h2 className="font-outfit text-h3 text-bkpk-text-primary tracking-tight">{title}</h2>}
+                <div className="flex items-center gap-2.5 sm:gap-3 mb-3.5 sm:mb-6 pb-2.5 sm:pb-4 border-b border-bkpk-border-strong">
+                    {icon && <div className="p-1.5 sm:p-2 rounded-xl bg-bkpk-surface-tint-1 text-bkpk-primary">{icon}</div>}
+                    {title && <h2 className="font-outfit text-base sm:text-lg md:text-h3 text-bkpk-text-primary tracking-tight">{title}</h2>}
                 </div>
             )}
             {children}

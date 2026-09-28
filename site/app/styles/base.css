@@ -213,6 +213,12 @@ p {
   padding-inline: var(--space-4);
 }
 
+@media (max-width: 379px) {
+  .container {
+    padding-inline: var(--space-3);
+  }
+}
+
 #content {
   display: flex;
   flex-direction: column;

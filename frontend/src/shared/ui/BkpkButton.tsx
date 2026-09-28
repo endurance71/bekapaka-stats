@@ -18,9 +18,9 @@ const variants = {
 };
 
 const sizes = {
-    sm: 'px-3 py-1.5 text-sm min-h-[44px]',
-    md: 'px-5 py-2.5 text-base min-h-[44px]',
-    lg: 'px-8 py-3.5 text-lg min-h-[44px]',
+    sm: 'px-3 py-1 text-xs sm:text-sm min-h-[44px]',
+    md: 'px-3.5 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base min-h-[44px]',
+    lg: 'px-5 sm:px-8 py-2.5 sm:py-3.5 text-base sm:text-lg min-h-[44px]',
 };
 
 /** Shared active/toggle pill style (nav, filters, tabs). */
@@ -41,7 +41,7 @@ export default function BkpkButton({
     return (
         <motion.button
             className={cn(
-                'relative inline-flex items-center justify-center rounded-bkpk-md font-bold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden',
+                'relative inline-flex items-center justify-center rounded-bkpk-md font-bold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden touch-manipulation',
                 variants[variant],
                 sizes[size],
                 className
