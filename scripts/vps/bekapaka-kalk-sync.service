@@ -1,0 +1,15 @@
+[Unit]
+Description=BeKaPaKa KALK full sync
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=debian
+Group=debian
+ExecStart=/usr/bin/python3 /usr/local/bin/bekapaka-kalk-sync --mode full
+TimeoutStartSec=25min
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

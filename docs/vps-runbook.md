@@ -155,29 +155,20 @@ Skrót: backend uruchamia `kalk_scraper.py`, wynik trafia do PostgreSQL.
 
 Ręczny trigger (admin): `POST /api/scrape/kalk/div2/run`.
 
-### Cron KALK (host → bkpk-backend, bez MOYA)
+### Harmonogram KALK (host → bkpk-backend, bez MOYA)
 
-**Wybór:** harmonogram na **hoście Debian** (`/etc/cron.d/`), HTTP na **`127.0.0.1:4001`** — osobna baza `bekapaka_stats`, port **4001**, sieć Docker `bkpk-*`. Nie używać portu `3000` ani stacku MOYA.
+Na VPS nie ma zainstalowanego demona `cron`. Źródłem harmonogramu jest więc **timer systemd** `bekapaka-kalk-sync.timer`: poniedziałek 07:30 i wtorek 18:00 czasu hosta (`Europe/Warsaw`), pełny sync przez `127.0.0.1:4001`. Nie używać portu MOYA `3000`.
 
-Opcjonalnie **Hermes** na VPS może wywoływać ten sam URL (logi w jednym miejscu); źródłem prawdy dla czasu jest host cron.
-
-1. W `/opt/bekapaka-stats/.env` na serwerze:
+Po ustawieniu `KALK_CRON_SECRET` w `/opt/bekapaka-stats/.env` i ponownym uruchomieniu `bkpk-backend` zainstaluj pliki z repo:
 
 ```bash
-KALK_CRON_SECRET=<losowy-długi-sekret>
+sudo bash scripts/vps/install-kalk-sync.sh
+systemctl list-timers --all bekapaka-kalk-sync.timer
+/usr/bin/python3 /usr/local/bin/bekapaka-kalk-sync --mode probe
+journalctl -u bekapaka-kalk-sync.service --since '7 days ago'
 ```
 
-2. Przebuduj / zrestartuj `bkpk-backend`, aby wczytał zmienną.
-
-3. Plik `/etc/cron.d/bekapaka-kalk` (strefa `Europe/Warsaw` jest w kontenerze; cron hosta — ustaw czasy lokalnie):
-
-```cron
-# Pon 07:30 i Wt 18:00 — pełny sync (po weekendzie)
-30 7 * * 1 debian curl -fsS -X POST -H "X-Cron-Secret: TU_WKLEJ_SEKRET" "http://127.0.0.1:4001/api/internal/kalk/sync?mode=full" >> /var/log/bekapaka-kalk-sync.log 2>&1
-0 18 * * 2 debian curl -fsS -X POST -H "X-Cron-Secret: TU_WKLEJ_SEKRET" "http://127.0.0.1:4001/api/internal/kalk/sync?mode=full" >> /var/log/bekapaka-kalk-sync.log 2>&1
-```
-
-Weekendy (pt–nd): brak wpisów — zgodnie z [kalk-sync-plan.md](./kalk-sync-plan.md). Faza „probe” (tylko zmiany) — kolejny krok implementacji.
+Skrypt odczytuje sekret z `.env` przy każdym wykonaniu, więc jego wartość nie trafia do pliku timera ani do argumentów procesu. Po rotacji sekretu uruchom test `--mode probe`. Timer wykonuje `mode=full`; `probe` służy tylko do szybkiej kontroli uwierzytelnienia. Weekend (pt–nd) pozostaje bez synchronizacji.
 
 ## Zdjęcia zawodników
 
