@@ -62,16 +62,15 @@ docker exec -it bkpk-backend-prod sh -c \
 
 Powtórz dla każdego konta z dostępem do panelu.
 
-## 5. Cron KALK na hoście
+## 5. Harmonogram KALK na hoście
 
-Zaktualizuj `/etc/cron.d/bekapaka-kalk` — ten sam sekret co `KALK_CRON_SECRET` w `.env`.
+Timer `bekapaka-kalk-sync.timer` korzysta z `scripts/vps/kalk-sync.py`, który odczytuje `KALK_CRON_SECRET` bezpośrednio z `.env` przy każdym uruchomieniu. Nie zapisuj sekretu w pliku timera ani w argumentach `curl`.
 
-Test ręczny:
+Po rotacji uruchom bezpieczny test uwierzytelnienia (bez pełnego scrapingu):
 
 ```bash
-curl -fsS -X POST \
-  -H "X-Cron-Secret: TWOJ_SEKRET" \
-  "http://127.0.0.1:4001/api/internal/kalk/sync?mode=full"
+/usr/bin/python3 /usr/local/bin/bekapaka-kalk-sync --mode probe
+systemctl list-timers --all bekapaka-kalk-sync.timer
 ```
 
 ## 6. Token MCP Strapi (Cursor)

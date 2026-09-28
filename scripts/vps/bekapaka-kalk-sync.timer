@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule BeKaPaKa KALK full sync
+
+[Timer]
+OnCalendar=Mon *-*-* 07:30:00
+OnCalendar=Tue *-*-* 18:00:00
+AccuracySec=1min
+Unit=bekapaka-kalk-sync.service
+
+[Install]
+WantedBy=timers.target
