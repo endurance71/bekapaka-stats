@@ -305,7 +305,9 @@ const fallbackGames: GameSummary[] = [
 export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> {
   try {
     const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), {
-      revalidate: 900,
+      // Synchronizacja KALK zapisuje tabelę niezależnie od procesu Next.js.
+      // Krótki TTL zapobiega utrzymaniu pustej tabeli po imporcie sezonu.
+      revalidate: 60,
       tags: ['backend', 'backend-table']
     })
     if (response.status === 'error') {
@@ -459,9 +461,9 @@ export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
       fgPercentage: player.fgPercentage !== undefined ? sanitizeNumber(player.fgPercentage, 0) : undefined,
       threePercentage: player.threePercentage !== undefined ? sanitizeNumber(player.threePercentage, 0) : undefined,
       ftPercentage: player.ftPercentage !== undefined ? sanitizeNumber(player.ftPercentage, 0) : undefined,
-      tsPercentage: player.tsPercentage !== undefined ? sanitizeNumber(player.tsPercentage, 0) : undefined,
-      eFgPercentage: player.eFgPercentage !== undefined ? sanitizeNumber(player.eFgPercentage, 0) : undefined,
-      plusMinus: player.plusMinus !== undefined ? sanitizeNumber(player.plusMinus, 0) : undefined,
+      tsPercentage: player.tsPercentage !== undefined && player.tsPercentage !== null ? sanitizeNumber(player.tsPercentage, 0) : null,
+      eFgPercentage: player.eFgPercentage !== undefined && player.eFgPercentage !== null ? sanitizeNumber(player.eFgPercentage, 0) : null,
+      plusMinus: player.plusMinus !== undefined && player.plusMinus !== null ? sanitizeNumber(player.plusMinus, 0) : null,
       gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
       birthDate: player.birthDate ? String(player.birthDate) : null,
       heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,

@@ -352,6 +352,9 @@ export async function getRoster(querySeasonId = undefined) {
     let twoPm = (r.fgm || 0) - (r.threePm || 0);
     let threePm = r.threePm || 0;
     let ftm = r.ftm || 0;
+    let tsPercentage = null;
+    let eFgPercentage = null;
+    let plusMinus = null;
 
     if (targetSeason?.id) {
       if (playerGames.length > 0) {
@@ -365,6 +368,7 @@ export async function getRoster(querySeasonId = undefined) {
         const total3pa = playerGames.reduce((sum, g) => sum + (g.threePa || g.three_pa || 0), 0);
         const totalFtm = playerGames.reduce((sum, g) => sum + (g.ftm || 0), 0);
         const totalFta = playerGames.reduce((sum, g) => sum + (g.fta || 0), 0);
+        const totalPlusMinus = playerGames.reduce((sum, g) => sum + (g.plusMinus || 0), 0);
 
         gamesPlayed = gp;
         ppg = parseFloat((totalPts / gp).toFixed(1));
@@ -376,6 +380,13 @@ export async function getRoster(querySeasonId = undefined) {
         twoPm = totalFgm - total3pm;
         threePm = total3pm;
         ftm = totalFtm;
+
+        const efg = totalFga > 0 ? ((totalFgm + 0.5 * total3pm) / totalFga) * 100 : 0;
+        const tsDivisor = 2 * (totalFga + 0.44 * totalFta);
+        const ts = tsDivisor > 0 ? (totalPts / tsDivisor) * 100 : 0;
+        tsPercentage = parseFloat(ts.toFixed(1));
+        eFgPercentage = parseFloat(efg.toFixed(1));
+        plusMinus = parseFloat((totalPlusMinus / gp).toFixed(1));
       } else {
         gamesPlayed = 0;
         ppg = 0;
@@ -388,7 +399,14 @@ export async function getRoster(querySeasonId = undefined) {
         twoPm = 0;
         threePm = 0;
         ftm = 0;
+        tsPercentage = null;
+        eFgPercentage = null;
+        plusMinus = null;
       }
+    } else {
+      tsPercentage = r.tsPercentage ?? null;
+      eFgPercentage = r.eFgPercentage ?? null;
+      plusMinus = plusMinusAvg;
     }
 
     return {
@@ -406,10 +424,11 @@ export async function getRoster(querySeasonId = undefined) {
       fgPercentage,
       threePercentage,
       ftPercentage,
-      tsPercentage: r.tsPercentage,
-      eFgPercentage: r.eFgPercentage,
-      plusMinus: plusMinusAvg,
+      tsPercentage,
+      eFgPercentage,
+      plusMinus,
       gamesPlayed,
+      points: playerGames.length > 0 ? playerGames.reduce((sum, g) => sum + (g.pts || 0), 0) : 0,
       birthDate: r.birthDate,
       heightCm: r.heightCm,
       aiDevelopmentSummary: r.aiDevelopmentSummary,
@@ -438,13 +457,7 @@ function resolveSeasonPlusMinusAverage(playerGames, rosterRow) {
     const total = playerGames.reduce((sum, g) => sum + (g.plusMinus || 0), 0);
     return parseFloat((total / playerGames.length).toFixed(1));
   }
-
-  const gamesPlayed = rosterRow.gamesPlayed || 0;
-  if (gamesPlayed > 0 && rosterRow.plusMinus != null) {
-    return parseFloat((rosterRow.plusMinus / gamesPlayed).toFixed(1));
-  }
-
-  return rosterRow.plusMinus ?? 0;
+  return null;
 }
 
 /**
@@ -483,7 +496,7 @@ function gameLogEntryFromKalkStats(stats, matchMeta) {
     fta,
     efg,
     ts,
-    plusMinus: parseStat(stats.plusMinus) || 0,
+    plusMinus: parseStat(stats.plusMinus ?? stats.plus_minus) || 0,
     dataSource: 'kalk'
   };
 }
@@ -553,9 +566,9 @@ export async function getPlayerStats(playerId, seasonIdParam) {
         ppg: gamesCount > 0 ? totalPoints / gamesCount : 0,
         rpg: gamesCount > 0 ? totalRebounds / gamesCount : 0,
         apg: gamesCount > 0 ? totalAssists / gamesCount : 0,
-        efg: totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : 0,
-        ts: (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : 0,
-        plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : 0,
+        efg: gamesCount > 0 && totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : null,
+        ts: gamesCount > 0 && (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : null,
+        plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : null,
         gamesPlayed: gamesCount,
         minutesPlayed: Math.round(totalMinutesSeconds / 60)
       };
@@ -701,9 +714,9 @@ export async function getPlayerStats(playerId, seasonIdParam) {
     ppg: gamesCount > 0 ? totalPoints / gamesCount : 0,
     rpg: gamesCount > 0 ? totalRebounds / gamesCount : 0,
     apg: gamesCount > 0 ? totalAssists / gamesCount : 0,
-    efg: totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : 0,
-    ts: (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : 0,
-    plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : 0,
+    efg: gamesCount > 0 && totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : null,
+    ts: gamesCount > 0 && (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : null,
+    plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : null,
     gamesPlayed: gamesCount,
     minutesPlayed: Math.round(totalMinutesSeconds / 60)
   };
@@ -1706,6 +1719,7 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
       seasonId: activeSeason.id,
       name: team.name,
       phase,
+      position: Number.isInteger(team.position) ? team.position : null,
       matches: team.matches,
       points: team.points,
       wins: team.wins,
@@ -1817,27 +1831,23 @@ export async function syncPlayersFromKalk() {
     kp.team && (kp.team.toLowerCase().includes('bekapaka') || kp.team.toLowerCase().includes('bobolice'))
   );
 
-  const ourKalkIds = new Set(ourKalkPlayers.map(p => p.id));
+  // CIRCUIT BREAKER / SANITY CHECK:
+  // Brak zawodników w KALK (np. przed startem nowego sezonu) oznacza brak danych źródłowych w lidze,
+  // a NIE usunięcie zawodników z kadry klubu.
+  if (ourKalkPlayers.length === 0) {
+    console.warn(
+      `[kalk-sync] WARNING: KALK season ${activeSeason?.id || 'unknown'} currently exposes no players for BeKaPaKa. Existing roster mappings preserved.`
+    );
+    return {
+      synced: 0,
+      errors: [],
+      status: 'no_source_data',
+      message: 'KALK season currently exposes no players for BeKaPaKa. Existing roster mappings preserved.'
+    };
+  }
+
   const synced = [];
   const errors = [];
-
-  // 1. SYNCHRONIZACJA: Odłącz zawodników z RosterPlayer, którzy nie są już w naszej drużynie na KALK (zamiast usuwać konto)
-  try {
-    const allRosterWithKalk = await prisma.rosterPlayer.findMany({
-      where: { NOT: { kalkPlayerId: null } }
-    });
-
-    for (const rp of allRosterWithKalk) {
-      if (!ourKalkIds.has(rp.kalkPlayerId)) {
-        await prisma.rosterPlayer.update({
-          where: { id: rp.id },
-          data: { kalkPlayerId: null }
-        });
-      }
-    }
-  } catch (error) {
-    console.error('Error unlinking roster players:', error);
-  }
 
   // Pobierz wszystkich aktualnych roster graczy, żeby móc wyszukiwać ich w pamięci
   const allRoster = await prisma.rosterPlayer.findMany();
@@ -1855,7 +1865,7 @@ export async function syncPlayersFromKalk() {
     });
   };
 
-  // 2. SYNCHRONIZACJA: Dodaj/Aktualizuj tylko naszych
+  // SYNCHRONIZACJA: Dodaj/Aktualizuj tylko naszych (BEZ destrukcyjnego czyszczenia kalkPlayerId)
   for (const kalkPlayer of ourKalkPlayers) {
     try {
       // FIX: Kalk name is often "Surname Name"
@@ -1876,13 +1886,15 @@ export async function syncPlayersFromKalk() {
       if (!existing) {
         existing = findRosterMatch(firstName, lastName);
 
-        if (existing && !existing.kalkPlayerId) {
-          // Polacz istniejacego zawodnika z KALK ID
-          await prisma.rosterPlayer.update({
-            where: { id: existing.id },
-            data: { kalkPlayerId: kalkPlayer.id }
-          });
-          existing.kalkPlayerId = kalkPlayer.id; // update local object reference
+        if (existing) {
+          if (existing.kalkPlayerId !== kalkPlayer.id) {
+            // Polacz istniejacego zawodnika ze zaktualizowanym KALK ID
+            await prisma.rosterPlayer.update({
+              where: { id: existing.id },
+              data: { kalkPlayerId: kalkPlayer.id }
+            });
+            existing.kalkPlayerId = kalkPlayer.id; // update local object reference
+          }
         }
       }
 

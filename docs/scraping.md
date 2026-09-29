@@ -88,6 +88,7 @@ Plik generowany przez skrypt Python (przykład struktury):
   },
   "table": [
     {
+      "position": 1,
       "name": "MŁODE WILKI",
       "matches": 10,
       "wins": 9,

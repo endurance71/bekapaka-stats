@@ -365,6 +365,7 @@ model LeagueTeam {
   season        KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   name          String
   phase         String   @default("regular") // "regular" | "playout"
+  position      Int?
   matches       Int      @default(0)
   points        Int      @default(0)
   wins          Int      @default(0)

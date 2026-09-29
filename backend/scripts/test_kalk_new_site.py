@@ -22,7 +22,7 @@ class NewSiteParserTests(unittest.TestCase):
         <td>2</td><td>1</td><td>1</td><td>70</td><td>65</td><td>+5</td><td>3</td>
         </tr></tbody></table>'''
         self.assertEqual(kalk_new_site.parse_table(soup(html)), [{
-            'name': 'BeKaPaKa Bobolice', 'matches': 2, 'wins': 1, 'losses': 1,
+            'position': 1, 'name': 'BeKaPaKa Bobolice', 'matches': 2, 'wins': 1, 'losses': 1,
             'pointsFor': 70, 'pointsAgainst': 65, 'points': 3,
         }])
 
