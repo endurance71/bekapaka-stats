@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { validateScrapeOutput } from '../../kalk/validateScrapeOutput.js';
 
 const valid = { version: 2, scrapeManifest: { seasonSlug: '2026-2027' }, table: [{ name: 'BKPK' }], schedule: [{ date: '2026-09-29' }] };
@@ -15,5 +16,11 @@ describe('validateScrapeOutput', () => {
   });
   it('rejects data from another season', () => {
     expect(() => validateScrapeOutput(valid, 100, 200, '2025-2026')).toThrow('innego sezonu');
+  });
+  it('does not shadow the selected season inside the full import pipeline', () => {
+    const serverSource = readFileSync(new URL('../../server.js', import.meta.url), 'utf8');
+    const pipelineSource = serverSource.split('async function runScrapeImportPipeline(')[1]
+      .split("app.post(['/api/scrape/kalk/div2/run'")[0];
+    expect(pipelineSource.match(/\b(?:const|let)\s+activeSeason\b/g)).toHaveLength(1);
   });
 });

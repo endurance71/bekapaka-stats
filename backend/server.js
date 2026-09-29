@@ -757,21 +757,18 @@ async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId =
     const matchesIngest = await ingestKalkMatches(stats.matches || []);
     const logsIngest = await ingestKalkPlayerGameLogs(stats.playerGameLogs || []);
 
-    const activeSeason = await getActiveSeason();
-    if (activeSeason) {
-      await prisma.kalkSyncRun.create({
-        data: {
-          seasonId: activeSeason.id,
-          mode: 'full',
-          trigger: triggerLabel,
-          status: 'success',
-          httpEstimate: stats.scrapeManifest?.httpCount ?? null,
-          sectionsChanged: stats.scrapeManifest?.sections || [],
-          probeHashes: stats.scrapeManifest || null,
-          finishedAt: new Date()
-        }
-      });
-    }
+    await prisma.kalkSyncRun.create({
+      data: {
+        seasonId: activeSeason.id,
+        mode: 'full',
+        trigger: triggerLabel,
+        status: 'success',
+        httpEstimate: stats.scrapeManifest?.httpCount ?? null,
+        sectionsChanged: stats.scrapeManifest?.sections || [],
+        probeHashes: stats.scrapeManifest || null,
+        finishedAt: new Date()
+      }
+    });
 
     scraperState.step = 'synchronizacja';
     scraperState.message = 'Synchronizacja zawodników...';
