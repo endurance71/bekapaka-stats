@@ -4480,277 +4480,185 @@
   text-align: center;
 }
 
-/* Carousel wrapper */
-.article-carousel-wrapper {
+/* One carousel implementation is used on mobile, tablet and desktop. */
+.article-gallery {
   margin: var(--space-5) 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.article-carousel-container {
-  position: relative;
-  width: 100%;
-}
-
-.article-carousel {
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* IE/Edge */
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  box-shadow: var(--shadow-sm);
-}
-
-.article-carousel::-webkit-scrollbar {
-  display: none; /* Safari/Chrome */
-}
-
-.article-carousel__slide {
-  flex: 0 0 100%;
-  scroll-snap-align: start;
-  cursor: zoom-in;
   outline: none;
 }
 
-.article-carousel__image-wrapper {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 480px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.15);
+.article-gallery:focus-visible {
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-.article-carousel__image {
+.article-gallery__stage {
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 58vw, 620px);
+  max-height: min(68vh, 650px);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #0b0b0c;
+  box-shadow: var(--shadow-sm);
+}
+
+.article-gallery__track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-y pinch-zoom;
+}
+
+.article-gallery__track::-webkit-scrollbar {
+  display: none;
+}
+
+.article-gallery__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.article-gallery__image-button {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
+}
+
+.article-gallery__image-button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -4px;
+}
+
+.article-gallery__image {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: contain;
-  display: block;
   user-select: none;
 }
 
-
-.article-carousel__zoom-badge {
-  position: absolute;
-  bottom: var(--space-3);
-  right: var(--space-3);
-  background: rgba(11, 11, 12, 0.95);
-  border: 1px solid var(--border);
-  padding: 6px 12px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-primary);
-  font-size: 0.75rem;
-  font-weight: 500;
-  opacity: 0;
-  /* Tylko opacity — nie reūywamy transform żeby uniknąć reflow */
-  transition: opacity var(--transition);
-  pointer-events: none;
-  /* Promocja na osobną warstwę GPU zapobiega mignięciu — badge jest poza flow */
-  will-change: opacity;
-  transform: translateZ(0);
-}
-
-.article-carousel__image-wrapper:hover .article-carousel__zoom-badge {
-  opacity: 1;
-}
-
-/* Carousel Navigation Buttons */
-.article-carousel__nav-btn {
+.article-gallery__arrow {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
-  /* Bez backdrop-filter — powodujeł ciągły repaint i miganie przy hover/scroll */
-  background: rgba(11, 11, 12, 0.85);
-  border: 1px solid var(--border);
-  color: var(--text-primary);
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
+  z-index: 2;
   display: flex;
+  width: 48px;
+  height: 48px;
   align-items: center;
   justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background: rgba(11, 11, 12, 0.82);
+  color: #fff;
   cursor: pointer;
-  z-index: 10;
-  /* Nie animujemy transform, tylko kolory */
-  transition: background var(--transition), border-color var(--transition), color var(--transition);
   box-shadow: var(--shadow-sm);
-  /* Stała warstwa GPU — eliminuje recomposite przy hover */
-  will-change: background;
-  transform: translateY(-50%) translateZ(0);
+  transform: translateY(-50%);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
-.article-carousel__nav-btn:hover {
+.article-gallery__arrow:hover,
+.article-gallery__arrow:focus-visible {
+  border-color: var(--accent);
   background: var(--accent);
   color: #000;
-  border-color: var(--accent);
-  /* Nie dodajemy scale — żeby translateY(-50%) nie skakało */
-  transform: translateY(-50%) translateZ(0);
+  outline: none;
 }
 
-.article-carousel__nav-btn--prev {
+.article-gallery__arrow--prev {
   left: var(--space-3);
 }
 
-.article-carousel__nav-btn--next {
+.article-gallery__arrow--next {
   right: var(--space-3);
 }
 
-/* Footer / Meta under carousel */
-.article-carousel__footer {
+.article-gallery__footer {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: 0 var(--space-2);
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-2) 0;
 }
 
-@media (min-width: 640px) {
-  .article-carousel__footer {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-.article-carousel__caption {
-  font-size: 0.9rem;
-  color: var(--text-muted);
+.article-gallery__caption {
   margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
   line-height: 1.4;
 }
 
-.article-carousel__indicators {
+.article-gallery__status {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-3);
   margin-left: auto;
 }
 
-.article-carousel__counter {
-  font-size: 0.85rem;
+.article-gallery__counter {
+  min-width: 4.5rem;
   color: var(--text-soft);
   font-family: monospace;
+  font-size: 0.85rem;
+  text-align: right;
+  white-space: nowrap;
 }
 
-.article-carousel__dots {
+.article-gallery__dots {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
 }
 
-.article-carousel__dot {
-  width: 8px;
-  height: 8px;
+.article-gallery__dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
   background: var(--border-strong);
-  border: none;
-  padding: 0;
   cursor: pointer;
-  transition: all var(--transition);
+  transition: background var(--transition), transform var(--transition);
 }
 
-.article-carousel__dot--active {
+.article-gallery__dot:hover,
+.article-gallery__dot:focus-visible,
+.article-gallery__dot--active {
   background: var(--accent);
+  outline: none;
   transform: scale(1.25);
 }
 
-/* Carousel default (mobile) and Grid default (desktop) visibility */
-.article-gallery-grid {
-  /* Ukryty na mobile — !important zapobiega nadpisaniu przez inne reguły */
-  display: none !important;
+.article-gallery__progress {
+  width: clamp(90px, 18vw, 180px);
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border-strong);
 }
 
-.article-gallery-carousel {
+.article-gallery__progress span {
   display: block;
-}
-
-/* ==========================================
-   DESKTOP GRID & CAROUSEL VISIBILITY RESPONSIVE OVERRIDES
-   ========================================== */
-@media (min-width: 768px) {
-  .article-gallery-carousel {
-    display: none !important;
-  }
-
-  .article-gallery-grid {
-    /* Przywrócenie display: grid na desktop — nadpisuje !important z mobile */
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: var(--space-4);
-    margin: var(--space-5) 0;
-  }
-
-  .article-gallery-grid__item {
-    position: relative;
-    background: var(--bg-elevated);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-    overflow: hidden;
-    cursor: zoom-in;
-    box-shadow: var(--shadow-sm);
-    transition: border-color var(--transition), box-shadow var(--transition);
-  }
-
-  .article-gallery-grid__item:hover {
-    border-color: var(--accent);
-    box-shadow: var(--shadow-md);
-  }
-
-  .article-gallery-grid__image-wrapper {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.15);
-    overflow: hidden;
-  }
-
-  .article-gallery-grid__image {
-    width: 100%;
-    height: auto;
-    max-height: 500px;
-    object-fit: contain;
-    display: block;
-    user-select: none;
-  }
-
-  .article-gallery-grid__zoom-badge {
-    position: absolute;
-    bottom: var(--space-3);
-    right: var(--space-3);
-    background: rgba(11, 11, 12, 0.95);
-    border: 1px solid var(--border);
-    padding: 6px 12px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    color: var(--text-primary);
-    font-size: 0.75rem;
-    font-weight: 500;
-    opacity: 0;
-    transition: opacity var(--transition);
-    pointer-events: none;
-  }
-
-  .article-gallery-grid__item:hover .article-gallery-grid__zoom-badge {
-    opacity: 1;
-  }
-
-  .article-gallery-grid__caption {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-    margin: var(--space-2) var(--space-3);
-    line-height: 1.4;
-  }
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width var(--transition);
 }
 
 /* ==========================================
@@ -4772,6 +4680,10 @@
 .article-lightbox__scrim {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
   background: rgba(5, 5, 6, 0.95);
   backdrop-filter: blur(10px);
   cursor: zoom-out;
@@ -4802,6 +4714,12 @@
   transform: scale(1.05);
 }
 
+.article-lightbox__close-btn:focus-visible,
+.article-lightbox__nav-btn:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
 .article-lightbox__content {
   position: relative;
   width: 92%;
@@ -4815,6 +4733,9 @@
 }
 
 .article-lightbox__image {
+  display: block;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 85%;
   object-fit: contain;
@@ -4894,21 +4815,33 @@
 
 /* Mobile responsive fixes */
 @media (max-width: 640px) {
-  .article-carousel__image-wrapper {
+  .article-gallery__stage {
     height: 320px;
   }
-  
-  .article-carousel__nav-btn {
+
+  .article-gallery__arrow {
     width: 36px;
     height: 36px;
   }
-  
-  .article-carousel__nav-btn--prev {
+
+  .article-gallery__arrow--prev {
     left: var(--space-2);
   }
-  
-  .article-carousel__nav-btn--next {
+
+  .article-gallery__arrow--next {
     right: var(--space-2);
+  }
+
+  .article-gallery__footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .article-gallery__status {
+    width: 100%;
+    justify-content: space-between;
+    margin-left: 0;
   }
 
   .article-lightbox__nav-btn {
@@ -4917,11 +4850,11 @@
   }
 
   .article-lightbox__nav-btn--prev {
-    left: -10px;
+    left: var(--space-2);
   }
 
   .article-lightbox__nav-btn--next {
-    right: -10px;
+    right: var(--space-2);
   }
 
   .article-lightbox__close-btn {
@@ -4932,4 +4865,12 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .article-gallery__track {
+    scroll-behavior: auto;
+  }
 
+  .article-gallery__progress span {
+    transition: none;
+  }
+}

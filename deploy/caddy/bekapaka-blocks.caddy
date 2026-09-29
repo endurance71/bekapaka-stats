@@ -56,5 +56,9 @@ panel.bekapaka.pl {
 cms.bekapaka.pl {
 	import bekapaka_security
 	import bekapaka_csp_cms
+	# Media assets keep stable Strapi URLs when an editor replaces/rotates a file.
+	# Revalidate them so browsers/CDNs show the new bytes without disabling caching.
+	@cms_uploads path /uploads/*
+	header @cms_uploads Cache-Control "public, no-cache, must-revalidate"
 	reverse_proxy 127.0.0.1:1337
 }
