@@ -10,6 +10,7 @@ import {
   type EventItem,
   type HomepageSection,
   type NewsAttachment,
+  type NewsImageSource,
   type NewsPost
 } from './schemas'
 import {
@@ -33,6 +34,62 @@ function mapMediaUrl(value: unknown): string | undefined {
     }
   }
   return undefined
+}
+
+function getSingleMediaRecord(value: unknown): Record<string, unknown> | undefined {
+  if (!value || typeof value !== 'object') return undefined
+  const record = value as Record<string, unknown>
+  const data = record.data
+  const candidate = data && typeof data === 'object' && !Array.isArray(data)
+    ? data as Record<string, unknown>
+    : record
+  const attributes = candidate.attributes
+  return attributes && typeof attributes === 'object'
+    ? attributes as Record<string, unknown>
+    : candidate
+}
+
+function mapMediaImage(value: unknown): {
+  url?: string
+  sources?: NewsImageSource[]
+  width?: number
+  height?: number
+} {
+  const url = mapMediaUrl(value)
+  const record = getSingleMediaRecord(value)
+  if (!url || !record) return url ? { url } : {}
+
+  const sourceMap = new Map<string, NewsImageSource>()
+  const formats = record.formats
+  if (formats && typeof formats === 'object' && !Array.isArray(formats)) {
+    Object.values(formats as Record<string, unknown>).forEach((format) => {
+      if (!format || typeof format !== 'object') return
+      const formatRecord = format as Record<string, unknown>
+      const formatUrl = mapMediaUrl(formatRecord)
+      const width = sanitizeNumber(formatRecord.width)
+      const height = sanitizeNumber(formatRecord.height)
+      if (formatUrl && width > 0) {
+        sourceMap.set(formatUrl, {
+          src: formatUrl,
+          width,
+          ...(height > 0 ? { height } : {})
+        })
+      }
+    })
+  }
+
+  const width = sanitizeNumber(record.width)
+  const height = sanitizeNumber(record.height)
+  if (width > 0) {
+    sourceMap.set(url, { src: url, width, ...(height > 0 ? { height } : {}) })
+  }
+
+  return {
+    url,
+    ...(sourceMap.size > 0 ? { sources: [...sourceMap.values()].sort((a, b) => a.width - b.width) } : {}),
+    ...(width > 0 ? { width } : {}),
+    ...(height > 0 ? { height } : {})
+  }
 }
 
 /** Map Strapi media (single or multiple) to public attachment links. */
@@ -68,6 +125,21 @@ function mapMediaAttachments(value: unknown): NewsAttachment[] {
   })
 
   return attachments
+}
+
+function mapNewsTags(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+
+  const tags = value
+    .map((tag) => {
+      if (typeof tag === 'string') return tag.trim()
+      if (!tag || typeof tag !== 'object') return ''
+      const record = tag as Record<string, unknown>
+      return sanitizeText(record.name, sanitizeText(record.title, ''))
+    })
+    .filter(Boolean)
+
+  return tags.length > 0 ? tags : undefined
 }
 
 function stateFromArray<T>(items: T[], errorMessage?: string): DataState<T[]> {
@@ -190,7 +262,7 @@ const fallbackHomepageSections: HomepageSection[] = [
 // FETCHING FUNCTIONS
 // ==========================================
 
-export async function getNewsPosts(limit = 6, options?: { includeDrafts?: boolean }): Promise<NewsPost[]> {
+export async function getNewsPosts(limit = 6, options?: { includeDrafts?: boolean; start?: number }): Promise<NewsPost[]> {
   const state = await getNewsPostsState(limit, options)
   return state.data
 }
@@ -204,13 +276,14 @@ function resolveNewsDate(item: Record<string, unknown>): string {
   )
 }
 
-export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: boolean }): Promise<DataState<NewsPost[]>> {
+export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: boolean; start?: number }): Promise<DataState<NewsPost[]>> {
   try {
     const includeDrafts = Boolean(options?.includeDrafts)
     const statusQuery = includeDrafts ? '&status=draft' : ''
+    const startQuery = options?.start && options.start > 0 ? `&pagination[start]=${Math.floor(options.start)}` : ''
     const response = await fetchJsonState<unknown>(
       cmsPath(
-        `/api/news-posts?sort[0]=publishedAtCustom:desc&sort[1]=updatedAt:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
+        `/api/news-posts?sort[0]=publishedAtCustom:desc&sort[1]=updatedAt:desc&pagination[limit]=${limit}${startQuery}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
       ),
       {
         headers: cmsHeaders(),
@@ -226,6 +299,14 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
       const title = sanitizeText(item.title, 'Bez tytulu')
       const content = sanitizeText(item.content, '')
       const excerptRaw = sanitizeText(item.excerpt, sanitizeText(item.description, ''))
+      const coverImage = mapMediaImage(item.coverImage)
+      const tags = mapNewsTags(item.tags)
+      const explicitImageFit = item.imageFit === 'cover' || item.imageFit === 'contain' ? item.imageFit : undefined
+      const inferredImageFit = explicitImageFit || (
+        coverImage.width && coverImage.height
+          ? coverImage.width / coverImage.height >= 1.15 ? 'cover' : 'contain'
+          : undefined
+      )
       return {
         id: sanitizeText(item.id, String(index)),
         title,
@@ -233,7 +314,16 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
         excerpt: excerptRaw || excerptFromContent(content),
         content,
         publishedAt: resolveNewsDate(item),
-        coverImageUrl: mapMediaUrl(item.coverImage),
+        ...(sanitizeText(item.updatedAt, '') ? { updatedAt: sanitizeText(item.updatedAt, '') } : {}),
+        ...(sanitizeText(item.type, sanitizeText(item.category, '')) ? { type: sanitizeText(item.type, sanitizeText(item.category, '')) } : {}),
+        ...(sanitizeText(item.author, sanitizeText(item.authorName, '')) ? { author: sanitizeText(item.author, sanitizeText(item.authorName, '')) } : {}),
+        ...(tags ? { tags } : {}),
+        ...(typeof item.isPinned === 'boolean' ? { isPinned: item.isPinned } : {}),
+        ...(inferredImageFit ? { imageFit: inferredImageFit } : {}),
+        ...(coverImage.url ? { coverImageUrl: coverImage.url } : {}),
+        ...(coverImage.sources ? { coverImageSources: coverImage.sources } : {}),
+        ...(coverImage.width ? { coverImageWidth: coverImage.width } : {}),
+        ...(coverImage.height ? { coverImageHeight: coverImage.height } : {}),
         attachments: mapMediaAttachments(item.attachments)
       }
     })

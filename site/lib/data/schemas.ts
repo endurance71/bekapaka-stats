@@ -18,6 +18,12 @@ export const newsAttachmentSchema = z.object({
   size: z.number().optional()
 })
 
+export const newsImageSourceSchema = z.object({
+  src: z.string(),
+  width: z.number().positive(),
+  height: z.number().positive().optional()
+})
+
 export const newsPostSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -25,7 +31,16 @@ export const newsPostSchema = z.object({
   excerpt: z.string(),
   content: z.string(),
   publishedAt: z.string(),
+  updatedAt: z.string().optional(),
+  type: z.string().optional(),
+  author: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  isPinned: z.boolean().optional(),
+  imageFit: z.enum(['cover', 'contain']).optional(),
   coverImageUrl: z.string().optional(),
+  coverImageSources: z.array(newsImageSourceSchema).optional(),
+  coverImageWidth: z.number().positive().optional(),
+  coverImageHeight: z.number().positive().optional(),
   attachments: z.array(newsAttachmentSchema).default([])
 })
 
@@ -161,6 +176,7 @@ export const gameSummarySchema = z.object({
 
 export type NewsPost = z.infer<typeof newsPostSchema>
 export type NewsAttachment = z.infer<typeof newsAttachmentSchema>
+export type NewsImageSource = z.infer<typeof newsImageSourceSchema>
 export type EventItem = z.infer<typeof eventSchema>
 export type SponsorItem = z.infer<typeof sponsorSchema>
 export type DocumentItem = z.infer<typeof documentSchema>

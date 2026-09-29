@@ -1,7 +1,7 @@
 export function ListingPageHero({
   title,
   description,
-  eyebrow = 'Sezon 2026'
+  eyebrow = ''
 }: {
   title: string
   description: string
@@ -9,7 +9,7 @@ export function ListingPageHero({
 }) {
   return (
     <header>
-      <p className='listing-page__eyebrow'>{eyebrow}</p>
+      {eyebrow ? <p className='listing-page__eyebrow'>{eyebrow}</p> : null}
       <h1>{title}</h1>
       {description ? <p className='listing-page__lead'>{description}</p> : null}
     </header>

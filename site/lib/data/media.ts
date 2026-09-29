@@ -6,8 +6,16 @@ export interface ResponsiveMediaProps {
   src: string
   srcSet?: string
   sizes?: string
+  width?: number
+  height?: number
   loading?: 'lazy' | 'eager'
   decoding?: 'async' | 'sync' | 'auto'
+}
+
+export interface ResponsiveMediaSource {
+  src: string
+  width: number
+  height?: number
 }
 
 /**
@@ -20,6 +28,9 @@ export function getStrapiMediaProps(
     isCover?: boolean
     sizes?: string
     isLightbox?: boolean
+    sources?: ResponsiveMediaSource[]
+    width?: number
+    height?: number
   }
 ): ResponsiveMediaProps {
   if (!src || typeof src !== 'string') {
@@ -42,14 +53,23 @@ export function getStrapiMediaProps(
 
   const [, basePath, , filename, query = ''] = match
   const originalUrl = `${basePath}${filename}${query}`
-  const smallUrl = `${basePath}small_${filename}${query}`
-  const mediumUrl = `${basePath}medium_${filename}${query}`
-  const largeUrl = `${basePath}large_${filename}${query}`
+  const validSources = (options?.sources || [])
+    .filter((source) => source.src && Number.isFinite(source.width) && source.width > 0)
+    .map((source) => ({ ...source, src: source.src.trim() }))
+    .filter((source, index, sources) => sources.findIndex((candidate) => candidate.src === source.src) === index)
+    .sort((a, b) => a.width - b.width)
+  const srcSet = validSources.length > 0
+    ? validSources.map((source) => `${source.src} ${source.width}w`).join(', ')
+    : undefined
+  const sourceWidth = options?.width || validSources[validSources.length - 1]?.width
+  const sourceHeight = options?.height || validSources[validSources.length - 1]?.height
 
   // If used inside full-screen lightbox, prefer high quality original with eager loading
   if (isLightbox) {
     return {
       src: originalUrl,
+      ...(sourceWidth ? { width: sourceWidth } : {}),
+      ...(sourceHeight ? { height: sourceHeight } : {}),
       loading: 'eager',
       decoding: 'async'
     }
@@ -61,8 +81,10 @@ export function getStrapiMediaProps(
 
   return {
     src: originalUrl,
-    srcSet: `${smallUrl} 500w, ${mediumUrl} 750w, ${largeUrl} 1000w, ${originalUrl} 2400w`,
+    ...(srcSet ? { srcSet } : {}),
     sizes: options?.sizes || defaultSizes,
+    ...(sourceWidth ? { width: sourceWidth } : {}),
+    ...(sourceHeight ? { height: sourceHeight } : {}),
     loading: isCover ? 'eager' : 'lazy',
     decoding: 'async'
   }

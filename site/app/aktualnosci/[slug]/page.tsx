@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
+import { ArticleRelations } from '../../../components/public/shared/ArticleRelations'
+import { FallbackImage } from '../../../components/public/shared/FallbackImage'
 import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
@@ -19,11 +21,37 @@ function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
   return slugifyTitle(item.title) === slug
 }
 
-async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
+type NewsContext = {
+  item: NewsPost | null
+  previous?: NewsPost
+  next?: NewsPost
+  related: NewsPost[]
+}
+
+async function getNewsContext(slug: string): Promise<NewsContext> {
   const { isEnabled } = await draftMode()
   const includeDrafts = isEnabled || process.env.INCLUDE_DRAFTS === 'true'
   const items = await getNewsPosts(200, { includeDrafts })
-  return items.find((item) => matchesNewsSlug(item, slug)) || null
+  const itemIndex = items.findIndex((item) => matchesNewsSlug(item, slug))
+  const item = itemIndex >= 0 ? items[itemIndex] : null
+  if (!item) return { item: null, related: [] }
+
+  const previous = items[itemIndex + 1]
+  const next = items[itemIndex - 1]
+  const related = items
+    .filter((candidate) => candidate.id !== item.id)
+    .filter((candidate) => {
+      const sameType = item.type && candidate.type && item.type === candidate.type
+      const sameTag = item.tags?.some((tag) => candidate.tags?.includes(tag))
+      return Boolean(sameType || sameTag)
+    })
+    .slice(0, 3)
+
+  return { item, previous, next, related }
+}
+
+async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
+  return (await getNewsContext(slug)).item
 }
 
 export async function generateStaticParams() {
@@ -44,30 +72,41 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 
 export default async function NewsDetailPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params
-  const item = await getNewsBySlug(slug)
+  const context = await getNewsContext(slug)
+  const item = context.item
   if (!item) notFound()
 
   const formattedDate = formatDateTime(item.publishedAt)
   const readingTime = calculateReadingTime(item.content)
-  const metaText = formattedDate ? `${formattedDate} · ${readingTime}` : readingTime
+  const metaText = [formattedDate, readingTime].join(' · ')
   const leadText = item.excerpt || excerptFromContent(item.content)
 
   return (
     <EditorialDetailTemplate
-      sectionLabel='Aktualności'
+      sectionLabel={item.type || 'Aktualności'}
       title={item.title}
       meta={metaText}
       lead={leadText}
+      author={item.author || 'Redakcja BeKaPaKa'}
+      tags={item.tags}
+      share
       parentHref='/aktualnosci'
       parentLabel='Wróć do aktualności'
       content={
         <>
           {item.coverImageUrl ? (
             <div className='article-detail__cover'>
-              <img
-                {...getStrapiMediaProps(item.coverImageUrl, { isCover: true })}
+              <FallbackImage
+                {...getStrapiMediaProps(item.coverImageUrl, {
+                  isCover: true,
+                  sources: item.coverImageSources,
+                  width: item.coverImageWidth,
+                  height: item.coverImageHeight,
+                  sizes: '(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
+                })}
                 alt={item.title}
                 className='article-detail__cover-image'
+                fallbackSrc={item.coverImageUrl}
                 fetchPriority='high'
               />
             </div>
@@ -76,6 +115,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
             <ArticleMarkdown content={item.content} contextTitle={item.title} />
           </div>
           <NewsAttachments items={item.attachments} />
+          <ArticleRelations related={context.related} previous={context.previous} next={context.next} />
         </>
       }
     />

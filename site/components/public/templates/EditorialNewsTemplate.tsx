@@ -3,7 +3,7 @@ import { DataStateNotice } from '../shared/DataStateNotice'
 import { EmptyState } from '../shared/EmptyState'
 import { ListingPageHero } from '../shared/ListingPageHero'
 
-export function EditorialListingTemplate({
+export function EditorialNewsTemplate({
   title,
   description,
   children,
@@ -12,8 +12,7 @@ export function EditorialListingTemplate({
   stateSource = 'live',
   stateMessage,
   emptyTitle,
-  emptyDescription,
-  eyebrow = ''
+  emptyDescription
 }: {
   title: string
   description: string
@@ -24,17 +23,16 @@ export function EditorialListingTemplate({
   stateMessage?: string
   emptyTitle: string
   emptyDescription: string
-  eyebrow?: string
 }) {
   return (
-    <section className='listing-page'>
+    <section className='editorial-news-page'>
       <article className='surface-card listing-page__hero'>
-        <ListingPageHero title={title} description={description} eyebrow={eyebrow} />
+        <ListingPageHero title={title} description={description} />
       </article>
 
       <DataStateNotice status={stateStatus} source={stateSource} message={stateMessage} />
 
-      <article className='surface-card listing-page__body'>
+      <div className='editorial-news-page__body'>
         {hasItems ? children : (
           <EmptyState
             mode={stateStatus === 'error' ? 'error' : 'empty'}
@@ -42,7 +40,7 @@ export function EditorialListingTemplate({
             description={emptyDescription}
           />
         )}
-      </article>
+      </div>
     </section>
   )
 }

@@ -1,9 +1,41 @@
 import ReactMarkdown from 'react-markdown'
 import { ArticleImageCarousel } from './ArticleImageCarousel'
+import { FallbackImage } from './FallbackImage'
 import { ScheduleTimeline, type ScheduleItem } from '../editorial/ScheduleTimeline'
 import { TournamentGroupsBoard, type TournamentGroup } from '../editorial/TournamentGroupsBoard'
 import { getStrapiMediaProps } from '../../../lib/data/media'
 import { isCameraOrUuidFilename, resolveImageAlt } from '../../../lib/data/utils'
+import { bindPolishOrphans, bindTrailingPolishOrphan } from '../../../lib/typography'
+
+interface MarkdownTextNode {
+  type: string
+  value?: string
+  children?: MarkdownTextNode[]
+}
+
+function startsWithWord(node: MarkdownTextNode): boolean {
+  if (typeof node.value === 'string') return /^[\p{L}\p{N}]/u.test(node.value)
+  return node.children?.length ? startsWithWord(node.children[0]) : false
+}
+
+function remarkBindPolishOrphans() {
+  return (tree: MarkdownTextNode) => {
+    function visit(node: MarkdownTextNode) {
+      if (node.type === 'text' && typeof node.value === 'string') {
+        node.value = bindPolishOrphans(node.value)
+      }
+
+      node.children?.forEach((child, index, siblings) => {
+        visit(child)
+        if (child.type === 'text' && typeof child.value === 'string' && startsWithWord(siblings[index + 1] ?? { type: 'break' })) {
+          child.value = bindTrailingPolishOrphan(child.value)
+        }
+      })
+    }
+
+    visit(tree)
+  }
+}
 
 const isListLine = (line: string) => /^([-*•]|\d+\.)\s+/.test(line)
 const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
@@ -14,6 +46,13 @@ interface ImageInfo {
   alt: string
 }
 
+interface MatchScore {
+  homeTeam: string
+  homeScore: string
+  awayTeam: string
+  awayScore: string
+}
+
 type ContentBlock =
   | { type: 'markdown'; content: string }
   | { type: 'gallery'; images: ImageInfo[] }
@@ -21,6 +60,53 @@ type ContentBlock =
   | { type: 'tournament_groups'; groups: TournamentGroup[]; title?: string }
 
 const scheduleLineRegex = /^[-*•]\s+\*\*?(\d{1,2}[:.]\d{2}(?:\s*[-–—]\s*\d{1,2}[:.]\d{2})?)\*\*?\s*[-–—:]\s*(.+)$/
+
+const editorialAcronyms = ['MVP', 'KALK', 'BKPK', 'CESiR']
+
+function getChildrenText(children: React.ReactNode): string {
+  if (typeof children === 'string' || typeof children === 'number') return String(children)
+  if (Array.isArray(children)) return children.map(getChildrenText).join('')
+  return ''
+}
+
+function sentenceCaseHeading(children: React.ReactNode): React.ReactNode {
+  const text = getChildrenText(children).trim()
+  if (!text || text !== text.toLocaleUpperCase('pl-PL')) return children
+
+  let result = text.toLocaleLowerCase('pl-PL')
+  result = `${result.charAt(0).toLocaleUpperCase('pl-PL')}${result.slice(1)}`
+  editorialAcronyms.forEach((acronym) => {
+    result = result.replace(new RegExp(`\\b${acronym.toLocaleLowerCase('pl-PL')}\\b`, 'gi'), acronym)
+  })
+  return result
+}
+
+function parseSummary(text: string): { title: string; items: string[] } | null {
+  const match = text.trim().match(/^(.{2,80}w liczbach):\s*(.+)$/i)
+  if (!match) return null
+  const items = match[2].split('·').map((item) => item.trim()).filter(Boolean)
+  return items.length >= 2 ? { title: match[1], items } : null
+}
+
+/** Turn a standalone `Team A 40:26 Team B` line into a scannable score board. */
+function parseMatchScore(text: string): MatchScore | null {
+  const normalized = text.trim()
+  const scoreMatches = normalized.match(/\d{1,2}\s*:\s*\d{1,2}/g)
+  if (scoreMatches?.length !== 1 || /[,.!?]/.test(normalized)) return null
+
+  const match = normalized.match(/^(.+?)\s+(\d{1,2})\s*:\s*(\d{1,2})\s+(.+)$/)
+  if (!match) return null
+
+  const narrativeWords = /\b(w|z|i|na|do|od|po|który|która|wygrał|wygrała|pokonał|pokonała|zwycięstwem|zakończył|zakończyła|zapewniła|zdobył|zdobyła|miejsce|meczu|spotkaniu|grupie)\b/i
+  if (narrativeWords.test(match[1]) || narrativeWords.test(match[4])) return null
+
+  return {
+    homeTeam: match[1].trim(),
+    homeScore: match[2],
+    awayTeam: match[4].trim(),
+    awayScore: match[3]
+  }
+}
 
 function parseScheduleLines(lines: string[]): { items: ScheduleItem[]; raw: string[] } | null {
   const items: ScheduleItem[] = []
@@ -317,10 +403,44 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: Arti
         return (
           <ReactMarkdown
             key={idx}
+            remarkPlugins={[remarkBindPolishOrphans]}
             components={{
-              h2: ({ children }) => <h2 className='article-markdown__h2'>{children}</h2>,
-              h3: ({ children }) => <h3 className='article-markdown__h3'>{children}</h3>,
-              p: ({ children }) => <p className='article-markdown__p'>{children}</p>,
+              h2: ({ children }) => <h2 className='article-markdown__h2'>{sentenceCaseHeading(children)}</h2>,
+              h3: ({ children }) => <h3 className='article-markdown__h3'>{sentenceCaseHeading(children)}</h3>,
+              p: ({ children }) => {
+                const text = getChildrenText(children).replace(/\s+/g, ' ').trim()
+                const score = parseMatchScore(text)
+                if (score) {
+                  return (
+                    <div
+                      className='article-markdown__score'
+                      role='group'
+                      aria-label={`Wynik meczu: ${score.homeTeam} ${score.homeScore} do ${score.awayScore} ${score.awayTeam}`}
+                    >
+                      <span className='article-markdown__score-team'>{score.homeTeam}</span>
+                      <span className='article-markdown__score-value' aria-hidden='true'>
+                        <strong>{score.homeScore}</strong>
+                        <span>:</span>
+                        <strong>{score.awayScore}</strong>
+                      </span>
+                      <span className='article-markdown__score-team article-markdown__score-team--away'>{score.awayTeam}</span>
+                    </div>
+                  )
+                }
+
+                const summary = parseSummary(text)
+                if (summary) {
+                  return (
+                    <aside className='article-markdown__summary'>
+                      <strong>{summary.title}</strong>
+                      <ul className='article-markdown__summary-grid'>
+                        {summary.items.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </aside>
+                  )
+                }
+                return <p className='article-markdown__p'>{children}</p>
+              },
               strong: ({ children }) => <strong className='article-markdown__strong'>{children}</strong>,
               em: ({ children }) => <em className='article-markdown__em'>{children}</em>,
               blockquote: ({ children }) => <blockquote className='article-markdown__blockquote'>{children}</blockquote>,
@@ -337,10 +457,11 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: Arti
                 const cleanAlt = resolveImageAlt(alt, contextTitle, 0)
                 return (
                   <figure className='article-markdown__figure'>
-                    <img
+                    <FallbackImage
                       {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, (max-width: 1100px) 90vw, 1040px' })}
                       alt={cleanAlt}
                       className='article-markdown__img'
+                      fallbackSrc={typeof src === 'string' ? src : undefined}
                     />
                     {alt && !isCameraOrUuidFilename(alt) ? (
                       <figcaption className='article-markdown__figcaption'>{alt}</figcaption>

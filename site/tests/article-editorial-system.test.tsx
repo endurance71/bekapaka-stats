@@ -30,7 +30,7 @@ describe('Article Editorial System', () => {
       expect(html).toContain('class="article-detail__meta"')
       expect(html).toContain('26 września 2026, 18:00')
       expect(html).toContain('class="article-detail__lead"')
-      expect(html).toContain('To był emocjonujący turniej w Bobolicach.')
+      expect(html).toContain('To był emocjonujący turniej w\u00a0Bobolicach.')
       expect(html).toContain('class="mock-content"')
     })
 
@@ -72,6 +72,17 @@ describe('Article Editorial System', () => {
       expect(html).not.toContain('style="color:')
     })
 
+    it('binds one-letter Polish words to the next word across markdown formatting', () => {
+      const markdown = 'Wygrała z **MAXBAU** i [awansowała](https://example.com/wyniki) o 18:00. `i kod` pozostaje bez zmian.'
+      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
+
+      expect(html).toContain('z\u00a0<strong')
+      expect(html).toContain('i\u00a0<a href="https://example.com/wyniki"')
+      expect(html).toContain('o\u00a018:00')
+      expect(html).toContain('<code>i kod</code>')
+      expect(html).toContain('href="https://example.com/wyniki"')
+    })
+
     it('renders unordered and ordered lists with correct classes', () => {
       const markdown = `- Drużyna A\n- Drużyna B\n\n1. Pierwsze miejsce\n2. Drugie miejsce`
       const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
@@ -105,6 +116,16 @@ describe('Article Editorial System', () => {
       const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
 
       expect(html).toContain('class="article-markdown__hr"')
+    })
+
+    it('turns standalone match scores into accessible score boards', () => {
+      const markdown = `### Mecz o trzecie miejsce\n\nTKKF Koszalin 15:20 LKS Bonin Bio-Energetyka`
+      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
+
+      expect(html).toContain('class="article-markdown__score"')
+      expect(html).toContain('aria-label="Wynik meczu: TKKF Koszalin 15 do 20 LKS Bonin Bio-Energetyka"')
+      expect(html).toContain('>15</strong>')
+      expect(html).toContain('>20</strong>')
     })
   })
 
@@ -164,7 +185,7 @@ W szczególności pozycje 1 i 5.`
       )
       expect(html).toContain('class="article-markdown__h2"')
       expect(html).toContain('class="article-markdown__h3"')
-      expect(html).toContain('Rozgrywający i środkowy')
+      expect(html).toContain('Rozgrywający i\u00a0środkowy')
     })
 
     it('Case D: Post with lists and schedules', () => {
@@ -243,7 +264,7 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
       expect(html).toContain('Politechnika Koszalińska z Pucharem Burmistrza Bobolic')
       expect(html).toContain('class="article-detail__lead"')
       expect(html).toContain('Od symbolicznej wstęgi do pierwszego podrzutu')
-      expect(html).toContain('MAXBAU wygrywa mecz o 7. miejsce')
+      expect(html).toContain('MAXBAU wygrywa mecz o\u00a07. miejsce')
       expect(html).toContain('Brąz dla LKS Bonin Bio-Energetyka')
       expect(html).toContain('class="article-markdown__ol"')
       expect(html).toContain('Alfa Trans')
@@ -381,5 +402,3 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
     })
   })
 })
-
-
