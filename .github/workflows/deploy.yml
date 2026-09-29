@@ -62,7 +62,7 @@ jobs:
         run: |
           python3 -m venv /tmp/bkpk-scraper-tests
           /tmp/bkpk-scraper-tests/bin/pip install -r backend/scripts/requirements.txt
-          (cd backend/scripts && /tmp/bkpk-scraper-tests/bin/python -m unittest -v test_kalk_fetch)
+          (cd backend/scripts && /tmp/bkpk-scraper-tests/bin/python -m unittest discover -p 'test_kalk_*.py' -v)
       - name: CMS backup helper regressions
         run: python3 -m unittest discover -s scripts/vps -p 'test_cms_release.py' -v
       - name: Frontend tests and build

@@ -6,7 +6,7 @@ Dokumentacja pipeline pobierania danych z [kalk-koszalin.com](https://www.kalk-k
 
 | Warstwa | Plik / komponent | Rola |
 |---------|------------------|------|
-| Pobieranie | `backend/scripts/kalk_scraper.py` | Scrapling + BeautifulSoup → `kalk_stats.json` |
+| Pobieranie | `backend/scripts/kalk_scraper.py`, `kalk_new_site.py` | Scrapling + BeautifulSoup → `kalk_stats.json` |
 | Orkiestracja | `backend/server.js` → `runScrapeImportPipeline` | Uruchamia Python, importuje JSON do DB |
 | Import | `backend/dataStore.js`, `backend/kalk/kalkIngest.js` | Liga + `ingestKalkTeams`, `ingestKalkMatches`, `ingestKalkPlayerGameLogs`, `syncPlayersFromKalk` |
 | Parser meczu | `backend/kalk/parseMatchBoxScore.js` | HTML `/mecz,...,0.html` → box score JSON |
@@ -27,6 +27,12 @@ Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols
 | `GET /api/kalk/audit` | Pełny raport audytu JSON (Admin) |
 
 ## Źródło danych
+
+Od 2026-09-29 KALK korzysta z nowej witryny. Aktywny sezon **2026/2027** (numer KALK `50`) pobieramy z `/liga/dywizja-ii/{tabela,terminarz,zawodnicy,zespoly}?sezon=50`, stron `/mecz/<id>/statystyki` i `/zawodnik/<slug>/statystyki?sezon=50`. Parser `kalk_new_site.py` jest odrębny od parsera historycznej witryny i odmawia importu, gdy struktura jest niepełna. Docelowa ścieżka zapisana w `KalkSeason.divisionPath` dla tego sezonu jest ignorowana przez adapter nowej witryny; sezon musi być jawnie obsługiwany w `SUPPORTED_SEASONS`.
+
+Nowe identyfikatory meczów i zawodników **nie są zgodne** z dawnymi. Historyczny sezon 2025/2026 pozostaje w bazie bez ponownego scrapowania; nie wolno mieszać plików pośrednich z różnych sezonów. `scrapeManifest.seasonSlug` jest sprawdzany przez backend przed importem. Targeted scrape nowego meczu wymaga wcześniejszego pełnego terminarza w aktualnym `kalk_stats.json`.
+
+Poniższe adresy i opis warstw dotyczą archiwalnej witryny KALK oraz historycznego sezonu 2025/2026:
 
 - **Dywizja:** [dywizja-2](https://www.kalk-koszalin.com/dzial,dywizja-2,4.html)
 - **Sekcje:** Tabela, Terminarz (kolejki), Statystyki indywidualne
@@ -216,7 +222,7 @@ Kody błędów:
 - `409` — scraper już działa
 - `500` — błąd Pythona, brak `kalk_stats.json`, błąd importu (szczegóły w `lastLog` ze statusu)
 
-Jeżeli choć jedno pobranie strony KALK nie powiedzie się, skrypt kończy się błędem przed zapisem JSON. Backend nie importuje wtedy starego pliku. Targeted scrape luk zachowuje się tak samo: przy błędzie któregokolwiek URL-a nie zapisuje częściowego wyniku. Testy regresyjne: `cd backend/scripts && python3 -m unittest -v test_kalk_fetch` (po instalacji `requirements.txt`).
+Jeżeli choć jedno pobranie strony KALK nie powiedzie się, skrypt kończy się błędem przed zapisem JSON. Backend nie importuje wtedy starego pliku ani pliku z innego sezonu. Targeted scrape luk zachowuje się tak samo: przy błędzie któregokolwiek URL-a nie zapisuje częściowego wyniku. Testy regresyjne: `cd backend/scripts && python3 -m unittest discover -p 'test_kalk_*.py' -v` (po instalacji `requirements.txt`).
 
 Skrypt odrzuca również stronę przerwy technicznej (brak sekcji tabeli i terminarza) oraz pustą tabelę/terminarz. Jeśli serwis KALK jest niedostępny, zachowaj ostatnie poprawne dane i ponów sync po przywróceniu źródła; nie obchodź tego warunku ręcznym importem pustego JSON.
 

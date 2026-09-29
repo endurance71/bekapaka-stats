@@ -1,10 +1,13 @@
 """Regresje: KALK nie może importować częściowych ani starych danych po błędzie pobrania."""
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
+
+from bs4 import BeautifulSoup
 
 import kalk_fetch
 import kalk_scrape_gaps
@@ -35,6 +38,12 @@ class KalkFetchTests(unittest.TestCase):
         with patch.dict('os.environ', {'KALK_GAP_URLS': f'{first},{second}'}), patch('sys.argv', ['kalk_scrape_gaps.py']):
             self.assertEqual(kalk_scrape_gaps.collect_urls(), [first, second])
 
+    def test_gap_urls_accept_new_match_paths(self):
+        first = 'https://www.kalk-koszalin.com/mecz/4116'
+        second = 'https://www.kalk-koszalin.com/mecz/4117'
+        with patch.dict('os.environ', {'KALK_GAP_URLS': f'{first},{second}'}), patch('sys.argv', ['kalk_scrape_gaps.py']):
+            self.assertEqual(kalk_scrape_gaps.collect_urls(), [first, second])
+
     def test_full_scrape_failure_does_not_overwrite_previous_json(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'kalk_stats.json'
@@ -58,12 +67,25 @@ class KalkFetchTests(unittest.TestCase):
     def test_gap_scrape_is_atomic_when_one_url_fails(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / 'kalk_stats.json'
-            output.write_text('previous', encoding='utf-8')
+            previous = '{"version":2,"schedule":[],"matches":[]}'
+            output.write_text(previous, encoding='utf-8')
             with patch.object(kalk_scrape_gaps, 'OUTPUT_FILE', output), patch.object(kalk_scrape_gaps, 'collect_urls', return_value=['ok', 'failed']), patch.object(kalk_scrape_gaps, 'fetch_html', side_effect=['<html></html>', kalk_fetch.KalkFetchError('offline')]), patch.object(kalk_scrape_gaps, 'parse_match_page', return_value={'id': '1'}):
                 with self.assertRaises(SystemExit) as result:
                     kalk_scrape_gaps.main()
             self.assertEqual(result.exception.code, 2)
-            self.assertEqual(output.read_text(encoding='utf-8'), 'previous')
+            self.assertEqual(output.read_text(encoding='utf-8'), previous)
+
+    def test_gap_scrape_new_match_uses_current_schedule(self):
+        url = 'https://www.kalk-koszalin.com/mecz/4116'
+        schedule = {'meczId': '4116', 'meczUrl': url, 'isFinished': True}
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / 'kalk_stats.json'
+            existing = {'version': 2, 'scrapeManifest': {'seasonSlug': '2026-2027'}, 'schedule': [schedule], 'matches': []}
+            parsed = {'id': '4116', 'boxScore': {'teams': [{}, {}]}}
+            with patch.object(kalk_scrape_gaps, 'OUTPUT_FILE', output), patch.object(kalk_scrape_gaps, 'collect_urls', return_value=[url]), patch.object(kalk_scrape_gaps, 'load_existing', return_value=existing), patch.object(kalk_scrape_gaps, 'fetch_soup', return_value=BeautifulSoup('', 'html.parser')) as fetch, patch.object(kalk_scrape_gaps, 'parse_box_score', return_value=parsed), patch.object(kalk_scrape_gaps, 'add_quarters'):
+                kalk_scrape_gaps.main()
+            self.assertEqual(fetch.call_count, 2)
+            self.assertEqual(json.loads(output.read_text(encoding='utf-8'))['matches'][0]['id'], '4116')
 
 
 if __name__ == '__main__':
