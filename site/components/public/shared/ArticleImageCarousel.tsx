@@ -56,61 +56,137 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
   const touchEndX = useRef<number | null>(null)
   const scrollFrame = useRef<number | null>(null)
 
+  // Guard against scroll-event race conditions during programmatic navigation (arrow/dot clicks)
+  const isProgrammaticScrollRef = useRef(false)
+  const programmaticTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const currentIndexRef = useRef(currentIndex)
+  currentIndexRef.current = currentIndex
+
   const imageCount = images.length
   const hasManyImages = imageCount > 10
+
+  const getSlideOffset = useCallback((index: number): number => {
+    const track = trackRef.current
+    if (!track) return 0
+    const slides = track.children
+    if (slides[index] && slides[index] instanceof HTMLElement) {
+      return (slides[index] as HTMLElement).offsetLeft
+    }
+    return track.clientWidth * index
+  }, [])
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
     const track = trackRef.current
     if (!track) return
-    track.scrollTo({ left: track.clientWidth * index, behavior })
-  }, [])
+
+    // Lock scroll-event processing so intermediate frames don't bounce the active slide
+    isProgrammaticScrollRef.current = true
+    if (programmaticTimeoutRef.current) {
+      clearTimeout(programmaticTimeoutRef.current)
+    }
+
+    const targetOffset = getSlideOffset(index)
+    track.scrollTo({ left: targetOffset, behavior })
+
+    // Release lock once smooth scrolling has settled
+    programmaticTimeoutRef.current = setTimeout(() => {
+      isProgrammaticScrollRef.current = false
+    }, 450)
+  }, [getSlideOffset])
 
   const goToIndex = useCallback((index: number, syncTrack = true) => {
     if (imageCount === 0) return
     const normalizedIndex = (index + imageCount) % imageCount
+    const isWrap = Math.abs(normalizedIndex - currentIndexRef.current) > 1
+
     setCurrentIndex(normalizedIndex)
-    if (syncTrack) scrollToIndex(normalizedIndex)
+
+    if (syncTrack) {
+      // Use instant scroll for wrap-around jumps so it doesn't rewind through the whole gallery
+      scrollToIndex(normalizedIndex, isWrap ? 'auto' : 'smooth')
+    }
   }, [imageCount, scrollToIndex])
 
   const showPrevious = useCallback(() => {
-    goToIndex(currentIndex - 1)
-  }, [currentIndex, goToIndex])
+    goToIndex(currentIndexRef.current - 1)
+  }, [goToIndex])
 
   const showNext = useCallback(() => {
-    goToIndex(currentIndex + 1)
-  }, [currentIndex, goToIndex])
+    goToIndex(currentIndexRef.current + 1)
+  }, [goToIndex])
 
   const closeLightbox = useCallback(() => {
     setIsLightboxOpen(false)
+    scrollToIndex(currentIndexRef.current, 'auto')
     window.requestAnimationFrame(() => lightboxTriggerRef.current?.focus())
-  }, [])
+  }, [scrollToIndex])
 
+  // Track listener: only updates active index during manual user swipes/gestures
   useEffect(() => {
     const track = trackRef.current
     if (!track) return
 
     const updateCurrentSlide = () => {
-      if (scrollFrame.current !== null) window.cancelAnimationFrame(scrollFrame.current)
+      // Ignore scroll events triggered by programmatic button/dot clicks
+      if (isProgrammaticScrollRef.current) return
+
+      if (scrollFrame.current !== null) {
+        window.cancelAnimationFrame(scrollFrame.current)
+      }
+
       scrollFrame.current = window.requestAnimationFrame(() => {
-        if (!track.clientWidth) return
-        const nextIndex = Math.round(track.scrollLeft / track.clientWidth)
-        if (nextIndex >= 0 && nextIndex < imageCount) setCurrentIndex(nextIndex)
+        if (!track.clientWidth || isProgrammaticScrollRef.current) return
+
+        const currentScroll = track.scrollLeft
+        const slides = track.children
+        let closestIndex = currentIndexRef.current
+        let minDistance = Infinity
+
+        for (let i = 0; i < slides.length; i++) {
+          const slide = slides[i] as HTMLElement
+          const dist = Math.abs(slide.offsetLeft - currentScroll)
+          if (dist < minDistance) {
+            minDistance = dist
+            closestIndex = i
+          }
+        }
+
+        if (closestIndex !== currentIndexRef.current && closestIndex >= 0 && closestIndex < imageCount) {
+          setCurrentIndex(closestIndex)
+        }
       })
     }
 
+    const handleScrollEnd = () => {
+      isProgrammaticScrollRef.current = false
+      if (programmaticTimeoutRef.current) {
+        clearTimeout(programmaticTimeoutRef.current)
+      }
+    }
+
     track.addEventListener('scroll', updateCurrentSlide, { passive: true })
+    track.addEventListener('scrollend', handleScrollEnd)
+
     return () => {
       track.removeEventListener('scroll', updateCurrentSlide)
-      if (scrollFrame.current !== null) window.cancelAnimationFrame(scrollFrame.current)
+      track.removeEventListener('scrollend', handleScrollEnd)
+      if (scrollFrame.current !== null) {
+        window.cancelAnimationFrame(scrollFrame.current)
+      }
+      if (programmaticTimeoutRef.current) {
+        clearTimeout(programmaticTimeoutRef.current)
+      }
     }
   }, [imageCount])
 
+  // Resize listener: keeps the current slide aligned when container size changes
   useEffect(() => {
-    const handleResize = () => scrollToIndex(currentIndex, 'auto')
+    const handleResize = () => scrollToIndex(currentIndexRef.current, 'auto')
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [currentIndex, scrollToIndex])
+  }, [scrollToIndex])
 
+  // Keyboard navigation & focus trap for lightbox
   useEffect(() => {
     if (!isLightboxOpen) return
 
@@ -163,7 +239,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
 
   const openLightbox = (event: React.MouseEvent<HTMLButtonElement>, index: number) => {
     lightboxTriggerRef.current = event.currentTarget
-    setCurrentIndex(index)
+    goToIndex(index)
     setIsLightboxOpen(true)
   }
 
