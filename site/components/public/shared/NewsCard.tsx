@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { NewsPost } from '../../../lib/data'
+import { getStrapiMediaProps } from '../../../lib/data/media'
 import { formatDateTime } from '../../../lib/format'
 
 export function NewsCard({
@@ -15,11 +16,11 @@ export function NewsCard({
         <div className='news-card__media'>
           {item.coverImageUrl ? (
             <img
-              src={item.coverImageUrl}
+              {...getStrapiMediaProps(item.coverImageUrl, {
+                sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px'
+              })}
               alt=''
               className='news-card__image'
-              loading='lazy'
-              decoding='async'
             />
           ) : (
             <div className='news-card__placeholder' aria-hidden='true'>

@@ -4,6 +4,7 @@ import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdo
 import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
+import { getStrapiMediaProps } from '../../../lib/data/media'
 import { slugifyTitle } from '../../../lib/data/utils'
 import { formatDateTime } from '../../../lib/format'
 import { draftMode } from 'next/headers'
@@ -55,7 +56,12 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
         <>
           {item.coverImageUrl ? (
             <div className='article-detail__cover'>
-              <img src={item.coverImageUrl} alt='' className='article-detail__cover-image' />
+              <img
+                {...getStrapiMediaProps(item.coverImageUrl, { isCover: true })}
+                alt=''
+                className='article-detail__cover-image'
+                fetchPriority='high'
+              />
             </div>
           ) : null}
           <div className='article-content'>

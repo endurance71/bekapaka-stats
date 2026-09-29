@@ -1,5 +1,6 @@
 import ReactMarkdown from 'react-markdown'
 import { ArticleImageCarousel } from './ArticleImageCarousel'
+import { getStrapiMediaProps } from '../../../lib/data/media'
 
 const isListLine = (line: string) => /^[-*]\s+/.test(line)
 const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
@@ -160,7 +161,11 @@ export function ArticleMarkdown({ content }: { content: string }) {
               ),
               img: ({ src, alt }) => (
                 <span className='article-markdown__img-container'>
-                  <img src={src} alt={alt || ''} className='article-markdown__img' />
+                  <img
+                    {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, 840px' })}
+                    alt={alt || ''}
+                    className='article-markdown__img'
+                  />
                   {alt && <span className='article-markdown__img-caption'>{alt}</span>}
                 </span>
               )

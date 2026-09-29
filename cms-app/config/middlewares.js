@@ -17,6 +17,7 @@ module.exports = [
   'strapi::poweredBy',
   'strapi::query',
   'strapi::body',
+  'global::heic-transform',
   'strapi::session',
   'strapi::favicon',
   'strapi::public',

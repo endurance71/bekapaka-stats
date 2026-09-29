@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
+import { getStrapiMediaProps } from '../../../lib/data/media'
 
 interface ImageInfo {
   src: string
@@ -117,7 +118,9 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
           >
             <div className='article-gallery-grid__image-wrapper'>
               <img
-                src={img.src}
+                {...getStrapiMediaProps(img.src, {
+                  sizes: '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px'
+                })}
                 alt={img.alt || 'Zdjęcie w galerii'}
                 className='article-gallery-grid__image'
                 draggable={false}
@@ -159,7 +162,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               >
                 <div className='article-carousel__image-wrapper'>
                   <img
-                    src={img.src}
+                    {...getStrapiMediaProps(img.src, { sizes: '100vw' })}
                     alt={img.alt || 'Zdjęcie w galerii'}
                     className='article-carousel__image'
                     draggable={false}
@@ -256,7 +259,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
           <div className='article-lightbox__content'>
             <img
               key={currentIndex}
-              src={activeImage.src}
+              {...getStrapiMediaProps(activeImage.src, { isLightbox: true })}
               alt={activeImage.alt || 'Powiększone zdjęcie'}
               className='article-lightbox__image'
               draggable={false}
