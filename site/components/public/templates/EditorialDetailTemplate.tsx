@@ -31,18 +31,17 @@ export function EditorialDetailTemplate({
           <header className='article-detail__header'>
             {sectionLabel ? <p className='article-detail__eyebrow'>{sectionLabel}</p> : null}
             <h1 className='article-detail__title'>{title}</h1>
+            {lead ? (
+              <div className='article-detail__lead-wrap'>
+                <p className='article-detail__lead'>{lead}</p>
+              </div>
+            ) : null}
             {meta ? (
               <div className='article-detail__meta-wrap'>
                 <span className='article-detail__meta'>{meta}</span>
               </div>
             ) : null}
           </header>
-
-          {lead ? (
-            <div className='article-detail__lead-wrap'>
-              <p className='article-detail__lead'>{lead}</p>
-            </div>
-          ) : null}
 
           <div className='article-detail__content'>{content}</div>
         </div>

@@ -5,7 +5,7 @@ import { NewsAttachments } from '../../../components/public/shared/NewsAttachmen
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { getStrapiMediaProps } from '../../../lib/data/media'
-import { slugifyTitle } from '../../../lib/data/utils'
+import { calculateReadingTime, excerptFromContent, slugifyTitle } from '../../../lib/data/utils'
 import { formatDateTime } from '../../../lib/format'
 import { draftMode } from 'next/headers'
 
@@ -47,12 +47,17 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
   const item = await getNewsBySlug(slug)
   if (!item) notFound()
 
+  const formattedDate = formatDateTime(item.publishedAt)
+  const readingTime = calculateReadingTime(item.content)
+  const metaText = formattedDate ? `${formattedDate} · ${readingTime}` : readingTime
+  const leadText = item.excerpt || excerptFromContent(item.content)
+
   return (
     <EditorialDetailTemplate
       sectionLabel='Aktualności'
       title={item.title}
-      meta={formatDateTime(item.publishedAt)}
-      lead={item.excerpt}
+      meta={metaText}
+      lead={leadText}
       parentHref='/aktualnosci'
       parentLabel='Wróć do aktualności'
       content={
@@ -68,7 +73,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
             </div>
           ) : null}
           <div className='article-content'>
-            <ArticleMarkdown content={item.content} />
+            <ArticleMarkdown content={item.content} contextTitle={item.title} />
           </div>
           <NewsAttachments items={item.attachments} />
         </>

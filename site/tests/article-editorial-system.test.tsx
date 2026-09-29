@@ -300,5 +300,86 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
       expect(html).toContain('PDF')
     })
   })
+
+  describe('Semantic Sports Blocks & Accessibility Enhancements', () => {
+    it('automatically compiles hourly schedule lists into ScheduleTimeline with breakout container', () => {
+      const markdown = `## Najważniejsze godziny
+- **9:30–10:15** – rozgrzewka
+- **10:15–10:30** – oficjalne otwarcie turnieju
+- **10:30** – start fazy grupowej
+- **16:00** – finał
+- **16:30–16:45** – rozdanie nagród na Placu Parafialnym`
+
+      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
+
+      expect(html).toContain('class="schedule-timeline"')
+      expect(html).toContain('class="article-markdown__breakout"')
+      expect(html).toContain('9:30–10:15')
+      expect(html).toContain('rozgrzewka')
+      expect(html).toContain('16:00')
+      expect(html).toContain('finał')
+      expect(html).toContain('schedule-timeline__item--highlight')
+    })
+
+    it('automatically compiles tournament group lists into TournamentGroupsBoard', () => {
+      const markdown = `## Podział na grupy
+### Grupa A
+- Pominięci w drafcie
+- BeKaPaKa Rozpruwacze
+- Maxbau Okna Dako PSP
+
+### Grupa B
+- Polibasket Politechnika Koszalińska
+- Młode Wilki
+- BeKaPaKa Grupa Inwalidzka`
+
+      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
+
+      expect(html).toContain('class="tournament-groups"')
+      expect(html).toContain('Grupa A')
+      expect(html).toContain('Grupa B')
+      expect(html).toContain('Pominięci w drafcie')
+      expect(html).toContain('Polibasket Politechnika Koszalińska')
+      expect(html).toContain('tournament-groups__team-item--bkpk')
+      expect(html).toContain('BKPK')
+    })
+
+    it('sanitizes camera UUID filenames in gallery images with contextual descriptive ALT text', () => {
+      const markdown = `![C689418D-9A69-45B4-918D-7E3120EBA873.PNG](https://cms.bekapaka.pl/img1.png)\n![60664F9E-EF30-4247-9B96-9955516DEF27.PNG](https://cms.bekapaka.pl/img2.png)`
+
+      const html = renderToStaticMarkup(
+        <ArticleMarkdown content={markdown} contextTitle='Harmonogram II Turnieju' />
+      )
+
+      expect(html).not.toContain('C689418D-9A69-45B4-918D-7E3120EBA873.PNG')
+      expect(html).not.toContain('60664F9E-EF30-4247-9B96-9955516DEF27.PNG')
+      expect(html).toContain('Harmonogram II Turnieju – Zdjęcie 1')
+      expect(html).toContain('Harmonogram II Turnieju – Zdjęcie 2')
+    })
+
+    it('strictly guarantees header element order: Eyebrow -> Title -> Lead -> Meta', () => {
+      const html = renderToStaticMarkup(
+        <EditorialDetailTemplate
+          sectionLabel='TURNIEJ'
+          title='II Turniej Koszykówki'
+          lead='To jest wyrazisty lead redakcyjny'
+          meta='2 lipca 2026 · 3 min czytania'
+          parentHref='/aktualnosci'
+          content={<p>Treść</p>}
+        />
+      )
+
+      const eyebrowPos = html.indexOf('article-detail__eyebrow')
+      const titlePos = html.indexOf('article-detail__title')
+      const leadPos = html.indexOf('article-detail__lead')
+      const metaPos = html.indexOf('article-detail__meta')
+
+      expect(eyebrowPos).toBeGreaterThan(-1)
+      expect(titlePos).toBeGreaterThan(eyebrowPos)
+      expect(leadPos).toBeGreaterThan(titlePos)
+      expect(metaPos).toBeGreaterThan(leadPos)
+    })
+  })
 })
+
 

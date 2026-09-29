@@ -1,8 +1,11 @@
 import ReactMarkdown from 'react-markdown'
 import { ArticleImageCarousel } from './ArticleImageCarousel'
+import { ScheduleTimeline, type ScheduleItem } from '../editorial/ScheduleTimeline'
+import { TournamentGroupsBoard, type TournamentGroup } from '../editorial/TournamentGroupsBoard'
 import { getStrapiMediaProps } from '../../../lib/data/media'
+import { isCameraOrUuidFilename, resolveImageAlt } from '../../../lib/data/utils'
 
-const isListLine = (line: string) => /^([-*]|\d+\.)\s+/.test(line)
+const isListLine = (line: string) => /^([-*•]|\d+\.)\s+/.test(line)
 const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
 const isHorizontalRule = (line: string) => /^[-*_]{3,}$/.test(line)
 
@@ -14,78 +17,204 @@ interface ImageInfo {
 type ContentBlock =
   | { type: 'markdown'; content: string }
   | { type: 'gallery'; images: ImageInfo[] }
+  | { type: 'schedule'; items: ScheduleItem[]; title?: string }
+  | { type: 'tournament_groups'; groups: TournamentGroup[]; title?: string }
 
-/**
- * Scan content and group consecutive markdown images (separated only by whitespace or newlines).
- */
-function groupMarkdownImages(content: string): ContentBlock[] {
-  const matches: { start: number; end: number; alt: string; src: string }[] = []
-  const regex = /!\[(.*?)\]\((.*?)\)/g
-  let match
+const scheduleLineRegex = /^[-*•]\s+\*\*?(\d{1,2}[:.]\d{2}(?:\s*[-–—]\s*\d{1,2}[:.]\d{2})?)\*\*?\s*[-–—:]\s*(.+)$/
 
-  while ((match = regex.exec(content)) !== null) {
-    matches.push({
-      start: match.index,
-      end: regex.lastIndex,
-      alt: match[1],
-      src: match[2]
-    })
-  }
+function parseScheduleLines(lines: string[]): { items: ScheduleItem[]; raw: string[] } | null {
+  const items: ScheduleItem[] = []
+  const raw: string[] = []
 
-  if (matches.length === 0) {
-    return [{ type: 'markdown', content }]
-  }
-
-  const blocks: ContentBlock[] = []
-  const groups: { alt: string; src: string; start: number; end: number }[][] = []
-  let currentGroup: { alt: string; src: string; start: number; end: number }[] = []
-
-  for (let i = 0; i < matches.length; i++) {
-    const m = matches[i]
-    if (currentGroup.length === 0) {
-      currentGroup.push(m)
+  for (const line of lines) {
+    const trimmed = line.trim()
+    const match = trimmed.match(scheduleLineRegex)
+    if (match) {
+      items.push({
+        time: match[1].trim(),
+        description: match[2].trim()
+      })
+      raw.push(line)
     } else {
-      const prev = currentGroup[currentGroup.length - 1]
-      const between = content.substring(prev.end, m.start)
-      if (/^\s*$/.test(between)) {
-        currentGroup.push(m)
-      } else {
-        groups.push([...currentGroup])
-        currentGroup = [m]
+      break
+    }
+  }
+
+  if (items.length >= 3) {
+    return { items, raw }
+  }
+  return null
+}
+
+function parseScheduleBlocks(text: string): ContentBlock[] {
+  const lines = text.split('\n')
+  const result: ContentBlock[] = []
+  let buffer: string[] = []
+
+  const flushBuffer = () => {
+    if (buffer.length > 0) {
+      const content = buffer.join('\n').trim()
+      if (content) result.push({ type: 'markdown', content })
+      buffer = []
+    }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const trimmed = line.trim()
+
+    if (scheduleLineRegex.test(trimmed)) {
+      const candidateLines = lines.slice(i)
+      const parsed = parseScheduleLines(candidateLines)
+
+      if (parsed) {
+        flushBuffer()
+        result.push({
+          type: 'schedule',
+          items: parsed.items
+        })
+        i += parsed.items.length - 1
+        continue
       }
     }
+
+    buffer.push(line)
   }
-  if (currentGroup.length > 0) {
-    groups.push([...currentGroup])
+
+  flushBuffer()
+  return result
+}
+
+/**
+ * Scan content and extract semantic blocks: galleries, tournament groups, schedules, and prose markdown.
+ */
+function extractSemanticBlocks(text: string, contextTitle: string): ContentBlock[] {
+  // 1. Find consecutive markdown images
+  const imageRegex = /!\[(.*?)\]\((.*?)\)/g
+  const matches: { start: number; end: number; alt: string; src: string }[] = []
+  let m: RegExpExecArray | null
+
+  while ((m = imageRegex.exec(text)) !== null) {
+    matches.push({
+      start: m.index,
+      end: imageRegex.lastIndex,
+      alt: m[1],
+      src: m[2]
+    })
   }
 
-  let lastIndex = 0
+  let segments: ({ type: 'text'; content: string } | { type: 'gallery'; images: ImageInfo[] })[]
 
-  for (let g = 0; g < groups.length; g++) {
-    const group = groups[g]
-    const groupStart = group[0].start
-    const groupEnd = group[group.length - 1].end
+  if (matches.length === 0) {
+    segments = [{ type: 'text', content: text }]
+  } else {
+    const groups: { alt: string; src: string; start: number; end: number }[][] = []
+    let currentGroup: { alt: string; src: string; start: number; end: number }[] = []
 
-    if (groupStart > lastIndex) {
-      blocks.push({
-        type: 'markdown',
-        content: content.substring(lastIndex, groupStart)
-      })
+    for (let i = 0; i < matches.length; i++) {
+      const match = matches[i]
+      if (currentGroup.length === 0) {
+        currentGroup.push(match)
+      } else {
+        const prev = currentGroup[currentGroup.length - 1]
+        const between = text.substring(prev.end, match.start)
+        if (/^\s*$/.test(between)) {
+          currentGroup.push(match)
+        } else {
+          groups.push([...currentGroup])
+          currentGroup = [match]
+        }
+      }
+    }
+    if (currentGroup.length > 0) {
+      groups.push([...currentGroup])
     }
 
-    blocks.push({
-      type: 'gallery',
-      images: group.map((img) => ({ src: img.src, alt: img.alt }))
-    })
+    segments = []
+    let lastIndex = 0
 
-    lastIndex = groupEnd
+    for (let g = 0; g < groups.length; g++) {
+      const group = groups[g]
+      const groupStart = group[0].start
+      const groupEnd = group[group.length - 1].end
+
+      if (groupStart > lastIndex) {
+        segments.push({
+          type: 'text',
+          content: text.substring(lastIndex, groupStart)
+        })
+      }
+
+      segments.push({
+        type: 'gallery',
+        images: group.map((img, idx) => ({
+          src: img.src,
+          alt: resolveImageAlt(img.alt, contextTitle, idx)
+        }))
+      })
+
+      lastIndex = groupEnd
+    }
+
+    if (lastIndex < text.length) {
+      segments.push({
+        type: 'text',
+        content: text.substring(lastIndex)
+      })
+    }
   }
 
-  if (lastIndex < content.length) {
-    blocks.push({
-      type: 'markdown',
-      content: content.substring(lastIndex)
-    })
+  // 2. Parse tournament groups and schedules in text segments
+  const blocks: ContentBlock[] = []
+
+  for (const seg of segments) {
+    if (seg.type === 'gallery') {
+      blocks.push(seg)
+      continue
+    }
+
+    let remaining = seg.content
+
+    // Detect Tournament Groups: 2 or more consecutive ### Grupa ...
+    const allGroupsMatch = remaining.match(/(?:###\s+Grupa\s+[A-Za-z0-9]+\s*\n(?:[-*•]\s+[^\n]+\n?)+[\s\n]*){2,}/i)
+
+    if (allGroupsMatch) {
+      const matchIndex = remaining.indexOf(allGroupsMatch[0])
+      const matchLength = allGroupsMatch[0].length
+      const before = remaining.substring(0, matchIndex)
+      const matchedText = allGroupsMatch[0]
+      const after = remaining.substring(matchIndex + matchLength)
+
+      if (before.trim()) {
+        blocks.push(...parseScheduleBlocks(before))
+      }
+
+      const singleGroupRegex = /###\s+(Grupa\s+[A-Za-z0-9]+)\s*\n((?:[-*•]\s+[^\n]+\n?)+)/gi
+      const groups: TournamentGroup[] = []
+      let gm: RegExpExecArray | null
+
+      while ((gm = singleGroupRegex.exec(matchedText)) !== null) {
+        const name = gm[1].trim()
+        const teams = gm[2]
+          .trim()
+          .split('\n')
+          .map((l) => l.replace(/^[-*•]\s+/, '').trim())
+          .filter(Boolean)
+        groups.push({ name, teams })
+      }
+
+      if (groups.length >= 2) {
+        blocks.push({ type: 'tournament_groups', groups })
+      } else {
+        blocks.push({ type: 'markdown', content: matchedText })
+      }
+
+      remaining = after
+    }
+
+    if (remaining.trim()) {
+      blocks.push(...parseScheduleBlocks(remaining))
+    }
   }
 
   return blocks
@@ -141,22 +270,48 @@ function normalizeNewsMarkdown(content: string): string {
     .replace(/\*\*([^*]+?)\*\*/g, (_, inner: string) => `**${inner.trim()}**`)
 }
 
+interface ArticleMarkdownProps {
+  content: string
+  contextTitle?: string
+}
+
 /**
- * Renders Strapi news body (Markdown) as semantic HTML for the public site.
+ * Renders Strapi news body (Markdown) as semantic HTML for the public site,
+ * automatically compiling sports schedules and tournament groups into rich editorial widgets.
  */
-export function ArticleMarkdown({ content }: { content: string }) {
+export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: ArticleMarkdownProps) {
   if (!content.trim()) {
     return <p className='muted'>Treść artykułu zostanie uzupełniona przez redakcję.</p>
   }
 
   const normalized = normalizeNewsMarkdown(content)
-  const blocks = groupMarkdownImages(normalized)
+  const blocks = extractSemanticBlocks(normalized, contextTitle)
 
   return (
     <div className='article-markdown'>
       {blocks.map((block, idx) => {
         if (block.type === 'gallery') {
-          return <ArticleImageCarousel key={idx} images={block.images} />
+          return (
+            <div key={idx} className='article-markdown__breakout'>
+              <ArticleImageCarousel images={block.images} />
+            </div>
+          )
+        }
+
+        if (block.type === 'schedule') {
+          return (
+            <div key={idx} className='article-markdown__breakout'>
+              <ScheduleTimeline items={block.items} title={block.title} />
+            </div>
+          )
+        }
+
+        if (block.type === 'tournament_groups') {
+          return (
+            <div key={idx} className='article-markdown__breakout'>
+              <TournamentGroupsBoard groups={block.groups} title={block.title} />
+            </div>
+          )
         }
 
         return (
@@ -178,16 +333,21 @@ export function ArticleMarkdown({ content }: { content: string }) {
                   {children}
                 </a>
               ),
-              img: ({ src, alt }) => (
-                <figure className='article-markdown__figure'>
-                  <img
-                    {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, (max-width: 1100px) 90vw, 1040px' })}
-                    alt={alt || ''}
-                    className='article-markdown__img'
-                  />
-                  {alt && <figcaption className='article-markdown__figcaption'>{alt}</figcaption>}
-                </figure>
-              )
+              img: ({ src, alt }) => {
+                const cleanAlt = resolveImageAlt(alt, contextTitle, 0)
+                return (
+                  <figure className='article-markdown__figure'>
+                    <img
+                      {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, (max-width: 1100px) 90vw, 1040px' })}
+                      alt={cleanAlt}
+                      className='article-markdown__img'
+                    />
+                    {alt && !isCameraOrUuidFilename(alt) ? (
+                      <figcaption className='article-markdown__figcaption'>{alt}</figcaption>
+                    ) : null}
+                  </figure>
+                )
+              }
             }}
           >
             {block.content}
@@ -197,4 +357,3 @@ export function ArticleMarkdown({ content }: { content: string }) {
     </div>
   )
 }
-

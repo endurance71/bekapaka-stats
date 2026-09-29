@@ -74,23 +74,74 @@ export function slugifyTitle(title: string): string {
 /** Strip common Markdown markers for card excerpts and meta descriptions. */
 export function stripMarkdown(text: string): string {
   return text
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '') // remove images
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // unwrap links
+    .replace(/`([^`]+)`/g, '$1') // unwrap inline code
+    .replace(/<[^>]+>/g, '') // strip html tags
     .replace(/\*\*([^*]+)\*\*/g, '$1')
     .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
     .replace(/^#{1,6}\s+/gm, '')
-    .replace(/^[-*]\s+/gm, '')
-    .replace(/\n+/g, ' ')
+    .replace(/^[-*•]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^>\s+/gm, '')
+    .replace(/[-*_]{3,}/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
 }
 
 /** Short plain-text excerpt from article body when CMS excerpt is empty. */
-export function excerptFromContent(content: string, maxLength = 180): string {
-  const plain = stripMarkdown(content)
+export function excerptFromContent(content: string, maxLength = 200): string {
+  // Split into paragraphs and pick the first text paragraph
+  const paragraphs = content.replace(/\r\n/g, '\n').split(/\n\s*\n/)
+  let chosen = ''
+  for (const para of paragraphs) {
+    const trimmed = para.trim()
+    if (!trimmed) continue
+    if (trimmed.startsWith('#') || trimmed.startsWith('![') || /^[-*_]{3,}$/.test(trimmed)) continue
+    const cleaned = stripMarkdown(trimmed)
+    if (cleaned.length > 20) {
+      chosen = cleaned
+      break
+    }
+  }
+
+  const plain = chosen || stripMarkdown(content)
   if (!plain) return ''
   if (plain.length <= maxLength) return plain
   const cut = plain.slice(0, maxLength)
   const lastSpace = cut.lastIndexOf(' ')
-  const trimmed = lastSpace > 80 ? cut.slice(0, lastSpace) : cut
+  const trimmed = lastSpace > 60 ? cut.slice(0, lastSpace) : cut
   return `${trimmed.trimEnd()}…`
+}
+
+/** Estimate reading time in Polish */
+export function calculateReadingTime(text: string, wordsPerMinute = 160): string {
+  const plain = stripMarkdown(text)
+  const words = plain.trim().split(/\s+/).filter(Boolean).length
+  const minutes = Math.max(1, Math.ceil(words / wordsPerMinute))
+  return `${minutes} min czytania`
+}
+
+/** Check if text looks like an auto-generated camera filename, hash or UUID */
+export function isCameraOrUuidFilename(text: string): boolean {
+  if (!text) return true
+  const trimmed = text.trim()
+  const uuidRegex = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}/i
+  const longHexRegex = /^[0-9a-f]{10,}\b/i
+  const cameraRegex = /^(img|image|dsc|screenshot|photo|c[0-9a-f]{6,}|[0-9a-f]{8,})[_\s-]?\d*/i
+  const hasExtension = /\.(png|jpe?g|webp|gif|svg)$/i.test(trimmed)
+  return uuidRegex.test(trimmed) || longHexRegex.test(trimmed) || (hasExtension && (cameraRegex.test(trimmed) || trimmed.length > 24))
+}
+
+/** Sanitize image alt text so raw camera filenames are replaced with descriptive context */
+export function resolveImageAlt(rawAlt: string | undefined, contextTitle: string, imageIndex = 0): string {
+  const clean = rawAlt ? rawAlt.trim() : ''
+  if (!clean || isCameraOrUuidFilename(clean)) {
+    return `${contextTitle} – Zdjęcie ${imageIndex + 1}`
+  }
+  return clean
 }
 
 const GENERIC_NEWS_SLUGS = new Set(['news-post', 'news', 'post'])
