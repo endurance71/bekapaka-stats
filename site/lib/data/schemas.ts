@@ -110,10 +110,10 @@ export const playerGameLogSchema = z.object({
   threePa: z.number().optional(),
   ftm: z.number().optional(),
   fta: z.number().optional(),
-  eval: z.number().optional(),
-  eFgPercentage: z.number().optional(),
-  tsPercentage: z.number().optional(),
-  plusMinus: z.number().optional()
+  eval: z.number().nullable().optional(),
+  eFgPercentage: z.number().nullable().optional(),
+  tsPercentage: z.number().nullable().optional(),
+  plusMinus: z.number().nullable().optional()
 })
 
 export const rosterPlayerSchema = z.object({
@@ -131,9 +131,9 @@ export const rosterPlayerSchema = z.object({
   fgPercentage: z.number().optional(),
   threePercentage: z.number().optional(),
   ftPercentage: z.number().optional(),
-  tsPercentage: z.number().optional(),
-  eFgPercentage: z.number().optional(),
-  plusMinus: z.number().optional(),
+  tsPercentage: z.number().nullable().optional(),
+  eFgPercentage: z.number().nullable().optional(),
+  plusMinus: z.number().nullable().optional(),
   gamesPlayed: z.number().optional(),
   birthDate: z.string().nullable().optional(),
   heightCm: z.number().nullable().optional(),

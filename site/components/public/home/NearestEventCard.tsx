@@ -180,7 +180,7 @@ export function NearestEventEmpty() {
       upper={
         <>
           <h3 className='next-event-hero__empty-title'>Brak zaplanowanych wydarzeń</h3>
-          <p className='muted'>Nie ma nadchodzących meczów w KALK ani wpisów w kalendarzu klubu.</p>
+          <p className='muted'>Terminarz BeKaPaKi na sezon 2026/2027 nie został jeszcze opublikowany przez KALK.</p>
         </>
       }
     />

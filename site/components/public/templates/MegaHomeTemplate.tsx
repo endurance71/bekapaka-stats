@@ -55,9 +55,33 @@ export function MegaHomeTemplate({
   const reboundsLeader = hasSeasonLeaders ? [...roster].sort((a, b) => (b.rpg || 0) - (a.rpg || 0))[0] : null
   const assistsLeader = hasSeasonLeaders ? [...roster].sort((a, b) => (b.apg || 0) - (a.apg || 0))[0] : null
   const normalizedSponsors = [...sponsors].sort((a, b) => (a.order || 999) - (b.order || 999))
-  const tablePreview = table.slice(0, 5)
 
-  const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka'))
+  type TablePreviewItem =
+    | { type: 'row'; data: TeamStanding }
+    | { type: 'separator'; key: string }
+
+  const bkpIndex = table.findIndex((row) =>
+    row.name.toLowerCase().includes('bekapaka') || row.name.toLowerCase().includes('bobolice')
+  )
+
+  let tablePreviewItems: TablePreviewItem[] = []
+  if (table.length <= 5) {
+    tablePreviewItems = table.map((row) => ({ type: 'row', data: row }))
+  } else if (bkpIndex === -1) {
+    console.warn('[MegaHomeTemplate] BeKaPaKa team not found in standings table')
+    tablePreviewItems = table.slice(0, 5).map((row) => ({ type: 'row', data: row }))
+  } else if (bkpIndex < 5) {
+    tablePreviewItems = table.slice(0, 5).map((row) => ({ type: 'row', data: row }))
+  } else {
+    // BeKaPaKa jest poza TOP 5: TOP 4 + separator + BeKaPaKa
+    tablePreviewItems = [
+      ...table.slice(0, 4).map((row) => ({ type: 'row' as const, data: row })),
+      { type: 'separator', key: 'standings-table-separator' },
+      { type: 'row', data: table[bkpIndex] }
+    ]
+  }
+
+  const ourPosition = table.find((row) => row.name.toLowerCase().includes('bekapaka') || row.name.toLowerCase().includes('bobolice'))
   const tableUnavailable = tableState?.status === 'error' || tableState?.source === 'fallback'
   const showNewsNotice = newsState ? shouldShowHomeDataNotice(newsState.status, newsState.source) : false
   const showTableNotice = tableState ? shouldShowHomeDataNotice(tableState.status, tableState.source) : false
@@ -231,14 +255,24 @@ export function MegaHomeTemplate({
                 </tr>
               </thead>
               <tbody>
-                {tablePreview.length === 0 ? (
+                {tablePreviewItems.length === 0 ? (
                   <tr>
                     <td colSpan={4} className='muted'>
                       {tableUnavailable ? 'Tabela ligowa jest chwilowo niedostępna.' : 'Brak danych tabeli ligowej.'}
                     </td>
                   </tr>
-                ) : tablePreview.map((row) => {
-                  const isBkp = row.name.toLowerCase().includes('bekapaka')
+                ) : tablePreviewItems.map((item) => {
+                  if (item.type === 'separator') {
+                    return (
+                      <tr key={item.key} className='tr-separator' aria-hidden='true'>
+                        <td colSpan={4} style={{ textAlign: 'center', opacity: 0.4, letterSpacing: '4px', padding: '6px 0', fontSize: '0.85rem' }}>
+                          •••
+                        </td>
+                      </tr>
+                    )
+                  }
+                  const row = item.data
+                  const isBkp = row.name.toLowerCase().includes('bekapaka') || row.name.toLowerCase().includes('bobolice')
                   return (
                     <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight-row' : undefined}>
                       <td className='td-pos'>

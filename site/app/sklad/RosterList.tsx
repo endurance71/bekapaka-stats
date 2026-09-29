@@ -155,10 +155,10 @@ export function RosterList({ roster }: RosterListProps) {
                   <span className='db-stat-label'>ASYSTY (AST)</span>
                 </div>
                 <div className='dashboard-stat-box'>
-                  <span className={`db-stat-val ${(selectedPlayer.plusMinus || 0) > 0 ? 'color-win' : (selectedPlayer.plusMinus || 0) < 0 ? 'color-loss' : ''}`}>
-                    {selectedPlayer.plusMinus !== undefined 
+                  <span className={`db-stat-val ${selectedPlayer.plusMinus != null && selectedPlayer.plusMinus > 0 ? 'color-win' : selectedPlayer.plusMinus != null && selectedPlayer.plusMinus < 0 ? 'color-loss' : ''}`}>
+                    {selectedPlayer.plusMinus != null 
                       ? (selectedPlayer.plusMinus > 0 ? `+${selectedPlayer.plusMinus.toFixed(1)}` : selectedPlayer.plusMinus.toFixed(1)) 
-                      : '0.0'}
+                      : '—'}
                   </span>
                   <span className='db-stat-label'>PLUS / MINUS (ŚR.)</span>
                 </div>
@@ -179,7 +179,7 @@ export function RosterList({ roster }: RosterListProps) {
               <div className='stat-bar-premium'>
                 <div className='sb-label-group'>
                   <span className='sb-label-text'>Rzuty z gry (FG%)</span>
-                  <span className='sb-value-text'>{formatStat(selectedPlayer.fgPercentage)}%</span>
+                  <span className='sb-value-text'>{(selectedPlayer.gamesPlayed ?? 0) > 0 ? `${formatStat(selectedPlayer.fgPercentage)}%` : '—'}</span>
                 </div>
                 <div className='sb-track-premium'>
                   <div
@@ -192,7 +192,7 @@ export function RosterList({ roster }: RosterListProps) {
               <div className='stat-bar-premium'>
                 <div className='sb-label-group'>
                   <span className='sb-label-text'>Rzuty za 3 (3P%)</span>
-                  <span className='sb-value-text'>{formatStat(selectedPlayer.threePercentage)}%</span>
+                  <span className='sb-value-text'>{(selectedPlayer.gamesPlayed ?? 0) > 0 ? `${formatStat(selectedPlayer.threePercentage)}%` : '—'}</span>
                 </div>
                 <div className='sb-track-premium'>
                   <div
@@ -205,7 +205,7 @@ export function RosterList({ roster }: RosterListProps) {
               <div className='stat-bar-premium'>
                 <div className='sb-label-group'>
                   <span className='sb-label-text'>Rzuty wolne (FT%)</span>
-                  <span className='sb-value-text'>{formatStat(selectedPlayer.ftPercentage)}%</span>
+                  <span className='sb-value-text'>{(selectedPlayer.gamesPlayed ?? 0) > 0 ? `${formatStat(selectedPlayer.ftPercentage)}%` : '—'}</span>
                 </div>
                 <div className='sb-track-premium'>
                   <div
@@ -217,11 +217,11 @@ export function RosterList({ roster }: RosterListProps) {
 
               <div className='advanced-shooting-notes'>
                 <div className='asn-item'>
-                  Efektywna skuteczność (eFG%): <strong>{formatStat(selectedPlayer.eFgPercentage)}%</strong>
+                  Efektywna skuteczność (eFG%): <strong>{selectedPlayer.eFgPercentage != null ? `${formatStat(selectedPlayer.eFgPercentage)}%` : '—'}</strong>
                 </div>
                 <div className='asn-divider'></div>
                 <div className='asn-item'>
-                  Rzeczywista skuteczność (TS%): <strong>{formatStat(selectedPlayer.tsPercentage)}%</strong>
+                  Rzeczywista skuteczność (TS%): <strong>{selectedPlayer.tsPercentage != null ? `${formatStat(selectedPlayer.tsPercentage)}%` : '—'}</strong>
                 </div>
               </div>
             </div>
@@ -261,7 +261,7 @@ export function RosterList({ roster }: RosterListProps) {
                           <td className='text-center font-mono'>{g.stl ?? '—'}</td>
                           <td className='text-center font-mono'>{g.blk ?? '—'}</td>
                           <td className={`text-center font-bold font-mono ${(g.plusMinus || 0) > 0 ? 'color-win' : (g.plusMinus || 0) < 0 ? 'color-loss' : ''}`}>
-                            {g.plusMinus !== undefined ? (g.plusMinus > 0 ? `+${g.plusMinus}` : g.plusMinus) : '—'}
+                            {g.plusMinus !== undefined && g.plusMinus !== null ? (g.plusMinus > 0 ? `+${g.plusMinus}` : g.plusMinus) : '—'}
                           </td>
                           <td className='text-center font-bold font-mono'><span className='highlight-gold'>{g.eval ?? '—'}</span></td>
                         </tr>
