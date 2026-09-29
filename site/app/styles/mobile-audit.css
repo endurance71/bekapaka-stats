@@ -1397,11 +1397,23 @@ textarea {
   }
 
   .article-detail__title {
-    font-size: clamp(2rem, 10vw, 3.15rem);
+    font-size: clamp(1.75rem, 6.5vw, 2.25rem);
+    line-height: 1.12;
+    letter-spacing: -0.045em;
   }
 
   .article-detail__header {
     padding-left: 14px;
+  }
+
+  .article-detail__lead,
+  .article-markdown__p {
+    text-align: left;
+    hyphens: manual;
+  }
+
+  .article-markdown__p {
+    margin-bottom: 1.1rem;
   }
 
   .article-markdown__p,
