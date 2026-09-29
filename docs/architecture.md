@@ -10,15 +10,15 @@ Obie warstwy korzystają z backendu REST (Node.js + Express), a warstwa publiczn
 ## Warstwy
 - Site (Next.js): widoki publiczne klubu (newsy, wydarzenia, sponsorzy, dokumenty, prezentacja składu).
 - Frontend panelowy (React): Dashboard, Game Center, Roster, Trends, Strategy Room.
-- Backend (Express): API do tabeli ligi, rosteru, importu raportów i notatek trenera.
+- Backend (Express): API do tabeli ligi, rosteru, synchronizacji KALK, analiz AI i notatek trenera.
 - CMS (Strapi): modele treści marketingowych i komunikacyjnych.
 - Dane: PostgreSQL dla danych sportowych + SQLite w CMS dla treści redakcyjnych.
 
 ## Przepływ danych
 1. Publiczna strona pobiera treści z CMS i dane sportowe z backendu.
 2. Panel pobiera dane przez `GET /dashboard`, `GET /games`, `GET /games/:id`, `GET /roster`.
-3. Import raportu (`POST /import`) parsuje Markdown/JSON i zwraca podgląd lub zapisuje nowy mecz (`backend/parser.js`).
-4. Scraping ligi KALK (`POST /api/scrape/kalk/div2/run`) pobiera tabelę, terminarz i statystyki zawodników przez Scrapling — szczegóły: [scraping.md](./scraping.md).
+3. Dawny import raportów Markdown (`POST /api/import`) jest wyłączony (HTTP 410); źródłem danych meczowych i scoutingu jest KALK.
+4. Scraping ligi KALK (`POST /api/scrape/kalk/div2/run`) pobiera terminarz, box score i statystyki zawodników wyłącznie przez Scrapling — szczegóły: [scraping.md](./scraping.md).
 5. Wyniki i metryki są wyliczane w backendzie (eFG%, TS%, TO%, FT Rate).
 
 ## Metryki
@@ -28,6 +28,6 @@ Wzory w `backend/metrics.js`:
 - TO% = TO / (FGA + 0.44 * FTA + TO)
 - FT Rate = FTA / FGA
 
-## Rozszerzalność
-- Dane można przenieść do Postgresa: przygotowane modele i strukturę JSON można zmapować na tabele (games, teams, players, player_stats).
-- Backend trzyma logikę metryk i importu, więc migracja bazy nie zmienia frontendu.
+## Dane i wdrażanie
+- Dane sportowe są już zapisane w PostgreSQL przez Prisma; CMS przechowuje treści w osobnej bazie SQLite i katalogu uploadów.
+- CI buduje obrazy czterech usług z tagiem SHA. Backend, panel i witryna wdrażają się automatycznie; CMS wymaga osobnego uruchomienia workflow po kopii i kontroli bazy.

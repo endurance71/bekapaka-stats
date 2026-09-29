@@ -336,7 +336,7 @@ html.is-scroll-locked {
   }
 
   .mobile-header-safe-top {
-    padding-top: max(0.625rem, env(safe-area-inset-top, 0px));
+    padding-top: max(0.375rem, env(safe-area-inset-top, 0px));
     background-color: var(--bkpk-color-bg, #0b0b0c);
   }
 

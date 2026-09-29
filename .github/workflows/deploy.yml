@@ -42,6 +42,7 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
             site/package-lock.json
+            cms-app/package-lock.json
             packages/safari-overlay/package-lock.json
       - name: Shared Safari overlay dependencies
         working-directory: packages/safari-overlay
@@ -57,6 +58,13 @@ jobs:
           npx prisma migrate deploy
           npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
           npm test -- --run
+      - name: KALK scraper fetch regressions
+        run: |
+          python3 -m venv /tmp/bkpk-scraper-tests
+          /tmp/bkpk-scraper-tests/bin/pip install -r backend/scripts/requirements.txt
+          (cd backend/scripts && /tmp/bkpk-scraper-tests/bin/python -m unittest -v test_kalk_fetch)
+      - name: CMS backup helper regressions
+        run: python3 -m unittest discover -s scripts/vps -p 'test_cms_release.py' -v
       - name: Frontend tests and build
         working-directory: frontend
         run: |
@@ -67,7 +75,50 @@ jobs:
         working-directory: site
         run: |
           npm ci
+          npm test
           npm run quality
+      - name: CMS build
+        working-directory: cms-app
+        run: |
+          npm ci
+          npm run build
+      - name: Dependency audit (critical gate)
+        run: |
+          set -euo pipefail
+          for service in backend frontend site cms-app; do
+            echo "::group::${service} production dependencies"
+            (cd "$service" && npm audit --omit=dev --audit-level=critical)
+            echo '::endgroup::'
+          done
+
+  docker-build-smoke:
+    if: github.event_name == 'pull_request'
+    needs: quality
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+          - name: frontend
+            context: .
+            dockerfile: ./frontend/Dockerfile.prod
+          - name: site
+            context: .
+            dockerfile: ./site/Dockerfile.prod
+          - name: cms
+            context: ./cms-app
+            dockerfile: ./cms-app/Dockerfile.prod
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.name }} image without publishing
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: false
 
   build-and-push:
     if: github.event_name != 'pull_request'
@@ -118,6 +169,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/site:latest
 
+      - name: Build and push CMS image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cms-app
+          file: ./cms-app/Dockerfile.prod
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/cms:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/cms:latest
+
   deploy:
     if: github.event_name != 'pull_request'
     needs: build-and-push
@@ -163,25 +224,36 @@ jobs:
             export BKPK_IMAGE_TAG="$GITHUB_SHA"
             docker compose -f docker-compose.prod.yml config --quiet
             docker compose -f docker-compose.prod.yml pull bkpk-backend bkpk-frontend bkpk-site
-            if ! docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site; then
-              echo 'Deploy failed; restoring previous BeKaPaKa images.'
+            deployed=()
+            rollback() {
+              echo 'Wdrażanie nieudane; przywracam poprzednie obrazy zmienionych usług.' >&2
               export BKPK_IMAGE_TAG="$rollback_tag"
-              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
-              exit 1
-            fi
-            healthy=false
-            for attempt in $(seq 1 30); do
-              if curl -fsS --max-time 3 http://127.0.0.1:4001/api/health >/dev/null \
-                && curl -fsS --max-time 3 http://127.0.0.1:8081/ >/dev/null \
-                && curl -fsS --max-time 3 http://127.0.0.1:8082/ >/dev/null; then
-                healthy=true
-                break
+              for ((i=${#deployed[@]}-1; i>=0; i--)); do
+                docker compose -f docker-compose.prod.yml up -d --no-deps "bkpk-${deployed[i]}" || true
+              done
+            }
+            deploy_one() {
+              service="$1"
+              endpoint="$2"
+              deployed+=("$service")
+              if ! docker compose -f docker-compose.prod.yml up -d --no-deps "bkpk-$service"; then
+                rollback
+                exit 1
               fi
-              sleep 2
-            done
-            if [ "$healthy" != true ]; then
-              echo 'Health checks failed; restoring previous BeKaPaKa images.'
-              export BKPK_IMAGE_TAG="$rollback_tag"
-              docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend bkpk-site
-              exit 1
-            fi
+              healthy=false
+              for attempt in $(seq 1 30); do
+                if curl -fsS --max-time 3 "$endpoint" >/dev/null; then
+                  healthy=true
+                  break
+                fi
+                sleep 2
+              done
+              if [ "$healthy" != true ]; then
+                echo "Kontrola zdrowia usługi $service nie powiodła się." >&2
+                rollback
+                exit 1
+              fi
+            }
+            deploy_one backend http://127.0.0.1:4001/api/health
+            deploy_one site http://127.0.0.1:8082/
+            deploy_one frontend http://127.0.0.1:8081/

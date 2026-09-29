@@ -1,0 +1,65 @@
+name: Deploy CMS to VPS
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: bekapaka-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-cms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload CMS release helper and compose file
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          source: docker-compose.prod.yml,scripts/vps/cms-release.py
+          target: /opt/bekapaka-stats/
+      - name: Backup and deploy SHA-pinned CMS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          CR_PAT: ${{ secrets.CR_PAT }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || 22 }}
+          envs: CR_PAT,GITHUB_ACTOR,GITHUB_REPOSITORY,GITHUB_SHA,GITHUB_RUN_ID
+          script: |
+            set -euo pipefail
+            cd /opt/bekapaka-stats
+            test "$(free -m | awk '/Mem:/ {print $7}')" -ge 1024
+            test "$(df -Pm / | awk 'NR == 2 {print $4}')" -ge 2048
+            echo "$CR_PAT" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+            export BKPK_CMS_IMAGE_TAG="$GITHUB_SHA"
+            docker compose -f docker-compose.prod.yml config --quiet
+            docker compose -f docker-compose.prod.yml pull bkpk-cms
+            python3 scripts/vps/cms-release.py backup
+            old_image="$(docker inspect --format '{{.Image}}' bkpk-cms-prod)"
+            rollback_tag="cms-rollback-${GITHUB_RUN_ID}"
+            docker tag "$old_image" "ghcr.io/${GITHUB_REPOSITORY}/cms:${rollback_tag}"
+            docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-cms
+            healthy=false
+            for attempt in $(seq 1 60); do
+              if curl -fsS --max-time 3 http://127.0.0.1:1337/_health >/dev/null; then
+                healthy=true
+                break
+              fi
+              sleep 2
+            done
+            if [ "$healthy" != true ]; then
+              echo 'CMS nie jest zdrowy. Backup i tag poprzedniego obrazu zachowane; sprawdź migrację SQLite przed rollbackiem.' >&2
+              exit 1
+            fi
+            python3 scripts/vps/cms-release.py pin "$GITHUB_SHA"
+            curl -fsS --max-time 5 http://127.0.0.1:1337/_health >/dev/null

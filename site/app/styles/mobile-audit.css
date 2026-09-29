@@ -438,3 +438,45 @@ textarea {
 .players-slider-track-premium > * {
   scroll-snap-align: start;
 }
+
+/* Compact mobile density (<= 379px) */
+@media (max-width: 379px) {
+  .news-card__body,
+  .news-card-premium__body {
+    padding: var(--space-3) !important;
+    gap: var(--space-1);
+  }
+  .news-card__body h2,
+  .news-card-premium__title {
+    font-size: 0.98rem !important;
+    line-height: 1.25;
+  }
+  .dashboard-hero {
+    min-height: 260px !important;
+    padding: var(--space-4) !important;
+  }
+  .hero-description {
+    font-size: 0.85rem !important;
+    line-height: 1.4 !important;
+  }
+  .hero-stat-badge {
+    padding: var(--space-1) var(--space-2) !important;
+  }
+}
+
+/* Landscape mobile optimization (< 480px height) */
+@media (max-height: 480px) and (orientation: landscape) {
+  .dashboard-hero {
+    min-height: clamp(200px, 70svh, 300px) !important;
+    padding: var(--space-4) !important;
+  }
+  .site-header__inner {
+    min-height: 48px !important;
+  }
+  .hero-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

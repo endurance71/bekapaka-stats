@@ -67,45 +67,45 @@ export function InstallPromptBanner() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
-          className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-tint-2 border border-bkpk-primary/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl"
+          className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-tint-2 border border-bkpk-primary/40 rounded-2xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl"
           role="dialog"
           aria-label="Zainstaluj aplikację BeKaPaKa"
         >
-          <div className="flex items-start gap-3">
-            <div className="w-12 h-12 rounded-xl bg-bkpk-bg border border-bkpk-border-strong overflow-hidden flex items-center justify-center shrink-0 p-1">
+          <div className="flex items-start gap-2.5 sm:gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-bkpk-bg border border-bkpk-border-strong overflow-hidden flex items-center justify-center shrink-0 p-1">
               <img src="/logo.png" alt="" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-outfit font-black text-sm text-bkpk-text-primary flex items-center gap-1.5">
+              <h4 className="font-outfit font-black text-xs sm:text-sm text-bkpk-text-primary flex items-center gap-1.5">
                 <span>Zainstaluj BeKaPaKa</span>
                 <Smartphone className="w-3.5 h-3.5 text-bkpk-primary" />
               </h4>
-              <p className="text-xs text-bkpk-text-muted mt-0.5 leading-relaxed">
+              <p className="text-[11px] sm:text-xs text-bkpk-text-muted mt-0.5 leading-relaxed">
                 Błyskawiczny dostęp do statystyk prosto z ekranu głównego telefonu.
               </p>
             </div>
             <button
               type="button"
               onClick={handleDismiss}
-              className="text-bkpk-text-muted hover:text-bkpk-text-primary min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition-colors"
+              className="text-bkpk-text-muted hover:text-bkpk-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors touch-manipulation"
               aria-label="Nie teraz"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="mt-3.5 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-2">
             <button
               type="button"
               onClick={handleDismiss}
-              className="flex-1 py-2 text-xs font-bold text-bkpk-text-muted hover:text-bkpk-text-primary rounded-xl transition-colors"
+              className="flex-1 py-1.5 sm:py-2 text-xs font-bold text-bkpk-text-muted hover:text-bkpk-text-primary rounded-xl transition-colors min-h-[44px] touch-manipulation"
             >
               Nie teraz
             </button>
             <button
               type="button"
               onClick={handleAction}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-4 bg-bkpk-primary hover:bg-bkpk-primary-hover text-bkpk-on-primary rounded-xl text-xs font-black uppercase tracking-wider transition-colors shadow-bkpk-glow touch-manipulation"
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 sm:px-4 bg-bkpk-primary hover:bg-bkpk-primary-hover text-bkpk-on-primary rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-colors shadow-bkpk-glow min-h-[44px] touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               {isIosDevice ? 'Jak dodać' : 'Zainstaluj'}

@@ -6,7 +6,7 @@ Dokument uzupełnia [vps-runbook.md](./vps-runbook.md). Dotyczy współdzieloneg
 
 | Zasób | Typowy problem | Priorytet |
 |-------|----------------|-----------|
-| **RAM (7,6 GiB)** | Deploy Docker, build Strapi/CMS, agenci AI (Hermes), `dockerd` | **Wąskie gardło** |
+| **RAM (7,6 GiB)** | Deploy Docker, start Strapi/CMS, agenci AI (Hermes), `dockerd` | **Wąskie gardło** |
 | **Dysk (74 GiB)** | Cache buildów Docker (`docker builder`), stare obrazy | Drugi po deployach |
 | **CPU (4 vCPU)** | Zwykle niski load | Zapas |
 
@@ -21,11 +21,12 @@ Optymalizacja z czerwca 2026 na produkcji: dysk spadł z ~83% do ~31% użycia po
 | `vps-optimize.sh` | `sudo bash …` na VPS | Swap (jeśli brak), prune cache/obrazów, journal, apt, npm cache |
 | `bekapaka-ram.logrotate` | przez `install-ram-monitor.sh` | Rotacja logów `/var/log/bekapaka-ram*.log` |
 
-### Pierwsza instalacja (lub po `git pull` na VPS)
+### Pierwsza instalacja lub aktualizacja skryptu monitora
 
 ```bash
 cd /opt/bekapaka-stats
-git pull   # lub rsync/scp z repo
+# Po przepisaniu historii nie wykonuj zwykłego git pull w starym checkoutcie.
+# Przenieś zweryfikowany skrypt z czystego checkoutu przez scp/rsync.
 sudo bash scripts/vps/install-ram-monitor.sh
 ```
 
@@ -76,17 +77,17 @@ BKP_RAM_WARN_AVAIL_MIB=1536 BKP_RAM_CRIT_AVAIL_MIB=768 /usr/local/bin/bekapaka-r
 |--------|----------|--------|
 | `dockerd` + containerd | ~800–950 MiB | Stały narzut Docker |
 | Hermes gateway + WebUI | ~450 MiB | Host, poza `bkpk-*` |
-| `bkpk-cms-prod` (Strapi) | ~250–350 MiB | Skok przy buildzie/startcie |
+| `bkpk-cms-prod` (Strapi) | ~250–350 MiB | Skok przy starcie; obraz buduje CI, nie VPS |
 | `moya-api` | ~90–100 MiB | Nie restartować bez potrzeby |
 | `bkpk-backend`, `bkpk-site`, DB | ~50–150 MiB łącznie | Stabilne po starcie |
 
-Przy deployu z `--build` pamięć rośnie chwilowo (warstwy buildu) — **sprawdź log RAM przed buildem**.
+Przed wdrożeniem CMS sprawdź dostępny RAM; obraz jest pobierany z GHCR bez lokalnego buildu.
 
 ## Swap
 
 - Plik: `/swapfile`, rozmiar domyślny **2 GiB** (`BKP_SWAP_SIZE` w `vps-optimize.sh`)
 - `vm.swappiness=10` w `/etc/sysctl.d/99-bekapaka.conf`
-- Cel: bufor przy krótkich skokach (CMS build, równoległy deploy + AI), nie zastępuje braku RAM przy długotrwałym obciążeniu
+- Cel: bufor przy krótkich skokach (start CMS, równoległy deploy + AI), nie zastępuje braku RAM przy długotrwałym obciążeniu
 
 Weryfikacja:
 
@@ -99,7 +100,7 @@ free -h
 
 ### Co zajmuje miejsce
 
-1. **Build cache** — najczęstsza przyczyna &gt;80% dysku po wielu deployach (`docker builder prune -af`).
+1. **Build cache** — pozostałości po historycznych buildach na VPS mogą zajmować dysk (`docker builder prune -af`). Nowe obrazy buduje CI.
 2. **Stare obrazy** — lokalne tagi `bekapaka-stats-bkpk-*`, `scrapling`, duplikaty GHCR (`docker image prune -a -f` gdy kontenery już na nowych obrazach).
 3. **Journal** — `journalctl --vacuum-size=200M` (w skrypcie optymalizacji).
 
@@ -110,7 +111,7 @@ cd /opt/bekapaka-stats
 docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 docker image prune -a -f
-docker builder prune -af   # gdy dysk >70% lub po dużym buildzie CMS
+docker builder prune -af   # gdy dysk >70% i po sprawdzeniu, że cache nie jest potrzebny
 df -h /
 ```
 
@@ -148,7 +149,7 @@ ss -tlnp | grep -E ':(3000|4001|8081|8082|1337)'
 5. `docker image prune -a -f` (opcjonalnie `docker builder prune -af`).
 6. Po 10 min: ponownie `tail -1 /var/log/bekapaka-ram.log`.
 
-Jeśli podczas deployu RAM spada poniżej progu krytycznego — rozważ odłożenie buildu CMS lub wstrzymanie zbędnych agentów na hoście (poza zakresem tego repo).
+Jeśli podczas deployu RAM spada poniżej progu krytycznego — odłóż wdrożenie CMS lub wstrzymaj zbędne procesy na hoście (poza zakresem tego repo).
 
 ## Powiązane dokumenty
 

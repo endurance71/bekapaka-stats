@@ -113,7 +113,7 @@ Jeśli widać `188.210.221.221` — to parking SEOhost, nie VPS. Zgłoś synchro
 ```bash
 cd /opt/bekapaka-stats
 docker compose -f docker-compose.prod.yml pull
-docker compose -f docker-compose.prod.yml up -d --build bkpk-backend bkpk-frontend
+docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-frontend
 docker compose -f docker-compose.prod.yml ps
 docker compose -f docker-compose.prod.yml logs -f bkpk-backend --tail=100
 ```
@@ -194,6 +194,7 @@ curl -s http://127.0.0.1:3000/api/v1/health 2>/dev/null || echo "sprawdź dokume
 - Hasła i `JWT_SECRET` w `/opt/bekapaka-stats/.env` (nie w `docker-compose.prod.yml`).
 - **Rotacja po wycieku:** [security-rotation.md](./security-rotation.md).
 - **Backup bazy:** tylko poza repo (`pg_dump`, katalog `VPS-dane/`, lokalny dysk). Nigdy nie commituj `data/pgdata/` ani `data/pgdata_backup*/`.
+- **CMS:** osobny workflow `Deploy CMS to VPS` pobiera obraz GHCR z tagiem SHA i najpierw wykonuje backup SQLite oraz uploadów do `/home/debian/backups/bekapaka-cms-*`. Nie buduj CMS na współdzielonym VPS. Tag sprawdzonego obrazu jest zapisywany jako `BKPK_CMS_IMAGE_TAG` w produkcyjnym `.env`.
 - **Analiza AI (Gemini):** `GEMINI_API_KEY` z [Google AI Studio](https://aistudio.google.com/apikey) — opcjonalnie `GEMINI_MODEL=gemini-3.5-flash`.
 - Po pierwszym deployu AI uruchom migrację w kontenerze backend: `npx prisma migrate deploy`.
 - **Nigdy** nie commituj `.env` z produkcją do git.

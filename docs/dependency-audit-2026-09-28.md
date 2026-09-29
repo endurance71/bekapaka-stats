@@ -1,0 +1,13 @@
+# Audyt zależności produkcyjnych — 2026-09-28
+
+Polecenie: `npm audit --omit=dev` w każdym z katalogów aplikacji, po aktualizacjach bez `--force`. Wynik dotyczy rozwiązanego lockfile; sama obecność pakietu nie oznacza osiągalnej podatnej ścieżki. CI blokuje nowe alerty **critical** i uruchamia build/testy czterech aplikacji.
+
+| Aplikacja | Pozostałe alerty | Ocena ścieżki wykonania i decyzja |
+|---|---|---|
+| `site` | 0 | Next.js i zależności zaktualizowane, build oraz testy tras przechodzą. |
+| `frontend` | 2 low: `@tailwindcss/typography`, `postcss-selector-parser` | Parser CSS działa w łańcuchu budowania, nie w przeglądarce. React Router podniesiony do załatanej linii 7.18.4. Monitorować aktualizację wtyczki Tailwind. |
+| `backend` | 4 high: `prisma`, `@prisma/config`, `deepmerge-ts`, `mysql2` | Wszystkie pochodzą z Prisma CLI 7.10.0, używanego do migracji/generowania klienta i obecnego w obrazie, lecz nie jako publiczna trasa HTTP. `mysql2` nie obsługuje produkcyjnej bazy PostgreSQL. `npm audit` proponuje downgrade do Prisma 6, którego nie wykonujemy bez migracji kompatybilności. Śledzić poprawkę Prisma 7.x; ograniczyć uruchamianie CLI do kontrolowanego deployu. |
+| `cms-app` | 4 high: `@strapi/upload`, `sharp`, `nodemailer`, `vite` | `sharp`/upload to realna ścieżka przetwarzania obrazów przesyłanych przez uprawnionych redaktorów; publiczne `GET /api/upload/files` zwraca 403, ale nie usuwa ryzyka dla admina. `nodemailer` może być używany przez funkcje e-mail Strapi; nie uznajemy go za nieosiągalny bez audytu konfiguracji. `vite` służy budowie/admin-dev, nie serwerowi produkcyjnemu. Strapi 5.55.1 pozostawia te zależności; nie obniżać do Strapi 4 sugerowanego przez `npm audit --force`. |
+| `cms-app` | 20 moderate: `@strapi/admin`, `@strapi/content-manager`, `@strapi/content-releases`, `@strapi/content-type-builder`, `@strapi/core`, `@strapi/data-transfer`, `@strapi/email`, `@strapi/i18n`, `@strapi/permissions`, `@strapi/plugin-cloud`, `@strapi/plugin-users-permissions`, `@strapi/provider-email-sendmail`, `@strapi/review-workflows`, `@strapi/strapi`, `@strapi/types`, `esbuild`, `qs`, `react-router`, `react-router-dom`, `stream-json` | Większość wpisów Strapi jest pośrednim alertem przez wskazane biblioteki. `esbuild` jest narzędziem budowania, Router działa w panelu admina, a `qs` i `stream-json` mogą przetwarzać wejście serwera — traktować je jako potencjalnie osiągalne. Wdrożyć Strapi 5.55.1 z backupem i monitorować wydanie z kompatybilnymi poprawkami. |
+
+Nie dodawaj trwałych wyjątków do audytu tylko po to, aby uzyskać zielony wynik. Po nowym wydaniu Prisma lub Strapi ponownie uruchom audyt i usuń powyższe ryzyka kompatybilną aktualizacją. Publiczne uprawnienia uploadów CMS powinny pozostać zamknięte.

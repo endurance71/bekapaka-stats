@@ -35,7 +35,7 @@
   --space-7: 40px;
   --space-8: 56px;
   --container-max: 1200px;
-  --header-h: 80px;
+  --header-h: 56px;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 12px 36px rgba(0, 0, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
   --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -65,4 +65,16 @@
   --panel-text-primary: var(--bkp-panel-text-primary);
   --panel-overlay-weak: var(--bkp-panel-overlay-weak);
   --panel-radius-lg: var(--bkp-panel-radius-lg);
+}
+
+@media (min-width: 900px) {
+  :root {
+    --header-h: 76px;
+  }
+}
+
+@media (max-width: 379px) {
+  :root {
+    --header-h: 52px;
+  }
 }
