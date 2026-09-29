@@ -55,6 +55,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
   const touchStartX = useRef<number | null>(null)
   const touchEndX = useRef<number | null>(null)
   const scrollFrame = useRef<number | null>(null)
+  const lightboxThumbsRef = useRef<HTMLDivElement>(null)
 
   // Guard against scroll-event race conditions during programmatic navigation (arrow/dot clicks)
   const isProgrammaticScrollRef = useRef(false)
@@ -221,6 +222,16 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
     }
   }, [closeLightbox, isLightboxOpen, showNext, showPrevious])
 
+  // Automatically scroll active thumbnail into center view in lightbox
+  useEffect(() => {
+    if (!isLightboxOpen || !lightboxThumbsRef.current) return
+    const track = lightboxThumbsRef.current
+    const activeThumb = track.children[currentIndex] as HTMLElement | undefined
+    if (activeThumb) {
+      activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+  }, [currentIndex, isLightboxOpen])
+
   if (imageCount === 0) return null
 
   const currentImage = images[currentIndex]
@@ -380,6 +391,35 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               </div>
             )}
           </div>
+
+          {imageCount > 1 && (
+            <div className='article-lightbox__thumbs-bar' role='region' aria-label='Miniatury zdjęć galerii'>
+              <div className='article-lightbox__thumbs-track' ref={lightboxThumbsRef}>
+                {images.map((image, index) => {
+                  const isCurrent = currentIndex === index
+                  const thumbMedia = getStrapiMediaProps(image.src, { sizes: '96px' })
+                  return (
+                    <button
+                      key={`lightbox-thumb-${index}`}
+                      type='button'
+                      className={`article-lightbox__thumb${isCurrent ? ' article-lightbox__thumb--active' : ''}`}
+                      onClick={() => goToIndex(index)}
+                      aria-label={`Przejdź do zdjęcia ${index + 1}`}
+                      aria-current={isCurrent ? 'true' : undefined}
+                    >
+                      <img
+                        src={thumbMedia.src}
+                        alt={image.alt || `Miniatura ${index + 1}`}
+                        className='article-lightbox__thumb-img'
+                        loading='lazy'
+                        draggable={false}
+                      />
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>,
         document.body
       )}
