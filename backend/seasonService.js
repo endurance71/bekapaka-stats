@@ -91,6 +91,16 @@ export async function setPlayerSeasonPreference(rosterPlayerId, seasonId) {
   });
 }
 
+export function parseKalkSlug(kalkIdOrUrl) {
+  if (!kalkIdOrUrl) return null;
+  const ext = parseKalkExternalId(kalkIdOrUrl);
+  let slug = ext.replace(/^https?:\/\/[^\/]+\/zawodnik\//, '');
+  slug = slug.replace(/^zawodnik/, '');
+  slug = slug.replace(/\d+.*html$/, '');
+  slug = slug.trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  return slug || null;
+}
+
 export async function findKalkPlayerForRoster(player, seasonId) {
   const season = await getSeasonById(seasonId);
   if (!season) return null;
@@ -100,6 +110,12 @@ export async function findKalkPlayerForRoster(player, seasonId) {
     candidates.push(player.kalkPlayerId);
     const ext = parseKalkExternalId(player.kalkPlayerId);
     candidates.push(buildKalkPlayerDbId(season.slug, ext));
+
+    const slug = parseKalkSlug(player.kalkPlayerId);
+    if (slug) {
+      candidates.push(buildKalkPlayerDbId(season.slug, slug));
+      candidates.push(slug);
+    }
   }
 
   for (const id of candidates) {
