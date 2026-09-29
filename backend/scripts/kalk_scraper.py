@@ -23,6 +23,7 @@ from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 from kalk_fetch import KalkFetchError, fetch_html
+from kalk_new_site import scrape_new_site
 
 from kalk_parsers import (
     PARSER_VERSION,
@@ -360,6 +361,18 @@ def main() -> None:
     logging.info('Scraper KALK — Sezon: %s, Ścieżka: %s', args.season, effective_division_path)
 
     FETCH_ERRORS.clear()
+    if args.season == '2026-2027':
+        logging.info('Używam parsera nowej witryny KALK dla aktywnego sezonu 2026/2027')
+        result = scrape_new_site(args.season, fetch_soup)
+        if FETCH_ERRORS or not result['table'] or not result['schedule']:
+            raise KalkFetchError('Nowa witryna KALK zwróciła niekompletne dane; import przerwany')
+        OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with OUTPUT_FILE.open('w', encoding='utf-8') as handle:
+            json.dump(result, handle, ensure_ascii=False, indent=2)
+        logging.info('Nowa witryna KALK: %d drużyn, %d meczów, %d box score, %d zawodników',
+                     len(result['table']), len(result['schedule']), len(result['matches']), len(result['players']))
+        return
+
     section_urls: Dict[str, Optional[str]] = {}
     try:
         division_soup = fetch_soup(urljoin(BASE_URL, effective_division_path))
@@ -716,6 +729,7 @@ def main() -> None:
         'timestamp': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
         'scrapeManifest': {
             'parserVersion': PARSER_VERSION,
+            'seasonSlug': args.season,
             'httpEstimate': http_estimate,
             'matchesScraped': len(matches_scraped),
             'playersCount': len(players_list),

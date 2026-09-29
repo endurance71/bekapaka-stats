@@ -652,6 +652,10 @@ async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId =
   const activeSeason = targetSeasonId
     ? await getSeasonById(targetSeasonId)
     : await getActiveSeason();
+  const currentActiveSeason = await getActiveSeason();
+  if (!activeSeason || activeSeason.id !== currentActiveSeason?.id) {
+    throw new Error('Import KALK do nieaktywnego sezonu wymaga odrębnej migracji; przerwano bez zmian w bazie.');
+  }
   const divisionPath = activeSeason?.divisionPath || 'dzial,dywizja-2,4.html';
   const seasonSlug = activeSeason?.slug || '2025-2026';
 
@@ -739,7 +743,10 @@ async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId =
     const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
     const stats = JSON.parse(statsRaw);
     const currentOutputMtime = (await fs.stat(KALK_SCRAPLING_OUTPUT)).mtimeMs;
-    validateScrapeOutput(stats, previousOutputMtime, currentOutputMtime);
+    validateScrapeOutput(stats, previousOutputMtime, currentOutputMtime, seasonSlug);
+    if ((await getActiveSeason())?.id !== activeSeason.id) {
+      throw new Error('Aktywny sezon KALK zmienił się podczas scrapingu; import przerwany.');
+    }
     await ingestLeagueTable(stats.table || [], 'regular');
     if (stats.playout_table) {
       await ingestLeagueTable(stats.playout_table, 'playout');
@@ -846,6 +853,10 @@ app.post(['/api/scrape/kalk/gaps', '/scrape/kalk/gaps'], authenticateToken, requ
 
     const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
     const stats = JSON.parse(statsRaw);
+    const activeSeason = await getActiveSeason();
+    if (!activeSeason || stats.scrapeManifest?.seasonSlug !== activeSeason.slug) {
+      throw new Error('Plik uzupełniający KALK nie należy do aktywnego sezonu; import przerwany.');
+    }
     const matchesIngest = await ingestKalkMatches(stats.matches || []);
 
     res.json({
