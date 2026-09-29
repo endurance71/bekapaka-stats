@@ -1706,6 +1706,7 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
       seasonId: activeSeason.id,
       name: team.name,
       phase,
+      position: Number.isInteger(team.position) ? team.position : null,
       matches: team.matches,
       points: team.points,
       wins: team.wins,

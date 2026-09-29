@@ -1,0 +1,2 @@
+ALTER TABLE "LeagueTeam" ADD COLUMN IF NOT EXISTS "position" INTEGER;
+

@@ -61,6 +61,7 @@ def parse_table(soup: BeautifulSoup) -> list[dict]:
         if not name:
             raise ValueError('Pusta nazwa drużyny w tabeli KALK')
         results.append({
+            'position': _integer(_text(cells[0])),
             'name': name,
             'matches': _integer(_text(cells[2])),
             'wins': _integer(_text(cells[3])),
@@ -71,6 +72,8 @@ def parse_table(soup: BeautifulSoup) -> list[dict]:
         })
     if not results or len({row['name'].casefold() for row in results}) != len(results):
         raise ValueError('Tabela KALK jest pusta lub zawiera duplikaty drużyn')
+    if [row['position'] for row in results] != list(range(1, len(results) + 1)):
+        raise ValueError('Tabela KALK ma nieciągłą lub nieuporządkowaną numerację miejsc')
     return results
 
 

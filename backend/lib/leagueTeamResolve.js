@@ -1,6 +1,7 @@
 /** @typedef {import('@prisma/client').LeagueTeam} LeagueTeam */
 
 export const LEAGUE_TABLE_ORDER_BY = [
+  { position: 'asc' },
   { points: 'desc' },
   { wins: 'desc' },
   { matches: 'asc' },

@@ -305,7 +305,9 @@ const fallbackGames: GameSummary[] = [
 export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> {
   try {
     const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), {
-      revalidate: 900,
+      // Synchronizacja KALK zapisuje tabelę niezależnie od procesu Next.js.
+      // Krótki TTL zapobiega utrzymaniu pustej tabeli po imporcie sezonu.
+      revalidate: 60,
       tags: ['backend', 'backend-table']
     })
     if (response.status === 'error') {
