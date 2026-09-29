@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { getStrapiMediaProps } from '../../../lib/data/media'
 
 interface ImageInfo {
@@ -271,7 +272,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
         )}
       </div>
 
-      {isLightboxOpen && (
+      {isLightboxOpen && createPortal(
         <div className='article-lightbox' role='dialog' aria-modal='true' aria-label={`Podgląd zdjęcia ${currentIndex + 1} z ${imageCount}`}>
           <button className='article-lightbox__scrim' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd' />
           <button ref={closeButtonRef} className='article-lightbox__close-btn' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd'>
@@ -303,7 +304,8 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </section>
   )
