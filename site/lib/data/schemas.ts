@@ -13,7 +13,9 @@ export const newsAttachmentSchema = z.object({
   id: z.string(),
   name: z.string(),
   url: z.string(),
-  mime: z.string().optional()
+  mime: z.string().optional(),
+  ext: z.string().optional(),
+  size: z.number().optional()
 })
 
 export const newsPostSchema = z.object({

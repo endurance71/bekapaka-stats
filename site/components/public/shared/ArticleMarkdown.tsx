@@ -2,7 +2,7 @@ import ReactMarkdown from 'react-markdown'
 import { ArticleImageCarousel } from './ArticleImageCarousel'
 import { getStrapiMediaProps } from '../../../lib/data/media'
 
-const isListLine = (line: string) => /^[-*]\s+/.test(line)
+const isListLine = (line: string) => /^([-*]|\d+\.)\s+/.test(line)
 const isHeadingLine = (line: string) => /^#{1,6}\s+/.test(line)
 const isHorizontalRule = (line: string) => /^[-*_]{3,}$/.test(line)
 
@@ -92,16 +92,20 @@ function groupMarkdownImages(content: string): ContentBlock[] {
 }
 
 /**
- * Strapi editors often use single line breaks; merge prose lines so **bold** parses correctly.
+ * Strapi editors often use single line breaks; merge prose lines so **bold** parses correctly,
+ * while keeping lists and headings grouped cleanly.
  */
 function normalizeNewsMarkdown(content: string): string {
-  const lines = content.split('\n')
+  const sanitized = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  const lines = sanitized.split('\n')
   const blocks: string[] = []
   let buffer = ''
+  let inList = false
 
   const flush = () => {
     if (buffer.trim()) blocks.push(buffer.trim())
     buffer = ''
+    inList = false
   }
 
   for (const line of lines) {
@@ -110,10 +114,23 @@ function normalizeNewsMarkdown(content: string): string {
       flush()
       continue
     }
-    if (isListLine(trimmed) || isHeadingLine(trimmed) || isHorizontalRule(trimmed)) {
+    if (isHeadingLine(trimmed) || isHorizontalRule(trimmed)) {
       flush()
       blocks.push(trimmed)
       continue
+    }
+    if (isListLine(trimmed)) {
+      if (inList) {
+        buffer = `${buffer}\n${trimmed}`
+      } else {
+        flush()
+        buffer = trimmed
+        inList = true
+      }
+      continue
+    }
+    if (inList) {
+      flush()
     }
     buffer = buffer ? `${buffer}\n${trimmed}` : trimmed
   }
@@ -148,26 +165,28 @@ export function ArticleMarkdown({ content }: { content: string }) {
             components={{
               h2: ({ children }) => <h2 className='article-markdown__h2'>{children}</h2>,
               h3: ({ children }) => <h3 className='article-markdown__h3'>{children}</h3>,
-              p: ({ children }) => <p>{children}</p>,
-              strong: ({ children }) => <strong>{children}</strong>,
-              em: ({ children }) => <em>{children}</em>,
-              ul: ({ children }) => <ul>{children}</ul>,
-              ol: ({ children }) => <ol>{children}</ol>,
-              li: ({ children }) => <li>{children}</li>,
+              p: ({ children }) => <p className='article-markdown__p'>{children}</p>,
+              strong: ({ children }) => <strong className='article-markdown__strong'>{children}</strong>,
+              em: ({ children }) => <em className='article-markdown__em'>{children}</em>,
+              blockquote: ({ children }) => <blockquote className='article-markdown__blockquote'>{children}</blockquote>,
+              ul: ({ children }) => <ul className='article-markdown__ul'>{children}</ul>,
+              ol: ({ children }) => <ol className='article-markdown__ol'>{children}</ol>,
+              li: ({ children }) => <li className='article-markdown__li'>{children}</li>,
+              hr: () => <hr className='article-markdown__hr' />,
               a: ({ href, children }) => (
-                <a href={href} target='_blank' rel='noopener noreferrer'>
+                <a href={href} target='_blank' rel='noopener noreferrer' className='article-markdown__a'>
                   {children}
                 </a>
               ),
               img: ({ src, alt }) => (
-                <span className='article-markdown__img-container'>
+                <figure className='article-markdown__figure'>
                   <img
-                    {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, 840px' })}
+                    {...getStrapiMediaProps(src, { sizes: '(max-width: 768px) 100vw, (max-width: 1100px) 90vw, 1040px' })}
                     alt={alt || ''}
                     className='article-markdown__img'
                   />
-                  {alt && <span className='article-markdown__img-caption'>{alt}</span>}
-                </span>
+                  {alt && <figcaption className='article-markdown__figcaption'>{alt}</figcaption>}
+                </figure>
               )
             }}
           >

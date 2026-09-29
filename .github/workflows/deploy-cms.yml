@@ -63,3 +63,6 @@ jobs:
             fi
             python3 scripts/vps/cms-release.py pin "$GITHUB_SHA"
             curl -fsS --max-time 5 http://127.0.0.1:1337/_health >/dev/null
+            echo 'Wdrażanie CMS zakończone pomyślnie. Czyszczenie starych obrazów Docker...'
+            docker image prune -a -f || true
+            docker builder prune -af || true

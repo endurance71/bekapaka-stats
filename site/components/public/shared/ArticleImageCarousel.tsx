@@ -24,16 +24,16 @@ function isFilename(text: string): boolean {
 
 function ChevronLeftIcon() {
   return (
-    <svg aria-hidden='true' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-      <path d='m15 18-6-6 6-6' />
+    <svg aria-hidden='true' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round'>
+      <path d='m14 17-5-5 5-5' />
     </svg>
   )
 }
 
 function ChevronRightIcon() {
   return (
-    <svg aria-hidden='true' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2.5' strokeLinecap='round' strokeLinejoin='round'>
-      <path d='m9 18 6-6-6-6' />
+    <svg aria-hidden='true' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round'>
+      <path d='m10 17 5-5-5-5' />
     </svg>
   )
 }

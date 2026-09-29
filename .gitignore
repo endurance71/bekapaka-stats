@@ -58,5 +58,9 @@ Sponsorzy/
 # macOS & OS artifacts
 .DS_Store
 Thumbs.db
+
+# Scratch directory
+scratch/
+
 * 2*
 * 3*

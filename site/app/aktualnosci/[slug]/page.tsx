@@ -21,7 +21,8 @@ function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
 
 async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
   const { isEnabled } = await draftMode()
-  const items = await getNewsPosts(200, { includeDrafts: isEnabled })
+  const includeDrafts = isEnabled || process.env.INCLUDE_DRAFTS === 'true'
+  const items = await getNewsPosts(200, { includeDrafts })
   return items.find((item) => matchesNewsSlug(item, slug)) || null
 }
 
@@ -48,17 +49,19 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
 
   return (
     <EditorialDetailTemplate
-      sectionLabel='Aktualnosci'
+      sectionLabel='Aktualności'
       title={item.title}
       meta={formatDateTime(item.publishedAt)}
+      lead={item.excerpt}
       parentHref='/aktualnosci'
+      parentLabel='Wróć do aktualności'
       content={
         <>
           {item.coverImageUrl ? (
             <div className='article-detail__cover'>
               <img
                 {...getStrapiMediaProps(item.coverImageUrl, { isCover: true })}
-                alt=''
+                alt={item.title}
                 className='article-detail__cover-image'
                 fetchPriority='high'
               />

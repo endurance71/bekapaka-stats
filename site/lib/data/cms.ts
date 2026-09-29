@@ -55,11 +55,15 @@ function mapMediaAttachments(value: unknown): NewsAttachment[] {
     const url = mapMediaUrl(entry)
     if (!url) return
     const mime = sanitizeText(record.mime, '')
+    const ext = sanitizeText(record.ext, '')
+    const size = typeof record.size === 'number' && Number.isFinite(record.size) ? record.size : undefined
     attachments.push({
       id: sanitizeText(record.id, String(index)),
       name: sanitizeText(record.name, sanitizeText(record.alternativeText, `Załącznik ${index + 1}`)),
       url,
-      ...(mime ? { mime } : {})
+      ...(mime ? { mime } : {}),
+      ...(ext ? { ext } : {}),
+      ...(size !== undefined ? { size } : {})
     })
   })
 
@@ -191,13 +195,22 @@ export async function getNewsPosts(limit = 6, options?: { includeDrafts?: boolea
   return state.data
 }
 
+function resolveNewsDate(item: Record<string, unknown>): string {
+  return (
+    sanitizeText(item.publishedAtCustom, '') ||
+    sanitizeText(item.publishedAt, '') ||
+    sanitizeText(item.updatedAt, '') ||
+    sanitizeText(item.createdAt, '')
+  )
+}
+
 export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: boolean }): Promise<DataState<NewsPost[]>> {
   try {
     const includeDrafts = Boolean(options?.includeDrafts)
     const statusQuery = includeDrafts ? '&status=draft' : ''
     const response = await fetchJsonState<unknown>(
       cmsPath(
-        `/api/news-posts?sort=publishedAtCustom:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
+        `/api/news-posts?sort[0]=publishedAtCustom:desc&sort[1]=updatedAt:desc&pagination[limit]=${limit}&populate[coverImage]=true&populate[attachments]=true${statusQuery}`
       ),
       {
         headers: cmsHeaders(),
@@ -219,7 +232,7 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
         slug: resolveNewsSlug(sanitizeText(item.slug, ''), title, index),
         excerpt: excerptRaw || excerptFromContent(content),
         content,
-        publishedAt: sanitizeText(item.publishedAtCustom, sanitizeText(item.publishedAt, '')),
+        publishedAt: resolveNewsDate(item),
         coverImageUrl: mapMediaUrl(item.coverImage),
         attachments: mapMediaAttachments(item.attachments)
       }
