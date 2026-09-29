@@ -1,0 +1,23 @@
+{
+  "name": "media-tools",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    "./strapi-admin": {
+      "source": "./admin/src/index.js",
+      "import": "./admin/src/index.js",
+      "default": "./admin/src/index.js"
+    },
+    "./strapi-server": {
+      "source": "./server/src/index.js",
+      "require": "./server/src/index.js",
+      "default": "./server/src/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "strapi": {
+    "kind": "plugin",
+    "name": "media-tools",
+    "displayName": "Media Tools"
+  }
+}
