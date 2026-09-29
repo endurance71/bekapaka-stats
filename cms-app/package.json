@@ -12,6 +12,7 @@
     "start": "strapi start",
     "strapi": "strapi",
     "media:migrate-heic": "node scripts/migrate-heic.js",
+    "media:rotate": "node scripts/rotate-image.js",
     "test": "node --test tests/**/*.test.js",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
