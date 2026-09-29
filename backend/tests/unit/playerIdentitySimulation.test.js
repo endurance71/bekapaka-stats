@@ -6,6 +6,7 @@ const prismaMock = mockDeep();
 describe('P1.5: Player Identity & First Match Simulation across seasons', () => {
   let dataStore;
   let seasonService;
+  let parseKalkSlug;
 
   beforeEach(async () => {
     mockReset(prismaMock);
@@ -14,10 +15,55 @@ describe('P1.5: Player Identity & First Match Simulation across seasons', () => 
     }));
     dataStore = await import('../../dataStore.js');
     seasonService = await import('../../seasonService.js');
+    parseKalkSlug = seasonService.parseKalkSlug;
   });
 
   afterEach(() => {
     vi.resetModules();
+  });
+
+  it('parseKalkSlug handles all 10 legacy, modern, absolute, relative, and query formats', () => {
+    const formats = [
+      { input: '2025-2026__zawodnikdamian-motylinski43130html', expected: 'damian-motylinski' },
+      { input: 'zawodnikdamian-motylinski43130html', expected: 'damian-motylinski' },
+      { input: '2026-2027__damian-motylinski', expected: 'damian-motylinski' },
+      { input: 'damian-motylinski', expected: 'damian-motylinski' },
+      { input: 'https://www.kalk-koszalin.com/zawodnik/damian-motylinski', expected: 'damian-motylinski' },
+      { input: 'https://www.kalk-koszalin.com/zawodnik/damian-motylinski?sezon=50', expected: 'damian-motylinski' },
+      { input: '/zawodnik/damian-motylinski', expected: 'damian-motylinski' },
+      { input: '/zawodnik/damian-motylinski?sezon=50', expected: 'damian-motylinski' },
+      { input: 'https://www.kalk-koszalin.com/zawodnik,damian-motylinski,4313,0.html', expected: 'damian-motylinski' },
+      { input: 'zawodnik,damian-motylinski,4313,0.html', expected: 'damian-motylinski' }
+    ];
+
+    for (const { input, expected } of formats) {
+      expect(parseKalkSlug(input)).toBe(expected);
+    }
+  });
+
+  it('14 BeKaPaKa roster players produce 14 unique kalkSlugs (zero collisions)', () => {
+    const rosterKalkIds = [
+      '2025-2026__zawodnikjedrzej-bortnik43060html',
+      '2025-2026__zawodnikpawel-samusionek43070html',
+      '2025-2026__zawodnikpablo-iriarte43080html',
+      '2025-2026__zawodnikpatryk-szczesniak44380html',
+      '2025-2026__zawodnikmarcin-trawinski45540html',
+      '2025-2026__zawodnikmiroslaw-malina44390html',
+      '2025-2026__zawodniktomasz-kaszubowski43090html',
+      '2025-2026__zawodnikprzemyslaw-klimek43100html',
+      '2025-2026__zawodnikrobert-kulik43110html',
+      '2025-2026__zawodnikemil-klos43120html',
+      '2025-2026__zawodnikdamian-motylinski43130html',
+      '2025-2026__zawodniklukasz-gosniak43140html',
+      '2025-2026__zawodnikfilip-karpinski43150html',
+      '2025-2026__zawodnikfilip-kawecki43160html'
+    ];
+
+    const slugs = rosterKalkIds.map(parseKalkSlug);
+    const uniqueSlugs = new Set(slugs);
+
+    expect(slugs).toHaveLength(14);
+    expect(uniqueSlugs.size).toBe(14);
   });
 
   it('SIMULATION: Ingesting a season 2026-2027 match with new season KalkPlayer resolves to RosterPlayer and calculates all stats', async () => {
@@ -57,7 +103,6 @@ describe('P1.5: Player Identity & First Match Simulation across seasons', () => 
     prismaMock.rosterPlayer.findUnique.mockResolvedValue(rosterPlayer);
 
     // 3. In season 2026-2027, KALK scraper creates KalkPlayer with season 2026-2027 id
-    // Test case A: ID from new slug: "2026-2027__damian-motylinski"
     const kalkPlayer2026 = {
       id: '2026-2027__damian-motylinski',
       seasonId: 'season_2026-2027',
@@ -169,7 +214,7 @@ describe('P1.5: Player Identity & First Match Simulation across seasons', () => 
     expect(stats2026.averages.apg).toBe(5);
     expect(stats2026.averages.plusMinusAvg).toBe(12);
 
-    // 7. Test historical season 2025-2026 isolation: must still retrieve old 2025/26 stats without collision
+    // 7. Test concurrent multi-season isolation: must retrieve old 2025/26 stats without collision
     const roster2025 = await dataStore.getRoster('season_2025-2026');
     expect(roster2025).toHaveLength(1);
     const p2025 = roster2025[0];

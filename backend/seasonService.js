@@ -93,9 +93,11 @@ export async function setPlayerSeasonPreference(rosterPlayerId, seasonId) {
 
 export function parseKalkSlug(kalkIdOrUrl) {
   if (!kalkIdOrUrl) return null;
-  const ext = parseKalkExternalId(kalkIdOrUrl);
-  let slug = ext.replace(/^https?:\/\/[^\/]+\/zawodnik\//, '');
+  const raw = parseKalkExternalId(kalkIdOrUrl);
+  let ext = raw.split('?')[0].split('#')[0];
+  let slug = ext.replace(/^(?:https?:\/\/[^\/]+)?\/?zawodnik[\/,]/, '');
   slug = slug.replace(/^zawodnik/, '');
+  slug = slug.replace(/,\d+.*html$/, '');
   slug = slug.replace(/\d+.*html$/, '');
   slug = slug.trim().toLowerCase().replace(/^\/+|\/+$/g, '');
   return slug || null;
