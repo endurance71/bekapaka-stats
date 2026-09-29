@@ -309,7 +309,7 @@ export async function getRoster(querySeasonId = undefined) {
 
     const playerGames = [];
     const kalkPlayer = await findKalkPlayerForRoster(r, targetSeason?.id);
-    const kalkPlayerId = r.kalkPlayerId || kalkPlayer?.id;
+    const kalkPlayerId = kalkPlayer?.id || r.kalkPlayerId;
 
     if (kalkPlayerId && targetSeason?.id) {
       const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
@@ -441,7 +441,7 @@ export async function getRoster(querySeasonId = undefined) {
       // Game Log
       games: playerGames,
 
-      kalkPlayer: r.kalkPlayer || kalkPlayer
+      kalkPlayer: kalkPlayer || r.kalkPlayer
     };
     })
   );
@@ -514,7 +514,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
   const seasonRow = await prisma.kalkSeason.findUnique({ where: { id: seasonId } });
   const kalkPlayer = await findKalkPlayerForRoster(player, seasonId);
 
-  const kalkPlayerId = player.kalkPlayerId || kalkPlayer?.id;
+  const kalkPlayerId = kalkPlayer?.id || player.kalkPlayerId;
   if (kalkPlayerId && seasonId) {
     const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
       where: { seasonId, kalkPlayerId },
