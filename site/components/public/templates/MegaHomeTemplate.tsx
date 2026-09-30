@@ -282,7 +282,7 @@ export function MegaHomeTemplate({
                         <strong>{row.name}</strong>
                       </td>
                       <td className='td-wl'>{row.wins} - {row.losses}</td>
-                      <td className='td-pts'>{row.wins * 2 + row.losses}</td>
+                      <td className='td-pts'>{row.points ?? (row.wins * 2 + row.losses)}</td>
                     </tr>
                   )
                 })}

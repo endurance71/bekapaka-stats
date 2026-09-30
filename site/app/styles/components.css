@@ -2473,52 +2473,127 @@
 }
 
 /* Standings Page Table Board */
-.standings-board {
+.standings-board-wrapper {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  background: rgba(0, 0, 0, 0.1);
+  gap: var(--space-2);
+  width: 100%;
 }
 
-.standings-board__head,
-.standings-row {
-  display: grid;
-  grid-template-columns: 44px 1fr 100px 60px;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  align-items: center;
+.standings-scroll-hint {
+  display: none;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 0 var(--space-2);
+}
+
+@media (max-width: 899px) {
+  .standings-scroll-hint {
+    display: block;
+  }
+}
+
+.standings-board-shell {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-sm);
+}
+
+.standings-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  text-align: left;
   font-size: 0.92rem;
 }
 
-.standings-board__head {
-  background: rgba(255, 255, 255, 0.02);
+.standings-table thead th {
+  background: rgba(255, 255, 255, 0.03);
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-soft);
   border-bottom: 1px solid var(--border);
+  padding: var(--space-3) var(--space-3);
+  white-space: nowrap;
 }
 
-.standings-row {
+.standings-table tbody tr {
   border-bottom: 1px solid var(--border);
-  background: transparent;
-  transition: var(--transition);
+  transition: background 0.15s ease;
 }
 
-.standings-row:last-child {
-  border-bottom: 0;
+.standings-table tbody tr:last-child {
+  border-bottom: none;
 }
 
-.standings-row:hover {
-  background: rgba(255, 255, 255, 0.015);
+.standings-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.standings-row__pos-badge {
-  display: grid;
+/* Columns */
+.standings-table .col-pos {
+  width: 48px;
+  text-align: center;
+  padding: var(--space-3) var(--space-2);
+}
+
+.standings-table .col-team {
+  min-width: 180px;
+  padding: var(--space-3) var(--space-3);
+}
+
+.standings-table .col-stat {
+  text-align: center;
+  padding: var(--space-3) var(--space-2);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+.standings-table .col-diff {
+  font-weight: 600;
+}
+
+.standings-table .col-diff.is-positive {
+  color: #22c55e;
+}
+
+.standings-table .col-diff.is-negative {
+  color: #ef4444;
+}
+
+.standings-table .col-diff.is-zero {
+  color: var(--text-muted);
+}
+
+.standings-table .col-pts {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.standings-table .col-pts strong {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.35rem;
+  color: var(--text-primary);
+}
+
+.standings-table .col-form,
+.standings-table .col-streak {
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Position Badge */
+.standings-pos-badge {
+  display: inline-grid;
   place-items: center;
   width: 26px;
   height: 26px;
@@ -2529,49 +2604,130 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
-.standings-row__team {
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.standings-row__meta {
+/* Team Identity */
+.standings-team-identity {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-variant-numeric: tabular-nums;
-  justify-content: flex-end;
 }
 
-.standings-row__stat {
-  font-size: 0.88rem;
+.standings-team-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+}
+
+.standings-team-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.standings-team-logo--bkp {
+  object-fit: contain;
+  padding: 2px;
+}
+
+.standings-team-logo-wrap--shield {
+  background: rgba(255, 255, 255, 0.04);
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.shield-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   color: var(--text-muted);
 }
 
-.standings-row__points {
-  font-family: var(--font-bebas-neue), sans-serif;
-  font-size: 1.3rem;
-  color: var(--text-primary);
-  text-align: right;
-  padding-right: var(--space-2);
+.shield-initial {
+  position: relative;
+  z-index: 1;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
 }
 
-.standings-row.is-bkp {
-  background: rgba(236, 167, 44, 0.05);
+.standings-team-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+/* Badges (Form & Streak) */
+.standings-form-badges {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.standings-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.standings-badge--form {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+}
+
+.standings-badge--streak {
+  padding: 3px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.04em;
+}
+
+.standings-badge--win {
+  background: rgba(34, 197, 94, 0.18);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.standings-badge--loss {
+  background: rgba(239, 68, 68, 0.18);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.standings-badge--neutral {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Row BeKaPaKa highlight */
+.standings-row-v2.is-bkp {
+  background: rgba(236, 167, 44, 0.06);
   border-left: 4px solid var(--bkp-gold);
 }
 
-.standings-row.is-bkp .standings-row__pos-badge {
-  background: rgba(236, 167, 44, 0.15);
+.standings-row-v2.is-bkp .standings-pos-badge {
+  background: rgba(236, 167, 44, 0.18);
   color: var(--bkp-gold);
-  border: 1px solid rgba(236, 167, 44, 0.25);
-  box-shadow: 0 0 10px rgba(236, 167, 44, 0.1);
+  border: 1px solid rgba(236, 167, 44, 0.3);
+  box-shadow: 0 0 10px rgba(236, 167, 44, 0.15);
 }
 
-.standings-row.is-bkp .standings-row__team {
+.standings-row-v2.is-bkp .standings-team-name {
   color: var(--bkp-gold);
+  font-weight: 700;
 }
 
-.standings-row.is-bkp .standings-row__points {
+.standings-row-v2.is-bkp .col-pts strong {
   color: var(--bkp-gold);
 }
 

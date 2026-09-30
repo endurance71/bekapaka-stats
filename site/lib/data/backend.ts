@@ -217,16 +217,16 @@ const fallbackRoster: RosterPlayer[] = [
 ]
 
 const fallbackStandings: TeamStanding[] = [
-  { name: 'PIWIARNIA BUMERANG', position: 1, wins: 11, losses: 0 },
-  { name: 'PANTERY', position: 2, wins: 10, losses: 1 },
-  { name: 'MŁODE WILKI', position: 3, wins: 9, losses: 2 },
-  { name: 'POLITECHNIKA KOSZALIŃSKA', position: 4, wins: 6, losses: 5 },
-  { name: 'GRUBIK TEAM', position: 5, wins: 6, losses: 5 },
-  { name: 'BEKAPAKA BOBOLICE', position: 6, wins: 5, losses: 6 },
-  { name: 'BASKET KOSZALIN', position: 7, wins: 4, losses: 7 },
-  { name: 'ATOM KOSZALIN', position: 8, wins: 3, losses: 8 },
-  { name: 'YOUNG BOYS', position: 9, wins: 1, losses: 10 },
-  { name: 'OLD STARS', position: 10, wins: 0, losses: 11 }
+  { name: 'BrdCrew', position: 1, matches: 1, wins: 1, losses: 0, pointsFor: 64, pointsAgainst: 46, pointsDiff: 18, points: 2, form: ['W'], streak: 'W1' },
+  { name: 'Atomówki', position: 2, matches: 1, wins: 1, losses: 0, pointsFor: 70, pointsAgainst: 65, pointsDiff: 5, points: 2, form: ['W'], streak: 'W1' },
+  { name: 'Fasolki', position: 3, matches: 1, wins: 0, losses: 1, pointsFor: 65, pointsAgainst: 70, pointsDiff: -5, points: 1, form: ['L'], streak: 'L1', logoUrl: 'https://www.kalk-koszalin.com/storage/legacy/teams/135.jpg' },
+  { name: 'Pantery', position: 4, matches: 1, wins: 0, losses: 1, pointsFor: 46, pointsAgainst: 64, pointsDiff: -18, points: 1, form: ['L'], streak: 'L1', logoUrl: 'https://www.kalk-koszalin.com/storage/legacy/teams/110.jpg' },
+  { name: 'Grubik Team', position: 5, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null },
+  { name: 'Młode Wilki', position: 6, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null, logoUrl: 'https://www.kalk-koszalin.com/storage/legacy/teams/217.jpg' },
+  { name: 'BeKaPaKa Bobolice', position: 7, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null },
+  { name: 'Maxbau Okna Dako PSP', position: 8, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null },
+  { name: 'GMVT TEAM', position: 9, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null, logoUrl: 'https://www.kalk-koszalin.com/storage/media/2026/09/ad002cc1-1bd9-45c8-9784-a17f99cddd23.jpg' },
+  { name: 'Kosz-All-In', position: 10, matches: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, pointsDiff: 0, points: 0, form: [], streak: null }
 ]
 
 const fallbackGames: GameSummary[] = [
@@ -315,25 +315,64 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
     }
 
     const rows = response.payload
-      .map((row) => ({
-        name: sanitizeText(row.team, sanitizeText(row.name, 'Druzyna')),
-        position: sanitizeNumber(row.position, sanitizeNumber(row.rank, 0)),
-        points: sanitizeNumber(row.points, 0),
-        wins: sanitizeNumber(row.wins, 0),
-        losses: sanitizeNumber(row.losses, 0),
-        pointsFor: sanitizeNumber(row.pointsFor, NaN),
-        pointsAgainst: sanitizeNumber(row.pointsAgainst, NaN)
-      }))
-      .sort((a, b) => b.points - a.points)
+      .map((row) => {
+        const wins = sanitizeNumber(row.wins, 0)
+        const losses = sanitizeNumber(row.losses, 0)
+        const matches = sanitizeNumber(row.matches, wins + losses)
+        const pointsFor = sanitizeNumber(row.pointsFor, NaN)
+        const pointsAgainst = sanitizeNumber(row.pointsAgainst, NaN)
+        const pointsDiff = Number.isFinite(pointsFor) && Number.isFinite(pointsAgainst)
+          ? pointsFor - pointsAgainst
+          : sanitizeNumber(row.pointsDiff, 0)
+
+        let form: string[] = []
+        if (Array.isArray(row.form)) {
+          form = row.form.map((f) => String(f).trim()).filter(Boolean)
+        } else if (typeof row.form === 'string' && row.form) {
+          form = row.form.split(',').map((f) => f.trim()).filter(Boolean)
+        }
+
+        const streak = typeof row.streak === 'string' && row.streak.trim() && row.streak.trim() !== '—'
+          ? row.streak.trim()
+          : null
+
+        const logoUrl = typeof row.logoUrl === 'string' && row.logoUrl.trim()
+          ? row.logoUrl.trim()
+          : null
+
+        return {
+          name: sanitizeText(row.team, sanitizeText(row.name, 'Druzyna')),
+          position: sanitizeNumber(row.position, sanitizeNumber(row.rank, 0)),
+          matches,
+          points: sanitizeNumber(row.points, 0),
+          wins,
+          losses,
+          pointsFor,
+          pointsAgainst,
+          pointsDiff,
+          logoUrl,
+          form,
+          streak
+        }
+      })
+      .sort((a, b) => {
+        if (a.position > 0 && b.position > 0) return a.position - b.position
+        return b.points - a.points
+      })
 
     const mapped = rows.map((row, index) => {
       const standing: Record<string, unknown> = {
         name: row.name,
         position: row.position > 0 ? row.position : index + 1,
+        matches: row.matches,
         wins: row.wins,
-        losses: row.losses
+        losses: row.losses,
+        points: row.points,
+        pointsDiff: row.pointsDiff,
+        logoUrl: row.logoUrl,
+        form: row.form,
+        streak: row.streak
       }
-      if (row.points > 0) standing.points = row.points
       if (Number.isFinite(row.pointsFor)) standing.pointsFor = row.pointsFor
       if (Number.isFinite(row.pointsAgainst)) standing.pointsAgainst = row.pointsAgainst
       return standing
