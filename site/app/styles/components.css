@@ -5462,6 +5462,12 @@
   pointer-events: none;
 }
 
+@media (max-width: 767px) {
+  .article-lightbox__caption-panel {
+    display: none;
+  }
+}
+
 /* Mobile responsive fixes */
 @media (max-width: 640px) {
   .article-gallery__stage {
