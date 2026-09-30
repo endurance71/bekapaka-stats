@@ -198,7 +198,7 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
       if (event.key === 'ArrowRight') showNext()
       if (event.key === 'Tab') {
         const modal = closeButtonRef.current?.closest('[role="dialog"]')
-        const focusable = modal?.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')
+        const focusable = modal?.querySelectorAll<HTMLElement>('button:not([disabled]):not([tabindex="-1"]), [href], [tabindex]:not([tabindex="-1"])')
         if (!focusable?.length) return
         const first = focusable[0]
         const last = focusable[focusable.length - 1]
@@ -361,35 +361,31 @@ export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
 
       {isLightboxOpen && createPortal(
         <div className='article-lightbox' role='dialog' aria-modal='true' aria-label={`Podgląd zdjęcia ${currentIndex + 1} z ${imageCount}`}>
-          <button className='article-lightbox__scrim' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd' />
-          <button ref={closeButtonRef} className='article-lightbox__close-btn' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd'>
-            <CloseIcon />
-          </button>
-
-          {imageCount > 1 && (
-            <>
-              <button className='article-lightbox__nav-btn article-lightbox__nav-btn--prev' type='button' onClick={showPrevious} aria-label='Poprzednie zdjęcie'>
-                <ChevronLeftIcon />
-              </button>
-              <button className='article-lightbox__nav-btn article-lightbox__nav-btn--next' type='button' onClick={showNext} aria-label='Następne zdjęcie'>
-                <ChevronRightIcon />
-              </button>
-            </>
-          )}
+          <button className='article-lightbox__scrim' type='button' tabIndex={-1} aria-hidden='true' onClick={closeLightbox} />
+          <div className='article-lightbox__topbar'>
+            {imageCount > 1 && <span className='article-lightbox__position' aria-live='polite'>{currentIndex + 1} / {imageCount}</span>}
+            <button ref={closeButtonRef} className='article-lightbox__close-btn' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd'>
+              <CloseIcon />
+            </button>
+          </div>
 
           <div className='article-lightbox__content' onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+            {imageCount > 1 && (
+              <>
+                <button className='article-lightbox__nav-btn article-lightbox__nav-btn--prev' type='button' onClick={showPrevious} aria-label='Poprzednie zdjęcie'>
+                  <ChevronLeftIcon />
+                </button>
+                <button className='article-lightbox__nav-btn article-lightbox__nav-btn--next' type='button' onClick={showNext} aria-label='Następne zdjęcie'>
+                  <ChevronRightIcon />
+                </button>
+              </>
+            )}
             <img
               {...getStrapiMediaProps(currentImage.src, { isLightbox: true, sizes: '100vw' })}
               alt={currentImage.alt || `Zdjęcie ${currentIndex + 1}`}
               className='article-lightbox__image'
               draggable={false}
             />
-            {(caption || imageCount > 1) && (
-              <div className='article-lightbox__caption-panel'>
-                {caption && <p className='article-lightbox__caption'>{caption}</p>}
-                {imageCount > 1 && <span className='article-lightbox__counter'>{currentIndex + 1} / {imageCount}</span>}
-              </div>
-            )}
           </div>
 
           {imageCount > 1 && (
