@@ -59,3 +59,9 @@ export function formatPointBalance(pointsFor?: number, pointsAgainst?: number): 
   if (diff > 0) return `+${diff}`
   return String(diff)
 }
+
+export function formatDiffValue(diff: number): string {
+  if (diff > 0) return `+${diff}`
+  return String(diff)
+}
+

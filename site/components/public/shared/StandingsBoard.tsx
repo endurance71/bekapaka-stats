@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import type { TeamStanding } from '../../../lib/data'
+import { formatDiffValue } from '../../../lib/format'
 
 function isBekapakaRow(name: string) {
   const n = name.toLowerCase()
@@ -106,11 +107,6 @@ export function StreakBadge({ streak }: { streak?: string | null }) {
   )
 }
 
-export function formatDiff(diff: number) {
-  if (diff > 0) return `+${diff}`
-  return `${diff}`
-}
-
 export function StandingsBoard({ table, className }: { table: TeamStanding[]; className?: string }) {
   return (
     <div className={`standings-board-wrapper${className ? ` ${className}` : ''}`}>
@@ -164,7 +160,7 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
                   <td className='col-stat col-losses'>{row.losses}</td>
                   <td className='col-stat col-for'>{pointsFor}</td>
                   <td className='col-stat col-against'>{pointsAgainst}</td>
-                  <td className={`col-stat col-diff ${diffClass}`}>{formatDiff(diff)}</td>
+                  <td className={`col-stat col-diff ${diffClass}`}>{formatDiffValue(diff)}</td>
                   <td className='col-stat col-pts'>
                     <strong>{points}</strong>
                   </td>

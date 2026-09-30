@@ -10,13 +10,13 @@ import type {
   SponsorItem,
   TeamStanding
 } from '../../../lib/data'
-import { formatDateTime, formatPointBalance } from '../../../lib/format'
+import { formatDateTime, formatPointBalance, formatDiffValue } from '../../../lib/format'
 import { NearestEventCard, NearestEventEmpty } from '../home/NearestEventCard'
 import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../lib/data/utils'
 import { ArrowRightIcon } from '../shared/PublicIcons'
 import { DataStateNotice, shouldShowHomeDataNotice } from '../shared/DataStateNotice'
 import { FsmmSupportSection } from '../support/FsmmSupportSection'
-import { TeamLogo, FormBadges, StreakBadge, formatDiff } from '../shared/StandingsBoard'
+import { TeamLogo, FormBadges, StreakBadge } from '../shared/StandingsBoard'
 
 function rosterHasSeasonLeaders(roster: RosterPlayer[]): boolean {
   if (roster.length === 0) return false
@@ -305,7 +305,7 @@ export function MegaHomeTemplate({
                       <td className='col-stat col-losses'>{row.losses}</td>
                       <td className='col-stat col-for'>{pointsFor}</td>
                       <td className='col-stat col-against'>{pointsAgainst}</td>
-                      <td className={`col-stat col-diff ${diffClass}`}>{formatDiff(diff)}</td>
+                      <td className={`col-stat col-diff ${diffClass}`}>{formatDiffValue(diff)}</td>
                       <td className='col-stat col-pts'>
                         <strong>{points}</strong>
                       </td>
