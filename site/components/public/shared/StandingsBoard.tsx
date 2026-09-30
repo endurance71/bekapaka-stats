@@ -108,22 +108,57 @@ export function StreakBadge({ streak }: { streak?: string | null }) {
 }
 
 export function StandingsBoard({ table, className }: { table: TeamStanding[]; className?: string }) {
+  const [viewMode, setViewMode] = useState<'main' | 'form' | 'all'>('main')
+
   return (
-    <div className={`standings-board-wrapper${className ? ` ${className}` : ''}`}>
-      <div className='standings-scroll-hint' aria-hidden='true'>
-        <span>↔ Przewiń tabelę w poziomie, aby zobaczyć wszystkie statystyki</span>
+    <div className={`standings-board-wrapper standings-board-wrapper--${viewMode}${className ? ` ${className}` : ''}`}>
+      <div className='standings-mobile-tabs' role='tablist' aria-label='Widok tabeli ligowej'>
+        <button
+          type='button'
+          role='tab'
+          aria-selected={viewMode === 'main'}
+          className={`standings-tab-btn ${viewMode === 'main' ? 'is-active' : ''}`}
+          onClick={() => setViewMode('main')}
+        >
+          Główne
+        </button>
+        <button
+          type='button'
+          role='tab'
+          aria-selected={viewMode === 'form'}
+          className={`standings-tab-btn ${viewMode === 'form' ? 'is-active' : ''}`}
+          onClick={() => setViewMode('form')}
+        >
+          Forma i seria
+        </button>
+        <button
+          type='button'
+          role='tab'
+          aria-selected={viewMode === 'all'}
+          className={`standings-tab-btn ${viewMode === 'all' ? 'is-active' : ''}`}
+          onClick={() => setViewMode('all')}
+        >
+          Wszystkie (11)
+        </button>
       </div>
+
+      {viewMode === 'all' && (
+        <div className='standings-scroll-hint' aria-hidden='true'>
+          <span>↔ Przewiń tabelę w poziomie, aby zobaczyć wszystkie statystyki</span>
+        </div>
+      )}
+
       <div className='standings-board-shell'>
-        <table className='standings-table' aria-label='Tabela ligowa Dywizji II'>
+        <table className={`standings-table standings-table--tab-${viewMode}`} aria-label='Tabela ligowa Dywizji II'>
           <thead>
             <tr>
               <th scope='col' className='col-pos'>#</th>
               <th scope='col' className='col-team'>Drużyna</th>
-              <th scope='col' className='col-stat'>M</th>
-              <th scope='col' className='col-stat'>W</th>
-              <th scope='col' className='col-stat'>P</th>
-              <th scope='col' className='col-stat'>+</th>
-              <th scope='col' className='col-stat'>-</th>
+              <th scope='col' className='col-stat col-matches'>M</th>
+              <th scope='col' className='col-stat col-wins'>W</th>
+              <th scope='col' className='col-stat col-losses'>P</th>
+              <th scope='col' className='col-stat col-for'>+</th>
+              <th scope='col' className='col-stat col-against'>-</th>
               <th scope='col' className='col-stat col-diff'>+/-</th>
               <th scope='col' className='col-stat col-pts'>PKT</th>
               <th scope='col' className='col-stat col-form'>Forma</th>
@@ -152,7 +187,7 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
                   <td className='col-team'>
                     <div className='standings-team-identity'>
                       <TeamLogo logoUrl={row.logoUrl} name={row.name} isBkp={isBkp} />
-                      <span className='standings-team-name'>{row.name}</span>
+                      <span className='standings-team-name' title={row.name}>{row.name}</span>
                     </div>
                   </td>
                   <td className='col-stat col-matches'>{matches}</td>

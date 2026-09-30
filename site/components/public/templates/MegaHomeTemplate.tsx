@@ -246,16 +246,16 @@ export function MegaHomeTemplate({
             <DataStateNotice status={tableState.status} source={tableState.source} message={tableState.message} />
           ) : null}
           <div className='standings-board-shell'>
-            <table className='standings-table' aria-label='Skrócona tabela ligowa'>
+            <table className='standings-table standings-table--tab-main' aria-label='Skrócona tabela ligowa'>
               <thead>
                 <tr>
                   <th scope='col' className='col-pos'>#</th>
                   <th scope='col' className='col-team'>Drużyna</th>
-                  <th scope='col' className='col-stat'>M</th>
-                  <th scope='col' className='col-stat'>W</th>
-                  <th scope='col' className='col-stat'>P</th>
-                  <th scope='col' className='col-stat'>+</th>
-                  <th scope='col' className='col-stat'>-</th>
+                  <th scope='col' className='col-stat col-matches'>M</th>
+                  <th scope='col' className='col-stat col-wins'>W</th>
+                  <th scope='col' className='col-stat col-losses'>P</th>
+                  <th scope='col' className='col-stat col-for'>+</th>
+                  <th scope='col' className='col-stat col-against'>-</th>
                   <th scope='col' className='col-stat col-diff'>+/-</th>
                   <th scope='col' className='col-stat col-pts'>PKT</th>
                   <th scope='col' className='col-stat col-form'>Forma</th>
@@ -297,7 +297,7 @@ export function MegaHomeTemplate({
                       <td className='col-team'>
                         <div className='standings-team-identity'>
                           <TeamLogo logoUrl={row.logoUrl} name={row.name} isBkp={isBkp} />
-                          <span className='standings-team-name'>{row.name}</span>
+                          <span className='standings-team-name' title={row.name}>{row.name}</span>
                         </div>
                       </td>
                       <td className='col-stat col-matches'>{matches}</td>

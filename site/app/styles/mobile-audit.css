@@ -141,43 +141,252 @@
   flex-shrink: 0;
 }
 
-/* Standings — responsive full table */
+/* Standings — responsive full table & native mobile tabs */
+.standings-mobile-tabs {
+  display: none;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  margin-bottom: var(--space-3);
+}
+
+.standings-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-soft);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
+.standings-tab-btn:hover {
+  color: #fff;
+}
+
+.standings-tab-btn.is-active {
+  background: var(--bkp-gold, #eca72c);
+  color: #0b0b0c;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(236, 167, 44, 0.3);
+}
+
 .standings-board-shell {
   -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 767px) {
+  .standings-mobile-tabs {
+    display: flex;
+  }
+
+  .standings-board-shell {
+    border-radius: var(--radius-md);
+  }
+
+  /* General compact sizing for all mobile tables */
   .standings-table thead th {
+    padding: 8px 4px;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+  }
+
+  .standings-table tbody td {
+    padding: 8px 4px;
+  }
+
+  .standings-table .col-pos {
+    width: 28px;
+    min-width: 28px;
+    padding: 8px 2px;
+  }
+
+  .standings-pos-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 0.95rem;
+    border-radius: 4px;
+  }
+
+  .standings-team-identity {
+    gap: 6px;
+  }
+
+  .standings-team-logo-wrap {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+  }
+
+  .standings-team-name {
+    font-size: 0.82rem;
+    max-width: 118px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+
+  .standings-table .col-stat {
+    padding: 8px 3px;
+    font-size: 0.82rem;
+  }
+
+  .standings-table .col-pts strong {
+    font-size: 1.15rem;
+  }
+
+  /* TAB: MAIN (Default - 100% full width, ZERO horizontal scroll) */
+  .standings-table--tab-main {
+    min-width: 100% !important;
+    width: 100% !important;
+    table-layout: fixed;
+  }
+
+  .standings-table--tab-main .col-for,
+  .standings-table--tab-main .col-against,
+  .standings-table--tab-main .col-form,
+  .standings-table--tab-main .col-streak {
+    display: none !important;
+  }
+
+  .standings-table--tab-main .col-pos {
+    width: 8%;
+  }
+
+  .standings-table--tab-main .col-team {
+    width: 44%;
+    min-width: 0;
+    padding: 8px 4px;
+  }
+
+  .standings-table--tab-main .col-matches {
+    width: 9%;
+  }
+
+  .standings-table--tab-main .col-wins {
+    width: 9%;
+  }
+
+  .standings-table--tab-main .col-losses {
+    width: 9%;
+  }
+
+  .standings-table--tab-main .col-diff {
+    width: 10%;
+  }
+
+  .standings-table--tab-main .col-pts {
+    width: 11%;
+  }
+
+  /* TAB: FORM & STREAK (100% full width, ZERO horizontal scroll) */
+  .standings-table--tab-form {
+    min-width: 100% !important;
+    width: 100% !important;
+    table-layout: fixed;
+  }
+
+  .standings-table--tab-form .col-wins,
+  .standings-table--tab-form .col-losses,
+  .standings-table--tab-form .col-for,
+  .standings-table--tab-form .col-against,
+  .standings-table--tab-form .col-diff {
+    display: none !important;
+  }
+
+  .standings-table--tab-form .col-pos {
+    width: 8%;
+  }
+
+  .standings-table--tab-form .col-team {
+    width: 40%;
+    min-width: 0;
+  }
+
+  .standings-table--tab-form .col-matches {
+    width: 10%;
+  }
+
+  .standings-table--tab-form .col-pts {
+    width: 12%;
+  }
+
+  .standings-table--tab-form .col-form {
+    width: 18%;
+  }
+
+  .standings-table--tab-form .col-streak {
+    width: 12%;
+  }
+
+  .standings-table--tab-form .standings-badge--form {
+    width: 18px;
+    height: 18px;
+    font-size: 0.62rem;
+  }
+
+  .standings-table--tab-form .standings-badge--streak {
+    padding: 2px 6px;
+    font-size: 0.65rem;
+  }
+
+  /* TAB: ALL (11 columns with optimized sticky headers + sticky points) */
+  .standings-table--tab-all {
+    min-width: 620px;
+  }
+
+  .standings-table--tab-all thead th {
     position: sticky;
     top: 0;
     z-index: 5;
     background: #0f1115;
   }
 
-  .standings-table thead th.col-pos,
-  .standings-table tbody td.col-pos {
+  .standings-table--tab-all thead th.col-pos,
+  .standings-table--tab-all tbody td.col-pos {
     position: sticky;
     left: 0;
     z-index: 3;
     background: #0d0f12;
   }
 
-  .standings-table thead th.col-team,
-  .standings-table tbody td.col-team {
+  .standings-table--tab-all thead th.col-team,
+  .standings-table--tab-all tbody td.col-team {
     position: sticky;
-    left: 48px;
+    left: 28px;
     z-index: 3;
     background: #0d0f12;
-    box-shadow: 4px 0 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 3px 0 6px rgba(0, 0, 0, 0.4);
+    min-width: 125px;
   }
 
-  .standings-table thead th.col-pos,
-  .standings-table thead th.col-team {
+  .standings-table--tab-all thead th.col-pts,
+  .standings-table--tab-all tbody td.col-pts {
+    position: sticky;
+    right: 0;
+    z-index: 3;
+    background: #0d0f12;
+    box-shadow: -3px 0 6px rgba(0, 0, 0, 0.4);
+  }
+
+  .standings-table--tab-all thead th.col-pos,
+  .standings-table--tab-all thead th.col-team,
+  .standings-table--tab-all thead th.col-pts {
     z-index: 6;
   }
 
-  .standings-row-v2.is-bkp td.col-pos,
-  .standings-row-v2.is-bkp td.col-team {
+  .standings-table--tab-all .standings-row-v2.is-bkp td.col-pos,
+  .standings-table--tab-all .standings-row-v2.is-bkp td.col-team,
+  .standings-table--tab-all .standings-row-v2.is-bkp td.col-pts {
     background: #19140a;
   }
 }

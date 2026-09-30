@@ -54,15 +54,21 @@ describe('StandingsBoard 11-column component', () => {
 
     expect(html).toContain('col-pos">#</th>')
     expect(html).toContain('col-team">Drużyna</th>')
-    expect(html).toContain('col-stat">M</th>')
-    expect(html).toContain('col-stat">W</th>')
-    expect(html).toContain('col-stat">P</th>')
-    expect(html).toContain('col-stat">+</th>')
-    expect(html).toContain('col-stat">-</th>')
+    expect(html).toContain('col-matches">M</th>')
+    expect(html).toContain('col-wins">W</th>')
+    expect(html).toContain('col-losses">P</th>')
+    expect(html).toContain('col-for">+</th>')
+    expect(html).toContain('col-against">-</th>')
     expect(html).toContain('col-diff">+/-</th>')
     expect(html).toContain('col-pts">PKT</th>')
     expect(html).toContain('col-form">Forma</th>')
     expect(html).toContain('col-streak">Seria</th>')
+
+    // Mobile tabs switcher presence
+    expect(html).toContain('standings-mobile-tabs')
+    expect(html).toContain('Główne')
+    expect(html).toContain('Forma i seria')
+    expect(html).toContain('Wszystkie (11)')
   })
 
   it('renders stats, differential with + sign, and badges properly', () => {
@@ -102,5 +108,12 @@ describe('StandingsBoard 11-column component', () => {
     // BrdCrew has team-placeholder.svg, so it should render the shield initial 'B'
     expect(html).toContain('shield-svg')
     expect(html).toContain('shield-initial">B</span>')
+  })
+
+  it('renders mobile navigation tabs with main tab selected by default', () => {
+    const html = renderToStaticMarkup(<StandingsBoard table={testStandings} />)
+
+    expect(html).toContain('standings-table--tab-main')
+    expect(html).toContain('aria-selected="true" class="standings-tab-btn is-active">Główne</button>')
   })
 })
