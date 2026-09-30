@@ -41,7 +41,8 @@ export const newsPostSchema = z.object({
   coverImageSources: z.array(newsImageSourceSchema).optional(),
   coverImageWidth: z.number().positive().optional(),
   coverImageHeight: z.number().positive().optional(),
-  attachments: z.array(newsAttachmentSchema).default([])
+  attachments: z.array(newsAttachmentSchema).default([]),
+  views: z.number().int().nonnegative().optional()
 })
 
 export const eventSchema = z.object({

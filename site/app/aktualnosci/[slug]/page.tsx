@@ -4,6 +4,7 @@ import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdo
 import { ArticleRelations } from '../../../components/public/shared/ArticleRelations'
 import { FallbackImage } from '../../../components/public/shared/FallbackImage'
 import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
+import { ViewTracker } from '../../../components/public/shared/ViewTracker'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
 import { getStrapiMediaProps } from '../../../lib/data/media'
@@ -14,6 +15,16 @@ import { draftMode } from 'next/headers'
 export const dynamic = 'force-dynamic'
 
 type Params = { slug: string }
+
+function formatViewsCount(count: number): string {
+  const mod10 = count % 10
+  const mod100 = count % 100
+  if (count === 1) return '1 wyświetlenie'
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
+    return `${count} wyświetlenia`
+  }
+  return `${count} wyświetleń`
+}
 
 function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
   const slug = decodeURIComponent(rawSlug).trim()
@@ -78,7 +89,8 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
 
   const formattedDate = formatDateTime(item.publishedAt)
   const readingTime = calculateReadingTime(item.content)
-  const metaText = [formattedDate, readingTime].join(' · ')
+  const viewsText = typeof item.views === 'number' && item.views > 0 ? formatViewsCount(item.views) : null
+  const metaText = [formattedDate, readingTime, viewsText].filter(Boolean).join(' · ')
   const leadText = item.excerpt || excerptFromContent(item.content)
 
   return (
@@ -94,6 +106,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
       parentLabel='Wróć do aktualności'
       content={
         <>
+          <ViewTracker slug={item.slug} />
           {item.coverImageUrl ? (
             <div className='article-detail__cover'>
               <FallbackImage

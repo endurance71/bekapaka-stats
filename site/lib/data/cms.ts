@@ -324,7 +324,12 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
         ...(coverImage.sources ? { coverImageSources: coverImage.sources } : {}),
         ...(coverImage.width ? { coverImageWidth: coverImage.width } : {}),
         ...(coverImage.height ? { coverImageHeight: coverImage.height } : {}),
-        attachments: mapMediaAttachments(item.attachments)
+        attachments: mapMediaAttachments(item.attachments),
+        ...(typeof item.views === 'number' && Number.isFinite(item.views) && item.views >= 0
+          ? { views: Math.floor(item.views) }
+          : typeof item.views === 'string' && /^\d+$/.test(item.views.trim())
+            ? { views: parseInt(item.views.trim(), 10) }
+            : {})
       }
     })
     const items = parseCollectionItems(mapped, newsPostSchema, 'news-post')

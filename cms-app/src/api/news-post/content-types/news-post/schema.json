@@ -22,6 +22,7 @@
     },
     "publishedAtCustom": { "type": "datetime" },
     "tags": { "type": "json" },
-    "isPinned": { "type": "boolean", "default": false }
+    "isPinned": { "type": "boolean", "default": false },
+    "views": { "type": "biginteger", "default": "0" }
   }
 }
