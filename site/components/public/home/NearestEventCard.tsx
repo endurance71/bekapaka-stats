@@ -55,13 +55,13 @@ function NearestEventCountdown({ startsAt, className = '' }: { startsAt: string;
   if (!Number.isFinite(targetMs)) return null
 
   return (
-    <p className={`next-event-hero__countdown ${className}`}>
+    <div className={`next-event-hero__countdown ${className}`}>
       <span className='next-event-hero__countdown-label'>Do startu</span>
       <span className='next-event-hero__countdown-value' suppressHydrationWarning aria-hidden='true'>
         {label}
       </span>
       <span className='sr-only'>Odliczanie do rozpoczęcia wydarzenia</span>
-    </p>
+    </div>
   )
 }
 
@@ -100,12 +100,14 @@ function NearestEventShell({
   return (
     <div className={`next-event-hero${isEmpty ? ' next-event-hero--empty' : ''}`}>
       <div className='next-event-hero__top'>
-        <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
+        <div className='next-event-hero__header'>
+          <p className='section-kicker next-event-hero__kicker'>Najbliższe wydarzenie</p>
+          {startsAt && (
+            <NearestEventCountdown startsAt={startsAt} className='next-event-hero__countdown--mobile' />
+          )}
+        </div>
         <div className='next-event-hero__upper'>{upper}</div>
       </div>
-      {startsAt && (
-        <NearestEventCountdown startsAt={startsAt} className='next-event-hero__countdown--mobile' />
-      )}
       {lower}
     </div>
   )
