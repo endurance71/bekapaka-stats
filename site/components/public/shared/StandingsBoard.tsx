@@ -8,7 +8,7 @@ function isBekapakaRow(name: string) {
   return n.includes('bekapaka') || n.includes('bobolice')
 }
 
-function TeamLogo({ logoUrl, name, isBkp }: { logoUrl?: string | null; name: string; isBkp: boolean }) {
+export function TeamLogo({ logoUrl, name, isBkp }: { logoUrl?: string | null; name: string; isBkp: boolean }) {
   const [hasError, setHasError] = useState(false)
 
   if (isBkp) {
@@ -61,7 +61,7 @@ function TeamLogo({ logoUrl, name, isBkp }: { logoUrl?: string | null; name: str
   )
 }
 
-function FormBadges({ form }: { form?: string[] }) {
+export function FormBadges({ form }: { form?: string[] }) {
   if (!form || form.length === 0) {
     return <span className='standings-badge standings-badge--neutral'>—</span>
   }
@@ -87,7 +87,7 @@ function FormBadges({ form }: { form?: string[] }) {
   )
 }
 
-function StreakBadge({ streak }: { streak?: string | null }) {
+export function StreakBadge({ streak }: { streak?: string | null }) {
   if (!streak || streak.trim() === '' || streak.trim() === '—') {
     return <span className='standings-badge standings-badge--neutral'>—</span>
   }
@@ -106,7 +106,7 @@ function StreakBadge({ streak }: { streak?: string | null }) {
   )
 }
 
-function formatDiff(diff: number) {
+export function formatDiff(diff: number) {
   if (diff > 0) return `+${diff}`
   return `${diff}`
 }

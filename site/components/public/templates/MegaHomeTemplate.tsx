@@ -16,6 +16,7 @@ import { getPositionLabel, resolvePlayerPhoto, hasPlayerPhoto } from '../../../l
 import { ArrowRightIcon } from '../shared/PublicIcons'
 import { DataStateNotice, shouldShowHomeDataNotice } from '../shared/DataStateNotice'
 import { FsmmSupportSection } from '../support/FsmmSupportSection'
+import { TeamLogo, FormBadges, StreakBadge, formatDiff } from '../shared/StandingsBoard'
 
 function rosterHasSeasonLeaders(roster: RosterPlayer[]): boolean {
   if (roster.length === 0) return false
@@ -244,20 +245,27 @@ export function MegaHomeTemplate({
           {showTableNotice && tableState ? (
             <DataStateNotice status={tableState.status} source={tableState.source} message={tableState.message} />
           ) : null}
-          <div className='table-shell-v2'>
-            <table className='data-table-v2'>
+          <div className='standings-board-shell'>
+            <table className='standings-table' aria-label='Skrócona tabela ligowa'>
               <thead>
                 <tr>
-                  <th className='th-pos'>#</th>
-                  <th>Drużyna</th>
-                  <th className='th-wl'>W - L</th>
-                  <th className='th-pts'>PKT</th>
+                  <th scope='col' className='col-pos'>#</th>
+                  <th scope='col' className='col-team'>Drużyna</th>
+                  <th scope='col' className='col-stat'>M</th>
+                  <th scope='col' className='col-stat'>W</th>
+                  <th scope='col' className='col-stat'>P</th>
+                  <th scope='col' className='col-stat'>+</th>
+                  <th scope='col' className='col-stat'>-</th>
+                  <th scope='col' className='col-stat col-diff'>+/-</th>
+                  <th scope='col' className='col-stat col-pts'>PKT</th>
+                  <th scope='col' className='col-stat col-form'>Forma</th>
+                  <th scope='col' className='col-stat col-streak'>Seria</th>
                 </tr>
               </thead>
               <tbody>
                 {tablePreviewItems.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className='muted'>
+                    <td colSpan={11} className='muted' style={{ textAlign: 'center', padding: '24px' }}>
                       {tableUnavailable ? 'Tabela ligowa jest chwilowo niedostępna.' : 'Brak danych tabeli ligowej.'}
                     </td>
                   </tr>
@@ -265,24 +273,48 @@ export function MegaHomeTemplate({
                   if (item.type === 'separator') {
                     return (
                       <tr key={item.key} className='tr-separator' aria-hidden='true'>
-                        <td colSpan={4} style={{ textAlign: 'center', opacity: 0.4, letterSpacing: '4px', padding: '6px 0', fontSize: '0.85rem' }}>
-                          •••
+                        <td colSpan={11} style={{ textAlign: 'center', opacity: 0.4, letterSpacing: '6px', padding: '8px 0', fontSize: '0.9rem' }}>
+                          •••••
                         </td>
                       </tr>
                     )
                   }
                   const row = item.data
                   const isBkp = row.name.toLowerCase().includes('bekapaka') || row.name.toLowerCase().includes('bobolice')
+                  const position = row.position > 0 ? row.position : 0
+                  const matches = row.matches ?? (row.wins + row.losses)
+                  const pointsFor = row.pointsFor ?? 0
+                  const pointsAgainst = row.pointsAgainst ?? 0
+                  const diff = row.pointsDiff ?? (pointsFor - pointsAgainst)
+                  const points = row.points ?? (row.wins * 2 + row.losses)
+                  const diffClass = diff > 0 ? 'is-positive' : diff < 0 ? 'is-negative' : 'is-zero'
+
                   return (
-                    <tr key={`${row.name}-${row.position}`} className={isBkp ? 'is-highlight-row' : undefined}>
-                      <td className='td-pos'>
-                        <span className='pos-num'>{row.position}</span>
+                    <tr key={`${row.name}-${position}`} className={`standings-row-v2 ${isBkp ? 'is-bkp' : ''}`}>
+                      <td className='col-pos'>
+                        <span className='standings-pos-badge'>{position}</span>
                       </td>
-                      <td className='td-name'>
-                        <strong>{row.name}</strong>
+                      <td className='col-team'>
+                        <div className='standings-team-identity'>
+                          <TeamLogo logoUrl={row.logoUrl} name={row.name} isBkp={isBkp} />
+                          <span className='standings-team-name'>{row.name}</span>
+                        </div>
                       </td>
-                      <td className='td-wl'>{row.wins} - {row.losses}</td>
-                      <td className='td-pts'>{row.points ?? (row.wins * 2 + row.losses)}</td>
+                      <td className='col-stat col-matches'>{matches}</td>
+                      <td className='col-stat col-wins'>{row.wins}</td>
+                      <td className='col-stat col-losses'>{row.losses}</td>
+                      <td className='col-stat col-for'>{pointsFor}</td>
+                      <td className='col-stat col-against'>{pointsAgainst}</td>
+                      <td className={`col-stat col-diff ${diffClass}`}>{formatDiff(diff)}</td>
+                      <td className='col-stat col-pts'>
+                        <strong>{points}</strong>
+                      </td>
+                      <td className='col-stat col-form'>
+                        <FormBadges form={row.form} />
+                      </td>
+                      <td className='col-stat col-streak'>
+                        <StreakBadge streak={row.streak} />
+                      </td>
                     </tr>
                   )
                 })}
