@@ -353,7 +353,7 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
 export async function getRecentGamesState(limit = 100): Promise<DataState<GameSummary[]>> {
   try {
     const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/games'), {
-      revalidate: 300,
+      revalidate: 60,
       tags: ['backend', 'backend-games']
     })
     if (response.status === 'error') {

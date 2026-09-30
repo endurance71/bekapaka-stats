@@ -114,4 +114,40 @@ describe('dataStore.js', () => {
             }));
         });
     });
+
+    describe('listGames', () => {
+        it('should include upcoming league matches not yet in kalkMatch', async () => {
+            prismaMock.kalkSeason.findFirst.mockResolvedValue({
+                id: 'season_2026-2027',
+                slug: '2026-2027',
+                isActive: true
+            });
+            prismaMock.kalkMatch.findMany.mockResolvedValue([]);
+            prismaMock.leagueMatch.findMany.mockResolvedValue([
+                {
+                    id: 'lm-upcoming-1',
+                    seasonId: 'season_2026-2027',
+                    date: new Date('2026-10-04T10:00:00.000Z'),
+                    homeTeam: 'BeKaPaKa Bobolice',
+                    guestTeam: 'Kosz-All-In',
+                    scoreHome: null,
+                    scoreAway: null,
+                    isFinished: false,
+                    kalkMatchId: '4124'
+                }
+            ]);
+
+            const games = await dataStore.listGames({}, 'season_2026-2027');
+
+            expect(games).toHaveLength(1);
+            expect(games[0]).toMatchObject({
+                id: '4124',
+                opponent: 'Kosz-All-In',
+                result: null,
+                scoreUs: null,
+                scoreThem: null,
+                homeAway: 'home'
+            });
+        });
+    });
 });

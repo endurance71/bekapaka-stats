@@ -1370,17 +1370,20 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
 
     let items = kalkMatches.map(kalkMatchToListItem);
 
-    const scheduleOnly = await prisma.leagueMatch.findMany({
+    const linkedKalkIds = new Set(kalkMatches.map((m) => m.id));
+
+    const scheduleMatches = await prisma.leagueMatch.findMany({
       where: {
         seasonId: targetSeasonId,
-        OR: BEKAPAKA_LEAGUE_MATCH_OR,
-        isFinished: true,
-        kalkMatchId: null
+        OR: BEKAPAKA_LEAGUE_MATCH_OR
       },
       orderBy: { date: 'desc' }
     });
 
-    for (const lm of scheduleOnly) {
+    for (const lm of scheduleMatches) {
+      if (lm.kalkMatchId && linkedKalkIds.has(lm.kalkMatchId)) {
+        continue;
+      }
       const isHome = isBekapakaTeamName(lm.homeTeam);
       const opponent = isHome ? lm.guestTeam : lm.homeTeam;
       const scoreUs = isHome ? lm.scoreHome : lm.scoreAway;
@@ -1390,7 +1393,7 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
         result = scoreUs > scoreThem ? 'W' : scoreThem > scoreUs ? 'L' : null;
       }
       items.push({
-        id: lm.id,
+        id: lm.kalkMatchId || lm.id,
         date: lm.date.toISOString(),
         opponent,
         result,
@@ -1715,6 +1718,10 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
   for (const team of tableData) {
     if (!team.name) continue;
 
+    const formStr = Array.isArray(team.form)
+      ? team.form.join(',')
+      : (typeof team.form === 'string' ? team.form : null);
+
     const data = {
       seasonId: activeSeason.id,
       name: team.name,
@@ -1725,7 +1732,10 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
       wins: team.wins,
       losses: team.losses,
       pointsFor: team.pointsFor,
-      pointsAgainst: team.pointsAgainst
+      pointsAgainst: team.pointsAgainst,
+      logoUrl: team.logoUrl || null,
+      form: formStr,
+      streak: team.streak || null
     };
 
     await prisma.leagueTeam.upsert({
@@ -1738,6 +1748,17 @@ export async function ingestLeagueTable(tableData, phase = 'regular') {
       },
       create: data,
       update: data
+    });
+  }
+
+  const validTeamNames = tableData.map((t) => t.name).filter(Boolean);
+  if (validTeamNames.length > 0) {
+    await prisma.leagueTeam.deleteMany({
+      where: {
+        seasonId: activeSeason.id,
+        phase,
+        name: { notIn: validTeamNames }
+      }
     });
   }
 }
@@ -2162,10 +2183,17 @@ export async function getLeagueTable(phase = 'regular', seasonIdParam) {
   await ensureSeeded();
   await ensureDefaultSeason();
   const seasonId = await resolveSeasonId(seasonIdParam);
-  return await prisma.leagueTeam.findMany({
+  const rows = await prisma.leagueTeam.findMany({
     where: { phase, seasonId },
     orderBy: LEAGUE_TABLE_ORDER_BY
   });
+  return rows.map((team) => ({
+    ...team,
+    pointsDiff: (team.pointsFor ?? 0) - (team.pointsAgainst ?? 0),
+    form: team.form
+      ? (team.form.includes(',') ? team.form.split(',') : [team.form])
+      : []
+  }));
 }
 
 // LIGA - Pobierz terminarz

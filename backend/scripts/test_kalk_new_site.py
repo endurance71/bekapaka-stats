@@ -18,12 +18,16 @@ def soup(html):
 class NewSiteParserTests(unittest.TestCase):
     def test_table_uses_new_column_positions(self):
         html = '''<table class="standings"><tbody><tr>
-        <td>1</td><td><span class="standings-team-name">BeKaPaKa Bobolice</span></td>
+        <td>1</td><td><div class="standings-team-cell"><a href="/druzyna/138"><img src="https://example.com/logo.png"/><span class="standings-team-name">BeKaPaKa Bobolice</span></a></div></td>
         <td>2</td><td>1</td><td>1</td><td>70</td><td>65</td><td>+5</td><td>3</td>
+        <td><span class="form-badges"><span class="form-badge win">W</span><span class="form-badge loss">L</span></span></td>
+        <td><b class="streak-badge win">W1</b></td>
         </tr></tbody></table>'''
         self.assertEqual(kalk_new_site.parse_table(soup(html)), [{
-            'position': 1, 'name': 'BeKaPaKa Bobolice', 'matches': 2, 'wins': 1, 'losses': 1,
-            'pointsFor': 70, 'pointsAgainst': 65, 'points': 3,
+            'position': 1, 'name': 'BeKaPaKa Bobolice', 'logoUrl': 'https://example.com/logo.png',
+            'matches': 2, 'wins': 1, 'losses': 1,
+            'pointsFor': 70, 'pointsAgainst': 65, 'pointsDiff': 5, 'points': 3,
+            'form': ['W', 'L'], 'streak': 'W1',
         }])
 
     def test_schedule_preserves_new_match_id_and_score(self):

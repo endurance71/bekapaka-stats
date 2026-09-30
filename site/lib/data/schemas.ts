@@ -104,11 +104,16 @@ export const homepageSectionSchema = z.object({
 export const teamStandingSchema = z.object({
   name: z.string(),
   position: z.number(),
+  matches: z.number().optional(),
   wins: z.number(),
   losses: z.number(),
   points: z.number().optional(),
   pointsFor: z.number().optional(),
-  pointsAgainst: z.number().optional()
+  pointsAgainst: z.number().optional(),
+  pointsDiff: z.number().optional(),
+  logoUrl: z.string().nullable().optional(),
+  form: z.array(z.string()).optional(),
+  streak: z.string().nullable().optional()
 })
 
 export const playerGameLogSchema = z.object({

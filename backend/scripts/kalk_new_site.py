@@ -60,15 +60,29 @@ def parse_table(soup: BeautifulSoup) -> list[dict]:
         name = _text(cells[1].select_one('.standings-team-name')) or _text(cells[1])
         if not name:
             raise ValueError('Pusta nazwa drużyny w tabeli KALK')
+        img = cells[1].select_one('img')
+        logo_url = img.get('src') if img else None
+        p_for = _integer(_text(cells[5]))
+        p_against = _integer(_text(cells[6]))
+        diff_text = _text(cells[7]) if len(cells) > 7 else ''
+        points_diff = _integer(diff_text) if diff_text else (p_for - p_against)
+        form = [_text(b) for b in cells[9].select('.form-badge') if _text(b)] if len(cells) > 9 else []
+        st = _text(cells[10]) if len(cells) > 10 else ''
+        streak = st if st and st != '—' else None
+
         results.append({
             'position': _integer(_text(cells[0])),
             'name': name,
+            'logoUrl': logo_url,
             'matches': _integer(_text(cells[2])),
             'wins': _integer(_text(cells[3])),
             'losses': _integer(_text(cells[4])),
-            'pointsFor': _integer(_text(cells[5])),
-            'pointsAgainst': _integer(_text(cells[6])),
+            'pointsFor': p_for,
+            'pointsAgainst': p_against,
+            'pointsDiff': points_diff,
             'points': _integer(_text(cells[8])),
+            'form': form,
+            'streak': streak,
         })
     if not results or len({row['name'].casefold() for row in results}) != len(results):
         raise ValueError('Tabela KALK jest pusta lub zawiera duplikaty drużyn')

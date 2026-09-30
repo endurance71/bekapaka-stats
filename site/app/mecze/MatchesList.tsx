@@ -20,7 +20,6 @@ interface MatchesListProps {
 }
 
 export function MatchesList({ games }: MatchesListProps) {
-  const [activeTab, setActiveTab] = useState<'past' | 'upcoming'>('past')
   const [selectedGame, setSelectedGame] = useState<GameSummary | null>(null)
   const [detailGame, setDetailGame] = useState<GameSummary | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
@@ -31,6 +30,10 @@ export function MatchesList({ games }: MatchesListProps) {
   )
   const upcomingGames = games.filter(
     (g) => !g.result && g.scoreUs === null && g.scoreThem === null
+  )
+
+  const [activeTab, setActiveTab] = useState<'past' | 'upcoming'>(
+    pastGames.length > 0 ? 'past' : 'upcoming'
   )
 
   const sortedUpcoming = [...upcomingGames].sort(
