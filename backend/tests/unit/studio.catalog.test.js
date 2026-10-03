@@ -1,0 +1,23 @@
+import { describe,it,expect,vi } from 'vitest';
+import { postTypes,newPostProject,newProject,projectSchema,BRAND_VERSION } from '../../studio/contracts.js';
+import { projectTemplateVersion,rendererVersionFor,designKey } from '../../studio/post-types.js';
+import { statisticalSnapshot } from '../../studio/statistics.js';
+import { sourceEnvelope } from '../../studio/sources.js';
+import { validateProject } from '../../studio/validation.js';
+describe('Publication catalog',()=>{
+ it('defines 38 purposes with three distinct compositions and no prefilled claims',()=>{
+  expect(postTypes).toHaveLength(38);expect(new Set(postTypes.map(t=>t.id)).size).toBe(38);
+  for(const t of postTypes)for(const style of t.styles){const p=newPostProject(t.id,style);expect(projectSchema.parse(p)).toEqual(p);expect(t.styles).toEqual(['sport','photo','editorial']);expect(p.content.opponent).toBe('');expect(p.content.tableRows).toEqual([]);expect(p.content.date).toBe('');expect(p.content.firstName).toBe('');}
+ });
+ it('keeps legacy payloads, renderer identity and approvals unchanged',()=>{const p=newProject();expect(projectSchema.parse(p)).toEqual(p);expect(p).not.toHaveProperty('postType');expect(p.content).not.toHaveProperty('tableRows');expect(projectTemplateVersion(p)).toBe('1.0.0');expect(rendererVersionFor(p)).toBe('1.0.5');});
+ it('rejects incompatible publication/composition/version combinations',()=>{const p=newPostProject('birthday');for(const changes of [{family:'statistics'},{visualStyle:'free'},{designVersion:'1.0.0'},{formats:['square']},{postType:undefined}])expect(projectSchema.safeParse({...p,...changes}).success).toBe(false);expect(designKey(p,'story')).not.toBe(designKey(p,'feed'));});
+ it('requires photo approval, attribution and native event dates',()=>{const p=newPostProject('quote','photo');p.content.title='Cytat';p.content.body='Gramy razem.';p.content.altText='Słowa zawodnika.';const errors=validateProject(p).errors.map(e=>e.field);expect(errors).toEqual(expect.arrayContaining(['attribution','photoAssetId','template']));const b=newPostProject('birthday');b.content.date='2026-10-01';expect(validateProject(b).errors.map(e=>e.field)).toContain('date');});
+ it('never treats legacy approval as new design approval',()=>{const p=newPostProject('team-stats');Object.assign(p.content,{title:'Statystyki',tableRows:[{label:'PTS',value:'0',detail:''}],altText:'Liczby meczu.'});expect(validateProject(p,{approved:true,template:{status:'approved',brandVersion:BRAND_VERSION,version:'1.0.0'}}).errors.map(e=>e.field)).toContain('template');});
+});
+describe('Public, season-scoped statistics',()=>{
+ const db=()=>({kalkMatch:{findUnique:vi.fn().mockResolvedValue({id:'17',seasonId:'2026',isFinished:true,homeTeamName:'Koszalin Basketball',guestTeamName:'BeKaPaKa Bobolice',date:new Date('2026-10-11T12:00:00Z'),scoreHome:91,scoreAway:103,boxScore:{teams:[{name:'BeKaPaKa Bobolice',pts:103}]}})},kalkPlayerGameLog:{findMany:vi.fn().mockResolvedValue([{teamName:'BeKaPaKa Bobolice',kalkPlayerId:'24',kalkPlayer:{name:'Paweł Lis'},stats:{pts:0,reb:8}},{teamName:'BeKaPaKa Bobolice',kalkPlayerId:'25',kalkPlayer:{name:'Piotr Lis'},stats:{pts:12,reb:8,ast:2}},{teamName:'Rywale',kalkPlayerId:'99',kalkPlayer:{name:'Rywal'},stats:{pts:100}}])}});
+ it('uses compound season/match key and omits missing team values',async()=>{const d=db();const s=await statisticalSnapshot(d,'match-statistics','2026','17');expect(d.kalkMatch.findUnique).toHaveBeenCalledWith({where:{seasonId_id:{seasonId:'2026',id:'17'}}});expect(s.scoreUs).toBe(103);expect(s.tableRows).toEqual([{label:'PTS',value:'103',detail:''},{label:'REB',value:'16',detail:'SUMA STATYSTYK ZAWODNIKÓW'}]);expect(JSON.stringify(s)).not.toContain('Rywal');});
+ it('retains true zero but never adds missing player stats',async()=>{const s=await statisticalSnapshot(db(),'match-statistics','2026','17','24','player');expect(s.tableRows).toEqual([{label:'PTS',value:'0',detail:''},{label:'REB',value:'8',detail:''}]);expect(sourceEnvelope('match-statistics',s).source).toMatchObject({subjectId:'24',view:'player',seasonId:'2026'});});
+ it('includes tied leaders without copying private records',async()=>{const s=await statisticalSnapshot(db(),'match-statistics','2026','17','','leaders');expect(s.tableRows.filter(r=>r.detail==='REB')).toHaveLength(2);expect(s.tableRows.some(r=>r.label==='Rywal')).toBe(false);expect(s.view).toBe('leaders');});
+ it('rejects players absent from the match and missing season',async()=>{await expect(statisticalSnapshot(db(),'match-statistics','2026','17','missing')).rejects.toThrow();await expect(statisticalSnapshot(db(),'standings','','')).rejects.toThrow();});
+});

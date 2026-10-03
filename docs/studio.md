@@ -17,11 +17,11 @@ Wymagane Node 22, PostgreSQL, Python 3.11+ i środowisko backendu z poprawnym `D
 
 ## Korzystanie
 
-1. Nowy projekt → rodzina. Importuj mecz z wybranego sezonu, zawodnika albo opublikowaną treść CMS. Formularz zachowuje migawkę użytych danych. „Sprawdź zmiany” pokazuje aktualne źródło i różnice; aktualizację zatwierdzasz sam.
+1. Nowy projekt → konkretny typ publikacji → kompozycja sportowa, fotograficzna lub redakcyjna. Katalog ma 38 typów, wyszukiwarkę, kategorie i miniatury. Importuj mecz z wybranego sezonu, zawodnika albo opublikowaną treść CMS. Formularz zachowuje migawkę użytych danych. „Sprawdź zmiany” pokazuje aktualne źródło i różnice; aktualizację zatwierdzasz sam.
 2. Uzupełnij datę, miejsce, rywala i treści. Wstęp wolny nie jest dopisywany automatycznie. Live/przerwa wymagają ręcznego wyniku i fazy meczu. Wskaż i potwierdź skład/MVP. Zawodnik może mieć do trzech ręcznie potwierdzonych statystyk meczu lub średnich sezonu. Import osoby nie przenosi niesprecyzowanych sezonowo średnich z cache rosteru. Godzina i dzień tygodnia są liczone w Warszawie.
 3. Dodaj materiały w Bibliotece: autor/pochodzenie, osoby, numer stroju, prawa do publikacji i status. Materiał roboczy można oglądać, ale nie eksportować produkcyjnie. Zatwierdzenie obrazu AI jest osobną oceną, obejmującą brak ludzi, znaków i niepożądanych treści.
 4. Wybierz układ i osobno kolorystykę stroju. Granat/pomarańcz wymaga potwierdzenia kontekstu stroju B. Format zmienia kompozycję w natywnych wymiarach. Kadr zachowuje proporcje zdjęcia.
-5. Oceń podgląd również przy 360 px. Szablony są początkowo `draft`; dopiero Twój przycisk zatwierdza całą rodzinę w danej wersji. Po zmianie wersji potrzebna jest ponowna ocena. Wszystkie warianty danej rodziny warto ocenić przed zatwierdzeniem.
+5. Oceń podgląd również przy 360 px. Nowe kompozycje 2.0.0 są początkowo `draft`; zatwierdzenie dotyczy konkretnego typu, kompozycji i formatu po obejrzeniu aktualnego podglądu. Każdy wybrany format wymaga oceny. W „Marka i partnerzy” można wycofać konkretną kompozycję/format. Dotychczasowe projekty, renderer 1.0.5 i zatwierdzenia rodzin pozostają bez zmian; nic nie migruje automatycznie.
 6. Potwierdź dane i wygląd bieżącej rewizji. Potwierdzenie obejmuje również odcisk wybranych materiałów i partnerów; zmiana znaku, praw do zdjęcia lub danych partnera wymaga odświeżenia podglądu i ponownej oceny. Każda edycja unieważnia potwierdzenie. „Sprawdź eksport” wskazuje konkretne pola do poprawy.
 7. Generuj paczkę. ZIP zawiera PNG sRGB, opis, globalny tekst alternatywny, mapę tekstów dla slajdów, oznaczenie AI i manifest. Możesz pobrać pojedyncze pliki. Na telefonie przycisk udostępnienia ZIP korzysta z systemowego share sheet, jeżeli przeglądarka go obsługuje.
 
@@ -34,6 +34,16 @@ Partnerzy startują jako zestaw do sprawdzenia. Obowiązuje jeden poziom, porzą
 `backend/studio/brand/manifest.json` wersjonuje tokeny, fonty OFL, znaki 2.0, faktury, toolkit i rejestr partnerów. Import `python3 scripts/studio/import-brand.py '<ścieżka repo marki>'` kopiuje tylko dozwolone źródła. Produkcja nie odczytuje ścieżek na Macu. Zmiana źródeł marki wymaga nowego `BRAND_VERSION` w kontraktach i manifeście importu; zmiana kompozycji wymaga nowej wersji szablonu, a zmiana silnika — `RENDERER_VERSION`. Nie podmieniaj plików pod już zatwierdzoną wersją. Import nie obejmuje danych demonstracyjnych ani zdjęć zawodników.
 
 `renderer/render.py` przyjmuje JSON projektu. Typografia jest konwertowana do krzywych; Sharp tworzy PNG z profilem ICC sRGB. Kontrola obejmuje kolizje, pola ochronne, minima fontów i znaków, marginesy oraz stories 260–1600. Przepełnienie jest błędem, nigdy cichym pomniejszeniem poniżej minimum. Render eksportu ponownie sprawdza dopuszczenie materiałów. Układy mają własne geometrie i paginację; terminarz w kwadracie/poziomie mieści mniej pozycji na planszy niż post/story.
+
+## Biblioteka publikacji 2.0.0
+
+Oprócz meczów, składów, zawodników, turniejów, relacji, partnerów i informacji katalog obejmuje statystyki drużyny i zawodnika, liderów meczu (również remisy), tabelę ligi, kolejkę, sezon oraz urodziny, treningi, kulisy, cytaty, jubileusze, zaproszenia i komunikaty. Typ publikacji, kompozycja i stroje A/B są osobnymi ustawieniami. Zmiana kompozycji zachowuje dane, kadr i wybrane zasoby. Wszystkie typy obsługują post 1080×1350 i Story 1080×1920; rodziny z dotychczasowymi dodatkowymi formatami zachowują kwadrat i poziom. Podgląd telefonu nadal rozdziela ekran urządzenia od mastera Story 9:16. Zapis pojedynczego PNG do Zdjęć i pobieranie ZIP pozostają dostępne.
+
+Statystyki korzystają wyłącznie z istniejących publicznych danych KALK. Identyfikacja meczu obejmuje sezon, a migawka zawodnika/liderów zachowuje wybrany kontekst podczas aktualizacji źródła. Brak liczby nie daje zera; sumy zespołu powstają wyłącznie z kompletnych wartości zawodników i są opisane. Tabela i podsumowania zachowują kontekst meczu/sezonu. Korekty są lokalne dla projektu. Formularze klubowe są ręczne; nie importują prywatnych notatek ani frekwencji treningowej.
+
+Kontrakty nowych projektów mają opcjonalne `postType`, `visualStyle`, `designVersion`; starsze payloady nie otrzymują nowych pól. Nowe wersje zatwierdzeń są zapisane w istniejącej tabeli StudioTemplate pod kluczem `2.0.0:typ:kompozycja:format`; zmiana nie wymaga migracji SQL. Manifest eksportu zawiera te same wersje. Renderer `render_v2.py` ma własne kompozycje; dispatcher starszych projektów jest zachowany.
+
+Miniatury są ilustracyjne i nie stanowią zatwierdzenia ani źródła danych projektu. Regeneracja: `node scripts/studio/generate-catalog.mjs` (z głównego katalogu, po zainstalowaniu backendu i środowiska Python). Korzystają z materiału marki zamiast fikcyjnych fotografii ludzi. Test `test_catalog.py` sprawdza wszystkie typy/kompozycje/formaty, różnice geometrii i paginację; testy API sprawdzają izolację zatwierdzeń oraz eksport nowej wersji. Podgląd i eksport nadal używają tego samego renderera.
 
 ## AI i koszty
 

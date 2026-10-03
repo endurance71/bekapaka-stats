@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createStudioRouter } from '../../studio/routes.js';
-import { newProject, BRAND_VERSION } from '../../studio/contracts.js';
+import { newProject, newPostProject, templates, postTypes, BRAND_VERSION } from '../../studio/contracts.js';
 import { seedStudio } from '../../studio/seed.js';
 import { claimJob, recoverJobs, processJob } from '../../studio/worker.js';
 import { queueAi, budget } from '../../studio/ai.js';
@@ -38,7 +38,26 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
  it('uses a scoped HttpOnly session and seeds only draft templates', async () => {
   const r = await request('/auth/login', { username: 'owner', password: 'valid' }, 'POST'); expect(r.res.status).toBe(200); const set = r.res.headers.get('set-cookie'); expect(set).toContain('HttpOnly'); expect(set).toContain('SameSite=Strict'); cookie = set.split(';')[0];
   expect((await request('/auth/me')).value.user.id).toBe(owner);
-  const r2 = await request('/templates'); expect(r2.value.templates).toHaveLength(8); expect(r2.value.templates.every(t => t.status === 'draft')).toBe(true);
+  const r2 = await request('/templates'); expect(r2.value.templates).toHaveLength(templates.length); expect(r2.value.templates.every(t => t.status === 'draft')).toBe(true);
+ });
+ it('imports public statistics across seasons without changing sports data',async()=>{
+  const seasonId=owner+'-season',second=owner+'-other';
+  try {
+   for(const id of [seasonId,second])await db.kalkSeason.create({data:{id,slug:id,label:id===seasonId?'2026/2027':'2025/2026'}});
+   for(const [season,score] of [[seasonId,103],[second,80]])await db.kalkMatch.create({data:{id:'17',seasonId:season,slug:'match-17',date:new Date('2026-10-11T12:00:00Z'),homeTeamName:'Koszalin Basketball',guestTeamName:'BeKaPaKa Bobolice',scoreHome:91,scoreAway:score,isFinished:true,boxScore:{teams:[{name:'BeKaPaKa Bobolice',pts:score}]},aiSummary:'PRIVATE'}});
+   await db.kalkPlayer.create({data:{id:owner+'-player',seasonId,name:'Paweł Lis',raw:{coachNotes:'PRIVATE'}}});
+   await db.kalkPlayerGameLog.create({data:{seasonId,kalkPlayerId:owner+'-player',kalkMatchId:'17',teamName:'BeKaPaKa Bobolice',opponentName:'Koszalin Basketball',stats:{pts:0,reb:8}}});
+   await db.leagueTeam.create({data:{seasonId,name:'BeKaPaKa Bobolice',position:1,matches:1,wins:1,losses:0,points:2}});
+   await db.leagueMatch.create({data:{seasonId,date:new Date('2026-10-11T12:00:00Z'),homeTeam:'Koszalin Basketball',guestTeam:'BeKaPaKa Bobolice',scoreHome:91,scoreAway:103,isFinished:true,phaseLabel:'1'}});
+   const first=await request(`/sources/statistics?kind=match-statistics&seasonId=${seasonId}&id=17`);expect(first.res.status).toBe(200);expect(first.value.data.scoreUs).toBe(103);expect(JSON.stringify(first.value)).not.toContain('PRIVATE');
+   expect((await request(`/sources/statistics?kind=match-statistics&seasonId=${second}&id=17`)).value.data.scoreUs).toBe(80);
+   const player=await request(`/sources/statistics?kind=match-statistics&seasonId=${seasonId}&id=17&subjectId=${owner}-player&view=player`);expect(player.value.data.tableRows[0].value).toBe('0');
+   const refreshed=await request(`/sources/snapshot?kind=match-statistics&seasonId=${seasonId}&id=17&subjectId=${owner}-player&view=player`);expect(refreshed.value.source.hash).toBe(player.value.source.hash);
+   for(const kind of ['standings','season','round']) {const r=await request(`/sources/statistics?kind=${kind}&seasonId=${seasonId}&id=1`);expect(r.res.status,JSON.stringify(r.value)).toBe(200);expect(r.value.data.tableRows.length).toBeGreaterThan(0);}
+   expect((await request(`/sources/rounds?seasonId=${seasonId}`)).value).toEqual([{id:'1',title:'Kolejka 1'}]);
+   expect((await request(`/sources/statistical-matches?seasonId=${seasonId}`)).value).toHaveLength(1);
+   expect((await db.kalkMatch.findUnique({where:{seasonId_id:{seasonId,id:'17'}}})).scoreAway).toBe(103);
+  } finally {await db.kalkSeason.deleteMany({where:{id:{in:[seasonId,second]}}});}
  });
  it('keeps immutable revisions, rejects stale updates and blocks unapproved export', async () => {
   const p = newProject('announcement'); p.content.opponent = 'Koszalin Basketball'; p.content.opponentShort = 'KBS'; p.content.date = '2026-10-11T14:30:00+02:00'; p.content.altText = 'Mecz BeKaPaKa z Koszalin Basketball.';
@@ -68,6 +87,34 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   const zip = await request(`/jobs/${job.id}/files/zip`); expect(zip.res.status).toBe(200); expect(zip.value.subarray(0, 2).toString()).toBe('PK');
   const record = await db.studioExport.findUnique({ where: { jobId: job.id } }); expect(record.manifest.brandVersion).toBe(BRAND_VERSION); expect(record.manifest.project.content.opponent).toBe('Koszalin Basketball'); expect(record.manifest.files).toHaveLength(2);
  }, 60_000);
+ it('isolates new composition and format approvals from legacy approvals', async()=>{
+  const payload=newPostProject('preview');Object.assign(payload.content,{opponent:'Koszalin Basketball',opponentShort:'KBS',date:'2026-10-11T14:30:00+02:00',altText:'Zapowiedź meczu.'});
+  const v=(await request('/projects',payload,'POST')).value;
+  expect(v.revision.templateVersion).toBe('2.0.0:preview:sport');
+  const catalog=(await request('/templates')).value;expect(catalog.postTypes).toHaveLength(postTypes.length);
+  expect(catalog.postTypes.find(p=>p.id==='preview').designs.every(d=>d.status==='draft')).toBe(true);
+  expect((await request(`/projects/${v.id}/jobs`,{kind:'export',idempotencyKey:'unapproved-v2'},'POST')).res.status).toBe(422);
+  const p=(await request(`/projects/${v.id}/jobs`,{kind:'preview',format:'feed'},'POST')).value;
+  const j=await claimJob(db,'render',owner);expect(j.id).toBe(p.id);await processJob(db,j);
+  const done=(await request(`/jobs/${p.id}`)).value;expect(done.status,done.error).toBe('completed');
+  expect((await request('/templates/announcement/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
+  expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
+  expect((await request('/designs/preview/photo/feed/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
+  expect((await request('/designs/preview/sport/feed/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(200);
+  const states=(await request('/templates')).value.postTypes.find(p=>p.id==='preview').designs;
+  expect(states.filter(d=>d.status==='approved')).toEqual([{style:'sport',format:'feed',status:'approved'}]);
+  expect((await request(`/projects/${v.id}/validation`)).value.errors.map(e=>e.field)).toContain('template');
+  const story=(await request(`/projects/${v.id}/jobs`,{kind:'preview',format:'story'},'POST')).value;
+  await processJob(db,await claimJob(db,'render',owner));
+  expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:story.id},'POST')).res.status).toBe(200);
+  expect((await request(`/projects/${v.id}/approve`,{confirmed:true,expectedRevision:1,previewJobId:story.id},'POST')).res.status).toBe(200);
+  const exp=(await request(`/projects/${v.id}/jobs`,{kind:'export',idempotencyKey:'approved-v2'},'POST')).value;
+  await processJob(db,await claimJob(db,'render',owner));
+  expect((await request(`/jobs/${exp.id}`)).value.status).toBe('completed');
+  const record=await db.studioExport.findUnique({where:{jobId:exp.id}});expect(record.manifest).toMatchObject({postType:'preview',visualStyle:'sport',designVersion:'2.0.0',rendererVersion:'2.0.0'});
+  const changed=await request(`/projects/${v.id}`,{expectedRevision:1,project:{...payload,visualStyle:'editorial'}},'PUT');expect(changed.value.currentRevision).toBe(2);
+  expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:story.id},'POST')).res.status).toBe(422);
+ },60000);
  it('serves the last stored preview for archived projects and restores them to draft', async () => {
   const copy = (await request(`/projects/${project.id}/duplicate`, {}, 'POST')).value;
   await db.studioJob.create({ data: { ownerId: owner, projectId: copy.id, revision: 1, kind: 'preview', status: 'completed', payload: { format: 'story' }, result: { files: [{ key: 'story-01', name: 'x.png', mime: 'image/png' }], expiresAt: new Date(Date.now() + 3600_000).toISOString() } } });

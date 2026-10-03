@@ -1,3 +1,4 @@
+import { rendererVersionFor } from './post-types.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
@@ -7,7 +8,7 @@ import { zipSync, strToU8 } from 'fflate';
 import { brandDir, studioDir } from './config.js';
 import { filePath, hash } from './storage.js';
 import { context, projectView, validation } from './service.js';
-import { BRAND_VERSION, RENDERER_VERSION } from './contracts.js';
+import { BRAND_VERSION } from './contracts.js';
 const exec = promisify(execFile);
 export async function renderJob(db, job) {
   const view = await projectView(db, job.ownerId, job.projectId, job.revision);
@@ -35,7 +36,7 @@ export async function renderJob(db, job) {
   }
   const expiresAt = new Date(Date.now() + (job.kind === 'preview' ? 1 : 30) * 86400_000).toISOString();
   if (job.kind === 'export') {
-    const manifest = { projectId: view.id, name: view.name, family: view.family, revision: job.revision, contentHash: view.revision.contentHash, project: view.payload, brandVersion: BRAND_VERSION, templateVersion: view.revision.templateVersion, rendererVersion: RENDERER_VERSION, createdAt: new Date().toISOString(), source: view.payload.content.source, assets: ctx.assets.map(a => ({ id: a.id, name: a.name, hash: a.contentHash, origin: a.origin, consent: a.consent, provenance: a.provenance })), partners: ctx.partners.map(p => ({ id: p.id, name: p.name, assetId: p.assetId, contractNote: p.contractNote })), files: files.map(({ storageKey, ...f }) => f), checks };
+    const manifest = { projectId: view.id, name: view.name, family: view.family, postType:view.payload.postType || null, visualStyle:view.payload.visualStyle || null, designVersion:view.payload.designVersion || null, revision: job.revision, contentHash: view.revision.contentHash, project: view.payload, brandVersion: BRAND_VERSION, templateVersion: view.revision.templateVersion, rendererVersion: rendererVersionFor(view.payload), createdAt: new Date().toISOString(), source: view.payload.content.source, assets: ctx.assets.map(a => ({ id: a.id, name: a.name, hash: a.contentHash, origin: a.origin, consent: a.consent, provenance: a.provenance })), partners: ctx.partners.map(p => ({ id: p.id, name: p.name, assetId: p.assetId, contractNote: p.contractNote })), files: files.map(({ storageKey, ...f }) => f), checks };
     const ai = ctx.assets.some(a => a.provenance); const d = view.payload.content;
     const texts = { caption: `${d.caption}${d.link ? '\n' + d.link : ''}${ai ? '\nIlustracja tła wygenerowana przy użyciu AI.' : ''}`, altText: `${d.altText}${ai ? ' Tło jest ilustracją AI.' : ''}`, aiDisclosure: ai ? 'Ilustracja tła wygenerowana przy użyciu AI.' : '' };
     const altTexts = files.map(f => ({ file: f.name, text: view.family === 'report' && view.payload.variant === 'carousel' ? d.slides[Number(f.key.split('-').at(-1)) - 1]?.altText || texts.altText : texts.altText }));

@@ -94,11 +94,11 @@ def footer(p):
     note='PODGLĄD ROBOCZY' if p.mode=='preview' else ('ILUSTRACJA AI' if p.ai_scene else 'BEKAPAKA BOBOLICE')
     text(p,note,p.w-p.m,y,20,'body',anchor='end',maxw=p.w-2*p.m-220)
 
-def venue_label(p, value, anchor='middle'):
+def venue_label(p, value, anchor='middle', x=None, y=None, maxw=None):
     # A feathered shade and glyph shadow retain contrast without a visible panel.
     position=len(p.g)
-    x=p.w/2 if anchor=='middle' else p.m+24
-    box=text(p,value,x,p.bottom-108,40,'label',C['white'],anchor,p.w-2*p.m-48,minimum=32)
+    x=x if x is not None else p.w/2 if anchor=='middle' else p.m+24
+    box=text(p,value,x,y if y is not None else p.bottom-108,40,'label',C['white'],anchor,maxw if maxw is not None else p.w-2*p.m-48,minimum=32)
     if box:
         gradient=el('radialGradient',id='venue-shade')
         for offset,opacity in [('0%',.99),('70%',.98),('85%',.60),('100%',0)]:
@@ -306,6 +306,7 @@ def validate_marks(p):
 
 def render(payload,format_name,output,mode,assets,partners_list):
     project=payload['project']; d=project['content']; family=project['family']; variant=project['variant']; w,h=FORMAT[format_name]
+    v2=bool(project.get('postType'))
     pages=[None]
     if family=='report' and variant=='carousel': pages=d['slides']
     if family=='lineup': pages=[d['lineup'][i:i+6] for i in range(0,len(d['lineup']),6)] or [[]]
@@ -317,10 +318,30 @@ def render(payload,format_name,output,mode,assets,partners_list):
         selected=sorted(selected,key=lambda x:x['name'].casefold())
         count=6 if h<=1350 else 8
         pages=[selected[i:i+count] for i in range(0,len(selected),count)] or [[]]
+    if v2 and family in ('statistics','lineup','schedule','partners'):
+        if family=='statistics': items=d.get('tableRows',[])
+        elif family=='lineup': items=d['lineup']
+        elif family=='schedule' and variant=='schedule': items=d['schedule']
+        elif family=='partners': items=selected
+        else: items=None
+        if items is not None:
+            # Explicit pagination by native format and composition, never shrinking text.
+            top=270 if format_name=='story' else 84
+            bottom=1560 if format_name=='story' else h-80
+            available=bottom-135-(top+175)
+            offset=35
+            if project.get('visualStyle')=='photo': offset=available*(.20 if h<=1080 else .28)+55
+            if project.get('visualStyle')=='editorial': offset=80
+            budget=available-offset-210
+            if family=='statistics' and d.get('body'): budget-=60+45*math.ceil(len(d['body'])/45)
+            count=max(1,int(budget/110))
+            if family=='lineup' and variant=='five': count=5
+            if family=='partners':count=max(1,count*2) if variant!='spotlight' else 1
+            pages=[items[i:i+count] for i in range(0,len(items),count)] or [[]]
     files=[]; checks=[]
     for index,part in enumerate(pages):
         key=f'{format_name}-{index+1:02d}'; p=Poster(output,key,project['name'],'BeKaPaKa Studio',w=w,h=h)
-        p.paper=family in ('lineup','report','schedule','partners'); p.ink=C['black'] if p.paper else C['white']; p.accent=C['red'] if d['kit']=='A' else '#FF7A18'
+        p.paper=(project.get('visualStyle')=='editorial') if v2 else family in ('lineup','report','schedule','partners'); p.ink=C['black'] if p.paper else C['white']; p.accent=C['red'] if d['kit']=='A' else '#FF7A18'
         p.mode=mode; p.data=d; p.variant=variant; p.layout=project['layout']; p.kit=d['kit']; p.assets=assets; p.assets_used=[]; p.ai_scene=any(a.get('provenance') for a in assets.values())
         p.story=format_name=='story'; p.family=family
         p.m=72 if w==1080 else 128; p.top=270 if format_name=='story' else 84; p.bottom=1560 if format_name=='story' else h-80
@@ -332,7 +353,11 @@ def render(payload,format_name,output,mode,assets,partners_list):
         p.layer('10-motyw')
         if not p.paper: M.seams(p,w/2,(p.top+p.bottom)/2,min(w,h)*.45,t=2,color=p.accent,opacity=.12)
         p.fx=MAT.ink(p,shadow=not p.paper); p.layer('30-tresc')
-        {'announcement':lambda:announcement(p),'result':lambda:result(p),'lineup':lambda:lineup(p,part,index),'player':lambda:player(p),'tournament':lambda:tournament(p),'report':lambda:report(p,part,index),'partners':lambda:partners(p,part,index),'schedule':lambda:schedule(p,part,index)}[family]()
+        if v2:
+            from render_v2 import compose
+            p.visual_style=project['visualStyle'];p.post_type=project['postType']
+            compose(p,part,index,globals())
+        else: {'announcement':lambda:announcement(p),'result':lambda:result(p),'lineup':lambda:lineup(p,part,index),'player':lambda:player(p),'tournament':lambda:tournament(p),'report':lambda:report(p,part,index),'partners':lambda:partners(p,part,index),'schedule':lambda:schedule(p,part,index)}[family]()
         footer(p)
         try:
             validate_marks(p)

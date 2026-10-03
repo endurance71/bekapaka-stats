@@ -9,3 +9,5 @@ export type Partner = { id: string; name: string; assetId: string | null; seedLo
 export type Template = { id: string; family?: string; label: string; description: string; variants: string[]; layouts: string[]; formats: string[]; version: string; status: string };
 export type Report = { valid: boolean; errors: { field: string; message: string }[] };
 export type Budget = { configured: boolean; remainingMicros: number; usedMicros: number; limitMicros: number; month: string };
+
+export type PostType = {id:string;family:string;variant:string;label:string;category:string;version:string;styles:string[];formats:string[];designs?:{style:string;format:string;status:string}[]};

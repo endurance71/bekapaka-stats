@@ -6,7 +6,7 @@ export function matchSnapshot(m) {
   if (!home && !isClub(m.guestTeamName ?? m.guestTeam)) fail(404, 'To nie jest mecz BeKaPaKa');
   return { id: m.id, seasonId: m.seasonId, date: m.date?.toISOString?.() || m.date || '', opponent: home ? (m.guestTeamName ?? m.guestTeam) : (m.homeTeamName ?? m.homeTeam), scoreUs: home ? (m.scoreHome ?? null) : (m.scoreAway ?? null), scoreThem: home ? (m.scoreAway ?? null) : (m.scoreHome ?? null), venue: 'KOSiR Koszalin', round: String(m.roundCode ?? m.phaseLabel ?? ''), source: m.homeTeamName ? 'kalk' : 'league' };
 }
-export function sourceEnvelope(kind, data) { return { data, source: { kind, id: data.id, seasonId: data.seasonId || '', hash: hash(data), fetchedAt: new Date().toISOString() } }; }
+export function sourceEnvelope(kind, data) { return { data, source: { kind, ...(data.subjectId ? {subjectId:data.subjectId}:{}), ...(data.view ? {view:data.view}:{}), id: data.id, seasonId: data.seasonId || '', hash: hash(data), fetchedAt: new Date().toISOString() } }; }
 export async function matches(db, seasonId) {
   if (!seasonId) fail(400, 'Wybierz sezon');
   const [kalk, league] = await Promise.all([

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { postTypes, postType, DESIGN_VERSION } from './post-types.js';
+export { postTypes, visualStyles, DESIGN_VERSION } from './post-types.js';
 
 export const BRAND_VERSION = '2.0.2026-10-03';
 export const RENDERER_VERSION = '1.0.5';
@@ -19,12 +21,16 @@ export const templates = [
   { id: 'report', label: 'Relacja / karuzela', description: 'Prawdziwe zdjęcia i historia meczu w czterech slajdach.', formats: portrait, variants: ['cover', 'photo', 'carousel'], layouts: ['editorial'] },
   { id: 'partners', label: 'Partnerzy', description: 'Firmy i instytucje, które grają z nami.', formats: portrait, variants: ['wall', 'spotlight', 'thanks'], layouts: ['tiles'] },
   { id: 'schedule', label: 'Ogłoszenie / terminarz', description: 'Daty, aktualności i klubowe ogłoszenia na papierze.', formats: all, variants: ['schedule', 'notice', 'news'], layouts: ['paper'] },
+  { id: 'statistics', label: 'Statystyki', description: 'Liczby meczu, tabela i podsumowania sezonu.', formats: portrait, variants: ['team','player','leaders','standings','round','season'], layouts: ['board'] },
+  { id: 'club', label: 'Życie klubu', description: 'Ludzie, treningi i społeczność BeKaPaKa.', formats: portrait, variants: ['birthday','training','training-report','backstage','quote','anniversary','invitation','statement'], layouts: ['editorial'] },
 ].map(t => ({ ...t, version: '1.0.0', status: 'draft' }));
 const text = (max) => z.string().trim().max(max).default('');
 const id = z.string().min(1).max(128);
 const person = z.object({ id: text(128), firstName: text(60), lastName: text(80), number: z.string().regex(/^\d{1,3}$/).or(z.literal('')).default(''), position: text(40) }).strict();
-const sourceSchema = z.object({ kind: z.enum(['manual', 'match', 'player', 'event', 'news']).default('manual'), id: text(128), seasonId: text(128), hash: text(128), fetchedAt: text(40) }).strict();
+const sourceSchema = z.object({ subjectId: z.string().max(128).optional(), view: z.enum(['team','player','leaders']).optional(), kind: z.enum(['manual', 'match', 'player', 'event', 'news', 'standings', 'round', 'season', 'match-statistics']).default('manual'), id: text(128), seasonId: text(128), hash: text(128), fetchedAt: text(40) }).strict();
 export const projectContentSchema = z.object({
+  tableRows: z.array(z.object({ label: z.string().trim().max(100), value: z.string().trim().max(80), detail: z.string().trim().max(100).default('') }).strict()).max(60).optional(),
+  statScope: z.enum(['match','season']).optional(), attribution: z.string().trim().max(100).optional(),
   opponent: text(100), opponentShort: text(8), date: text(40), originalDate: text(40), venue: text(100), title: text(180), body: text(1500),
   scoreUs: z.number().int().min(0).max(999).nullable().default(null), scoreThem: z.number().int().min(0).max(999).nullable().default(null),
   entryInfo: text(80), phase: text(50), nextMatch: text(160), firstName: text(60), lastName: text(80), number: z.string().regex(/^\d{1,3}$/).or(z.literal('')).default(''), position: text(40),
@@ -41,11 +47,16 @@ export const projectContentSchema = z.object({
   source: sourceSchema.default({ kind: 'manual', id: '', seasonId: '', hash: '', fetchedAt: '' }),
 }).strict();
 export const projectSchema = z.object({
+  postType: z.string().max(60).optional(), visualStyle: z.enum(['sport','photo','editorial']).optional(), designVersion: z.literal(DESIGN_VERSION).optional(),
   name: z.string().trim().min(1).max(180), family: z.enum(templates.map(t => t.id)), variant: z.string().min(1).max(30), layout: z.string().min(1).max(30),
   formats: z.array(z.enum(Object.keys(formats))).min(1).max(4).refine(a => new Set(a).size === a.length, 'Formaty nie mogą się powtarzać'),
   content: projectContentSchema,
 }).strict().superRefine((v, ctx) => {
   const t = templates.find(t => t.id === v.family);
+  if (v.postType) {
+    const type = postType(v.postType);
+    if (!type || type.family !== v.family || type.variant !== v.variant || !type.styles.includes(v.visualStyle) || v.designVersion !== DESIGN_VERSION || v.formats.some(f => !type.formats.includes(f))) ctx.addIssue({code:'custom',path:['postType'],message:'Typ publikacji, kompozycja lub wersja są niezgodne'});
+  } else if (v.visualStyle || v.designVersion || ['statistics','club'].includes(v.family)) ctx.addIssue({code:'custom',path:['postType'],message:'Wybierz typ publikacji'});
   for (const [path, ok] of [['variant', t.variants.includes(v.variant)], ['layout', t.layouts.includes(v.layout)], ['formats', v.formats.every(f => t.formats.includes(f))]]) {
     if (!ok) ctx.addIssue({ code: 'custom', path: [path], message: 'Wariant lub format nie należy do tej rodziny' });
   }
@@ -58,8 +69,15 @@ export const assetMetadataSchema = z.object({
 export const partnerSchema = z.object({ name: z.string().trim().min(1).max(180), assetId: id.nullable().default(null), status: z.enum(['draft', 'approved', 'retired']).default('draft'), contractNote: text(1000) }).strict();
 export function newProject(family = 'announcement') {
   const t = templates.find(t => t.id === family) || templates[0];
+  if (['statistics','club'].includes(t.id)) return newPostProject(postTypes.find(p => p.family === t.id).id);
   return projectSchema.parse({ name: t.label, family: t.id, variant: t.variants[0], layout: t.layouts[0], formats: ['feed', 'story'], content: { venue: t.id === 'tournament' ? 'CESiR Bobolice' : 'KOSiR Koszalin' } });
 }
 export function assetIds(content) {
   return [...new Set([content.photoAssetId, content.backgroundAssetId, ...content.slides.map(s => s.assetId)].filter(Boolean))];
+}
+
+export function newPostProject(id, style = 'sport') {
+  const p = postType(id); if (!p) throw new Error('Nieznany typ publikacji');
+  const t = templates.find(t => t.id === p.family);
+  return projectSchema.parse({name:p.label, family:p.family, variant:p.variant, layout:t.layouts[0], postType:p.id, visualStyle:style, designVersion:DESIGN_VERSION, formats:['feed','story'], content:{venue:p.family==='tournament' ? 'CESiR Bobolice' : ['announcement','result','lineup'].includes(p.family) ? 'KOSiR Koszalin' : '', tableRows:[], statScope:p.variant==='season'?'season':'match', attribution:''}});
 }

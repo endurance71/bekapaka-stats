@@ -3,7 +3,7 @@ WORKDIR /workspace/studio
 COPY studio/package*.json ./
 RUN npm ci
 COPY studio/ ./
-COPY backend/studio/contracts.js /workspace/backend/studio/contracts.js
+COPY backend/studio/contracts.js backend/studio/post-types.js /workspace/backend/studio/
 RUN npm run build
 FROM nginx:1.28-alpine
 COPY studio/nginx.conf /etc/nginx/conf.d/default.conf

@@ -1,3 +1,5 @@
+import { statisticalSnapshot } from './statistics.js';
+import { postTypes, visualStyles, postType, designKey } from './post-types.js';
 import express from 'express';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -10,7 +12,7 @@ import { hash, saveImage, filePath } from './storage.js';
 import { seedStudio } from './seed.js';
 import { projectView, createProject, updateProject, validation, queueJob, context } from './service.js';
 import { budget, queueAi } from './ai.js';
-import { matches, cms, cmsMedia, sourceEnvelope } from './sources.js';
+import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope } from './sources.js';
 import { createLoginThrottle } from '../lib/loginThrottle.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
@@ -52,7 +54,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.get('/templates', async (req, res) => {
     await seedStudio(db);
     const states = await db.studioTemplate.findMany({ where: { ownerId: req.studioOwner, brandVersion: BRAND_VERSION } });
-    res.json({ brandVersion: BRAND_VERSION, formats, templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
+    res.json({ brandVersion: BRAND_VERSION, formats, visualStyles, postTypes:postTypes.map(p=>({...p,designs:p.styles.flatMap(style=>p.formats.map(format=>({style,format,status:states.find(s=>s.family===p.family&&s.version===designKey({postType:p.id,visualStyle:style},format))?.status || 'draft'})))})), templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
   });
   router.post('/templates/:family/approve', async (req, res) => {
     const input = z.object({ confirmed: z.literal(true), previewJobId: z.string().uuid() }).strict().parse(req.body);
@@ -60,23 +62,49 @@ export function createStudioRouter({ db, loginUser }) {
     const preview = await db.studioJob.findFirst({ where: { id: input.previewJobId, ownerId: req.studioOwner, kind: 'preview', status: 'completed' } });
     if (!preview) fail(422, 'Najpierw wygeneruj i oceń podgląd tego szablonu');
     const v = await projectView(db, req.studioOwner, preview.projectId, preview.revision);
+    if (v.payload.postType) fail(422,'Nowa kompozycja wymaga zatwierdzenia każdego formatu oddzielnie');
     if (v.family !== t.id || v.revision.brandVersion !== BRAND_VERSION || v.revision.templateVersion !== t.version) fail(422, 'Podgląd dotyczy innej wersji szablonu');
     await db.studioTemplate.updateMany({ where: { ownerId: req.studioOwner, family: t.id, version: t.version, brandVersion: BRAND_VERSION }, data: { status: 'approved', approvedAt: new Date() } });
     res.json({ ok: true });
   });
+  router.post('/designs/:postType/:style/:format/approve', async (req,res) => {
+    const input=z.object({confirmed:z.literal(true),previewJobId:z.string().uuid()}).strict().parse(req.body);
+    const type=postType(req.params.postType);
+    if (!type || !type.styles.includes(req.params.style) || !type.formats.includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
+    const preview=await db.studioJob.findFirst({where:{id:input.previewJobId,ownerId:req.studioOwner,kind:'preview',status:'completed'}});
+    if (!preview || preview.payload.format!==req.params.format || new Date(preview.result?.expiresAt || 0)<=new Date()) fail(422,'Oceń aktualny podgląd wybranego formatu');
+    const view=await projectView(db,req.studioOwner,preview.projectId);
+    if (view.currentRevision!==preview.revision || view.payload.postType!==type.id || view.payload.visualStyle!==req.params.style || view.revision.brandVersion!==BRAND_VERSION || preview.result?.resourceHash!==(await context(db,req.studioOwner,view)).resourceHash) fail(422,'Podgląd dotyczy innej kompozycji, rewizji lub materiałów');
+    const version=designKey(view.payload,req.params.format);
+    const id=`${req.studioOwner}:${type.family}:${version}:${BRAND_VERSION}`;
+    await db.studioTemplate.upsert({where:{id},create:{id,ownerId:req.studioOwner,family:type.family,version,brandVersion:BRAND_VERSION,status:'approved',approvedAt:new Date()},update:{status:'approved',approvedAt:new Date()}});
+    res.json({ok:true});
+  });
+  router.post('/designs/:postType/:style/:format/status', async(req,res)=>{
+    const type=postType(req.params.postType);if(!type || !type.styles.includes(req.params.style)||!type.formats.includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
+    const input=z.object({status:z.enum(['draft','retired'])}).strict().parse(req.body);
+    const version=designKey({postType:type.id,visualStyle:req.params.style},req.params.format);
+    const id=`${req.studioOwner}:${type.family}:${version}:${BRAND_VERSION}`;
+    await db.studioTemplate.upsert({where:{id},create:{id,ownerId:req.studioOwner,family:type.family,version,brandVersion:BRAND_VERSION,status:input.status},update:{status:input.status,approvedAt:null}});
+    res.json({ok:true});
+  });
   router.post('/templates/:family/status', async (req, res) => {
     const input = z.object({ status: z.enum(['draft', 'retired']) }).strict().parse(req.body);
-    await db.studioTemplate.updateMany({ where: { ownerId: req.studioOwner, family: req.params.family, brandVersion: BRAND_VERSION }, data: { status: input.status, approvedAt: null } }); res.json({ ok: true });
+    await db.studioTemplate.updateMany({ where: { ownerId: req.studioOwner, family: req.params.family, version:'1.0.0', brandVersion: BRAND_VERSION }, data: { status: input.status, approvedAt: null } }); res.json({ ok: true });
   });
   router.get('/brand', async (_req, res) => res.json(JSON.parse(await fs.readFile(path.join(brandDir, 'manifest.json'), 'utf8'))));
   router.get('/sources/seasons', async (_req, res) => res.json(await db.kalkSeason.findMany({ orderBy: [{ isActive: 'desc' }, { startsAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }] })));
   router.get('/sources/matches', async (req, res) => res.json(await matches(db, String(req.query.seasonId || ''))));
+  router.get('/sources/statistical-matches',async(req,res)=>res.json((await db.kalkMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true},orderBy:{date:'desc'},take:300})).filter(m=>/bekapaka|bobolice/i.test(m.homeTeamName+' '+m.guestTeamName)).map(matchSnapshot)));
+  router.get('/sources/statistics', async (req,res)=> { const q=z.object({kind:z.enum(['standings','round','season','match-statistics']),seasonId:z.string().min(1),id:z.string().default(''),subjectId:z.string().max(128).default(''),view:z.enum(['team','player','leaders']).default('team')}).parse(req.query); res.json(sourceEnvelope(q.kind,await statisticalSnapshot(db,q.kind,q.seasonId,q.id,q.subjectId,q.view))); });
+  router.get('/sources/rounds',async(req,res)=>res.json((await db.leagueMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true,phaseLabel:{not:null}},select:{phaseLabel:true},distinct:['phaseLabel'],orderBy:{phaseLabel:'asc'}})).map(r=>({id:r.phaseLabel,title:'Kolejka '+r.phaseLabel}))));
   router.get('/sources/players', async (_req, res) => res.json((await db.rosterPlayer.findMany({ orderBy: { lastName: 'asc' }, select: { id: true, firstName: true, lastName: true, number: true, position: true } })).map(p => ({ ...p, number: String(p.number ?? ''), position: p.position || '' }))));
   router.get('/sources/cms/:kind', async (req, res) => { const kind = z.enum(['event', 'news']).parse(req.params.kind); res.json(await cms(kind)); });
   router.get('/sources/snapshot', async (req, res) => {
-    const s = z.object({ kind: z.enum(['match', 'player', 'event', 'news']), id: z.string().min(1).max(128), seasonId: z.string().max(128).optional() }).parse(req.query);
+    const s = z.object({ kind: z.enum(['match', 'player', 'event', 'news','standings','round','season','match-statistics']), id: z.string().min(1).max(128), seasonId: z.string().max(128).optional(), subjectId:z.string().max(128).default(''),view:z.enum(['team','player','leaders']).default('team') }).parse(req.query);
     let data;
-    if (s.kind === 'match') data = (await matches(db, s.seasonId)).find(m => m.id === s.id);
+    if (['standings','round','season','match-statistics'].includes(s.kind)) data=await statisticalSnapshot(db,s.kind,s.seasonId,s.id,s.subjectId,s.view);
+    else if (s.kind === 'match') data = (await matches(db, s.seasonId)).find(m => m.id === s.id);
     else if (s.kind === 'player') { const p = await db.rosterPlayer.findUnique({ where: { id: s.id }, select: { id: true, firstName: true, lastName: true, number: true, position: true } }); if (p) data = { id: p.id, firstName: p.firstName, lastName: p.lastName, number: String(p.number ?? ''), position: p.position || '' }; }
     else data = (await cms(s.kind, s.id))[0];
     if (!data) fail(404, 'Źródło nie jest już dostępne'); res.json(sourceEnvelope(s.kind, data));

@@ -1,9 +1,10 @@
-import { assetIds, BRAND_VERSION, templates } from './contracts.js';
+import { projectTemplateVersion } from './post-types.js';
+import { assetIds, BRAND_VERSION } from './contracts.js';
 export function validateProject(project, { assets = [], partners = [], template, approved = false } = {}) {
   const errors = []; const add = (field, message) => errors.push({ field, message });
   const d = project.content; const f = project.family;
   const required = (field, label) => { if (!d[field]?.trim()) add(field, `Uzupełnij: ${label}`); };
-  if (['announcement', 'result', 'lineup', 'tournament', 'report', 'schedule'].includes(f)) {
+  if ((['announcement', 'result', 'lineup', 'tournament', 'report', 'schedule'].includes(f) || (f==='club' && ['birthday','training','anniversary','invitation'].includes(project.variant)))) {
     if (!(f === 'schedule' && project.variant !== 'schedule')) {
       required('date', 'data i godzina');
       if (d.date && (!/^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d(\.\d+)?)?(Z|[+-]\d\d:\d\d)$/.test(d.date) || !Number.isFinite(Date.parse(d.date)))) add('date', 'Wybierz datę z godziną i strefą czasową');
@@ -25,6 +26,7 @@ export function validateProject(project, { assets = [], partners = [], template,
   if (new Set(d.statistics.map(s => s.label)).size !== d.statistics.length) add('statistics', 'Etykiety statystyk nie mogą się powtarzać');
   if (f === 'player') { required('firstName', 'imię'); required('lastName', 'nazwisko'); required('number', 'numer'); if (project.variant === 'mvp' && !d.mvpConfirmed) add('mvpConfirmed', 'Potwierdź wybór MVP'); }
   if (f === 'tournament') {
+    if (project.variant==='program') required('body','program turnieju');
     if (d.edition == null) add('edition', 'Podaj rzeczywistą edycję turnieju');
     if (project.variant !== 'program' && (d.teams == null || d.days == null)) add('teams', 'Podaj rzeczywistą liczbę drużyn i dni');
   }
@@ -35,9 +37,18 @@ export function validateProject(project, { assets = [], partners = [], template,
     if (d.schedule.some(r => !r.opponent || !Number.isFinite(Date.parse(r.date)))) add('schedule', 'Uzupełnij datę i rywala każdej pozycji');
   }
   if (f === 'report' && project.variant === 'carousel' && (d.slides.length !== 4 || d.slides.some(s => !s.title || !s.assetId || !s.altText))) add('slides', 'Karuzela wymaga 4 slajdów z tytułem, zdjęciem i tekstem alternatywnym');
-  if ((['result', 'player'].includes(f) && project.layout === 'photo') || (f === 'report' && project.variant !== 'carousel')) if (!d.photoAssetId) add('photoAssetId', 'Wybierz zdjęcie lub wariant typograficzny');
+  if ((['result', 'player'].includes(f) && !project.postType && project.layout === 'photo') || (f === 'report' && !project.postType && project.variant !== 'carousel')) if (!d.photoAssetId) add('photoAssetId', 'Wybierz zdjęcie lub wariant typograficzny');
   if (f === 'partners' && !d.partnerIds.length) add('partnerIds', 'Wybierz partnerów');
   if (f === 'partners' && project.variant === 'spotlight' && d.partnerIds.length !== 1) add('partnerIds', 'Prezentacja partnera wymaga jednej pozycji');
+  if (project.postType) {
+    if(f==='partners' && project.variant==='thanks') required('body','treść podziękowania');
+    if ((project.visualStyle === 'photo' || f==='report') && !(f === 'report' && project.variant === 'carousel') && !d.photoAssetId) add('photoAssetId','Kompozycja fotograficzna wymaga zdjęcia; wybierz zdjęcie lub inną kompozycję');
+    if (['club','statistics'].includes(f)) required('title','nagłówek');
+    if (f==='club') { if(project.variant==='birthday'){required('firstName','imię jubilata');required('lastName','nazwisko jubilata');} required('body','treść publikacji'); if (project.variant==='quote') required('attribution','autor cytatu'); if (['birthday','training','anniversary','invitation'].includes(project.variant)) required('date','data wydarzenia'); if (['training','invitation'].includes(project.variant)) required('venue','miejsce'); }
+    if (f==='statistics' && (!(d.tableRows?.length) || d.tableRows.some(r=>!r.label.trim()||!r.value.trim()))) add('tableRows','Uzupełnij wszystkie etykiety i wartości; brak danych nie oznacza zera');
+    if (f==='statistics' && ['team','player','leaders'].includes(project.variant) && d.statScope!=='match') add('statScope','Ten typ dotyczy konkretnego meczu');
+    if (f==='statistics' && ['standings','season'].includes(project.variant) && d.statScope!=='season') add('statScope','Podsumowanie sezonu wymaga kontekstu sezonowego');
+  }
   for (const id of assetIds(d)) {
     const a = assets.find(a => a.id === id);
     if (!a || a.status !== 'approved' || !['granted', 'not_required'].includes(a.consent)) add('assets', 'Wybrany materiał wymaga zatwierdzenia i dopuszczenia do publikacji');
@@ -50,7 +61,7 @@ export function validateProject(project, { assets = [], partners = [], template,
     if (!p || p.status !== 'approved') add('partnerIds', 'Każdy partner wymaga sprawdzenia aktualności');
     if (p?.assetId && !assets.some(a => a.id === p.assetId && a.status === 'approved' && ['granted', 'not_required'].includes(a.consent))) add('partnerIds', 'Logo partnera nie jest dopuszczone do publikacji');
   }
-  if (!template || template.status !== 'approved' || template.brandVersion !== BRAND_VERSION || template.version !== templates.find(t => t.id === f)?.version) add('template', 'Zatwierdź bieżącą wersję szablonu po ocenie podglądu');
+  if (!template || template.status !== 'approved' || template.brandVersion !== BRAND_VERSION || template.version !== projectTemplateVersion(project)) add('template', 'Zatwierdź bieżącą wersję szablonu po ocenie podglądu');
   required('altText', 'tekst alternatywny');
   if (!approved) add('approval', 'Potwierdź dane i wygląd tej rewizji');
   const collect = value => typeof value === 'string' ? [value] : value && typeof value === 'object' ? Object.values(value).flatMap(collect) : [];

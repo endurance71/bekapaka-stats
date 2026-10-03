@@ -16,7 +16,7 @@ export async function budget(db, owner) {
 }
 export function publicTextContext(project) {
   const d = project.content;
-  return { family: project.family, variant: project.variant, opponent: d.opponent, date: d.date, venue: d.venue, scoreUs: d.scoreUs, scoreThem: d.scoreThem, phase: d.phase, entryInfo: d.entryInfo, firstName: d.firstName, lastName: d.lastName, number: d.number, position: d.position, statistics: d.statistics, title: d.title, body: d.body, lineup: d.lineupConfirmed ? d.lineup.map(p => ({ firstName: p.firstName, lastName: p.lastName, number: p.number })) : [], mvpConfirmed: d.mvpConfirmed, schedule: d.schedule };
+  return { postType:project.postType, statScope:d.statScope, tableRows:d.tableRows?.map(r=>({label:r.label,value:r.value,detail:r.detail})), attribution:d.attribution, family: project.family, variant: project.variant, opponent: d.opponent, date: d.date, venue: d.venue, scoreUs: d.scoreUs, scoreThem: d.scoreThem, phase: d.phase, entryInfo: d.entryInfo, firstName: d.firstName, lastName: d.lastName, number: d.number, position: d.position, statistics: d.statistics, title: d.title, body: d.body, lineup: d.lineupConfirmed ? d.lineup.map(p => ({ firstName: p.firstName, lastName: p.lastName, number: p.number })) : [], mvpConfirmed: d.mvpConfirmed, schedule: d.schedule };
 }
 export async function queueAi(db, owner, view, type, brief = '') {
   if (!process.env.STUDIO_GEMINI_API_KEY) fail(503, 'Studio nie ma klucza Gemini. Edytor i eksport działają bez AI.');
