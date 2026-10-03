@@ -46,7 +46,7 @@ export function validateProject(project, { assets = [], partners = [], template,
     if (['club','statistics'].includes(f)) required('title','nagłówek');
     if (f==='club') { if(project.variant==='birthday'){required('firstName','imię jubilata');required('lastName','nazwisko jubilata');} required('body','treść publikacji'); if (project.variant==='quote') required('attribution','autor cytatu'); if (['birthday','training','anniversary','invitation'].includes(project.variant)) required('date','data wydarzenia'); if (['training','invitation'].includes(project.variant)) required('venue','miejsce'); }
     if (f==='statistics' && (!(d.tableRows?.length) || d.tableRows.some(r=>!r.label.trim()||!r.value.trim()))) add('tableRows','Uzupełnij wszystkie etykiety i wartości; brak danych nie oznacza zera');
-    if (f==='statistics' && ['team','player','leaders'].includes(project.variant) && d.statScope!=='match') add('statScope','Ten typ dotyczy konkretnego meczu');
+    if (f==='statistics' && ['team','player','leaders','round'].includes(project.variant) && d.statScope!=='match') add('statScope','Ten typ dotyczy konkretnego meczu');
     if (f==='statistics' && ['standings','season'].includes(project.variant) && d.statScope!=='season') add('statScope','Podsumowanie sezonu wymaga kontekstu sezonowego');
   }
   for (const id of assetIds(d)) {

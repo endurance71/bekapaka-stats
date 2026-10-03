@@ -7,7 +7,7 @@ import { validateProject } from '../../studio/validation.js';
 describe('Publication catalog',()=>{
  it('defines 38 purposes with three distinct compositions and no prefilled claims',()=>{
   expect(postTypes).toHaveLength(38);expect(new Set(postTypes.map(t=>t.id)).size).toBe(38);
-  for(const t of postTypes)for(const style of t.styles){const p=newPostProject(t.id,style);expect(projectSchema.parse(p)).toEqual(p);expect(t.styles).toEqual(['sport','photo','editorial']);expect(p.content.opponent).toBe('');expect(p.content.tableRows).toEqual([]);expect(p.content.date).toBe('');expect(p.content.firstName).toBe('');}
+  for(const t of postTypes)for(const style of t.styles){const p=newPostProject(t.id,style);expect(projectSchema.parse(p)).toEqual(p);expect(t.styles).toEqual(['sport','photo','editorial']);expect(p.content.opponent).toBe('');expect(p.content.tableRows).toEqual([]);expect(p.content.date).toBe('');expect(p.content.firstName).toBe('');expect(p.content.statScope).toBe(['standings','season'].includes(t.variant)?'season':'match');}
  });
  it('keeps legacy payloads, renderer identity and approvals unchanged',()=>{const p=newProject();expect(projectSchema.parse(p)).toEqual(p);expect(p).not.toHaveProperty('postType');expect(p.content).not.toHaveProperty('tableRows');expect(projectTemplateVersion(p)).toBe('1.0.0');expect(rendererVersionFor(p)).toBe('1.0.5');});
  it('rejects incompatible publication/composition/version combinations',()=>{const p=newPostProject('birthday');for(const changes of [{family:'statistics'},{visualStyle:'free'},{designVersion:'1.0.0'},{formats:['square']},{postType:undefined}])expect(projectSchema.safeParse({...p,...changes}).success).toBe(false);expect(designKey(p,'story')).not.toBe(designKey(p,'feed'));});

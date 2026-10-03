@@ -79,5 +79,5 @@ export function assetIds(content) {
 export function newPostProject(id, style = 'sport') {
   const p = postType(id); if (!p) throw new Error('Nieznany typ publikacji');
   const t = templates.find(t => t.id === p.family);
-  return projectSchema.parse({name:p.label, family:p.family, variant:p.variant, layout:t.layouts[0], postType:p.id, visualStyle:style, designVersion:DESIGN_VERSION, formats:['feed','story'], content:{venue:p.family==='tournament' ? 'CESiR Bobolice' : ['announcement','result','lineup'].includes(p.family) ? 'KOSiR Koszalin' : '', tableRows:[], statScope:p.variant==='season'?'season':'match', attribution:''}});
+  return projectSchema.parse({name:p.label, family:p.family, variant:p.variant, layout:t.layouts[0], postType:p.id, visualStyle:style, designVersion:DESIGN_VERSION, formats:['feed','story'], content:{venue:p.family==='tournament' ? 'CESiR Bobolice' : ['announcement','result','lineup'].includes(p.family) ? 'KOSiR Koszalin' : '', tableRows:[], statScope:['standings','season'].includes(p.variant)?'season':'match', attribution:''}});
 }
