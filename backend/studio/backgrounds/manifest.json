@@ -1,0 +1,79 @@
+{
+  "version": "2026-10-03.1",
+  "generator": "OpenAI image_gen (built-in Codex)",
+  "note": "Illustrative generic materials and halls; not photographs of KOSiR. External generation, not Gemini Studio budget.",
+  "assets": [
+    {
+      "file": "01-ciemna-farba.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only image for BeKaPaKa basketball club social media, portrait 9:16, target 1080x1920. Create a sophisticated tactile charcoal black painted surface, subtly brushed ink and matte plaster with fine paper grain. Palette predominantly #0B0B0B, tiny restrained deep red #EF1734 pigment near lower outer corners. Quiet dark central 75% for white text and logos added later. Subtle diagonal physical paint traces at 24 degree angles near edges only. Full bleed texture to every edge. Visually different from a basketball court: no parquet, no court lines. No people, no lettering, no numbers, no badges, no logos, no watermark, no poster composition, no glow. One seamless high quality background, not a collage.",
+      "name": "Ciemna farba",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:35:02.915Z",
+      "sha256": "aef74deba2eb818fa65da9142057322af1ad8ca2889ad6d97bb9bc11b745820d"
+    },
+    {
+      "file": "02-jasny-papier.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only image for BeKaPaKa basketball club social media, portrait 9:16, target 1080x1920. Create premium warm off-white paper #F3F1EC with natural cotton fibers, subtle worn printed-paper texture and soft ink imperfections. Restrained black #0B0B0B and club red #EF1734 dry-brush ink marks near lower left and upper right edges, diagonal 24 degree energy. Central 75% stays light, uniform, low contrast and empty for black typography added later. Editorial sports club material, tactile and authentic, no glossy gradients. Full bleed to all edges. No people, no letters, no numbers, no logos, no badges, no watermark, no court diagram, no collage. Single portrait background.",
+      "name": "Jasny papier",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:35:02.915Z",
+      "sha256": "ec95408f907646e561244027959335daa5c3137f9c9c8c5869b6b634107a4d35"
+    },
+    {
+      "file": "03-czerwono-czarna-faktura.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only image for BeKaPaKa basketball club social media, portrait 9:16, target 1080x1920. Create dramatic yet restrained crimson and black painted paper texture. Club red #EF1734 pigments form broad natural dry-brush strokes at 24 degree angles along outer edges, blending into matte charcoal #0B0B0B. Central upper and middle 70% predominantly near black, smooth and low detail to support white match statistics and logos added later. Real paint grain, torn fiber details only at extremities, handcrafted sports editorial aesthetic. Full bleed. No people, no text, no digits, no logos, no emblems, no watermarks, no flames, no neon, no court lines, no collage. Single background-only portrait image.",
+      "name": "Czerwono-czarna faktura",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:35:02.915Z",
+      "sha256": "e4604a5feaeb7833feaca14a8b2ed16a797739add621d59b61d9a554deb42111"
+    },
+    {
+      "file": "04-ciemny-parkiet.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only material for BeKaPaKa Studio. Generate a single portrait 9:16 background, no poster, target 1080x1920. Tactile black-stained basketball hardwood parquet seen from shallow elevated perspective, real wood grain and restrained weathering mainly in the lower third and outer edges. Upper two thirds nearly black and quiet for white typography and official badges composed later by software. Palette #0B0B0B with only tiny dry paint residues in club red #EF1734 at bottom edges. Soft natural side lighting, matte ink treatment. Full bleed to every edge. No people, no basketball, no equipment, no logos, no text, no letters, no numbers, no court markings, no drawn symbols, no watermark, no neon, no collage. Original premium sports editorial material texture.",
+      "name": "Ciemny parkiet",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:42:18.328Z",
+      "sha256": "69ff433d5f1261d43172e36a561e3fbeb32d2d8eaf84bc7f9317e1f5ad1c3b5a"
+    },
+    {
+      "file": "05-papier-bawelniany.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only material for BeKaPaKa Studio. Generate a single portrait 9:16 background, no poster, target 1080x1920. Very restrained warm off-white cotton paper #F3F1EC, tactile handmade fibers and subtle uneven ink grain. Mostly quiet uninterrupted paper through the central 85%. Small faint charcoal #0B0B0B and club red #EF1734 rubbed pigment concentrated only at bottom edge, softly feathered, not brushstroke framing, no torn border. Clean editorial sports material; sophisticated, understated, physically realistic. Full bleed texture on every edge. No typography, no people, no objects, no numbers, no logos, no letters, no watermark, no symbols, no rectangular panels, no collage.",
+      "name": "Papier bawełniany",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:42:18.328Z",
+      "sha256": "5a552acd62ecd7833e0801b72acb3a309c1e61012f98edb916d32684ca733ecc"
+    },
+    {
+      "file": "06-czerwone-swiatlo.png",
+      "prompt": "Use case: ads-marketing. Asset type: background-only material for BeKaPaKa Studio. Generate a single portrait 9:16 background, no poster, target 1080x1920. Deep matte black #0B0B0B painted rough paper with subtle layered dry ink and natural fibers. A soft physically plausible club red #EF1734 reflected sidelight appears only along lower-left edge, low saturation and gradually fades into black, like red-painted material reflecting light, never neon. Upper and central 80% very dark with minimal visual detail for white text and official badges added later. Tiny restrained diagonal paint scratches at 24 degree angle on bottom corners only. Full bleed tactile texture. No letters, no words, no people, no objects, no logos, no digits, no symbols, no watermark, no flames, no glowing outline, no collage.",
+      "name": "Czerwone światło",
+      "status": "approved",
+      "generatedAt": "2026-10-03T20:42:18.328Z",
+      "sha256": "8f9da88f837a53051f3a37122166e8829b1b9bcd48c08911070e2008592a2399"
+    },
+    {
+      "file": "07-hala-pelne-boisko.png",
+      "name": "Hala · pełne boisko",
+      "status": "draft",
+      "prompt": "Use case: ads-marketing. Asset type: background-only texture for BeKaPaKa Studio, single portrait 9:16 image. Empty indoor basketball court, high elevated perspective looking along the court toward the far end. Black-stained matte hardwood parquet #0B0B0B, subtle natural wood grain. Thin worn warm-white #F7F6F2 basketball court markings: one coherent foreground semicircular three-point arc, rectangular key with free-throw circle, baseline near the lower edge. Lines must form a physically plausible single basketball court, not overlapping random circles. Most visible markings in lower third and along outer edges; upper and central 65% stays dark and quiet for logos and match data later composed by software. Hall is generic, not a depiction of KOSiR or any named venue. Restrained red #EF1734 paint details at outer boundaries only. Full bleed, photographic tactile sports editorial aesthetic. No people, no text, no digits, no logos, no badges, no equipment, no poster, no watermark, no neon, no collage.",
+      "generatedAt": "2026-10-03T20:47:30.601Z",
+      "sha256": "c5d768f44c41d84f941994803d953d00b4d963d89d9b58b6cb3739e5cbce9d5a"
+    },
+    {
+      "file": "08-boisko-z-gory.png",
+      "name": "Boisko · widok z góry",
+      "status": "draft",
+      "prompt": "Use case: ads-marketing. Asset type: background-only texture for BeKaPaKa Studio, single portrait 9:16 image. Overhead close view of an empty indoor basketball parquet court. Deep near-black #0B0B0B stained hardwood with restrained realistic grain. One coherent partial court geometry in fine warm-white #F7F6F2 painted lines: center-circle arc entering near the lower right edge, straight sideline along far-left edge, cropped centerline near bottom. Natural real painted lines, correct perspective, generous dark empty center and upper 75% for typography added later. Subtle red #EF1734 marks only at lower corners. Generic hall floor, not a named venue. Full bleed photograph-like texture. No people, no text, no logos, no numbers, no ball, no equipment, no extra arbitrary arcs, no poster composition, no watermark, no collage.",
+      "generatedAt": "2026-10-03T20:47:30.601Z",
+      "sha256": "636b23032f68af4152d45b3ac4e10452423e7921b69bc2572d273429f378de1f"
+    },
+    {
+      "file": "09-luk-za-trzy.png",
+      "name": "Hala · łuk za trzy",
+      "status": "draft",
+      "prompt": "Use case: ads-marketing. Asset type: background-only texture for BeKaPaKa Studio, single portrait 9:16 image. Empty generic indoor basketball hall floor from low camera angle at a corner, subtle perspective. Black-painted matte parquet #0B0B0B fading to near-black at top; thin worn white #F7F6F2 sideline and a single recognizable three-point arc sweep across the lower third, free-throw key hinted at far lower-right edge. Plausible court geometry, no random decorative circles, no hoops or architecture dominating the image. Subtle reflected red #EF1734 sidelight along bottom left only, not neon. Central and upper 70% low-detail and dark for sports information added later. Tactile wood, real paint, high-end restrained editorial photography. Full bleed. No people, no words, no logos, no digits, no equipment, no poster composition, no watermark, no collage. This is fictional generic court illustration, not a photograph of KOSiR.",
+      "generatedAt": "2026-10-03T20:47:30.601Z",
+      "sha256": "4e48b0d6151da8ee722e418e4de2461ee005111943b3d384ed476ee44ef259fb"
+    }
+  ]
+}

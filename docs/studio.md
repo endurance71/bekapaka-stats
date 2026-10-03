@@ -65,6 +65,12 @@ Przed operacjami przeczytaj runbook VPS, optymalizację, rotację sekretów, scr
 6. Worker: 1 CPU / 1 GiB RAM, dwie niezależne kolejki (jeden render i jedno AI jednocześnie), bez publicznego portu. Health check monitoruje aktualność heartbeat workera. Frontend: localhost:8083, 128 MiB. Pliki: prywatny `data/studio`, prawa 0700, bez mapowania przez serwer statyczny. Pobrania są autoryzowane i sprawdzają termin ważności.
 7. Zapisz `BKPK_STUDIO_IMAGE_TAG=<SHA>` w prywatnym `.env`, by ręczny compose zachował wydanie. Rollback dwóch obrazów Studio używa poprzedniego SHA i `up --no-deps` dla tych usług; nie cofa migracji. Nie usuwaj obrazów rollbacku przed odbiorem. Zmiana właściciela odbiera dostęp poprzednim sesjom.
 
+## Biblioteka teł
+
+Wersjonowany prywatny pakiet `backend/studio/backgrounds/` zawiera dziewięć ilustracji AI: farbę, papier, parkiet i trzy ujęcia linii boiska. Manifest przechowuje prompt, datę, SHA256 oraz początkową decyzję publikacyjną: sześć zaakceptowanych teł i trzy propozycje hali do oceny. Hala jest ilustracją ogólną, nie fotografią KOSiR. Generacja odbyła się poza Gemini Studio; nie obciąża jego licznika, a koszt zewnętrznego dostawcy jest nieznany.
+
+`node studio/import-backgrounds.js` w katalogu backendu importuje pakiet wyłącznie dla skonfigurowanego `STUDIO_OWNER_ID`. Skrypt deployu Studio uruchamia ten import po sprawdzeniu właściciela i SHA backendu. Weryfikacja plików poprzedza zapis; blokada PostgreSQL i porównanie hashy zapobiegają duplikatom. Kolejne wydanie nie przywraca wycofanych materiałów ani nie zmienia decyzji użytkownika. Pliki wynikowe pozostają w prywatnym storage i są pobierane przez dotychczasowe autoryzowane endpointy. Pakiet nie zmienia kompozycji, formatów ani eksportera.
+
 ## Backup i odtworzenie
 
 `backup.sh` tworzy pełny dump PostgreSQL (także obecne statystyki), niezmienne pliki źródłowe Studio, manifest marki i SHA256SUMS. Wymaga `rsync`, praw do Dockera i katalogu backupu. Stopuje tylko worker na czas spójnej kopii; API może zapisywać pliki, dlatego pliki są synchronizowane przed i po migawce DB. Backup nie obejmuje plików sesyjnych podglądów/eksportów — odtwarza się je z projektu. Na obecnym VPS użyj jednostek `studio-backup.service` i `studio-backup.timer` (systemd, bo host nie ma demona cron). `backup.cron` jest alternatywą dla hosta z cron. Zainstaluj timer po pierwszym odbiorze. Przechowuj kopię poza VPS.

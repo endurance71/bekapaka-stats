@@ -9,6 +9,7 @@ if ! getent hosts studio.bekapaka.pl >/dev/null; then echo 'Brak DNS Studio.' >&
 # The backend of this exact release must already have run additive Studio migrations.
 if [ "$(docker inspect --format '{{.Config.Image}}' bkpk-backend-prod)" != "ghcr.io/endurance71/bekapaka-stats/backend:$studio_sha" ]; then echo 'Najpierw wdroż backend z tego samego SHA.' >&2; exit 1; fi
 docker exec bkpk-backend-prod node --input-type=module -e 'if (!process.env.STUDIO_OWNER_ID) process.exit(1); const {prisma}=await import("./lib/prisma.js"); const owner=await prisma.rosterPlayer.findUnique({where:{id:process.env.STUDIO_OWNER_ID},select:{password:true}}); if (!owner?.password) process.exit(1); await prisma.studioProject.count(); await prisma.$disconnect(); process.exit(0);'
+docker exec bkpk-backend-prod node studio/import-backgrounds.js
 if ss -ltn | awk '{print $4}' | grep -q ':8083$' && ! docker inspect bkpk-studio-prod >/dev/null 2>&1; then echo 'Port 8083 jest zajęty.' >&2; exit 1; fi
 # Both images write as UID 0; the worker drops DAC override capabilities.
 # Its private mount must therefore be owned by UID 0 as well.

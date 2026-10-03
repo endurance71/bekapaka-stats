@@ -67,6 +67,7 @@ scratch/
 
 # BeKaPaKa Studio private files and Python runtime
 data/studio/
+output/studio-backgrounds/
 backend/studio/.venv/
 studio/playwright-report/
 studio/test-results/

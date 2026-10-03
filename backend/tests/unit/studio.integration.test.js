@@ -11,6 +11,8 @@ import { seedStudio } from '../../studio/seed.js';
 import { claimJob, recoverJobs, processJob } from '../../studio/worker.js';
 import { queueAi, budget } from '../../studio/ai.js';
 import { projectView } from '../../studio/service.js';
+import { importBackgroundPack } from '../../studio/import-backgrounds.js';
+import { filePath } from '../../studio/storage.js';
 const enabled = !!process.env.STUDIO_TEST_DATABASE_URL;
 const owner = `studio-test-${crypto.randomUUID()}`;
 let db, server, base, cookie, project, preview;
@@ -40,6 +42,31 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   expect((await request('/auth/me')).value.user.id).toBe(owner);
   const r2 = await request('/templates'); expect(r2.value.templates).toHaveLength(templates.length); expect(r2.value.templates.every(t => t.status === 'draft')).toBe(true);
  });
+ it('imports the background pack once and preserves withdrawals on subsequent releases', async () => {
+  const imported = await importBackgroundPack(db, owner);
+  const ids = imported.map(a => a.id);
+  try {
+   expect(imported).toHaveLength(9);
+   expect(imported.every(a => a.created)).toBe(true);
+   expect(imported.filter(a => a.status === 'approved')).toHaveLength(6);
+   const first = await db.studioAsset.findUnique({ where: { id: ids[0] } });
+   expect(first.provenance.prompt).toBeTruthy();
+   expect(first.provenance.billingSource).toBe('external');
+   await db.studioAsset.update({ where: { id: first.id }, data: { status: 'retired', consent: 'withdrawn' } });
+   const repeated = await importBackgroundPack(db, owner);
+   expect(repeated.every(a => !a.created)).toBe(true);
+   expect(repeated.map(a => a.id)).toEqual(ids);
+   expect(await db.studioAsset.count({ where: { ownerId: owner } })).toBe(9);
+   const retired = await db.studioAsset.findUnique({ where: { id: first.id } });
+   expect(retired.status).toBe('retired'); expect(retired.consent).toBe('withdrawn');
+   expect(await db.studioAiUsage.count({ where: { ownerId: owner } })).toBe(0);
+   await expect(importBackgroundPack(db, 'unknown-owner')).rejects.toThrow('Studio owner does not exist');
+  } finally {
+   const rows = await db.studioAsset.findMany({ where: { id: { in: ids } } });
+   await db.studioAsset.deleteMany({ where: { id: { in: ids } } });
+   await Promise.all(rows.map(a => fs.unlink(filePath(a.storageKey)).catch(() => {})));
+  }
+ }, 60_000);
  it('imports public statistics across seasons without changing sports data',async()=>{
   const seasonId=owner+'-season',second=owner+'-other';
   try {
