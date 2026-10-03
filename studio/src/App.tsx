@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { ArrowUpRight, Plus, LayoutGrid, Image, Download, ShieldCheck, LogOut, ArrowLeft, Layers, RefreshCw } from 'lucide-react';
 import { api, send, fileUrl } from './api';
 import { newProject } from '../../backend/studio/contracts.js';
-import type { View, Template, Asset, Partner, Budget } from './types';
+import type { View, Template, Asset, Partner, Budget, Output } from './types';
 import Editor from './Editor';
 import Library from './Library';
+import { ArchivedExportImages } from './ExportFile';
 export default function App() {
   const [user, setUser] = useState<{ firstName: string } | null>(null); const [checking, setChecking] = useState(true);
   const [tab, setTab] = useState('projects'); const [projects, setProjects] = useState<View[]>([]); const [templates, setTemplates] = useState<Template[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]); const [partners, setPartners] = useState<Partner[]>([]); const [budget, setBudget] = useState<Budget | null>(null);
   const [editor, setEditor] = useState<View | null>(null); const [error, setError] = useState(''); const [newOpen, setNewOpen] = useState(false); const [busy, setBusy] = useState(false);
-  const [exports, setExports] = useState<{ id: string; jobId: string; revision: number; project: { name: string }; expiresAt: string; createdAt: string }[]>([]);
+  const [exports, setExports] = useState<{ id: string; jobId: string; revision: number; files: Output[]; project: { name: string }; expiresAt: string; createdAt: string }[]>([]);
   async function load() {
     try {
       const [p, t, a, s, b, e] = await Promise.all([api<View[]>('/projects'), api<{ templates: Template[] }>('/templates'), api<Asset[]>('/assets'), api<Partner[]>('/partners'), api<Budget>('/ai/budget'), api<typeof exports>('/exports')]);
@@ -39,7 +40,7 @@ export default function App() {
           </div><div className="project-info"><h3>{p.name}</h3><span>{p.status === 'archived' ? 'Archiwum' : 'Projekt roboczy'} · {new Date(p.updatedAt).toLocaleDateString('pl-PL')}</span><ArrowUpRight size={18}/></div></button>)}</div>}
           <div className="studio-note"><ShieldCheck size={20}/><p>Marka pilnuje układu. Ty decydujesz o treści.<span>Chronione znaki, fonty i geometria. Każdy eksport z kontrolą danych i materiałów.</span></p></div></>}
         {(tab === 'assets' || tab === 'brand') && <Library tab={tab} assets={assets} partners={partners} templates={templates} reload={load} onError={setError}/>}
-        {tab === 'exports' && <div className="export-list">{!exports.length && <div className="empty"><Download/><h3>Paczki pojawią się po eksporcie</h3><p>PNG, opis posta i manifest w jednym ZIP.</p></div>}{exports.map(e => <div className="export-row" key={e.id}><Download/><div><h3>{e.project.name}</h3><span>Rewizja {e.revision} · {new Date(e.createdAt).toLocaleString('pl-PL')}</span></div>{new Date(e.expiresAt) > new Date() ? <a className="secondary" href={fileUrl(e.jobId, 'zip', true)}>Pobierz ZIP</a> : <span className="muted">Wygasł — otwórz projekt i eksportuj ponownie</span>}</div>)}</div>}
+        {tab === 'exports' && <div className="export-list">{!exports.length && <div className="empty"><Download/><h3>Paczki pojawią się po eksporcie</h3><p>PNG, opis posta i manifest w jednym ZIP.</p></div>}{exports.map(e => <div className="export-row" key={e.id}><Download/><div><h3>{e.project.name}</h3><span>Rewizja {e.revision} · {new Date(e.createdAt).toLocaleString('pl-PL')}</span>{new Date(e.expiresAt) > new Date() && <ArchivedExportImages jobId={e.jobId} files={e.files || []} onError={setError}/>}</div>{new Date(e.expiresAt) > new Date() ? <a className="secondary" href={fileUrl(e.jobId, 'zip', true)}>Pobierz ZIP</a> : <span className="muted">Wygasł — otwórz projekt i eksportuj ponownie</span>}</div>)}</div>}
       </>}
     </main>
     {newOpen && <div className="modal-backdrop" onClick={() => setNewOpen(false)}><section className="modal template-modal" role="dialog" aria-modal="true" aria-labelledby="new-title" onClick={e => e.stopPropagation()}><div className="modal-heading"><div><span className="eyebrow">NOWY PROJEKT</span><h2 id="new-title">Co dziś publikujemy?</h2></div><button className="icon-button" aria-label="Zamknij" onClick={() => setNewOpen(false)}>×</button></div><div className="template-grid">{templates.map((t, i) => <button key={t.id} disabled={busy} onClick={() => create(t.id)}><span className="template-num">{String(i + 1).padStart(2, '0')}</span><h3>{t.label}</h3><p>{t.description}</p><span className="template-meta">{t.formats.length} formaty <ArrowUpRight size={18}/></span></button>)}</div></section></div>}

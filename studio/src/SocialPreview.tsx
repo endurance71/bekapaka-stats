@@ -24,10 +24,12 @@ export default function SocialPreview({ src, alt, format, platform, safeZones, c
   const guide = story && safeZones && <div className="social-safe-guide" aria-label="Strefa informacji: 72–1008 px poziomo, 260–1600 px pionowo"><div className="safe-top"><span>Górny interfejs · 260 px</span></div><div className="safe-center"/><div className="safe-bottom"><span>Dolny interfejs · 320 px</span></div></div>;
   if (platform === 'artwork') return <div className={`artwork-preview ${phone ? 'at-phone-width' : ''}`} style={style}>{image}{guide}</div>;
   if (story) return <div className={`social-device story-device ${platform}`} style={style} aria-label={`Symulacja relacji ${platform === 'instagram' ? 'Instagram' : 'Facebook'}`}>
-    {image}{guide}
-    <div className="story-ui-top" aria-hidden="true">
-      <div className="story-progress"><i/><i/><i/></div>
-      <div className="story-account"><Avatar/><div><strong>BeKaPaKa Bobolice</strong><small>Przed chwilą</small></div><Volume2/><MoreHorizontal/><X/></div>
+    <div className="story-status-space" aria-hidden="true"/>
+    <div className="story-media">{image}{guide}
+      <div className="story-ui-top" aria-hidden="true">
+        <div className="story-progress"><i/><i/><i/></div>
+        <div className="story-account"><Avatar/><div><strong>BeKaPaKa Bobolice</strong><small>Przed chwilą</small></div><Volume2/><MoreHorizontal/><X/></div>
+      </div>
     </div>
     <div className="story-ui-bottom" aria-hidden="true">
       <span className="story-reply">{platform === 'instagram' ? 'Wyślij wiadomość…' : 'Odpowiedz…'}</span>

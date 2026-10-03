@@ -10,7 +10,8 @@
 .social-artwork{display:block;width:100%;height:auto;aspect-ratio:var(--art-ratio);object-fit:contain}
 .social-device{width:min(360px,100%,calc(var(--preview-limit) * .5625));container-type:inline-size;font-family:Arial,sans-serif;font-size:3.6cqw;line-height:1.35;overflow:hidden;border-radius:18px;background:#111;color:white;box-shadow:0 0 0 6px #1b1b1b,0 10px 35px #0003}
 .social-device svg{width:5.6cqw;height:5.6cqw;stroke-width:1.7;flex:none}
-.story-device{aspect-ratio:9/16}
+.story-device{--device-ratio:calc(9 / 19.5);width:min(360px,100%,calc(var(--preview-limit) * var(--device-ratio)));aspect-ratio:var(--device-ratio);display:grid;grid-template-rows:minmax(0,1fr) auto minmax(0,1.75fr)}
+.story-media{position:relative;width:100%;height:auto;aspect-ratio:var(--art-ratio)}
 .social-avatar{display:flex;align-items:center;justify-content:center;width:9.5cqw;height:9.5cqw;background:#0b0b0b;border:1px solid #ffffff70;border-radius:50%;flex:none}
 .social-avatar img{width:55%;height:72%;object-fit:contain}
 .story-ui-top{position:absolute;inset:0 0 auto;padding:5cqw 3.6cqw 6cqw;background:linear-gradient(#0009,transparent);pointer-events:none}
@@ -22,7 +23,7 @@
 .story-account strong{display:block;font-size:3.4cqw;white-space:nowrap}
 .story-account small{display:block;margin-top:.5cqw;font-size:2.8cqw;color:#eee}
 .story-account>svg{width:4.5cqw;height:4.5cqw}
-.story-ui-bottom{position:absolute;inset:auto 0 0;display:flex;align-items:center;gap:3.5cqw;padding:14cqw 4cqw 9cqw;background:linear-gradient(transparent,#000a);pointer-events:none}
+.story-ui-bottom{position:relative;min-height:0;display:flex;align-items:center;gap:3.5cqw;padding:3cqw 4cqw 6cqw;background:linear-gradient(transparent,#000a);pointer-events:none}
 .story-reply{border:1px solid #ffffffb0;border-radius:7cqw;min-width:0;flex:1;padding:3cqw 4cqw;font-size:3.6cqw}
 .facebook .story-reply{background:#ffffff22;border-color:#ffffff50}
 .phone-home{position:absolute;bottom:2cqw;left:33%;width:34%;height:1.1cqw;border-radius:1cqw;background:white;pointer-events:none}
