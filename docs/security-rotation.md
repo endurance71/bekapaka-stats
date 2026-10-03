@@ -97,3 +97,7 @@ curl -sI http://127.0.0.1:8081/ | head -5
 
 - [vps-runbook.md](./vps-runbook.md) — SSH, porty, zakazy MOYA
 - [docker-deploy.md](./docker-deploy.md) — CI/CD
+
+## 8. Sesje BeKaPaKa Studio
+
+Studio używa własnych niejawnych sesji w `StudioSession`, a nie JWT panelu. Zmiana hasła istniejącego właściciela automatycznie unieważnia jego sesje Studio przy następnym żądaniu (weryfikacja odcisku aktualnych danych konta). Zmiana `STUDIO_OWNER_ID` odbiera dostęp wcześniejszemu właścicielowi. Sama rotacja `JWT_SECRET` nie usuwa sesji Studio. Po podejrzeniu wycieku sesji usuń rekordy `StudioSession` dla właściciela w bazie BeKaPaKa i zrotuj osobne `STUDIO_GEMINI_API_KEY` / `STUDIO_CMS_TOKEN`, jeśli wyciek dotyczył także tych sekretów. Pliki `data/studio` i kopie zapasowe zawierają prywatne materiały; nie dodawaj ich do Git.

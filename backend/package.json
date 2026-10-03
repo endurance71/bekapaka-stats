@@ -10,7 +10,9 @@
     "prisma:push": "prisma db push",
     "db:seed": "node scripts/seed.js",
     "seed:users": "node scripts/seed-users.js",
-    "test": "vitest"
+    "test": "vitest",
+    "studio:worker": "node studio/worker.js",
+    "studio:seed": "node studio/seed.js"
   },
   "dependencies": {
     "@google/genai": "^2.8.0",
@@ -19,8 +21,12 @@
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "fflate": "^0.8.2",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.16.3"
+    "multer": "^2.1.1",
+    "pg": "^8.16.3",
+    "sharp": "^0.35.5",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "prisma": "^7.10.0",

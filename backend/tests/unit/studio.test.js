@@ -1,0 +1,26 @@
+import { describe, it, expect } from 'vitest';
+import { newProject, projectSchema, templates, BRAND_VERSION } from '../../studio/contracts.js';
+import { validateProject } from '../../studio/validation.js';
+import { matchSnapshot } from '../../studio/sources.js';
+import { publicTextContext } from '../../studio/ai.js';
+import { filePath } from '../../studio/storage.js';
+const approved = { template: { status: 'approved', version: '1.0.0', brandVersion: BRAND_VERSION }, approved: true };
+const ready = () => { const p = newProject(); p.content = { ...p.content, opponent: 'Koszalin Basketball', date: '2026-10-11T14:30:00+02:00', altText: 'Mecz BeKaPaKa z Koszalin Basketball.' }; return p; };
+describe('Studio contracts and export controls', () => {
+  it.each(templates)('creates valid $id without demo content', t => { const p = newProject(t.id); expect(projectSchema.safeParse(p).success).toBe(true); expect(p.content.opponent).toBe(''); });
+  it('rejects format/layout from another family and unexpected private fields', () => { const p = newProject('player'); expect(projectSchema.safeParse({ ...p, formats: ['square'] }).success).toBe(false); expect(projectSchema.safeParse({ ...p, content: { ...p.content, coachNotes: 'private' } }).success).toBe(false); });
+  it('accepts a confirmed publication', () => expect(validateProject(ready(), approved).valid).toBe(true));
+  it('requires template and revision approvals', () => expect(validateProject(ready()).errors.map(e => e.field)).toEqual(expect.arrayContaining(['template', 'approval'])));
+  it('rejects stale brand and unconfirmed kit B', () => { const p = ready(); p.content.kit = 'B'; expect(validateProject(p, { ...approved, template: { ...approved.template, brandVersion: 'old' } }).errors.map(e => e.field)).toEqual(expect.arrayContaining(['template', 'kitBConfirmed'])); });
+  it('does not accept dates without timezone or placeholder data', () => { const p = ready(); p.content.date = '2026-10-11'; p.content.title = 'demo'; expect(validateProject(p, approved).errors.map(e => e.field)).toEqual(expect.arrayContaining(['date', 'content'])); });
+  it('blocks unapproved, withdrawn and missing photos', () => { const p = ready(); p.content.photoAssetId = 'photo'; for (const asset of [null, { status: 'draft', consent: 'granted' }, { status: 'approved', consent: 'withdrawn' }]) expect(validateProject(p, { ...approved, assets: asset ? [{ id: 'photo', kind: 'photo', ...asset }] : [] }).valid).toBe(false); });
+  it('blocks AI as a real photograph', () => { const p = ready(); p.content.photoAssetId = 'ai'; expect(validateProject(p, { ...approved, assets: [{ id: 'ai', kind: 'photo', status: 'approved', consent: 'not_required', provenance: { model: 'image' } }] }).valid).toBe(false); });
+  it('requires exactly five unique players and match confirmation', () => { const p = newProject('lineup'); p.content = { ...p.content, opponent: 'Koszalin Basketball', date: '2026-10-11T14:30:00Z', altText: 'Skład', lineup: [{ id: '1', firstName: 'Paweł', lastName: 'Lis', number: '24', position: 'PG' }] }; expect(validateProject(p, approved).errors.map(e => e.field)).toEqual(expect.arrayContaining(['lineup', 'lineupConfirmed'])); });
+  it('does not infer MVP from a player record', () => { const p = newProject('player'); p.variant = 'mvp'; p.layout = 'type'; p.content = { ...p.content, firstName: 'Paweł', lastName: 'Lis', number: '24', altText: 'MVP' }; expect(validateProject(p, approved).errors.map(e => e.field)).toContain('mvpConfirmed'); });
+  it('rejects basketball draw and missing live phase', () => { const p = ready(); p.family = 'result'; p.variant = 'final'; p.layout = 'board'; p.content.scoreUs = p.content.scoreThem = 99; expect(validateProject(p, approved).valid).toBe(false); p.variant = 'live'; expect(validateProject(p, approved).errors.map(e => e.field)).toContain('phase'); });
+  it('always maps BKPK to left, including away games in distinct seasons', () => { const base = { id: '17', seasonId: '2026', date: new Date(), homeTeamName: 'Koszalin Basketball', guestTeamName: 'BeKaPaKa Bobolice', scoreHome: 83, scoreAway: 101 }; expect(matchSnapshot(base)).toMatchObject({ id: '17', seasonId: '2026', scoreUs: 101, scoreThem: 83, opponent: 'Koszalin Basketball' }); expect(matchSnapshot({ ...base, seasonId: '2025', homeTeamName: 'BeKaPaKa', guestTeamName: 'Koszalin Basketball' })).toMatchObject({ seasonId: '2025', scoreUs: 83 }); });
+  it('does not prefill tournament facts from demonstration data', () => { const p = newProject('tournament'); expect(p.content.edition).toBeNull(); expect(validateProject(p, approved).errors.map(e => e.field)).toContain('teams'); });
+  it('does not mix tournament and KALK venues', () => expect(newProject('tournament').content.venue).not.toBe(newProject().content.venue));
+  it('only sends public whitelisted facts to AI', () => { const p = ready(); p.content.coachNotes = 'PRIVATE'; p.content.source.secret = 'PRIVATE'; expect(JSON.stringify(publicTextContext(p))).not.toContain('PRIVATE'); expect(publicTextContext(p).lineup).toEqual([]); });
+  it('rejects path traversal', () => expect(() => filePath('../.env')).toThrow());
+});

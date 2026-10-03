@@ -1,4 +1,5 @@
 import express from 'express';
+import { createStudioRouter } from './studio/routes.js';
 import cors from 'cors';
 import { loginUser, getLoginLogs, touchUserActivity } from './dataStore.js';
 import jwt from 'jsonwebtoken';
@@ -110,6 +111,8 @@ app.use((req, res, next) => {
   });
   next();
 });
+
+app.use('/api/studio/v1', createStudioRouter({ db: prisma, loginUser }));
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

@@ -1,0 +1,14 @@
+FROM node:22-bookworm-slim
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-venv libheif-examples tzdata && rm -rf /var/lib/apt/lists/*
+COPY package.json package-lock.json prisma.config.js ./
+COPY prisma ./prisma
+RUN npm ci
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build
+RUN npx prisma generate && npm prune --omit=dev
+COPY lib/prisma.js ./lib/prisma.js
+COPY studio ./studio
+RUN python3 -m venv /opt/studio-python && /opt/studio-python/bin/pip install --no-cache-dir -r studio/renderer/requirements.txt
+ENV NODE_ENV=production STUDIO_PYTHON=/opt/studio-python/bin/python STUDIO_STORAGE_DIR=/data/studio
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD node studio/health.js
+CMD ["node", "studio/worker.js"]

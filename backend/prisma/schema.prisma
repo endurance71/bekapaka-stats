@@ -421,3 +421,150 @@ model LeagueMatch {
 
   @@index([seasonId, kalkMatchId])
 }
+
+// Private BeKaPaKa Studio. Owner IDs use existing roster account identifiers.
+model StudioProject {
+  id String @id @default(uuid())
+  ownerId String
+  name String
+  family String
+  status String @default("draft")
+  currentRevision Int @default(1)
+  revisions StudioRevision[]
+  jobs StudioJob[]
+  exports StudioExport[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, updatedAt])
+}
+
+model StudioRevision {
+  id String @id @default(uuid())
+  projectId String
+  project StudioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  number Int
+  payload Json
+  contentHash String
+  brandVersion String
+  templateVersion String
+  createdAt DateTime @default(now())
+  approvals StudioApproval[]
+  @@unique([projectId, number])
+}
+
+model StudioAsset {
+  id String @id @default(uuid())
+  ownerId String
+  name String
+  kind String
+  status String @default("draft")
+  origin String
+  people String @default("")
+  jerseyNumber String @default("")
+  consent String @default("unknown")
+  storageKey String
+  mime String
+  width Int
+  height Int
+  contentHash String
+  provenance Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, status])
+}
+
+model StudioPartner {
+  id String @id
+  ownerId String
+  name String
+  assetId String?
+  seedLogo String?
+  status String @default("draft")
+  contractNote String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, status])
+}
+
+model StudioTemplate {
+  id String @id
+  ownerId String
+  family String
+  version String
+  brandVersion String
+  status String @default("draft")
+  approvedAt DateTime?
+  @@unique([ownerId, family, version, brandVersion])
+}
+
+model StudioApproval {
+  id String @id @default(uuid())
+  resourceHash String?
+  revisionId String
+  revision StudioRevision @relation(fields: [revisionId], references: [id], onDelete: Cascade)
+  ownerId String
+  contentHash String
+  createdAt DateTime @default(now())
+  @@unique([revisionId, ownerId])
+}
+
+model StudioJob {
+  id String @id @default(uuid())
+  ownerId String
+  projectId String?
+  project StudioProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  revision Int?
+  kind String
+  status String @default("queued")
+  payload Json
+  result Json?
+  error String?
+  idempotencyKey String? @unique
+  leaseToken String?
+  leaseUntil DateTime?
+  attempts Int @default(0)
+  createdAt DateTime @default(now())
+  startedAt DateTime?
+  finishedAt DateTime?
+  @@index([status, kind, createdAt])
+  @@index([ownerId, projectId])
+}
+
+model StudioExport {
+  id String @id @default(uuid())
+  ownerId String
+  projectId String
+  project StudioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  revision Int
+  jobId String @unique
+  manifest Json
+  files Json
+  storageKey String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([ownerId, createdAt])
+}
+
+model StudioAiUsage {
+  id String @id @default(uuid())
+  ownerId String
+  jobId String @unique
+  month String
+  reservedMicros Int
+  chargedMicros Int?
+  model String
+  pricingVersion String
+  usage Json?
+  status String @default("reserved")
+  createdAt DateTime @default(now())
+  @@index([ownerId, month])
+}
+
+model StudioSession {
+  credentialHash String?
+  id String @id
+  ownerId String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([expiresAt])
+}

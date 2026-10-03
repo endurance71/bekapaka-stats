@@ -29,8 +29,17 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
       AI_ANALYSIS_ENABLED: ${AI_ANALYSIS_ENABLED:-true}
+      STUDIO_OWNER_ID: ${STUDIO_OWNER_ID:-}
+      STUDIO_ORIGIN: https://studio.bekapaka.pl
+      STUDIO_STORAGE_DIR: /data/studio
+      STUDIO_CMS_URL: http://bkpk-cms:1337
+      STUDIO_CMS_TOKEN: ${STUDIO_CMS_TOKEN:-}
+      STUDIO_GEMINI_API_KEY: ${STUDIO_GEMINI_API_KEY:-}
+      STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
       KALK_CRON_SECRET: ${KALK_CRON_SECRET}
       TZ: Europe/Warsaw
+    volumes:
+      - ./data/studio:/data/studio
     depends_on:
       - bkpk-db
     ports:
@@ -95,6 +104,40 @@ services:
       - "127.0.0.1:1337:1337"
     networks:
       - bkpk-network
+
+  bkpk-studio:
+    profiles: [studio]
+    image: ghcr.io/endurance71/bekapaka-stats/studio:${BKPK_STUDIO_IMAGE_TAG:-latest}
+    container_name: bkpk-studio-prod
+    restart: unless-stopped
+    ports: ["127.0.0.1:8083:80"]
+    depends_on: [bkpk-backend]
+    mem_limit: 128m
+    cpus: 0.25
+    networks: [bkpk-network]
+
+  bkpk-studio-worker:
+    profiles: [studio]
+    image: ghcr.io/endurance71/bekapaka-stats/studio-worker:${BKPK_STUDIO_IMAGE_TAG:-latest}
+    container_name: bkpk-studio-worker-prod
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://bekapaka:${DB_PASSWORD}@bkpk-db:5432/bekapaka_stats
+      STUDIO_OWNER_ID: ${STUDIO_OWNER_ID:-}
+      STUDIO_STORAGE_DIR: /data/studio
+      STUDIO_GEMINI_API_KEY: ${STUDIO_GEMINI_API_KEY:-}
+      STUDIO_AI_TEXT_MODEL: ${STUDIO_AI_TEXT_MODEL:-gemini-3.5-flash}
+      STUDIO_AI_IMAGE_MODEL: ${STUDIO_AI_IMAGE_MODEL:-gemini-3.1-flash-image}
+      STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
+      TZ: Europe/Warsaw
+    volumes: ["./data/studio:/data/studio"]
+    depends_on: [bkpk-db]
+    mem_limit: 1g
+    cpus: 1.0
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    networks: [bkpk-network]
 
 networks:
   bkpk-network:

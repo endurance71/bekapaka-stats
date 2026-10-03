@@ -258,7 +258,7 @@ jobs:
             deploy_one backend http://127.0.0.1:4001/api/health
             deploy_one site http://127.0.0.1:8082/
             deploy_one frontend http://127.0.0.1:8081/
-            echo 'Wdrażanie zakończone pomyślnie. Czyszczenie starych obrazów Docker...'
-            docker image prune -a -f || true
-            docker builder prune -af || true
+            echo 'Wdrażanie zakończone pomyślnie. Zachowuję obrazy rollbacku.'
+            # Shared VPS: global pruning can remove rollback images of other projects.
+            # Review BeKaPaKa image retention separately before deleting old releases.
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=Daily BeKaPaKa Studio backup
+[Timer]
+OnCalendar=*-*-* 03:17:00 Europe/Warsaw
+Persistent=true
+RandomizedDelaySec=120
+Unit=studio-backup.service
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,95 @@
+{
+  "_status": "Wszyscy partnerzy na jednym poziomie (decyzja klubu 02.10.2026) — prezentacja: jednakowe kafle, równe pole optyczne, kolejność alfabetyczna. Logotypy rastrowe z banera — do wymiany na wektory od partnerów (ShipApp: plik źródłowy z Drive).",
+  "poziomy": {
+    "glowny": {
+      "nazwa": "Partner główny",
+      "skala": 1.0,
+      "opis": "jeden; osobny post, logo na koszulce, największe pole"
+    },
+    "instytucje": {
+      "nazwa": "Patronat i instytucje",
+      "skala": 0.62,
+      "opis": "gmina, obiekt, instytucje publiczne"
+    },
+    "partnerzy": {
+      "nazwa": "Partnerzy",
+      "skala": 0.5,
+      "opis": "firmy wspierające klub"
+    }
+  },
+  "logo": [
+    {
+      "id": "gmina",
+      "nazwa": "Gmina Bobolice",
+      "plik": "logo-02.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "cesir",
+      "nazwa": "CESiR Bobolice",
+      "plik": "logo-01.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "nadlesnictwo",
+      "nazwa": "Nadleśnictwo Bobolice",
+      "plik": "logo-03.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "contema",
+      "nazwa": "Contema",
+      "plik": "logo-00.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "pompui",
+      "nazwa": "Skup aut — Autolaweta Remigiusz Klimek",
+      "plik": "logo-04.png",
+      "poziom": "partnerzy",
+      "tekst": [
+        "SKUP AUT",
+        "AUTOLAWETA",
+        "Remigiusz Klimek"
+      ],
+      "uwaga": "plik logo-04 ma nieaktualną treść (POM-PUI, K. Błażejak) — do czasu nowego logo plakietka z nazwą"
+    },
+    {
+      "id": "baumal",
+      "nazwa": "Baumal",
+      "plik": "logo-05.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "femtech",
+      "nazwa": "Fem-Tech",
+      "plik": "logo-06.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "alab",
+      "nazwa": "ALAB laboratoria",
+      "plik": "logo-07.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "majster",
+      "nazwa": "Majster Plus",
+      "plik": "logo-08.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "certe",
+      "nazwa": "CERTE",
+      "plik": "logo-09.png",
+      "poziom": "partnerzy"
+    },
+    {
+      "id": "shipapp",
+      "nazwa": "ShipApp",
+      "plik": "logo-10.png",
+      "poziom": "partnerzy",
+      "zrodlo": "Google Drive: shipapp-logo-black-transparent.png"
+    }
+  ]
+}

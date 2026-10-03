@@ -3,7 +3,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY scripts/requirements.txt scripts/requirements.txt
 RUN apt-get update \
-  && apt-get install -y python3 python3-pip postgresql-client \
+  && apt-get install -y python3 python3-pip postgresql-client libheif-examples \
   && pip3 install --no-cache-dir --break-system-packages -r scripts/requirements.txt \
   && rm -rf /var/lib/apt/lists/*
 RUN npm ci

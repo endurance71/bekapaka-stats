@@ -1,0 +1,10 @@
+[Unit]
+Description=BeKaPaKa Studio private assets and database backup
+After=docker.service
+Requires=docker.service
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/opt/bekapaka-stats/scripts/studio/backup.sh
+TimeoutStartSec=900

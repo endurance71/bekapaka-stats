@@ -1,0 +1,79 @@
+name: Studio quality and images
+on:
+  pull_request:
+    paths: ['studio/**', 'backend/studio/**', 'backend/prisma/**', 'backend/tests/**studio*', '.github/workflows/studio.yml']
+  push:
+    branches: [main]
+    paths: ['studio/**', 'backend/studio/**', 'backend/prisma/**', 'backend/package*.json', '.github/workflows/studio.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: write
+jobs:
+  studio:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U test -d test" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      STUDIO_TEST_DATABASE_URL: postgresql://test:test@localhost:5432/test
+      STUDIO_PYTHON: /tmp/studio-python/bin/python
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            backend/package-lock.json
+            studio/package-lock.json
+      - name: Verify the brand package
+        run: node scripts/studio/verify-brand.mjs
+      - name: Install renderer
+        run: |
+          python3 -m venv /tmp/studio-python
+          /tmp/studio-python/bin/pip install -r backend/studio/renderer/requirements.txt
+      - name: Schema, private API and renderer
+        working-directory: backend
+        run: |
+          npm ci
+          npx prisma generate
+          npx prisma migrate deploy
+          npm test -- --run tests/unit/studio.test.js tests/unit/studio.worker.test.js tests/unit/studio.integration.test.js
+          /tmp/studio-python/bin/python -m unittest discover -s studio/renderer -p 'test_*.py'
+      - name: Studio tests and build
+        working-directory: studio
+        run: |
+          npm ci
+          npm test
+          npm run build
+          npm audit --omit=dev --audit-level=critical
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: studio/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ghcr.io/${{ github.repository }}/studio:${{ github.sha }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: backend
+          file: backend/studio/Dockerfile.worker
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }}
+      - name: Verify worker runtime image
+        if: github.event_name != 'pull_request'
+        run: |
+          docker run --rm --entrypoint /opt/studio-python/bin/python ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }} -m unittest discover -s /app/studio/renderer -p 'test_*.py'

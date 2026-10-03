@@ -3,3 +3,8 @@ node_modules
 *.log
 .env
 .env.*
+**/.venv
+**/__pycache__
+**/*.pyc
+.DS_Store
+kalk_stats.json

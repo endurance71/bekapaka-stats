@@ -1,0 +1,5 @@
+studio.bekapaka.pl {
+    encode zstd gzip
+    header X-Robots-Tag "noindex, nofollow"
+    reverse_proxy 127.0.0.1:8083
+}

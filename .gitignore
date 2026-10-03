@@ -64,3 +64,10 @@ scratch/
 
 * 2*
 * 3*
+
+# BeKaPaKa Studio private files and Python runtime
+data/studio/
+backend/studio/.venv/
+studio/playwright-report/
+studio/test-results/
+studio/*.tsbuildinfo

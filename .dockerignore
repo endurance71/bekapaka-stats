@@ -10,3 +10,7 @@ data/pgdata*
 .env
 .env.*
 !**/.env.example
+
+**/.venv
+**/__pycache__
+**/*.tsbuildinfo

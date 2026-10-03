@@ -1,0 +1,1 @@
+ALTER TABLE "StudioJob" ALTER COLUMN "idempotencyKey" DROP NOT NULL;

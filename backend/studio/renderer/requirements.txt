@@ -1,0 +1,4 @@
+fonttools==4.61.1
+shapely==2.1.2
+skia-pathops==0.9.1
+Pillow==12.1.0
