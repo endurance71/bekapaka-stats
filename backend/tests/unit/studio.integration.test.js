@@ -68,6 +68,16 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   const zip = await request(`/jobs/${job.id}/files/zip`); expect(zip.res.status).toBe(200); expect(zip.value.subarray(0, 2).toString()).toBe('PK');
   const record = await db.studioExport.findUnique({ where: { jobId: job.id } }); expect(record.manifest.brandVersion).toBe(BRAND_VERSION); expect(record.manifest.project.content.opponent).toBe('Koszalin Basketball'); expect(record.manifest.files).toHaveLength(2);
  }, 60_000);
+ it('serves the last stored preview for archived projects and restores them to draft', async () => {
+  const copy = (await request(`/projects/${project.id}/duplicate`, {}, 'POST')).value;
+  await db.studioJob.create({ data: { ownerId: owner, projectId: copy.id, revision: 1, kind: 'preview', status: 'completed', payload: { format: 'story' }, result: { files: [{ key: 'story-01', name: 'x.png', mime: 'image/png' }], expiresAt: new Date(Date.now() + 3600_000).toISOString() } } });
+  expect((await request(`/projects/${copy.id}/archive`, { confirmed: true }, 'POST')).res.status).toBe(200);
+  expect((await request(`/projects/${copy.id}/jobs`, { kind: 'preview', format: 'story' }, 'POST')).res.status).toBe(409);
+  const stored = await request(`/projects/${copy.id}/preview?format=story`); expect(stored.res.status).toBe(200); expect(stored.value.result.files[0].key).toBe('story-01'); expect(stored.value.leaseToken).toBeUndefined();
+  expect((await request(`/projects/${copy.id}/preview?format=feed`)).value).toBe(null);
+  const restored = await request(`/projects/${copy.id}/restore`, { confirmed: true }, 'POST'); expect(restored.res.status).toBe(200); expect(restored.value.status).toBe('draft');
+  expect((await request(`/projects/${copy.id}/restore`, { confirmed: true }, 'POST')).res.status).toBe(409);
+ });
  it('recovers render leases but never retries an ambiguous AI request', async () => {
   const render = await db.studioJob.create({ data: { ownerId: owner, kind: 'preview', status: 'running', attempts: 1, payload: {}, leaseUntil: new Date(0) } });
   const ai = await db.studioJob.create({ data: { ownerId: owner, kind: 'ai-image', status: 'running', attempts: 1, payload: {}, leaseUntil: new Date(0) } }); await recoverJobs(db);

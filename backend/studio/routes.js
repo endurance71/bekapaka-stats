@@ -87,6 +87,16 @@ export function createStudioRouter({ db, loginUser }) {
   router.put('/projects/:id', async (req, res) => { const input = z.object({ expectedRevision: z.number().int().min(1), project: z.unknown() }).strict().parse(req.body); res.json(await updateProject(db, req.studioOwner, jid(req.params.id), input.expectedRevision, input.project)); });
   router.post('/projects/:id/duplicate', async (req, res) => { const v = await projectView(db, req.studioOwner, jid(req.params.id)); res.json(await createProject(db, req.studioOwner, { ...v.payload, name: `${v.name.slice(0, 165)} — kopia` })); });
   router.post('/projects/:id/archive', async (req, res) => { ack.parse(req.body); const v = await projectView(db, req.studioOwner, jid(req.params.id)); await db.studioProject.update({ where: { id: v.id }, data: { status: 'archived' } }); res.json({ ok: true }); });
+  router.post('/projects/:id/restore', async (req, res) => { ack.parse(req.body); const v = await projectView(db, req.studioOwner, jid(req.params.id)); if (v.status !== 'archived') fail(409, 'Projekt nie jest zarchiwizowany'); await db.studioProject.update({ where: { id: v.id }, data: { status: 'draft' } }); res.json(await projectView(db, req.studioOwner, v.id)); });
+  router.get('/projects/:id/preview', async (req, res) => {
+    // Read-only lookup of the newest completed, non-expired preview (used for archived projects, which cannot queue renders).
+    const format = z.enum(Object.keys(formats)).parse(req.query.format);
+    const v = await projectView(db, req.studioOwner, jid(req.params.id));
+    const jobs = await db.studioJob.findMany({ where: { ownerId: req.studioOwner, projectId: v.id, kind: 'preview', status: 'completed', payload: { path: ['format'], equals: format } }, orderBy: [{ revision: 'desc' }, { createdAt: 'desc' }], take: 10 });
+    const now = new Date();
+    const job = jobs.find(j => j.result?.files?.length && j.result.expiresAt && new Date(j.result.expiresAt) > now);
+    res.json(job ? safeJob(job) : null);
+  });
   router.get('/projects/:id/revisions', async (req, res) => { const v = await projectView(db, req.studioOwner, jid(req.params.id)); res.json(await db.studioRevision.findMany({ where: { projectId: v.id }, orderBy: { number: 'desc' }, take: 100 })); });
   router.get('/projects/:id/validation', async (req, res) => { const v = await projectView(db, req.studioOwner, jid(req.params.id)); res.json(await validation(db, req.studioOwner, v)); });
   router.post('/projects/:id/approve', async (req, res) => {
