@@ -306,7 +306,8 @@ def validate_marks(p):
 
 def render(payload,format_name,output,mode,assets,partners_list):
     project=payload['project']; d=project['content']; family=project['family']; variant=project['variant']; w,h=FORMAT[format_name]
-    v2=bool(project.get('postType'))
+    v2=bool(project.get('postType')); v3=project.get('designVersion')=='3.0.0'
+    if project.get('designVersion') not in (None,'2.0.0','3.0.0'): raise LayoutError('designVersion: Nieznana wersja renderera')
     pages=[None]
     if family=='report' and variant=='carousel': pages=d['slides']
     if family=='lineup': pages=[d['lineup'][i:i+6] for i in range(0,len(d['lineup']),6)] or [[]]
@@ -338,27 +339,40 @@ def render(payload,format_name,output,mode,assets,partners_list):
             if family=='lineup' and variant=='five': count=5
             if family=='partners':count=max(1,count*2) if variant!='spotlight' else 1
             pages=[items[i:i+count] for i in range(0,len(items),count)] or [[]]
+    if v3:
+        if family=='lineup': items=d['lineup'];count=5
+        elif family=='schedule' and variant=='schedule': items=d['schedule'];count=3 if h<=1080 else 4
+        elif family=='partners': items=selected;count=1 if variant=='spotlight' else 6
+        elif family=='statistics': items=d.get('tableRows',[]);count=7 if format_name=='story' else 4
+        else:items=None
+        if items is not None:pages=[items[i:i+count] for i in range(0,len(items),count)] or [[]]
     files=[]; checks=[]
     for index,part in enumerate(pages):
         key=f'{format_name}-{index+1:02d}'; p=Poster(output,key,project['name'],'BeKaPaKa Studio',w=w,h=h)
-        p.paper=(project.get('visualStyle')=='editorial') if v2 else family in ('lineup','report','schedule','partners'); p.ink=C['black'] if p.paper else C['white']; p.accent=C['red'] if d['kit']=='A' else '#FF7A18'
+        p.paper=(family in ('lineup','report','partners','schedule','statistics','club') and project.get('visualStyle')!='photo') if v3 else (project.get('visualStyle')=='editorial') if v2 else family in ('lineup','report','schedule','partners'); p.ink=C['black'] if p.paper else C['white']; p.accent=C['red'] if d['kit']=='A' else '#FF7A18'
         p.mode=mode; p.data=d; p.variant=variant; p.layout=project['layout']; p.kit=d['kit']; p.assets=assets; p.assets_used=[]; p.ai_scene=any(a.get('provenance') for a in assets.values())
         p.story=format_name=='story'; p.family=family
         p.m=72 if w==1080 else 128; p.top=270 if format_name=='story' else 84; p.bottom=1560 if format_name=='story' else h-80
         p.safe=(260,1600) if format_name=='story' else (72,h-72)
-        MAT.plate(p,'lineup-paper.png' if p.paper else ('plyta-granat.png' if p.kit=='B' else 'plyta-czysta.png'))
-        if d.get('backgroundAssetId'):
-            photo(p,d['backgroundAssetId'],0,0,w,h)
-            p.rect(0,0,w,h,C['paper'] if p.paper else C['black'],opacity=.90 if p.paper else .80)
-        p.layer('10-motyw')
-        if not p.paper: M.seams(p,w/2,(p.top+p.bottom)/2,min(w,h)*.45,t=2,color=p.accent,opacity=.12)
-        p.fx=MAT.ink(p,shadow=not p.paper); p.layer('30-tresc')
-        if v2:
-            from render_v2 import compose
+        p.format_name=format_name
+        if v3:
+            from render_v3 import compose
             p.visual_style=project['visualStyle'];p.post_type=project['postType']
-            compose(p,part,index,globals())
-        else: {'announcement':lambda:announcement(p),'result':lambda:result(p),'lineup':lambda:lineup(p,part,index),'player':lambda:player(p),'tournament':lambda:tournament(p),'report':lambda:report(p,part,index),'partners':lambda:partners(p,part,index),'schedule':lambda:schedule(p,part,index)}[family]()
-        footer(p)
+            compose(p,part,index)
+        else:
+            MAT.plate(p,'lineup-paper.png' if p.paper else ('plyta-granat.png' if p.kit=='B' else 'plyta-czysta.png'))
+            if d.get('backgroundAssetId'):
+                photo(p,d['backgroundAssetId'],0,0,w,h)
+                p.rect(0,0,w,h,C['paper'] if p.paper else C['black'],opacity=.90 if p.paper else .80)
+            p.layer('10-motyw')
+            if not p.paper: M.seams(p,w/2,(p.top+p.bottom)/2,min(w,h)*.45,t=2,color=p.accent,opacity=.12)
+            p.fx=MAT.ink(p,shadow=not p.paper); p.layer('30-tresc')
+            if v2:
+                from render_v2 import compose
+                p.visual_style=project['visualStyle'];p.post_type=project['postType']
+                compose(p,part,index,globals())
+            else: {'announcement':lambda:announcement(p),'result':lambda:result(p),'lineup':lambda:lineup(p,part,index),'player':lambda:player(p),'tournament':lambda:tournament(p),'report':lambda:report(p,part,index),'partners':lambda:partners(p,part,index),'schedule':lambda:schedule(p,part,index)}[family]()
+            footer(p)
         try:
             validate_marks(p)
             src=p.save(); files.append({'key':key,'svg':str(src),'width':w,'height':h}); checks.append(json.loads((Path(output)/'qa'/f'{key}-layout.json').read_text()))

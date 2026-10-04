@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { newProject, projectSchema, templates, BRAND_VERSION } from '../../studio/contracts.js';
+import { newPostProject, newProject, projectSchema, templates, BRAND_VERSION } from '../../studio/contracts.js';
+import { projectTemplateVersion } from '../../studio/post-types.js';
 import { validateProject } from '../../studio/validation.js';
 import { matchSnapshot } from '../../studio/sources.js';
 import { publicTextContext } from '../../studio/ai.js';
 import { filePath } from '../../studio/storage.js';
-const approved = { template: { status: 'approved', version: '1.0.0', brandVersion: BRAND_VERSION }, approved: true };
-const ready = () => { const p = newProject(); p.content = { ...p.content, opponent: 'Koszalin Basketball', date: '2026-10-11T14:30:00+02:00', altText: 'Mecz BeKaPaKa z Koszalin Basketball.' }; return p; };
+const approved = { template: { status: 'approved', version: projectTemplateVersion(newPostProject('preview')), brandVersion: BRAND_VERSION }, approved: true };
+const ready = () => { const p = newPostProject('preview'); p.content = { ...p.content, opponent: 'Koszalin Basketball', date: '2026-10-11T14:30:00+02:00', altText: 'Mecz BeKaPaKa z Koszalin Basketball.' }; return p; };
 describe('Studio contracts and export controls', () => {
   it.each(templates)('creates valid $id without demo content', t => { const p = newProject(t.id); expect(projectSchema.safeParse(p).success).toBe(true); expect(p.content.opponent).toBe(''); });
   it('rejects format/layout from another family and unexpected private fields', () => { const p = newProject('player'); expect(projectSchema.safeParse({ ...p, formats: ['square'] }).success).toBe(false); expect(projectSchema.safeParse({ ...p, content: { ...p.content, coachNotes: 'private' } }).success).toBe(false); });

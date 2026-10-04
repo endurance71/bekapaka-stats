@@ -1,5 +1,5 @@
 import { statisticalSnapshot } from './statistics.js';
-import { postTypes, visualStyles, postType, designKey } from './post-types.js';
+import { postTypes, visualStyles, postType, designKey, DESIGN_VERSION, designFormats } from './post-types.js';
 import express from 'express';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -54,36 +54,28 @@ export function createStudioRouter({ db, loginUser }) {
   router.get('/templates', async (req, res) => {
     await seedStudio(db);
     const states = await db.studioTemplate.findMany({ where: { ownerId: req.studioOwner, brandVersion: BRAND_VERSION } });
-    res.json({ brandVersion: BRAND_VERSION, formats, visualStyles, postTypes:postTypes.map(p=>({...p,designs:p.styles.flatMap(style=>p.formats.map(format=>({style,format,status:states.find(s=>s.family===p.family&&s.version===designKey({postType:p.id,visualStyle:style},format))?.status || 'draft'})))})), templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
+    res.json({ brandVersion: BRAND_VERSION, formats, visualStyles, postTypes:postTypes.map(p=>({...p,designs:p.styles.flatMap(style=>designFormats(p,style).flatMap(format=>['A','B'].flatMap(kit=>{ const prefix=designKey({postType:p.id,visualStyle:style,designVersion:DESIGN_VERSION,content:{kit}},format); const matches=states.filter(s=>s.family===p.family&&s.version.startsWith(prefix.replace('material-brand','material-')));return [{style,format,kit,backgroundAssetId:null,status:states.find(s=>s.version===prefix)?.status || 'draft'},...matches.filter(s=>s.version!==prefix).map(s=>({style,format,kit,backgroundAssetId:s.version.split(':material-')[1],status:s.status}))];})))})), templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
   });
   router.post('/templates/:family/approve', async (req, res) => {
-    const input = z.object({ confirmed: z.literal(true), previewJobId: z.string().uuid() }).strict().parse(req.body);
-    const t = templates.find(t => t.id === req.params.family); if (!t) fail(404, 'Szablon nie istnieje');
-    const preview = await db.studioJob.findFirst({ where: { id: input.previewJobId, ownerId: req.studioOwner, kind: 'preview', status: 'completed' } });
-    if (!preview) fail(422, 'Najpierw wygeneruj i oceń podgląd tego szablonu');
-    const v = await projectView(db, req.studioOwner, preview.projectId, preview.revision);
-    if (v.payload.postType) fail(422,'Nowa kompozycja wymaga zatwierdzenia każdego formatu oddzielnie');
-    if (v.family !== t.id || v.revision.brandVersion !== BRAND_VERSION || v.revision.templateVersion !== t.version) fail(422, 'Podgląd dotyczy innej wersji szablonu');
-    await db.studioTemplate.updateMany({ where: { ownerId: req.studioOwner, family: t.id, version: t.version, brandVersion: BRAND_VERSION }, data: { status: 'approved', approvedAt: new Date() } });
-    res.json({ ok: true });
+    fail(422,'Historyczna rodzina nie ma sprawdzonego wzorca. Przenieś projekt do bieżącej kompozycji');
   });
   router.post('/designs/:postType/:style/:format/approve', async (req,res) => {
     const input=z.object({confirmed:z.literal(true),previewJobId:z.string().uuid()}).strict().parse(req.body);
     const type=postType(req.params.postType);
-    if (!type || !type.styles.includes(req.params.style) || !type.formats.includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
+    if (!type || !type.styles.includes(req.params.style) || !designFormats(type,req.params.style).includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
     const preview=await db.studioJob.findFirst({where:{id:input.previewJobId,ownerId:req.studioOwner,kind:'preview',status:'completed'}});
     if (!preview || preview.payload.format!==req.params.format || new Date(preview.result?.expiresAt || 0)<=new Date()) fail(422,'Oceń aktualny podgląd wybranego formatu');
     const view=await projectView(db,req.studioOwner,preview.projectId);
-    if (view.currentRevision!==preview.revision || view.payload.postType!==type.id || view.payload.visualStyle!==req.params.style || view.revision.brandVersion!==BRAND_VERSION || preview.result?.resourceHash!==(await context(db,req.studioOwner,view)).resourceHash) fail(422,'Podgląd dotyczy innej kompozycji, rewizji lub materiałów');
+    if (view.payload.designVersion!==DESIGN_VERSION || view.currentRevision!==preview.revision || view.payload.postType!==type.id || view.payload.visualStyle!==req.params.style || view.revision.brandVersion!==BRAND_VERSION || preview.result?.resourceHash!==(await context(db,req.studioOwner,view)).resourceHash) fail(422,'Podgląd dotyczy innej kompozycji, rewizji lub materiałów');
     const version=designKey(view.payload,req.params.format);
     const id=`${req.studioOwner}:${type.family}:${version}:${BRAND_VERSION}`;
     await db.studioTemplate.upsert({where:{id},create:{id,ownerId:req.studioOwner,family:type.family,version,brandVersion:BRAND_VERSION,status:'approved',approvedAt:new Date()},update:{status:'approved',approvedAt:new Date()}});
     res.json({ok:true});
   });
   router.post('/designs/:postType/:style/:format/status', async(req,res)=>{
-    const type=postType(req.params.postType);if(!type || !type.styles.includes(req.params.style)||!type.formats.includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
-    const input=z.object({status:z.enum(['draft','retired'])}).strict().parse(req.body);
-    const version=designKey({postType:type.id,visualStyle:req.params.style},req.params.format);
+    const type=postType(req.params.postType);if(!type || !type.styles.includes(req.params.style)||!designFormats(type,req.params.style).includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
+    const input=z.object({status:z.enum(['draft','retired']),kit:z.enum(['A','B']),backgroundAssetId:z.string().max(128).nullable().default(null)}).strict().parse(req.body);
+    const version=designKey({postType:type.id,visualStyle:req.params.style,designVersion:DESIGN_VERSION,content:{kit:input.kit,backgroundAssetId:input.backgroundAssetId}},req.params.format);
     const id=`${req.studioOwner}:${type.family}:${version}:${BRAND_VERSION}`;
     await db.studioTemplate.upsert({where:{id},create:{id,ownerId:req.studioOwner,family:type.family,version,brandVersion:BRAND_VERSION,status:input.status},update:{status:input.status,approvedAt:null}});
     res.json({ok:true});

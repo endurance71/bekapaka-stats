@@ -35,7 +35,9 @@ jobs:
             backend/package-lock.json
             studio/package-lock.json
       - name: Verify the brand package
-        run: node scripts/studio/verify-brand.mjs
+        run: |
+          node scripts/studio/verify-brand.mjs
+          node scripts/studio/verify-design.mjs
       - name: Install renderer
         run: |
           python3 -m venv /tmp/studio-python

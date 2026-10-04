@@ -23,5 +23,5 @@ try {
   const result=JSON.parse(stdout);
   await sharp(await fs.readFile(result.files[0].svg)).resize(360,450).webp({quality:80}).toFile(path.join(out,`${type.id}-${style}.webp`));
  }
- console.log(`Generated ${postTypes.length*3} catalogue thumbnails.`);
+ console.log(`Generated ${postTypes.reduce((sum,p)=>sum+p.styles.length,0)} catalogue thumbnails.`);
 } finally{await fs.rm(temp,{recursive:true,force:true});}

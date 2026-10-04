@@ -72,3 +72,6 @@ backend/studio/.venv/
 studio/playwright-report/
 studio/test-results/
 studio/*.tsbuildinfo
+
+# Local visual review artifacts
+output/studio-brandbook-repair/

@@ -1,0 +1,2748 @@
+[
+  {
+    "id": "preview",
+    "family": "announcement",
+    "variant": "standard",
+    "label": "Zapowiedź meczu",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "editorial"
+    ],
+    "source": "rdzen-v6/01a,01b; stroj-b/01",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "preview/sport",
+        "label": "Mecz · znaki",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "preview/editorial",
+        "label": "Typograficzny",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "matchday",
+    "family": "announcement",
+    "variant": "matchday",
+    "label": "Dzień meczu",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "editorial",
+      "jersey"
+    ],
+    "source": "rdzen-v6/01a,01b; stroj-b/01",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "matchday/sport",
+        "label": "Mecz · znaki",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "matchday/editorial",
+        "label": "Typograficzny",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "matchday/jersey",
+        "label": "Koszulka matchday",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "postponed",
+    "family": "announcement",
+    "variant": "postponed",
+    "label": "Mecz przełożony",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "editorial"
+    ],
+    "source": "rdzen-v6/01a,01b; stroj-b/01",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "postponed/sport",
+        "label": "Mecz · znaki",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "postponed/editorial",
+        "label": "Typograficzny",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "cancelled",
+    "family": "announcement",
+    "variant": "cancelled",
+    "label": "Mecz odwołany",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "editorial"
+    ],
+    "source": "rdzen-v6/01a,01b; stroj-b/01",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "cancelled/sport",
+        "label": "Mecz · znaki",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "cancelled/editorial",
+        "label": "Typograficzny",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "final",
+    "family": "result",
+    "variant": "final",
+    "label": "Wynik końcowy",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "photo"
+    ],
+    "source": "rdzen-v6/02a,02b; stroj-b/02",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "final/sport",
+        "label": "Tablica wyniku",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "final/photo",
+        "label": "Zawodnik i wynik",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "halftime",
+    "family": "result",
+    "variant": "halftime",
+    "label": "Wynik w przerwie",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "photo"
+    ],
+    "source": "rdzen-v6/02a,02b; stroj-b/02",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "halftime/sport",
+        "label": "Tablica wyniku",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "halftime/photo",
+        "label": "Zawodnik i wynik",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "live",
+    "family": "result",
+    "variant": "live",
+    "label": "Wynik na żywo",
+    "category": "Mecz",
+    "version": "3.0.0",
+    "styles": [
+      "sport",
+      "photo"
+    ],
+    "source": "rdzen-v6/02a,02b; stroj-b/02",
+    "pages": [
+      36,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "live/sport",
+        "label": "Tablica wyniku",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "live/photo",
+        "label": "Zawodnik i wynik",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "five",
+    "family": "lineup",
+    "variant": "five",
+    "label": "Pierwsza piątka",
+    "category": "Drużyna i zawodnicy",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/03",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "five/editorial",
+        "label": "Koszulki na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "roster",
+    "family": "lineup",
+    "variant": "full",
+    "label": "Pełny skład",
+    "category": "Drużyna i zawodnicy",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/03",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "roster/editorial",
+        "label": "Koszulki na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "profile",
+    "family": "player",
+    "variant": "profile",
+    "label": "Prezentacja zawodnika",
+    "category": "Drużyna i zawodnicy",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/04a,04b",
+    "pages": [
+      37,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "profile/photo",
+        "label": "Portret · rama / MVP",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "profile/sport",
+        "label": "Koszulka · bez portretu",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "new-player",
+    "family": "player",
+    "variant": "new",
+    "label": "Nowy zawodnik",
+    "category": "Drużyna i zawodnicy",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/04a,04b",
+    "pages": [
+      37,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "new-player/photo",
+        "label": "Portret · rama / MVP",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "new-player/sport",
+        "label": "Koszulka · bez portretu",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "mvp",
+    "family": "player",
+    "variant": "mvp",
+    "label": "MVP meczu",
+    "category": "Drużyna i zawodnicy",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/04a,04b",
+    "pages": [
+      37,
+      39
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "mvp/photo",
+        "label": "Portret · rama / MVP",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "mvp/sport",
+        "label": "Koszulka · bez portretu",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "tournament-preview",
+    "family": "tournament",
+    "variant": "announcement",
+    "label": "Zapowiedź turnieju",
+    "category": "Turniej",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/05",
+    "pages": [
+      37
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "tournament-preview/photo",
+        "label": "Hero · fotografia",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "tournament-preview/sport",
+        "label": "Typograficzny · parametry",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "tournament-program",
+    "family": "tournament",
+    "variant": "program",
+    "label": "Program turnieju",
+    "category": "Turniej",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/05",
+    "pages": [
+      37
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "tournament-program/photo",
+        "label": "Hero · fotografia",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "tournament-program/sport",
+        "label": "Typograficzny · parametry",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "tournament-summary",
+    "family": "tournament",
+    "variant": "summary",
+    "label": "Podsumowanie turnieju",
+    "category": "Turniej",
+    "version": "3.0.0",
+    "styles": [
+      "photo",
+      "sport"
+    ],
+    "source": "rdzen-v6/05",
+    "pages": [
+      37
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "tournament-summary/photo",
+        "label": "Hero · fotografia",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "tournament-summary/sport",
+        "label": "Typograficzny · parametry",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "report-cover",
+    "family": "report",
+    "variant": "cover",
+    "label": "Okładka relacji",
+    "category": "Relacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/06; karuzela",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "report-cover/editorial",
+        "label": "Zdjęcie w ramie",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "photo-post",
+    "family": "report",
+    "variant": "photo",
+    "label": "Post fotograficzny",
+    "category": "Relacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/06; karuzela",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "photo-post/editorial",
+        "label": "Zdjęcie w ramie",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "carousel",
+    "family": "report",
+    "variant": "carousel",
+    "label": "Karuzela · 4 slajdy",
+    "category": "Relacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/06; karuzela",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "carousel/editorial",
+        "label": "Zdjęcie w ramie",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "partner-wall",
+    "family": "partners",
+    "variant": "wall",
+    "label": "Partnerzy klubu",
+    "category": "Partnerzy",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/07 + current equal-exposure registry",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "partner-wall/editorial",
+        "label": "Równa ekspozycja",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "partner-profile",
+    "family": "partners",
+    "variant": "spotlight",
+    "label": "Przedstawienie partnera",
+    "category": "Partnerzy",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/07 + current equal-exposure registry",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "partner-profile/editorial",
+        "label": "Równa ekspozycja",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "partner-thanks",
+    "family": "partners",
+    "variant": "thanks",
+    "label": "Podziękowanie partnerom",
+    "category": "Partnerzy",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/07 + current equal-exposure registry",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "partner-thanks/editorial",
+        "label": "Równa ekspozycja",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "schedule",
+    "family": "schedule",
+    "variant": "schedule",
+    "label": "Terminarz",
+    "category": "Informacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/08; information extension",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "schedule/editorial",
+        "label": "Papier · paski stroju",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "notice",
+    "family": "schedule",
+    "variant": "notice",
+    "label": "Ogłoszenie",
+    "category": "Informacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/08; information extension",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "notice/editorial",
+        "label": "Papier · paski stroju",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "news",
+    "family": "schedule",
+    "variant": "news",
+    "label": "Aktualność",
+    "category": "Informacje",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "rdzen-v6/08; information extension",
+    "pages": [
+      38
+    ],
+    "formats": [
+      "feed",
+      "story",
+      "square",
+      "landscape"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "news/editorial",
+        "label": "Papier · paski stroju",
+        "formats": [
+          "feed",
+          "story",
+          "square",
+          "landscape"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "team-stats",
+    "family": "statistics",
+    "variant": "team",
+    "label": "Statystyki drużyny",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "team-stats/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "player-stats",
+    "family": "statistics",
+    "variant": "player",
+    "label": "Statystyki zawodnika",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "player-stats/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "leaders",
+    "family": "statistics",
+    "variant": "leaders",
+    "label": "Liderzy meczu",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "leaders/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "standings",
+    "family": "statistics",
+    "variant": "standings",
+    "label": "Tabela ligi",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "standings/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "round-summary",
+    "family": "statistics",
+    "variant": "round",
+    "label": "Podsumowanie kolejki",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "round-summary/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "season-summary",
+    "family": "statistics",
+    "variant": "season",
+    "label": "Podsumowanie sezonu",
+    "category": "Statystyki",
+    "version": "3.0.0",
+    "styles": [
+      "editorial"
+    ],
+    "source": "extension/numerical-tables",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "season-summary/editorial",
+        "label": "Tabela liczb",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "birthday",
+    "family": "club",
+    "variant": "birthday",
+    "label": "Urodziny",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "birthday/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "birthday/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "training-preview",
+    "family": "club",
+    "variant": "training",
+    "label": "Zapowiedź treningu",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "training-preview/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "training-preview/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "training-report",
+    "family": "club",
+    "variant": "training-report",
+    "label": "Relacja z treningu",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "training-report/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "training-report/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "backstage",
+    "family": "club",
+    "variant": "backstage",
+    "label": "Kulisy klubu",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "backstage/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "backstage/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "quote",
+    "family": "club",
+    "variant": "quote",
+    "label": "Cytat",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "quote/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "quote/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "anniversary",
+    "family": "club",
+    "variant": "anniversary",
+    "label": "Jubileusz",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "anniversary/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "anniversary/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "fan-invitation",
+    "family": "club",
+    "variant": "invitation",
+    "label": "Zaproszenie dla kibiców",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "fan-invitation/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "fan-invitation/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  },
+  {
+    "id": "club-statement",
+    "family": "club",
+    "variant": "statement",
+    "label": "Komunikat klubu",
+    "category": "Życie klubu",
+    "version": "3.0.0",
+    "styles": [
+      "editorial",
+      "photo"
+    ],
+    "source": "extension/club-information",
+    "pages": [
+      28,
+      30,
+      55
+    ],
+    "formats": [
+      "feed",
+      "story"
+    ],
+    "status": "draft",
+    "referenceStatus": "requires_visual_review",
+    "compositions": [
+      {
+        "id": "club-statement/editorial",
+        "label": "Informacja na papierze",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "paper",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      },
+      {
+        "id": "club-statement/photo",
+        "label": "Fotografia i treść",
+        "formats": [
+          "feed",
+          "story"
+        ],
+        "kits": [
+          "A",
+          "B"
+        ],
+        "status": "draft",
+        "material": "dark",
+        "dataConfirmationRequired": true,
+        "assetProportions": "preserved",
+        "safeZones": {
+          "story": {
+            "x": [
+              72,
+              1008
+            ],
+            "y": [
+              260,
+              1600
+            ]
+          }
+        },
+        "acceptance": "source comparison and owner visual review"
+      }
+    ]
+  }
+]

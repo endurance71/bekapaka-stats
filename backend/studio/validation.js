@@ -1,7 +1,9 @@
-import { projectTemplateVersion } from './post-types.js';
+import { projectTemplateVersion, isCurrentDesign } from './post-types.js';
+import { materialCompatible } from './material-context.js';
 import { assetIds, BRAND_VERSION } from './contracts.js';
 export function validateProject(project, { assets = [], partners = [], template, approved = false } = {}) {
   const errors = []; const add = (field, message) => errors.push({ field, message });
+  if (!isCurrentDesign(project)) add('designVersion', 'Przenieś projekt do bieżącej kompozycji; historyczny układ nie ma potwierdzonej zgodności z brandbookiem');
   const d = project.content; const f = project.family;
   const required = (field, label) => { if (!d[field]?.trim()) add(field, `Uzupełnij: ${label}`); };
   if ((['announcement', 'result', 'lineup', 'tournament', 'report', 'schedule'].includes(f) || (f==='club' && ['birthday','training','anniversary','invitation'].includes(project.variant)))) {
@@ -12,6 +14,7 @@ export function validateProject(project, { assets = [], partners = [], template,
   }
   if (['announcement', 'result', 'lineup'].includes(f)) required('opponent', 'rywal');
   if (['announcement', 'result', 'tournament'].includes(f)) required('venue', 'miejsce');
+  if (project.visualStyle==='jersey') {required('lastName','nazwisko na koszulce');required('number','numer na koszulce');}
   if (f === 'result' && (d.scoreUs == null || d.scoreThem == null)) add('scoreUs', 'Podaj oba wyniki');
   if (f === 'result' && project.variant === 'final' && d.scoreUs === d.scoreThem && d.scoreUs != null) add('scoreUs', 'Końcowy wynik meczu koszykówki nie może być remisem');
   if (f === 'result' && project.variant !== 'final') required('phase', 'kwarta lub stan meczu');
@@ -53,6 +56,7 @@ export function validateProject(project, { assets = [], partners = [], template,
     const a = assets.find(a => a.id === id);
     if (!a || a.status !== 'approved' || !['granted', 'not_required'].includes(a.consent)) add('assets', 'Wybrany materiał wymaga zatwierdzenia i dopuszczenia do publikacji');
     if (a?.provenance && a.kind !== 'background') add('assets', 'Ilustracje AI mogą być używane wyłącznie jako tło');
+    if (id === d.backgroundAssetId && a && !materialCompatible(project,a)) add('backgroundAssetId','Materiał nie pasuje do powierzchni szablonu lub palety stroju. Wybierz materiał marki albo zgodne tło');
     if (id === d.backgroundAssetId && a?.kind !== 'background') add('backgroundAssetId', 'Wybierz zatwierdzone tło');
     if (id !== d.backgroundAssetId && a && !['photo', 'portrait', 'cutout'].includes(a.kind)) add('photoAssetId', 'Pole zdjęcia wymaga prawdziwej fotografii lub wycięcia');
   }
@@ -66,6 +70,7 @@ export function validateProject(project, { assets = [], partners = [], template,
   if (!approved) add('approval', 'Potwierdź dane i wygląd tej rewizji');
   const collect = value => typeof value === 'string' ? [value] : value && typeof value === 'object' ? Object.values(value).flatMap(collect) : [];
   const strings = [project.name, ...collect(d)];
-  if (strings.some(s => /\b(demo|placeholder|lorem ipsum|testowy|do uzupełnienia)\b/i.test(s))) add('content', 'Usuń dane demonstracyjne i placeholdery');
+  if (strings.some(s => /\b(demo|placeholder|lorem ipsum|testowy|do uzupełnienia|dane przykładowe)\b/i.test(s))) add('content', 'Usuń dane demonstracyjne i placeholdery');
+  if (strings.some(s => /\[RYWAL\]|za 15 minut|po 3\. kwarcie/i.test(s))) add('content', 'Usuń niepotwierdzony komunikat źródłowego szablonu');
   return { valid: !errors.length, errors, brandVersion: BRAND_VERSION };
 }

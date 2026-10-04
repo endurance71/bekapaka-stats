@@ -1,17 +1,21 @@
 import { describe,it,expect,vi } from 'vitest';
 import { postTypes,newPostProject,newProject,projectSchema,BRAND_VERSION } from '../../studio/contracts.js';
-import { projectTemplateVersion,rendererVersionFor,designKey } from '../../studio/post-types.js';
+import { projectTemplateVersion,rendererVersionFor,designKey,migrateDesign } from '../../studio/post-types.js';
+import { materialCompatible, materialUsage } from '../../studio/material-context.js';
 import { statisticalSnapshot } from '../../studio/statistics.js';
 import { sourceEnvelope } from '../../studio/sources.js';
 import { validateProject } from '../../studio/validation.js';
 describe('Publication catalog',()=>{
- it('defines 38 purposes with three distinct compositions and no prefilled claims',()=>{
+ it('defines 38 purposes with explicit source compositions and no prefilled claims',()=>{
   expect(postTypes).toHaveLength(38);expect(new Set(postTypes.map(t=>t.id)).size).toBe(38);
-  for(const t of postTypes)for(const style of t.styles){const p=newPostProject(t.id,style);expect(projectSchema.parse(p)).toEqual(p);expect(t.styles).toEqual(['sport','photo','editorial']);expect(p.content.opponent).toBe('');expect(p.content.tableRows).toEqual([]);expect(p.content.date).toBe('');expect(p.content.firstName).toBe('');expect(p.content.statScope).toBe(['standings','season'].includes(t.variant)?'season':'match');}
+  for(const t of postTypes)for(const style of t.styles){const p=newPostProject(t.id,style);expect(projectSchema.parse(p)).toEqual(p);expect(t.styles.length).toBeGreaterThan(0);expect(t.source).toBeTruthy();expect(t.referenceStatus).toBe('requires_visual_review');expect(p.content.opponent).toBe('');expect(p.content.tableRows).toEqual([]);expect(p.content.date).toBe('');expect(p.content.firstName).toBe('');expect(p.content.statScope).toBe(['standings','season'].includes(t.variant)?'season':'match');}
  });
  it('keeps legacy payloads, renderer identity and approvals unchanged',()=>{const p=newProject();expect(projectSchema.parse(p)).toEqual(p);expect(p).not.toHaveProperty('postType');expect(p.content).not.toHaveProperty('tableRows');expect(projectTemplateVersion(p)).toBe('1.0.0');expect(rendererVersionFor(p)).toBe('1.0.5');});
  it('rejects incompatible publication/composition/version combinations',()=>{const p=newPostProject('birthday');for(const changes of [{family:'statistics'},{visualStyle:'free'},{designVersion:'1.0.0'},{formats:['square']},{postType:undefined}])expect(projectSchema.safeParse({...p,...changes}).success).toBe(false);expect(designKey(p,'story')).not.toBe(designKey(p,'feed'));});
  it('requires photo approval, attribution and native event dates',()=>{const p=newPostProject('quote','photo');p.content.title='Cytat';p.content.body='Gramy razem.';p.content.altText='Słowa zawodnika.';const errors=validateProject(p).errors.map(e=>e.field);expect(errors).toEqual(expect.arrayContaining(['attribution','photoAssetId','template']));const b=newPostProject('birthday');b.content.date='2026-10-01';expect(validateProject(b).errors.map(e=>e.field)).toContain('date');});
+ it('isolates approvals by kit, material and native format',()=>{const p=newPostProject('final');const key=designKey(p,'feed');expect(designKey({...p,content:{...p.content,kit:'B'}},'feed')).not.toBe(key);expect(designKey({...p,content:{...p.content,backgroundAssetId:'new'}},'feed')).not.toBe(key);});
+ it('preserves v2 revisions and migrates only explicitly',()=>{const old={...newPostProject('five'),visualStyle:'sport',designVersion:'2.0.0'};expect(projectSchema.parse(old).designVersion).toBe('2.0.0');const migrated=migrateDesign(old);expect(migrated.visualStyle).toBe('editorial');expect(migrated.designVersion).toBe('3.0.0');expect(old.visualStyle).toBe('sport');expect(validateProject(old).errors.map(e=>e.field)).toContain('designVersion');});
+ it('restricts bundled paper and red materials to their approved context',()=>{const dark={provenance:{importBatch:'background-pack:v:01-ciemna-farba.png'}};const paper={provenance:{importBatch:'background-pack:v:02-jasny-papier.png'}};expect(materialCompatible(newPostProject('five'),dark)).toBe(false);expect(materialCompatible(newPostProject('five'),paper)).toBe(true);const p=newPostProject('final');p.content.kit='B';expect(materialCompatible(p,dark)).toBe(false);expect(materialUsage(paper).surface).toBe('paper');});
  it('never treats legacy approval as new design approval',()=>{const p=newPostProject('team-stats');Object.assign(p.content,{title:'Statystyki',tableRows:[{label:'PTS',value:'0',detail:''}],altText:'Liczby meczu.'});expect(validateProject(p,{approved:true,template:{status:'approved',brandVersion:BRAND_VERSION,version:'1.0.0'}}).errors.map(e=>e.field)).toContain('template');});
 });
 describe('Public, season-scoped statistics',()=>{

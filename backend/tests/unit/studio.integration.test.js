@@ -10,6 +10,7 @@ import { newProject, newPostProject, templates, postTypes, BRAND_VERSION } from 
 import { seedStudio } from '../../studio/seed.js';
 import { claimJob, recoverJobs, processJob } from '../../studio/worker.js';
 import { queueAi, budget } from '../../studio/ai.js';
+import { migrateDesign, designKey, projectTemplateVersion } from '../../studio/post-types.js';
 import { projectView } from '../../studio/service.js';
 import { importBackgroundPack } from '../../studio/import-backgrounds.js';
 import { filePath } from '../../studio/storage.js';
@@ -103,34 +104,47 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   const f = await request(`/jobs/${preview.id}/files/story-01`); expect(f.res.status).toBe(200); const meta = await sharp(f.value).metadata(); expect(meta.width).toBe(1080); expect(meta.height).toBe(1920); expect(meta.icc?.length).toBeGreaterThan(0);
   expect((await request(`/jobs/${preview.id}/files/story-01`, undefined, 'GET', false)).res.status).toBe(401);
  }, 60_000);
- it('requires successful visual preview to approve a template, exports ZIP idempotently', async () => {
-  expect((await request('/templates/announcement/approve', { confirmed: true, previewJobId: crypto.randomUUID() }, 'POST')).res.status).toBe(422);
-  expect((await request('/templates/announcement/approve', { confirmed: true, previewJobId: preview.id }, 'POST')).res.status).toBe(200);
-  expect((await request(`/projects/${project.id}/approve`, { confirmed: true, expectedRevision: 1, previewJobId: preview.id }, 'POST')).res.status).toBe(409);
-  expect((await request(`/projects/${project.id}/approve`, { confirmed: true, expectedRevision: 2, previewJobId: preview.id }, 'POST')).res.status).toBe(200);
-  const a = await request(`/projects/${project.id}/jobs`, { kind: 'export', idempotencyKey: 'same-export-01' }, 'POST'); const b = await request(`/projects/${project.id}/jobs`, { kind: 'export', idempotencyKey: 'same-export-01' }, 'POST'); expect(a.value.id).toBe(b.value.id);
-  const job = await claimJob(db, 'render', owner); await processJob(db, job);
-  const done = (await request(`/jobs/${job.id}`)).value; expect(done.status, done.error).toBe('completed');
-  const zip = await request(`/jobs/${job.id}/files/zip`); expect(zip.res.status).toBe(200); expect(zip.value.subarray(0, 2).toString()).toBe('PK');
-  const record = await db.studioExport.findUnique({ where: { jobId: job.id } }); expect(record.manifest.brandVersion).toBe(BRAND_VERSION); expect(record.manifest.project.content.opponent).toBe('Koszalin Basketball'); expect(record.manifest.files).toHaveLength(2);
- }, 60_000);
+ it('blocks legacy export and migrates into a new revision without rewriting history', async () => {
+  expect((await request('/templates/announcement/approve', { confirmed:true, previewJobId:preview.id }, 'POST')).res.status).toBe(422);
+  expect((await request(`/projects/${project.id}/jobs`, {kind:'export',idempotencyKey:'legacy-blocked'},'POST')).res.status).toBe(422);
+  const old=(await request(`/projects/${project.id}`)).value;
+  const migrated=(await request(`/projects/${project.id}`,{expectedRevision:2,project:migrateDesign(old.payload)},'PUT')).value;
+  expect(migrated.currentRevision).toBe(3);
+  const history=(await request(`/projects/${project.id}/revisions`)).value;
+  expect(history.find(r=>r.number===2).payload).toEqual(old.payload);
+  for(const format of ['feed','story']) {
+    const p=(await request(`/projects/${project.id}/jobs`,{kind:'preview',format},'POST')).value;
+    await processJob(db,await claimJob(db,'render',owner));
+    const done=(await request(`/jobs/${p.id}`)).value;expect(done.status,done.error).toBe('completed');
+    expect((await request(`/designs/preview/sport/${format}/approve`,{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(200);
+    preview=done;
+  }
+  expect((await request(`/projects/${project.id}/approve`,{confirmed:true,expectedRevision:2,previewJobId:preview.id},'POST')).res.status).toBe(409);
+  expect((await request(`/projects/${project.id}/approve`,{confirmed:true,expectedRevision:3,previewJobId:preview.id},'POST')).res.status).toBe(200);
+  const a=await request(`/projects/${project.id}/jobs`,{kind:'export',idempotencyKey:'same-export-01'},'POST');
+  const b=await request(`/projects/${project.id}/jobs`,{kind:'export',idempotencyKey:'same-export-01'},'POST');expect(a.value.id).toBe(b.value.id);
+  await processJob(db,await claimJob(db,'render',owner));
+  const done=(await request(`/jobs/${a.value.id}`)).value;expect(done.status,done.error).toBe('completed');
+  const zip=await request(`/jobs/${a.value.id}/files/zip`);expect(zip.res.status).toBe(200);expect(zip.value.subarray(0,2).toString()).toBe('PK');
+  const record=await db.studioExport.findUnique({where:{jobId:a.value.id}});expect(record.manifest.files).toHaveLength(2);
+ },60000);
  it('isolates new composition and format approvals from legacy approvals', async()=>{
   const payload=newPostProject('preview');Object.assign(payload.content,{opponent:'Koszalin Basketball',opponentShort:'KBS',date:'2026-10-11T14:30:00+02:00',altText:'Zapowiedź meczu.'});
   const v=(await request('/projects',payload,'POST')).value;
-  expect(v.revision.templateVersion).toBe('2.0.0:preview:sport');
+  expect(v.revision.templateVersion).toBe(projectTemplateVersion(payload));
   const catalog=(await request('/templates')).value;expect(catalog.postTypes).toHaveLength(postTypes.length);
-  expect(catalog.postTypes.find(p=>p.id==='preview').designs.every(d=>d.status==='draft')).toBe(true);
+  expect(catalog.postTypes.find(p=>p.id==='preview').designs.filter(d=>d.kit==='B').every(d=>d.status==='draft')).toBe(true);
   expect((await request(`/projects/${v.id}/jobs`,{kind:'export',idempotencyKey:'unapproved-v2'},'POST')).res.status).toBe(422);
   const p=(await request(`/projects/${v.id}/jobs`,{kind:'preview',format:'feed'},'POST')).value;
   const j=await claimJob(db,'render',owner);expect(j.id).toBe(p.id);await processJob(db,j);
   const done=(await request(`/jobs/${p.id}`)).value;expect(done.status,done.error).toBe('completed');
   expect((await request('/templates/announcement/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
   expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
-  expect((await request('/designs/preview/photo/feed/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(422);
+  expect((await request('/designs/preview/photo/feed/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(404);
   expect((await request('/designs/preview/sport/feed/approve',{confirmed:true,previewJobId:p.id},'POST')).res.status).toBe(200);
   const states=(await request('/templates')).value.postTypes.find(p=>p.id==='preview').designs;
-  expect(states.filter(d=>d.status==='approved')).toEqual([{style:'sport',format:'feed',status:'approved'}]);
-  expect((await request(`/projects/${v.id}/validation`)).value.errors.map(e=>e.field)).toContain('template');
+  expect(states.find(d=>d.style==='sport'&&d.format==='feed'&&d.kit==='A').status).toBe('approved');expect(states.find(d=>d.style==='sport'&&d.format==='feed'&&d.kit==='B').status).toBe('draft');
+  const kitB={...payload,content:{...payload.content,kit:'B',kitBConfirmed:true}};expect(designKey(kitB,'feed')).not.toBe(designKey(payload,'feed'));const ctx=await import('../../studio/service.js');expect((await ctx.validation(db,owner,{...v,payload:kitB})).errors.map(e=>e.field)).toContain('template');
   const story=(await request(`/projects/${v.id}/jobs`,{kind:'preview',format:'story'},'POST')).value;
   await processJob(db,await claimJob(db,'render',owner));
   expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:story.id},'POST')).res.status).toBe(200);
@@ -138,7 +152,7 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   const exp=(await request(`/projects/${v.id}/jobs`,{kind:'export',idempotencyKey:'approved-v2'},'POST')).value;
   await processJob(db,await claimJob(db,'render',owner));
   expect((await request(`/jobs/${exp.id}`)).value.status).toBe('completed');
-  const record=await db.studioExport.findUnique({where:{jobId:exp.id}});expect(record.manifest).toMatchObject({postType:'preview',visualStyle:'sport',designVersion:'2.0.0',rendererVersion:'2.0.0'});
+  const record=await db.studioExport.findUnique({where:{jobId:exp.id}});expect(record.manifest).toMatchObject({postType:'preview',visualStyle:'sport',designVersion:'3.0.0',rendererVersion:'3.0.0'});
   const changed=await request(`/projects/${v.id}`,{expectedRevision:1,project:{...payload,visualStyle:'editorial'}},'PUT');expect(changed.value.currentRevision).toBe(2);
   expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:story.id},'POST')).res.status).toBe(422);
  },60000);

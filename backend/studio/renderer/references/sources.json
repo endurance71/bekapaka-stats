@@ -1,0 +1,14 @@
+{
+  "core": {
+    "source": "03_szablony/rdzen-v6/build.py",
+    "sha256": "b8a30f97409c6caf2d4d484018884a9beae7df8b8c389ba29552729a17737933",
+    "status": "draft",
+    "functionsSha256": "2b37f4a4992567899ccb83b22d8b6de77c28e5356c8414f899da09628c92ad27"
+  },
+  "kit_b": {
+    "source": "03_szablony/stroj-b/build.py",
+    "sha256": "39cfb88a00cca85fd71f3392811b17f033d8d638713c54ad3088735450a65ee0",
+    "status": "draft",
+    "functionsSha256": "a134575623a73b448a534b755edde7ce871c380721278a8e4c8853fd98a768b1"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "version": "3.0.0",
+  "sha256": "5439ca4f9771899e02851f2cb375f2e935480755a69e860352a527b9b6b59568",
+  "files": {
+    "renderer/render.py": "2ab6b5aa9e42901b3399eb45c5a07138e68a835fce4fdcbdf5a105b7e5a504b1",
+    "renderer/render_v3.py": "7682d484a79f3a6dd0a79e95f5ad5365afa147e0769ec903b1ad6c72fd9b2003",
+    "renderer/render_v2.py": "5622d6ea6a640f51e269ca291c772b0a75c76237d7ce5483086ca3cc6718ef2d",
+    "renderer/references/core.py": "2b37f4a4992567899ccb83b22d8b6de77c28e5356c8414f899da09628c92ad27",
+    "renderer/references/kit_b.py": "a134575623a73b448a534b755edde7ce871c380721278a8e4c8853fd98a768b1",
+    "renderer/references/sources.json": "6c1b62a39af631dc6b22c7c2e245289fea5c3a0b2f08ee442d23ba7745e8b694",
+    "render.js": "befe6204545d0d3d0baa4200e5baafe7825a868b76ce61bf7c441e192a8b0463",
+    "post-types.js": "643ddeb65184054511a00cd8c7bc8986ed5ec7ac48dba33461e7da80c981a33f",
+    "contracts.js": "31560270ed64ab5d71d27fca8ec3ba8e37b0c5636d8591d52a00994e37e99a7b",
+    "validation.js": "a32255054f4e261784ff27540afda30392f6698e7afa7c21a62a88f11972a374",
+    "material-context.js": "022cd4bd5cd02928be36c4e16067910ad7b85248ef725a6063f1ae72fec0904e",
+    "composition-specs.json": "2b002f12d65b536b0c8c359f7d491dcbd4bf107fe14e2b514a839fdf35fa029d"
+  },
+  "approval": "requires-owner-review"
+}
