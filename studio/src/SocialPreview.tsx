@@ -21,7 +21,7 @@ export default function SocialPreview({ src, alt, format, platform, safeZones, c
   const spec = formats[format as keyof typeof formats]; const story = format === 'story';
   const style = { '--art-ratio': spec.width / spec.height } as CSSProperties;
   const image = <img className={`social-artwork ${stale ? 'stale-preview' : ''}`} src={src} alt={alt} width={spec.width} height={spec.height}/>;
-  const guide = story && safeZones && <div className="social-safe-guide" aria-label="Strefa informacji: 72–1008 px poziomo, 260–1600 px pionowo"><div className="safe-top"><span>Górny interfejs · 260 px</span></div><div className="safe-center"/><div className="safe-bottom"><span>Dolny interfejs · 320 px</span></div></div>;
+  const guide = story && safeZones && <div className="social-safe-guide" aria-label="Strefa informacji: 72–1008 px poziomo, 260–1848 px pionowo"><div className="safe-top"><span>Górny interfejs · 260 px</span></div><div className="safe-center"/><div className="safe-bottom"><span>Margines dolny · 72 px</span></div></div>;
   if (platform === 'artwork') return <div className={`artwork-preview ${phone ? 'at-phone-width' : ''}`} style={style}>{image}{guide}</div>;
   if (story) return <div className={`social-device story-device ${platform}`} style={style} aria-label={`Symulacja relacji ${platform === 'instagram' ? 'Instagram' : 'Facebook'}`}>
     <div className="story-status-space" aria-hidden="true"/>

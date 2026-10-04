@@ -1,9 +1,9 @@
 {
   "version": "3.0.0",
-  "sha256": "5439ca4f9771899e02851f2cb375f2e935480755a69e860352a527b9b6b59568",
+  "sha256": "b0b6e6a2f14afdddefd6b93f97a99c14d0cf97ec42028d91161920599b588427",
   "files": {
-    "renderer/render.py": "2ab6b5aa9e42901b3399eb45c5a07138e68a835fce4fdcbdf5a105b7e5a504b1",
-    "renderer/render_v3.py": "7682d484a79f3a6dd0a79e95f5ad5365afa147e0769ec903b1ad6c72fd9b2003",
+    "renderer/render.py": "60e776d5c65be2f1a815cebeec34f1d284a1ded9bc7ba1af97f2ff8bc93c900a",
+    "renderer/render_v3.py": "f9f5da4c018aa399386de54019e32e3bc3c0766debc66546dadea0a367f640f5",
     "renderer/render_v2.py": "5622d6ea6a640f51e269ca291c772b0a75c76237d7ce5483086ca3cc6718ef2d",
     "renderer/references/core.py": "2b37f4a4992567899ccb83b22d8b6de77c28e5356c8414f899da09628c92ad27",
     "renderer/references/kit_b.py": "a134575623a73b448a534b755edde7ce871c380721278a8e4c8853fd98a768b1",
@@ -13,7 +13,7 @@
     "contracts.js": "31560270ed64ab5d71d27fca8ec3ba8e37b0c5636d8591d52a00994e37e99a7b",
     "validation.js": "a32255054f4e261784ff27540afda30392f6698e7afa7c21a62a88f11972a374",
     "material-context.js": "022cd4bd5cd02928be36c4e16067910ad7b85248ef725a6063f1ae72fec0904e",
-    "composition-specs.json": "2b002f12d65b536b0c8c359f7d491dcbd4bf107fe14e2b514a839fdf35fa029d"
+    "composition-specs.json": "9f26604159c8e65187ff94f157793b688a606b3ab483072ca40ff3949c43a704"
   },
   "approval": "requires-owner-review"
 }

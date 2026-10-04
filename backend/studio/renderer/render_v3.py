@@ -12,7 +12,7 @@ NAVY_D='#0B1E55'; NAVY_P='#0E2770'; MUT_B='#AFC0EE'
 def grid(p):
     # (ribbon, metadata, mark centre, mark height, score, names, panel, stripes, footer)
     return {'feed':(74,204,400,270,880,950,1030,1176,1270),
-            'story':(270,400,700,270,1180,1250,1330,1476,1560),
+            'story':(270,400,790,270,1350,1420,1500,1746,1840),
             'square':(74,180,330,220,670,730,805,905,990),
             'landscape':(74,190,350,270,725,790,860,924,990)}[p.format_name]
 

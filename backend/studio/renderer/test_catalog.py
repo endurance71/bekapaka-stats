@@ -24,6 +24,13 @@ class CatalogTests(unittest.TestCase):
                                 for f,qa in zip(r['files'],r['checks']):
                                     self.assertFalse(qa['errors']);self.assertNotIn('<text',Path(f['svg']).read_text())
                                     self.assertEqual((f['width'],f['height']),(1080,1920) if fmt=='story' else (1080,1350) if fmt=='feed' else (1080,1080) if fmt=='square' else (1920,1080))
+                                    if fmt=='story':
+                                        for element in qa['text']:
+                                            self.assertGreaterEqual(element['bounds'][1],260)
+                                            self.assertLessEqual(element['bounds'][3],1848)
+                                        footer=next(element for element in qa['text'] if element['text']=='PODGLĄD ROBOCZY')
+                                        self.assertGreater(footer['bounds'][1],1600)
+
                                 if fmt=='feed' and uniform=='A':geometries.append(Path(r['files'][0]['svg']).read_text())
                 with self.subTest(publication=t['id'],distinct_styles=True):
                     self.assertEqual(len({json.dumps(g) for g in geometries}),len(t['styles']),'Available compositions must differ')
@@ -86,3 +93,13 @@ class CatalogTests(unittest.TestCase):
                                     r=render({'project':p},fmt,tmp,'preview',{},[])
                                     self.assertFalse(r['checks'][0]['errors'])
                                     self.assertTrue(r['files'])
+
+    def test_story_uses_bottom_margin_instead_of_320px_ui_reservation(self):
+        p=next(t for t in self.catalog if t['id']=='final')['projects'][0]
+        with tempfile.TemporaryDirectory() as tmp:
+            r=render({'project':p},'story',tmp,'preview',{},[])
+            self.assertEqual((r['files'][0]['width'],r['files'][0]['height']),(1080,1920))
+            self.assertFalse(r['checks'][0]['errors'])
+            footer=next(b for b in r['checks'][0]['text'] if b['text']=='PODGLĄD ROBOCZY')
+            self.assertGreater(footer['bounds'][1],1600)
+            self.assertLessEqual(footer['bounds'][3],1848)

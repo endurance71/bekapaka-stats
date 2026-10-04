@@ -26,7 +26,7 @@ class RendererTests(unittest.TestCase):
                             self.assertFalse(qa['errors']);self.assertNotIn('<text',Path(f['svg']).read_text())
                             if fmt=='story':
                                 for text in qa['text']:
-                                    self.assertGreaterEqual(text['bounds'][1],260);self.assertLessEqual(text['bounds'][3],1600)
+                                    self.assertGreaterEqual(text['bounds'][1],260);self.assertLessEqual(text['bounds'][3],1848 if p.get('designVersion')=='3.0.0' else 1600)
     def test_alternate_compositions_kit_b_and_photo_crop(self):
         from PIL import Image
         with tempfile.TemporaryDirectory() as tmp:

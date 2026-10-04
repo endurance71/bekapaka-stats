@@ -34,3 +34,7 @@ Otwarte kryteria planu: ocena pierwszego wyniku B, zatwierdzone wzorce pozostał
 `output/studio-brandbook-repair/comparison.png`: źródło marki po lewej, wynik nowego renderera po prawej. `feed-review.png`: dziewięć przykładowych materiałów. `index.html`: galeria z opisem źródeł i ograniczeń. Katalog jest lokalnym artefaktem, ignorowanym przez Git.
 
 Podgląd galerii: http://localhost:5175/. Studio: http://localhost:5174/.
+
+## Korekta Story po odbiorze właściciela
+
+04.10.2026: właściciel odrzucił rezerwę dolnego interfejsu 320 px jako zbędną w tym podglądzie. Bieżąca kompozycja Story wykorzystuje y=260–1848, z marginesem 72 px. Reguła dotyczy wszystkich bieżących rodzin i kompozycji Story, zarówno na Instagram, jak i Facebook. Nakładka podglądu opisuje margines, nie interfejs. Wynik i stopka zostały rozłożone na większej wysokości; master i eksport pozostają 1080×1920. Historyczne renderery pozostają bez zmian. Jest to jawna decyzja właściciela zastępująca wcześniejszą dolną granicę 1600 px. Kontrola: 20 testów renderera oraz 12 testów interfejsu.

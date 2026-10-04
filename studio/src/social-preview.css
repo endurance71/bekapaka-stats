@@ -30,9 +30,9 @@
 .social-safe-guide{position:absolute;inset:0;pointer-events:none;z-index:1;container-type:inline-size}
 .safe-top,.safe-bottom{position:absolute;left:0;right:0;background:#fcbf4950;display:flex;align-items:center;justify-content:center;font-family:Barlow,sans-serif;font-size:3cqw;color:white;text-shadow:0 1px 3px #000}
 .safe-top{top:0;height:13.541667%;border-bottom:1px dashed #ffd15f}
-.safe-bottom{bottom:0;height:16.666667%;border-top:1px dashed #ffd15f}
+.safe-bottom{bottom:0;height:3.75%;border-top:1px dashed #ffd15f}
 .safe-top span,.safe-bottom span{background:#0b0b0bbf;padding:3px 6px;border-radius:2px}
-.safe-center{position:absolute;left:6.666667%;right:6.666667%;top:13.541667%;bottom:16.666667%;outline:1px dashed #ffd15f;outline-offset:-1px}
+.safe-center{position:absolute;left:6.666667%;right:6.666667%;top:13.541667%;bottom:3.75%;outline:1px dashed #ffd15f;outline-offset:-1px}
 .story-ui-top,.story-ui-bottom,.phone-home{z-index:2}
 .feed-device{background:#fff;color:#171717;width:min(360px,100%);border-radius:16px;font-size:3.5cqw}
 .feed-app-bar{display:flex;align-items:center;justify-content:space-between;padding:3.5cqw 4cqw;border-bottom:1px solid #eee}
