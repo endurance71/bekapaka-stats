@@ -17,6 +17,13 @@ describe('Player profile statistics', () => {
     expect(html).not.toContain('NaN')
   })
 
+  it('does not describe an unknown appearance count as zero or a confirmed absence', () => {
+    const html = renderToStaticMarkup(<PlayerProfile player={player} />)
+    expect(html).toContain('Liczba występów w sezonie nie jest potwierdzona.')
+    expect(html).toContain('Rozegrane mecze: <strong>—</strong>')
+    expect(html).not.toContain('po pierwszym występie')
+  })
+
   it('hides stale shooting values and bars before the first appearance', () => {
     const html = renderToStaticMarkup(
       <PlayerProfile player={{ ...player, gamesPlayed: 0, fgPercentage: 75, threePercentage: 50, ftPercentage: 100 }} />

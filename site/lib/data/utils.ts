@@ -14,6 +14,14 @@ export function sanitizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+/** Optional measurements must not acquire a zero when the source is missing or invalid. */
+export function optionalNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (typeof value !== 'string' || !value.trim()) return undefined
+  const parsed = Number(value.trim().replace(',', '.'))
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 /** Parse collection items one-by-one so a single Zod failure does not drop the list. */
 export function parseCollectionItems<T>(
   items: unknown[],

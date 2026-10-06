@@ -35,7 +35,7 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
                 <div><dt>Zb. / mecz</dt><dd>{seasonStat(player.rpg)}</dd></div>
                 <div><dt>As. / mecz</dt><dd>{seasonStat(player.apg)}</dd></div>
               </dl>
-              {!hasGames && <p className="muted">Statystyki pojawią się po pierwszym występie w sezonie.</p>}
+              {!hasGames && <p className="muted">{player.gamesPlayed === 0 ? 'Statystyki pojawią się po pierwszym występie w sezonie.' : 'Liczba występów w sezonie nie jest potwierdzona.'}</p>}
               <div className="profile-physicals">
                 {player.heightCm && <span>Wzrost: <strong>{player.heightCm} cm</strong></span>}
                 {player.birthDate && <span>Urodzony: <strong>{player.birthDate}</strong></span>}
@@ -73,7 +73,7 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
 
         <div className="stats-dashboard-summary-row">
           <span>
-            Rozegrane mecze: <strong>{player.gamesPlayed || 0}</strong>
+            Rozegrane mecze: <strong>{player.gamesPlayed ?? '—'}</strong>
           </span>
           {hasGames && player.eval !== null && player.eval !== undefined && (
             <span>

@@ -12,7 +12,7 @@ import {
   type RosterPlayer,
   type TeamStanding
 } from './schemas'
-import { parseCollectionItems, sanitizeNumber, sanitizeText, hasPlayerPhoto, resolvePlayerPhoto } from './utils'
+import { parseCollectionItems, optionalNumber, sanitizeNumber, sanitizeText, hasPlayerPhoto, resolvePlayerPhoto } from './utils'
 
 export async function getLeagueTable(): Promise<TeamStanding[]> {
   const state = await getLeagueTableState()
@@ -500,30 +500,31 @@ export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
         number: sanitizeText(player.number, '-'),
         photo: player.photo ? String(player.photo) : null,
         photoUrl: player.photo_url || player.photoUrl ? String(player.photo_url || player.photoUrl) : null,
-        ppg: player.ppg !== undefined ? sanitizeNumber(player.ppg, 0) : undefined,
-        rpg: player.rpg !== undefined ? sanitizeNumber(player.rpg, 0) : undefined,
-        apg: player.apg !== undefined ? sanitizeNumber(player.apg, 0) : undefined,
-        eval: player.eval !== undefined && player.eval !== null ? sanitizeNumber(player.eval, 0) : null,
-        fgPercentage: player.fgPercentage !== undefined ? sanitizeNumber(player.fgPercentage, 0) : undefined,
-        threePercentage: player.threePercentage !== undefined ? sanitizeNumber(player.threePercentage, 0) : undefined,
-        ftPercentage: player.ftPercentage !== undefined ? sanitizeNumber(player.ftPercentage, 0) : undefined,
-        tsPercentage: player.tsPercentage !== undefined && player.tsPercentage !== null ? sanitizeNumber(player.tsPercentage, 0) : null,
-        eFgPercentage: player.eFgPercentage !== undefined && player.eFgPercentage !== null ? sanitizeNumber(player.eFgPercentage, 0) : null,
-        plusMinus: player.plusMinus !== undefined && player.plusMinus !== null ? sanitizeNumber(player.plusMinus, 0) : null,
+        ppg: optionalNumber(player.ppg),
+        rpg: optionalNumber(player.rpg),
+        apg: optionalNumber(player.apg),
+        eval: optionalNumber(player.eval) ?? null,
+        fgPercentage: optionalNumber(player.fgPercentage),
+        threePercentage: optionalNumber(player.threePercentage),
+        ftPercentage: optionalNumber(player.ftPercentage),
+        tsPercentage: optionalNumber(player.tsPercentage) ?? null,
+        eFgPercentage: optionalNumber(player.eFgPercentage) ?? null,
+        plusMinus: optionalNumber(player.plusMinus) ?? null,
         seasonId: typeof player.seasonId === 'string' ? player.seasonId : undefined,
         seasonLabel: typeof player.seasonLabel === 'string' ? player.seasonLabel : undefined,
-        numberSource: typeof player.number === 'string' && player.number.trim() && player.number !== '-' ? 'source' as const : 'brand-fallback' as const,
-        ...Object.fromEntries(['fgm', 'fga', 'threePm', 'threePa', 'ftm', 'fta'].map(key => [key, typeof player[key] === 'number' ? player[key] : undefined])),
-        gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
+        numberSource: sanitizeText(player.number).trim() && sanitizeText(player.number).trim() !== '-' ? 'source' as const : 'unknown' as const,
+        ...Object.fromEntries(['fgm', 'fga', 'threePm', 'threePa', 'ftm', 'fta'].map(key => [key, optionalNumber(player[key])])),
+        gamesPlayed: optionalNumber(player.gamesPlayed),
         birthDate: player.birthDate ? String(player.birthDate) : null,
-        heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,
+        heightCm: optionalNumber(player.heightCm) ?? null,
         aiDevelopmentSummary: player.aiDevelopmentSummary ? String(player.aiDevelopmentSummary) : null,
         games: Array.isArray(player.games) ? player.games : undefined
       })
       const resolvedNumber = resolvePlayerJerseyNumber(normalized)
       return {
         ...normalized,
-        number: resolvedNumber ?? normalized.number
+        number: resolvedNumber ?? normalized.number,
+        numberSource: normalized.numberSource === 'source' ? 'source' as const : resolvedNumber ? 'brand-fallback' as const : 'unknown' as const
       }
     })
     const records = await getMediaRecords()
