@@ -1,0 +1,14 @@
+npm notice run bekapaka-site@0.1.0 test
+npm notice run vitest run
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /Volumes/External-drive-lexar/Dev/Projects/BeKaPaKa - stats/site
+
+
+ Test Files  24 passed (24)
+      Tests  154 passed (154)
+   Start at  21:17:43
+   Duration  942ms (transform 1.93s, setup 0ms, import 4.08s, tests 811ms, environment 2ms)
+

@@ -1,0 +1,65 @@
+npm notice run bekapaka-site@0.1.0 preview:local
+npm notice run node scripts/preview-local.mjs
+npm notice run bekapaka-site@0.1.0 build
+npm notice run next build
+▲ Next.js 16.3.6 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.mjs took 6ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 593ms
+  Running TypeScript ...
+  Finished TypeScript in 1575ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/29) ...
+  Generating static pages using 9 workers (7/29) 
+  Generating static pages using 9 workers (14/29) 
+  Generating static pages using 9 workers (21/29) 
+✓ Generating static pages using 9 workers (29/29) in 857ms
+  Finalizing page optimization ...
+
+Route (app)                                                                             Revalidate  Expire
+┌ ○ /                                                                                           1m      1y
+├ ○ /_not-found
+├ ƒ /aktualnosci
+├   /aktualnosci/[slug]
+│ ├ ● /aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026            1m      1y
+│ ├ ● /aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026          1m      1y
+│ ├ ● /aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026                1m      1y
+│ └ ● [+5 more paths]
+├ ƒ /api/calendar
+├ ƒ /api/games/[id]
+├ ƒ /api/games/[id]/play-by-play
+├ ƒ /api/og
+├ ƒ /api/preview
+├ ƒ /api/preview/disable
+├ ƒ /api/revalidate
+├ ƒ /api/views/[slug]
+├ ○ /dokumenty                                                                                  1m      1y
+├ ● /dokumenty/[slug]
+├ ○ /klub                                                                                       1m      1y
+├ ○ /manifest.webmanifest
+├ ƒ /mecze
+├   /mecze/[slug]
+│ ├ ● /mecze/event                                                                              1m      1y
+│ └ ● /mecze/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026                1m      1y
+├ ○ /o-klubie
+├ ○ /robots.txt
+├ ○ /sitemap.xml                                                                                1m      1y
+├ ○ /sklad                                                                                      1m      1y
+├ ƒ /sklad/[id]
+├ ○ /sponsorzy                                                                                  1m      1y
+├ ○ /tabela                                                                                     1m      1y
+├ ○ /wydarzenia
+└ ƒ /wydarzenia/[slug]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+▲ Next.js 16.3.6
+- Local:         http://127.0.0.1:3100
+- Network:       http://127.0.0.1:3100
+✓ Ready in 0ms
+✓ Running next.config took 1.2ms

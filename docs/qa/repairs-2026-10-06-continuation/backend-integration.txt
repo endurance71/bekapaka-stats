@@ -1,0 +1,10 @@
+[2026-10-06T19:17:28.595Z] PATCH /api/admin/matches/game/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-game/presentation 401 - 1ms
+[2026-10-06T19:17:28.599Z] PATCH /api/admin/matches/game/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-game/presentation 403 - 1ms
+[2026-10-06T19:17:28.632Z] PATCH /api/admin/matches/game/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-game/presentation 200 - 27ms
+Auto-seeding skipped. Set ENABLE_AUTO_SEED=true to enable.
+[2026-10-06T19:17:28.643Z] GET /api/games/repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-game?seasonId=repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season 200 - 9ms
+[2026-10-06T19:17:28.648Z] GET /api/league/table?seasonId=repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season 200 - 4ms
+[2026-10-06T19:17:28.650Z] GET /api/league/table?seasonId=repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season&includeMeta=1 200 - 1ms
+[2026-10-06T19:17:28.654Z] GET /api/league/table?seasonId=repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season&includeMeta=1 200 - 2ms
+[2026-10-06T19:17:28.663Z] GET /api/roster?seasonId=repair-d6d52384-7dcc-412c-af0e-d07ae841aa22-season 200 - 9ms
+{"authorizedSave":true,"unauthenticated":401,"nonAdmin":403,"publicRead":true,"persistedZero":true,"revalidationHttp":true,"legacyTableArray":true,"tableMetadata":true,"persistedImportTimestamp":true,"divisionMetadata":true,"rosterSeasonMetadata":true,"publicRosterPrivacy":true}
