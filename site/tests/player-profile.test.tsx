@@ -10,7 +10,7 @@ const player: RosterPlayer = {
 describe('Player profile statistics', () => {
   it('keeps missing shooting data distinct from a recorded zero', () => {
     const html = renderToStaticMarkup(
-      <PlayerProfile player={{ ...player, gamesPlayed: 1, fgPercentage: 0 }} standalone />
+      <PlayerProfile player={{ ...player, gamesPlayed: 1, fgPercentage: 0, fgm: 0, fga: 3 }} standalone />
     )
     expect(html).toContain('0.0%')
     expect(html).not.toContain('—%')

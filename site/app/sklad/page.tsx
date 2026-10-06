@@ -19,7 +19,7 @@ export default async function RosterPage() {
   return (
     <EditorialListingTemplate
       title='Skład drużyny'
-      description={`Sezon 2026/2027 · II Dywizja KALK · ${roster.length} zawodników w kadrze BeKaPaKa Bobolice.`}
+      description={`${roster[0]?.seasonLabel || 'Sezon niepotwierdzony'} · KALK · ${roster.length} zawodników w kadrze BeKaPaKa Bobolice.`}
       eyebrow='Drużyna · KALK Koszalin'
       hasItems={roster.length > 0}
       stateStatus={rosterState.status}

@@ -31,7 +31,7 @@ describe('Sprint 2: Hierarchy, Presentation & Navigation Patterns', () => {
 
     it('renders Dojazd directions link with Google Maps search query for scheduled match', () => {
       const html = renderToStaticMarkup(<MatchCard game={scheduledGame} />)
-      expect(html).toContain('Dojazd')
+      expect(html).toContain('Szukaj hali w mapach')
       expect(html).toContain('google.com/maps/search/?api=1&amp;query=')
       expect(html).toContain(encodeURIComponent('Hala KOSiR, Koszalin'))
     })

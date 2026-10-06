@@ -104,7 +104,7 @@ export function StreakBadge({ streak }: { streak?: string | null }) {
   const displayStreak = upper.startsWith('L') ? `P${streak.slice(1)}` : streak
   return (
     <span className={`standings-badge standings-badge--streak ${cls}`}>
-      {displayStreak}
+      <span aria-hidden='true'>{displayStreak}</span><span className='sr-only'>{isWin ? 'Seria wygranych' : isLoss ? 'Seria porażek' : 'Seria'}: {streak.replace(/\D/g, '')}</span>
     </span>
   )
 }
@@ -123,7 +123,7 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
       )}
 
       <div className='standings-board-shell' tabIndex={0} role='region' aria-label='Tabela ligi, przewijaj poziomo'>
-        <table className={`standings-table standings-table--tab-${viewMode}`} aria-label='Tabela ligowa Dywizji II'>
+        <table className={`standings-table standings-table--tab-${viewMode}`} aria-label='Tabela ligowa'>
           <thead>
             <tr>
               <th scope='col' className='col-pos'>#</th>
@@ -193,7 +193,7 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
         <span><strong>M</strong> – mecze</span>
         <span><strong>W</strong> – wygrane</span>
         <span><strong>P</strong> – porażki</span>
-        <span><strong>+/−</strong> – małe punkty</span>
+        <span><strong>+</strong> – punkty zdobyte</span><span><strong>−</strong> – punkty stracone</span><span><strong>+/−</strong> – różnica punktów zdobytych i straconych</span><span><strong>Forma</strong> – ostatnie wyniki: W wygrana, P porażka</span><span><strong>Seria</strong> – liczba kolejnych wygranych lub porażek</span>
         <span><strong>PKT</strong> – punkty ligowe (2 za wygraną, 1 za porażkę)</span>
       </div>
     </div>

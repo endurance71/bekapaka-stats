@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { ShareActions } from './ShareActions'
 import type { RosterPlayer } from '../../../lib/data'
 import { FallbackImage } from './FallbackImage'
+import { completeSum, shotPercentage, shotLabel } from '../../../lib/basketball-stats'
 import { formatDate, formatStat } from '../../../lib/format'
 import { getPositionLabel, resolvePlayerPhoto } from '../../../lib/data/utils'
 export function PlayerProfile({ player, standalone = false }: { player: RosterPlayer; standalone?: boolean }) {
@@ -10,11 +11,13 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
   const photoSrc = resolvePlayerPhoto(player)
   const hasGames = (player.gamesPlayed ?? 0) > 0
   const seasonStat = (value?: number | null) => hasGames ? formatStat(value) : '—'
+  const total = (key: 'fgm' | 'fga' | 'threePm' | 'threePa' | 'ftm' | 'fta') => player[key] ?? completeSum((player.games || []).map(game => game[key]))
   const shootingStats = [
-    { label: 'Rzuty z gry (FG%)', value: player.fgPercentage },
-    { label: 'Rzuty za 3 (3P%)', value: player.threePercentage },
-    { label: 'Rzuty wolne (FT%)', value: player.ftPercentage }
+    { label: 'Rzuty z gry (FG%)', made: total('fgm'), attempted: total('fga') },
+    { label: 'Rzuty za 3 (3P%)', made: total('threePm'), attempted: total('threePa') },
+    { label: 'Rzuty wolne (FT%)', made: total('ftm'), attempted: total('fta') }
   ]
+
 
   return (
     <div className="drawer-profile-panel">
@@ -24,7 +27,9 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
             <div className="profile__text">
               {standalone && <nav aria-label="Ścieżka"><ol className="breadcrumbs"><li><Link href="/sklad">Skład</Link></li><li aria-current="page">#{player.number || '—'}</li></ol></nav>}
               <p className="label accent">{getPositionLabel(player.position)} · #{player.number || '—'}</p>
-              <Heading><span className="profile__first-name">{player.firstName}</span>{' '}<span className="profile__name brand-cut">{player.lastName}</span></Heading>
+              <Heading><span className="profile__first-name">{player.firstName}</span>{' '}<span className="profile__name">{player.lastName}</span></Heading>
+              <p className="muted">{player.seasonLabel || 'Sezon niepotwierdzony'} · Rozegrane mecze: {player.gamesPlayed ?? '—'}</p>
+              {player.numberSource === 'brand-fallback' && <p className="muted text-xs">Numer z materiałów klubu; protokół meczu może podawać inny numer.</p>}
               <dl className="statstrip profile__averages">
                 <div><dt>Pkt / mecz</dt><dd>{seasonStat(player.ppg)}</dd></div>
                 <div><dt>Zb. / mecz</dt><dd>{seasonStat(player.rpg)}</dd></div>
@@ -50,20 +55,8 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
       <div className={standalone ? 'container profile__details' : 'profile__details'}>
       {/* Core Stats Overview */}
       <div className="drawer-section-v2">
-        <StatHeading className="drawer-section-title">Średnie statystyki sezonu</StatHeading>
+        <StatHeading className="drawer-section-title">Statystyki sezonu</StatHeading>
         <div className="stats-dashboard-grid">
-          <div className="dashboard-stat-box highlight-box-gold">
-            <span className="db-stat-val">{seasonStat(player.ppg)}</span>
-            <span className="db-stat-label">PUNKTY (PTS)</span>
-          </div>
-          <div className="dashboard-stat-box">
-            <span className="db-stat-val">{seasonStat(player.rpg)}</span>
-            <span className="db-stat-label">ZBIÓRKI (REB)</span>
-          </div>
-          <div className="dashboard-stat-box">
-            <span className="db-stat-val">{seasonStat(player.apg)}</span>
-            <span className="db-stat-label">ASYSTY (AST)</span>
-          </div>
           <div className="dashboard-stat-box">
             <span
               className={`db-stat-val ${player.plusMinus != null && player.plusMinus > 0 ? 'color-win' : player.plusMinus != null && player.plusMinus < 0 ? 'color-loss' : ''}`}
@@ -95,16 +88,17 @@ export function PlayerProfile({ player, standalone = false }: { player: RosterPl
       <div className="drawer-section-v2">
         <StatHeading className="drawer-section-title">Skuteczność rzutowa</StatHeading>
 
-        {shootingStats.map(({ label, value }) => {
-          const available = hasGames && value != null && Number.isFinite(value)
+        {shootingStats.map(({ label, made, attempted }) => {
+          const value = shotPercentage(made, attempted)
+          const available = hasGames && value != null
           return (
             <div className="stat-bar-premium" key={label}>
               <div className="sb-label-group">
                 <span className="sb-label-text">{label}</span>
-                <span className="sb-value-text">{available ? `${formatStat(value)}%` : '—'}</span>
+                <span className="sb-value-text">{available ? `${formatStat(value)}%` : '—'} · {hasGames ? shotLabel(made, attempted) : '—'} celne/próby</span>
               </div>
               <div className="sb-track-premium" aria-hidden="true">
-                <div className="sb-fill-premium" style={{ width: `${available ? Math.max(0, Math.min(100, value)) : 0}%` }} />
+                <div className="sb-fill-premium" style={{ width: `${available ? Math.max(0, Math.min(100, value ?? 0)) : 0}%` }} />
               </div>
             </div>
           )

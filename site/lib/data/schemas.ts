@@ -166,6 +166,15 @@ export const rosterPlayerSchema = z.object({
   eFgPercentage: z.number().nullable().optional(),
   plusMinus: z.number().nullable().optional(),
   gamesPlayed: z.number().optional(),
+  seasonId: z.string().optional(),
+  seasonLabel: z.string().optional(),
+  numberSource: z.enum(['source', 'brand-fallback', 'unknown']).optional(),
+  fgm: z.number().optional(),
+  fga: z.number().optional(),
+  threePm: z.number().optional(),
+  threePa: z.number().optional(),
+  ftm: z.number().optional(),
+  fta: z.number().optional(),
   birthDate: z.string().nullable().optional(),
   heightCm: z.number().nullable().optional(),
   aiDevelopmentSummary: z.string().nullable().optional(),
@@ -213,4 +222,5 @@ export type DataState<T> = {
   data: T
   source: DataStateSource
   message?: string
+  meta?: { season?: { id: string; label: string; slug?: string } | null; division?: string | null; updatedAt?: string | null }
 }

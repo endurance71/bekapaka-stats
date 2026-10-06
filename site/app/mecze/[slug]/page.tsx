@@ -1,5 +1,6 @@
 import { serializeJsonLd } from '../../../lib/json-ld'
 import { getAllEvents } from '../../../lib/data/cms'
+import { getLeagueTableState } from '../../../lib/data/backend'
 import { getGameByIdState } from '../../../lib/data/backend'
 import { LiveMatchCard } from '../../../components/public/shared/LiveMatchCard'
 import { MatchDrawerContent } from '../MatchDrawerContent'
@@ -59,8 +60,12 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
 export default async function MatchDetailPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params
   if (slug.startsWith('kalk-')) {
-    const game = (await getGameByIdState(slug.slice(5))).data
+    const state = await getGameByIdState(slug.slice(5))
+    if (state.status === 'error') throw new Error('Nie udało się pobrać szczegółów meczu')
+    const game = state.data
     if (!game) notFound()
+    const table = (await getLeagueTableState()).data
+    game.opponentLogoUrl ||= table.find(row => row.name.toLocaleLowerCase() === game.opponent.toLocaleLowerCase())?.logoUrl || undefined
     const isFinal = game.status === 'FINAL' || (!game.status && !!game.result)
     const parentHref = isFinal ? '/mecze?widok=wyniki' : '/mecze'
     return (

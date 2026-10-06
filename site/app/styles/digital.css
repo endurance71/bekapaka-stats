@@ -741,9 +741,9 @@ a:not(.button):hover { text-decoration-thickness:2px; }
 .boxscore-table thead th { font: 600 13px/1 var(--font-text); letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); background: var(--surface); }
 .boxscore-col-player { position: sticky; left: 0; z-index: 1; background: var(--surface); min-width: 140px; text-align: left !important; box-shadow: 1px 0 0 var(--border); }
 .boxscore-table thead th.boxscore-col-player { z-index: 3; background: var(--surface); }
-.boxscore-table tbody tr:nth-child(even) td.boxscore-col-player { background: var(--bg-secondary); }
-.boxscore-table tbody tr:nth-child(odd) td.boxscore-col-player { background: var(--surface); }
-.boxscore-table tbody tr:hover td.boxscore-col-player { background: var(--surface-raised); }
+.boxscore-table tbody tr:nth-child(even) th.boxscore-col-player { background: var(--bg-secondary); }
+.boxscore-table tbody tr:nth-child(odd) th.boxscore-col-player { background: var(--surface); }
+.boxscore-table tbody tr:hover th.boxscore-col-player { background: var(--surface-raised); }
 .boxscore-player-cell { display: flex; align-items: baseline; gap: var(--space-2); }
 .boxscore-player-name { font-weight: 600; white-space: nowrap; }
 .boxscore-player-number { font-weight: 400; color: var(--text-muted); }
@@ -756,6 +756,17 @@ a:not(.button):hover { text-decoration-thickness:2px; }
 .boxscore-team-tab--active { background: var(--accent); color: var(--c-black) !important; font-weight: 700; }
 
 .boxscore-total-row th, .boxscore-total-row td { background: var(--surface-raised) !important; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+ .boxscore-view-toggle { display: none; }
+@media (max-width: 767px) {
+  .boxscore-view-toggle { display: inline-flex; }
+  .boxscore-table[data-view="basic"] { min-width: 0; table-layout: fixed; }
+  .boxscore-table[data-view="basic"] tr > :nth-child(n+4):nth-child(-n+13),
+  .boxscore-table[data-view="basic"] tr > :nth-child(n+16) { display: none; }
+  .boxscore-table[data-view="basic"] .boxscore-col-player { width: 42%; min-width: 0; }
+  .boxscore-table[data-view="basic"] th, .boxscore-table[data-view="basic"] td { padding: 10px 4px; }
+  .boxscore-table[data-view="basic"] .boxscore-player-cell { flex-wrap: wrap; }
+  .boxscore-table[data-view="basic"] .boxscore-player-name { white-space: normal; overflow-wrap: anywhere; }
+}
 .boxscore-legend { display: flex; flex-direction: column; gap: 4px; margin-top: var(--space-3); line-height: 1.4; }
 
 .article-markdown__score {display:flex;flex-wrap:wrap;justify-content:space-between;gap:var(--space-4);padding:var(--space-6);border-top:3px solid var(--accent);background:var(--surface);margin-block:var(--space-6)}

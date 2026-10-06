@@ -307,7 +307,7 @@ const fallbackGames: GameSummary[] = [
 
 export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> {
   try {
-    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), {
+    const response = await fetchJsonState<Array<Record<string, unknown>> | { data: Array<Record<string, unknown>>; meta?: DataState<TeamStanding[]>['meta'] }>(backendPath('/api/league/table?includeMeta=1'), {
       // Synchronizacja KALK zapisuje tabelę niezależnie od procesu Next.js.
       // Krótki TTL zapobiega utrzymaniu pustej tabeli po imporcie sezonu.
       revalidate: 60,
@@ -317,7 +317,9 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
       return resolveFallbackState('error', fallbackStandings, [], response.message)
     }
 
-    const rows = response.payload
+    const payload = Array.isArray(response.payload) ? response.payload : response.payload.data
+    const meta = Array.isArray(response.payload) ? undefined : response.payload.meta
+    const rows = payload
       .map((row) => {
         const wins = sanitizeNumber(row.wins, 0)
         const losses = sanitizeNumber(row.losses, 0)
@@ -386,7 +388,7 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
       return resolveFallbackState('empty', fallbackStandings, [], 'Brak danych tabeli z API.')
     }
 
-    return stateFromArray(items)
+    return { ...stateFromArray(items), meta }
   } catch {
     return resolveFallbackState('error', fallbackStandings, [], 'Nie udało się pobrać tabeli z backendu.')
   }
@@ -508,6 +510,10 @@ export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
         tsPercentage: player.tsPercentage !== undefined && player.tsPercentage !== null ? sanitizeNumber(player.tsPercentage, 0) : null,
         eFgPercentage: player.eFgPercentage !== undefined && player.eFgPercentage !== null ? sanitizeNumber(player.eFgPercentage, 0) : null,
         plusMinus: player.plusMinus !== undefined && player.plusMinus !== null ? sanitizeNumber(player.plusMinus, 0) : null,
+        seasonId: typeof player.seasonId === 'string' ? player.seasonId : undefined,
+        seasonLabel: typeof player.seasonLabel === 'string' ? player.seasonLabel : undefined,
+        numberSource: typeof player.number === 'string' && player.number.trim() && player.number !== '-' ? 'source' as const : 'brand-fallback' as const,
+        ...Object.fromEntries(['fgm', 'fga', 'threePm', 'threePa', 'ftm', 'fta'].map(key => [key, typeof player[key] === 'number' ? player[key] : undefined])),
         gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
         birthDate: player.birthDate ? String(player.birthDate) : null,
         heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,

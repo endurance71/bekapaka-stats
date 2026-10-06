@@ -19,8 +19,8 @@ export default async function LeagueTablePage() {
   return (
     <EditorialListingTemplate
       title='Tabela ligi'
-      eyebrow='KALK Koszalin · Dywizja II'
-      description='Sezon 2026/2027 · Aktualna pozycja zespołów, bilans meczów i punktacja.'
+      eyebrow={['KALK Koszalin', tableState.meta?.division].filter(Boolean).join(' · ')}
+      description={`${tableState.meta?.season?.label || 'Sezon niepotwierdzony'} · Aktualna pozycja zespołów, bilans meczów i punktacja.`}
       hasItems={table.length > 0}
       stateStatus={tableState.status}
       stateSource={tableState.source}
@@ -32,6 +32,7 @@ export default async function LeagueTablePage() {
           : 'Tabela zostanie uzupełniona po potwierdzeniu danych sezonu.'
       }
     >
+      <p className='muted'>{tableState.meta?.updatedAt ? `Aktualizacja danych: ${new Date(tableState.meta.updatedAt).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}` : 'Data aktualizacji nie jest dostępna.'}</p>
       <StandingsBoardInteractive table={table} />
     </EditorialListingTemplate>
   )

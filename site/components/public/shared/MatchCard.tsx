@@ -62,13 +62,13 @@ export function MatchCard({
             {game.venue || 'Miejsce zostanie potwierdzone'}
             {game.venue && game.status === 'SCHEDULED' && (
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(game.venue + ' Koszalin')}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(game.venue)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="fixture__venue-link"
-                title={`Sprawdź dojazd: ${game.venue}`}
+                title={`Szukaj hali: ${game.venue}`}
               >
-                · Dojazd
+                · Szukaj hali w mapach
               </a>
             )}
           </span>
@@ -169,13 +169,13 @@ export function MatchCard({
           <span>{game.venue || 'Miejsce zostanie potwierdzone'}</span>
           {game.venue && game.status === 'SCHEDULED' && (
             <a
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(game.venue + ' Koszalin')}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(game.venue)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="fixture__venue-link"
-              title={`Sprawdź dojazd: ${game.venue}`}
+              title={`Szukaj hali: ${game.venue}`}
             >
-              Dojazd
+              Szukaj hali w mapach
             </a>
           )}
           {game.status === 'SCHEDULED' && game.competition === 'KALK' && <span>Wstęp wolny</span>}

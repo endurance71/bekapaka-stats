@@ -1,3 +1,4 @@
+import { leagueMetadata } from './leagueMetadata.js';
 import { Prisma } from '@prisma/client';
 import { updateMatchPresentation, invalidateMatchPages } from './matchPresentation.js';
 import express from 'express';
@@ -1125,7 +1126,10 @@ app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requ
 app.get(['/api/plays', '/plays'], authenticateToken, async (req, res) => res.json(await listAllPlays(req.query.category)));
 app.get(['/api/league/table', '/league/table'], async (req, res) => {
   const phase = req.query.phase || 'regular';
-  res.json(await getLeagueTable(phase, req.query.seasonId));
+  const rows = await getLeagueTable(phase, req.query.seasonId);
+  if (req.query.includeMeta !== '1') return res.json(rows);
+  const season = req.query.seasonId ? await getSeasonById(req.query.seasonId) : await getActiveSeason();
+  res.json({ data: rows, meta: leagueMetadata(season, rows) });
 });
 app.get(['/api/league/schedule', '/league/schedule'], async (req, res) => {
   res.json(await getLeagueSchedule(req.query.seasonId));
