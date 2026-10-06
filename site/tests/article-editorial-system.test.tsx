@@ -19,7 +19,7 @@ describe('Article Editorial System', () => {
         />
       )
 
-      expect(html).toContain('class="article-detail"')
+      expect(html).toContain('class="article-detail article-detail--no-cover"')
       expect(html).toContain('class="article-detail__shell"')
       expect(html).toContain('href="/aktualnosci"')
       expect(html).toContain('Wróć do aktualności')
@@ -96,10 +96,10 @@ describe('Article Editorial System', () => {
 
     it('renders markdown images with interactive carousel and caption', () => {
       const markdown = `Oto zdjęcie z turnieju:\n\n![Puchar Burmistrza Bobolic](https://cms.bekapaka.pl/uploads/cup.jpg)`
-      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} />)
+      const html = renderToStaticMarkup(<ArticleMarkdown content={markdown} mediaRecords={[{ url: 'https://cms.bekapaka.pl/uploads/cup.jpg', alt: 'Puchar Burmistrza Bobolic', author: 'Fotograf', consentStatus: 'not_required' }]} />)
 
       expect(html).toContain('class="article-gallery"')
-      expect(html).toContain('class="article-gallery__image"')
+      expect(html).toContain('aria-label="Powiększ zdjęcie:')
       expect(html).toContain('Puchar Burmistrza Bobolic')
     })
 
@@ -221,11 +221,11 @@ W szczególności pozycje 1 i 5.`
           sectionLabel='Aktualności'
           title='II Turniej Koszykówki Społecznika'
           parentHref='/aktualnosci'
-          content={<ArticleMarkdown content={content} />}
+          content={<ArticleMarkdown content={content} mediaRecords={[1,2].map(i => ({ url: `https://cms.bekapaka.pl/img${i}.jpg`, alt: `Opis ${i}`, author: 'Fotograf', consentStatus: 'granted' as const }))} />}
         />
       )
       expect(html).toContain('class="article-gallery"')
-      expect(html).toContain('class="article-gallery__arrow')
+      expect(html).toContain('aria-label="Powiększ zdjęcie:')
     })
 
     it('Case F: Long tournament reportage (III Turniej)', () => {
@@ -365,7 +365,7 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
       expect(html).toContain('BKPK')
     })
 
-    it('sanitizes camera UUID filenames in gallery images with contextual descriptive ALT text', () => {
+    it('hides unreviewed camera files instead of inventing their description', () => {
       const markdown = `![C689418D-9A69-45B4-918D-7E3120EBA873.PNG](https://cms.bekapaka.pl/img1.png)\n![60664F9E-EF30-4247-9B96-9955516DEF27.PNG](https://cms.bekapaka.pl/img2.png)`
 
       const html = renderToStaticMarkup(
@@ -374,8 +374,8 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
 
       expect(html).not.toContain('C689418D-9A69-45B4-918D-7E3120EBA873.PNG')
       expect(html).not.toContain('60664F9E-EF30-4247-9B96-9955516DEF27.PNG')
-      expect(html).toContain('Harmonogram II Turnieju – Zdjęcie 1')
-      expect(html).toContain('Harmonogram II Turnieju – Zdjęcie 2')
+      expect(html).not.toContain('<img')
+      expect(html).not.toContain('Powiększ zdjęcie')
     })
 
     it('strictly guarantees header element order: Eyebrow -> Title -> Lead -> Meta', () => {

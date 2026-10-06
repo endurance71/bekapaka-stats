@@ -1,0 +1,42 @@
+[
+  {
+    "items": [
+      {
+        "bottom": 183.3984375,
+        "height": 19,
+        "itemHeight": 44,
+        "text": "Skład",
+        "top": 164.3984375
+      },
+      {
+        "bottom": 183.3984375,
+        "height": 19,
+        "itemHeight": 44,
+        "text": "#24",
+        "top": 164.3984375
+      }
+    ],
+    "overflow": false,
+    "width": 1440
+  },
+  {
+    "items": [
+      {
+        "bottom": 523.296875,
+        "height": 19,
+        "itemHeight": 44,
+        "text": "Skład",
+        "top": 504.296875
+      },
+      {
+        "bottom": 523.296875,
+        "height": 19,
+        "itemHeight": 44,
+        "text": "#24",
+        "top": 504.296875
+      }
+    ],
+    "overflow": false,
+    "width": 390
+  }
+]

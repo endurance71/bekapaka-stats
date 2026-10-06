@@ -34,7 +34,7 @@ describe('NewsCard media states', () => {
     const html = renderToStaticMarkup(<NewsCard item={{ ...basePost, coverImageUrl: undefined }} />)
 
     expect(html).toContain('class="news-card__placeholder"')
-    expect(html).toContain('>BKP</span>')
+    expect(html).toContain('>BeKaPaKa</span>')
   })
 
   it('supports an explicit photographic cover fit', () => {

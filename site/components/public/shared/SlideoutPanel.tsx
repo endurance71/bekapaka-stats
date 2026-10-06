@@ -37,6 +37,19 @@ export function SlideoutPanel({
 
   const overlayActive = isOpen || isPresent
 
+  useEffect(() => {
+    if (!overlayActive) return
+    previousFocusRef.current = document.activeElement as HTMLElement
+    const shell = document.querySelector<HTMLElement>('.site-shell')
+    const previous = shell?.inert || false
+    if (shell) shell.inert = true
+    return () => {
+      if (shell) shell.inert = previous
+      if (previousFocusRef.current?.isConnected) focusWithoutScroll(previousFocusRef.current)
+      previousFocusRef.current = null
+    }
+  }, [overlayActive])
+
   usePageScrollLock(overlayActive, { htmlClass: 'is-overlay-open' })
   useVisualViewportOverlay(drawerRef, isShown)
 
@@ -90,8 +103,6 @@ export function SlideoutPanel({
   useEffect(() => {
     if (!isShown) return
 
-    previousFocusRef.current = document.activeElement as HTMLElement
-
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onCloseRef.current()
     }
@@ -101,10 +112,6 @@ export function SlideoutPanel({
     return () => {
       document.removeEventListener('keydown', handleEsc)
 
-      if (previousFocusRef.current) {
-        focusWithoutScroll(previousFocusRef.current)
-      }
-      previousFocusRef.current = null
     }
   }, [isShown])
 
@@ -167,7 +174,7 @@ export function SlideoutPanel({
         className="stats-drawer__backdrop"
         onClick={() => onCloseRef.current()}
         aria-label="Zamknij panel"
-        tabIndex={isShown ? 0 : -1}
+        tabIndex={-1}
       />
       <div
         className="stats-drawer__panel"

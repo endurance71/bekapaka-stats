@@ -22,13 +22,12 @@ describe('NearestEventCard mobile layout', () => {
   it('renders header with kicker and mobile countdown in flow', () => {
     const html = renderToStaticMarkup(<NearestEventCard highlight={mockKalkHighlight} />)
 
-    expect(html).toContain('next-event-hero__header')
-    expect(html).toContain('next-event-hero__kicker')
-    expect(html).toContain('Najbliższe wydarzenie')
-    expect(html).toContain('next-event-hero__countdown--mobile')
-    expect(html).toContain('Do startu')
-    expect(html).toContain('sr-only')
-    expect(html).toContain('BEKAPAKA')
-    expect(html).toContain('KOSZ-ALL-IN')
+    expect(html).toContain('match-tile')
+    expect(html).toContain('Najbliższy mecz')
+    expect(html).toContain('match-countdown')
+    expect(html).toContain('/api/calendar?')
+    expect(html).toContain('Dodaj do kalendarza')
+    expect(html).not.toContain('next-event-glass-dock')
+
   })
 })

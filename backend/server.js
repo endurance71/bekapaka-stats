@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+import { updateMatchPresentation, invalidateMatchPages } from './matchPresentation.js';
 import express from 'express';
 import { createStudioRouter } from './studio/routes.js';
 import cors from 'cors';
@@ -263,6 +265,18 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
     res.json(game);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania meczu' });
+  }
+});
+
+app.patch('/api/admin/matches/:source/:seasonId/:id/presentation', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await updateMatchPresentation({ game: prisma.game, kalkMatch: prisma.kalkMatch, jsonNull: Prisma.DbNull }, { ...req.params, presentation: req.body.presentation });
+    if (!result) return res.status(404).json({ error: 'Nie znaleziono meczu w tym sezonie' });
+    let revalidated = false;
+    try { revalidated = await invalidateMatchPages(); } catch (error) { revalidated = false; console.error(error.message); }
+    return res.json({ presentation: result.presentation, updatedAt: result.presentationUpdatedAt, revalidated });
+  } catch (error) {
+    return res.status(error.code ? 500 : 400).json({ error: error.code ? 'Nie udało się zapisać prezentacji' : error.message });
   }
 });
 

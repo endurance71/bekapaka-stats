@@ -1,0 +1,128 @@
+[
+  {
+    "state": "front-1440",
+    "buttons": [
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant A (obecnie przód)"
+      },
+      {
+        "height": 312,
+        "label": "Pokaż tył stroju: Wariant A"
+      },
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant B (obecnie przód)"
+      },
+      {
+        "height": 312,
+        "label": "Pokaż tył stroju: Wariant B"
+      }
+    ],
+    "grid": {
+      "headingTop": 2474.8359375,
+      "height": 376,
+      "left": 72.5,
+      "top": 2517.234375,
+      "width": 728
+    },
+    "images": [
+      {
+        "alt": "Wariant A BeKaPaKa Bobolice (przód)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-a-przod-transparent-v1.png&w=384&q=75"
+      },
+      {
+        "alt": "Wariant B BeKaPaKa Bobolice (przód)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-b-przod-transparent-v1.png&w=384&q=75"
+      }
+    ],
+    "overflow": false,
+    "width": 1440
+  },
+  {
+    "state": "back-1440",
+    "buttons": [
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant A (obecnie tył)"
+      },
+      {
+        "height": 312,
+        "label": "Pokaż przód stroju: Wariant A"
+      },
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant B (obecnie tył)"
+      },
+      {
+        "height": 312,
+        "label": "Pokaż przód stroju: Wariant B"
+      }
+    ],
+    "grid": {
+      "headingTop": 2474.8359375,
+      "height": 376,
+      "left": 72.5,
+      "top": 2517.234375,
+      "width": 728
+    },
+    "images": [
+      {
+        "alt": "Wariant A BeKaPaKa Bobolice (tył)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-a-tyl-transparent-v1.png&w=384&q=75"
+      },
+      {
+        "alt": "Wariant B BeKaPaKa Bobolice (tył)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-b-tyl-transparent-v1.png&w=384&q=75"
+      }
+    ],
+    "overflow": false,
+    "width": 1440
+  },
+  {
+    "state": "front-390",
+    "buttons": [
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant A (obecnie przód)"
+      },
+      {
+        "height": 232,
+        "label": "Pokaż tył stroju: Wariant A"
+      },
+      {
+        "height": 44,
+        "label": "Obróć strój: Wariant B (obecnie przód)"
+      },
+      {
+        "height": 232,
+        "label": "Pokaż tył stroju: Wariant B"
+      }
+    ],
+    "grid": {
+      "headingTop": 4508.6328125,
+      "height": 296,
+      "left": 16,
+      "top": 4551.03125,
+      "width": 343
+    },
+    "images": [
+      {
+        "alt": "Wariant A BeKaPaKa Bobolice (przód)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-a-przod-transparent-v1.png&w=256&q=75"
+      },
+      {
+        "alt": "Wariant B BeKaPaKa Bobolice (przód)",
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fjerseys%2Fstroj-b-przod-transparent-v1.png&w=256&q=75"
+      }
+    ],
+    "overflow": false,
+    "width": 390
+  }
+]

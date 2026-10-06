@@ -53,7 +53,7 @@ export function SponsorLogoFrame({ sponsor, variant = 'card' }: SponsorLogoFrame
       style={Object.keys(frameStyle).length > 0 ? frameStyle : undefined}
       aria-hidden={variant === 'card' ? true : undefined}
     >
-      <img src={sponsor.logoUrl} alt={variant === 'slider' ? sponsor.name : ''} className={imgClass} />
+      <img width={160} height={56} loading="lazy" src={sponsor.logoUrl} alt={variant === 'slider' ? sponsor.name : ''} className={imgClass} />
     </div>
   )
 }

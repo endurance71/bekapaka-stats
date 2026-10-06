@@ -14,10 +14,10 @@ export function PageScaffold({
 }) {
   return (
     <div className='listing-page'>
-      <article className='surface-card listing-page__hero'>
+      <div className='listing-page__hero'>
         <ListingPageHero title={title} description={description ?? ''} eyebrow={eyebrow} />
-      </article>
-      <article className='surface-card listing-page__body'>{children}</article>
+      </div>
+      <div className='listing-page__body'>{children}</div>
     </div>
   )
 }

@@ -1,25 +1,12 @@
 import type { MetadataRoute } from 'next'
-import { getEvents, getNewsPosts } from '../lib/data'
-
-const siteUrl = process.env.SITE_BASE_URL || 'https://bekapaka.pl'
-
+import { getAllNewsPosts, getAllEvents, getAllDocuments } from '../lib/data/cms'
+import { getRoster, getRecentGamesState } from '../lib/data'
+import { siteBaseUrl } from '../lib/data/client'
+export const revalidate = 60
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date()
-  const [news, events] = await Promise.all([getNewsPosts(150), getEvents(150)])
-
-  const detailPages: MetadataRoute.Sitemap = [
-    ...news.map((item) => ({ url: `${siteUrl}/aktualnosci/${item.slug}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.7 })),
-    ...events.map((item) => ({ url: `${siteUrl}/mecze/${item.slug}`, lastModified: now, changeFrequency: 'weekly' as const, priority: 0.7 }))
-  ]
-
-  return [
-    { url: `${siteUrl}/`, lastModified: now, changeFrequency: 'daily', priority: 1 },
-    { url: `${siteUrl}/aktualnosci`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${siteUrl}/mecze`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${siteUrl}/tabela`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${siteUrl}/sklad`, lastModified: now, changeFrequency: 'daily', priority: 0.85 },
-    { url: `${siteUrl}/sponsorzy`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
-    { url: `${siteUrl}/klub`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
-    ...detailPages
-  ]
+ const [news,events,documents,roster,gamesState] = await Promise.all([getAllNewsPosts(),getAllEvents(),getAllDocuments(),getRoster(),getRecentGamesState()])
+ return [ ...['','aktualnosci','mecze','tabela','sklad','sponsorzy','klub','wydarzenia','dokumenty'].map(path => ({ url: `${siteBaseUrl}/${path}` })),
+ ...gamesState.data.map(item => ({ url: `${siteBaseUrl}/mecze/kalk-${encodeURIComponent(item.id)}` })),
+ ...news.map(item => ({ url: `${siteBaseUrl}/aktualnosci/${item.slug}`, lastModified: item.updatedAt || item.publishedAt })),
+ ...events.map(item => ({ url: `${siteBaseUrl}/mecze/${item.slug}` })), ...documents.map(item => ({ url: `${siteBaseUrl}/dokumenty/${item.slug}` })), ...roster.map(item => ({ url: `${siteBaseUrl}/sklad/${encodeURIComponent(item.id)}` })) ]
 }

@@ -1,0 +1,12 @@
+{
+  "useCase": "background-extraction",
+  "date": "2026-10-05",
+  "tool": "image_gen.imagegen (built-in)",
+  "status": "local_preview_trial",
+  "source": "site/public/photos/tomasz-kaszubowski.png",
+  "sourceSha256": "6dc0f18d5f04d41e4f22db390f35e9d3f7aeab506520124a19d88db87c0a560a",
+  "output": "site/public/brand/photography/tomasz-kaszubowski-cutout-v1.png",
+  "outputSha256": "69a9f566a060681b51eb67c633c7fd68a9aac45c75c444f3dc0d0446984fc56b",
+  "prompt": "Use case: background-extraction. Edit target: the referenced original photograph of Tomasz Kaszubowski, basketball player number 12. Remove ONLY the red textured background around the person and replace it with real alpha transparency. Keep the photographed man absolutely unchanged: exact facial features, expression, hair, beard, skin, pose, body proportions, shoulders, arms, jersey fabric, all original sponsor text, club emblem and number 12. This is extraction, no reconstruction or retouching. Preserve the original square framing and bottom crop; do not extend the body, change clothing, add objects, new lighting, shadows, outline or graphic elements. Clean precise silhouette including natural hair edges. The entire space outside his silhouette must be fully transparent. Preserve original subject pixels as closely as possible. Output transparent PNG cutout for an existing player profile.",
+  "review": "Próbne wycięcie AI. Przezroczystość potwierdzona; nie jest to wycięcie gwarantujące niezmienione piksele sylwetki. Widoczne drobne różnice detali twarzy i stroju oraz pozostałości czerwieni na krawędziach. Oryginał zachowany. Wariant jest stosowany tylko w lokalnym podglądzie, nie stanowi akceptacji publikacji."
+}

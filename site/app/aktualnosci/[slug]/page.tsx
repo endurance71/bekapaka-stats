@@ -1,3 +1,5 @@
+import { serializeJsonLd } from '../../../lib/json-ld'
+import { getAllNewsPosts } from '../../../lib/data/cms'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
@@ -12,7 +14,7 @@ import { calculateReadingTime, excerptFromContent, slugifyTitle } from '../../..
 import { formatDateTime } from '../../../lib/format'
 import { draftMode } from 'next/headers'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 type Params = { slug: string }
 
@@ -41,8 +43,8 @@ type NewsContext = {
 
 async function getNewsContext(slug: string): Promise<NewsContext> {
   const { isEnabled } = await draftMode()
-  const includeDrafts = isEnabled || process.env.INCLUDE_DRAFTS === 'true'
-  const items = await getNewsPosts(200, { includeDrafts })
+  const includeDrafts = isEnabled
+  const items = await getAllNewsPosts({ includeDrafts })
   const itemIndex = items.findIndex((item) => matchesNewsSlug(item, slug))
   const item = itemIndex >= 0 ? items[itemIndex] : null
   if (!item) return { item: null, related: [] }
@@ -73,11 +75,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { slug } = await params
   const item = await getNewsBySlug(slug)
-  if (!item) return { title: 'Aktualnosc | BeKaPaKa Bobolice' }
+  if (!item) return { title: 'Aktualność | BeKaPaKa Bobolice' }
   return {
     ...getSiteMetadataBase(),
     title: `${item.title} | BeKaPaKa Bobolice`,
-    description: item.excerpt || 'Aktualnosc BeKaPaKa Bobolice'
+    description: item.excerpt || 'Aktualność BeKaPaKa Bobolice',
+    alternates: { canonical: `/aktualnosci/${item.slug}` },
+    robots: (await draftMode()).isEnabled ? { index: false, follow: false } : undefined,
+    openGraph: { ...getSiteMetadataBase().openGraph, type: 'article', images: [{ url: `/api/og?type=news&id=${encodeURIComponent(item.slug)}`, width: 1200, height: 630 }] }
   }
 }
 
@@ -92,6 +97,10 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
   const viewsText = typeof item.views === 'number' && item.views > 0 ? formatViewsCount(item.views) : null
   const metaText = [formattedDate, readingTime, viewsText].filter(Boolean).join(' · ')
   const leadText = item.excerpt || excerptFromContent(item.content)
+  const isPoster =
+    item.type?.toLowerCase().includes('turniej') ||
+    item.slug.includes('turniej') ||
+    Boolean(item.tags?.some((t) => /turniej|plakat|afisz/i.test(t)))
 
   return (
     <EditorialDetailTemplate
@@ -104,31 +113,35 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
       share
       parentHref='/aktualnosci'
       parentLabel='Wróć do aktualności'
-      content={
-        <>
-          <ViewTracker slug={item.slug} />
-          {item.coverImageUrl ? (
-            <div className='article-detail__cover'>
+      coverFit={isPoster ? 'contain' : 'cover'}
+      cover={
+        item.coverImageUrl ? (
+            <div className={`article-detail__cover-media${isPoster ? ' article-detail__cover-media--contain' : ''}`}>
               <FallbackImage
                 {...getStrapiMediaProps(item.coverImageUrl, {
                   isCover: true,
                   sources: item.coverImageSources,
                   width: item.coverImageWidth,
                   height: item.coverImageHeight,
-                  sizes: '(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px'
+                  sizes: '(max-width: 1023px) 100vw, 42vw'
                 })}
-                alt={item.title}
+                alt={item.coverImageAlt || ''}
                 className='article-detail__cover-image'
                 fallbackSrc={item.coverImageUrl}
                 fetchPriority='high'
               />
             </div>
-          ) : null}
+          ) : null
+      }
+      sidebar={<ArticleRelations related={context.related} previous={context.previous} next={context.next} />}
+      content={
+        <>
+          <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: serializeJsonLd({ '@context': 'https://schema.org', '@type': 'NewsArticle', headline: item.title, datePublished: item.publishedAt, dateModified: item.updatedAt || item.publishedAt, author: { '@type': 'Organization', name: item.author || 'BeKaPaKa Bobolice' }, mainEntityOfPage: `https://bekapaka.pl/aktualnosci/${item.slug}` }) }}/>
+          <ViewTracker slug={item.slug} />
           <div className='article-content'>
-            <ArticleMarkdown content={item.content} contextTitle={item.title} />
+            <ArticleMarkdown content={item.content} contextTitle={item.title} mediaRecords={item.mediaRecords} mediaPreview={item.mediaPreview} />
           </div>
           <NewsAttachments items={item.attachments} />
-          <ArticleRelations related={context.related} previous={context.previous} next={context.next} />
         </>
       }
     />

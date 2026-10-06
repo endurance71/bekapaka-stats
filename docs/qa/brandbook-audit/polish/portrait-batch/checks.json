@@ -1,0 +1,292 @@
+{
+  "desktop": {
+    "cards": [
+      {
+        "href": "/sklad/75dd853d-e6d4-4089-883c-9392b05c252f",
+        "image": [],
+        "name": "2Jędrzej · #2BortnikNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpawel-samusionek-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "3Paweł · #3SamusionekRozgrywający"
+      },
+      {
+        "href": "/sklad/428899fd-f115-48da-be46-67e3d401f075",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpablo-iriarte-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "4Pablo · #4IriarteSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpatryk-szczesniak-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "7Patryk · #7SzczęśniakSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/21b5cd72-2f43-41cc-beea-c5dc471f5295",
+        "image": [],
+        "name": "10Marcin · #10TrawińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/4e1f208b-c0fa-40a0-9f8a-3d5a83cb0c4f",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fmiroslaw-malina-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "11Mirosław · #11MalinaSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/6e4b3066-85ba-4448-9d88-1437c68f8b05",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ftomasz-kaszubowski-portret-v3.png&w=480&q=75",
+            "width": 360
+          }
+        ],
+        "name": "12Tomasz · #12KaszubowskiRzucający obrońca"
+      },
+      {
+        "href": "/sklad/7ecbfdcc-c83e-4e55-800a-ae9a8e654cee",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fprzemyslaw-klimek-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "16Przemysław · #16KlimekSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/5b93fd48-790e-44ba-bfaa-f4e754b09b0b",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Frobert-kulik-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "21Robert · #21KulikŚrodkowy"
+      },
+      {
+        "href": "/sklad/1a13d025-0978-4640-8568-2bc4b4c9a2ef",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Femil-klos-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "23Emil · #23KłosŚrodkowy"
+      },
+      {
+        "href": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fplayer-24.webp&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "24Damian · #24MotylińskiNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/bf4c6f9f-92dd-4159-8960-cab60cf935c3",
+        "image": [],
+        "name": "34Łukasz · #34GośniakRozgrywający"
+      },
+      {
+        "href": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ffilip-karpinski-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "69Filip · #69KarpińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/30ed3c7c-f2c6-498b-952f-5b97c409a47a",
+        "image": [
+          {
+            "loaded": true,
+            "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ffilip-kawecki-portret-v1.png&w=384&q=75",
+            "width": 359
+          }
+        ],
+        "name": "77Filip · #77KaweckiŚrodkowy"
+      },
+      {
+        "href": "/sklad/c32599b4-752b-4a3b-bddd-95ea7b2751b7",
+        "image": [],
+        "name": "—DawidOlearczykZawodnik"
+      },
+      {
+        "href": "/sklad/aa7d4cc7-8f0a-4d43-ba3d-a04c7ee242c1",
+        "image": [],
+        "name": "—AlanNiwińskiZawodnik"
+      },
+      {
+        "href": "/sklad/03f5c874-a56e-480c-b3b2-79d8252de411",
+        "image": [],
+        "name": "—MaciejTymińskiZawodnik"
+      },
+      {
+        "href": "/sklad/8f0d5018-e396-45d3-a8f3-5367d14a504d",
+        "image": [],
+        "name": "—JakubGołębiowskiZawodnik"
+      },
+      {
+        "href": "/sklad/7cef7f40-840e-4251-93b7-a6a0284b4322",
+        "image": [],
+        "name": "—ŁukaszMrasZawodnik"
+      },
+      {
+        "href": "/sklad/12fbd4ce-69e2-40d8-bdcf-720982b0b4f4",
+        "image": [],
+        "name": "—PiotrSosińskiZawodnik"
+      }
+    ],
+    "scrollWidth": 1425,
+    "width": 1440
+  },
+  "profiles": [
+    {
+      "heading": "Paweł Samusionek",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpawel-samusionek-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52"
+    },
+    {
+      "heading": "Pablo Iriarte",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpablo-iriarte-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/428899fd-f115-48da-be46-67e3d401f075"
+    },
+    {
+      "heading": "Patryk Szczęśniak",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fpatryk-szczesniak-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9"
+    },
+    {
+      "heading": "Mirosław Malina",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fmiroslaw-malina-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/4e1f208b-c0fa-40a0-9f8a-3d5a83cb0c4f"
+    },
+    {
+      "heading": "Przemysław Klimek",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Fprzemyslaw-klimek-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/7ecbfdcc-c83e-4e55-800a-ae9a8e654cee"
+    },
+    {
+      "heading": "Robert Kulik",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Frobert-kulik-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/5b93fd48-790e-44ba-bfaa-f4e754b09b0b"
+    },
+    {
+      "heading": "Emil Kłos",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Femil-klos-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/1a13d025-0978-4640-8568-2bc4b4c9a2ef"
+    },
+    {
+      "heading": "Filip Karpiński",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ffilip-karpinski-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210"
+    },
+    {
+      "heading": "Filip Kawecki",
+      "images": [
+        {
+          "loaded": true,
+          "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ffilip-kawecki-portret-v1.png&w=480&q=75"
+        }
+      ],
+      "overflow": false,
+      "url": "/sklad/30ed3c7c-f2c6-498b-952f-5b97c409a47a"
+    }
+  ],
+  "mobileProfile": {
+    "heading": "Filip Kawecki",
+    "image": [
+      {
+        "loaded": true,
+        "src": "http://127.0.0.1:3100/_next/image?url=%2Fbrand%2Fphotography%2Ffilip-kawecki-portret-v1.png&w=480&q=75"
+      }
+    ],
+    "scrollWidth": 375,
+    "width": 390
+  },
+  "mobileRoster": {
+    "cards": 20,
+    "loaded": 11,
+    "scrollWidth": 375,
+    "width": 390
+  }
+}

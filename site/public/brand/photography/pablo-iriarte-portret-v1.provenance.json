@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-05",
+  "tool": "image_gen.imagegen (built-in)",
+  "useCase": "identity-preserve",
+  "status": "local_preview_mockup",
+  "player": "Pablo Iriarte",
+  "playerId": "428899fd-f115-48da-be46-67e3d401f075",
+  "number": "4",
+  "source": "site/public/photos/pablo-iriarte.png",
+  "photographyReference": "site/public/brand/photography/player-24.webp",
+  "jerseyReference": "site/public/brand/jerseys/stroj-a-przod.jpg",
+  "output": "site/public/brand/photography/pablo-iriarte-portret-v1.png",
+  "prompt": "Use case: identity-preserve portrait edit for a basketball roster.\nImage 1 is the EDIT TARGET and sole identity source: Pablo Iriarte, player #4. Image 2 is Damian Motyliński #24, REFERENCE ONLY for camera, portrait framing, scale, soft neutral studio light and photographic color grading. Image 3 is the exact BLACK AND RED JERSEY A design reference.\nCreate a photographic local visualization of the same real person from image 1 in jersey A. Preserve their own recognizable face, facial features, hair, facial hair, age, expression, skin tone and normal body build. Do not blend Damian's face or body into this player. No beautification, face smoothing, muscular enlargement or added facial hair.\nRemove the old red textured background completely, retaining real alpha transparency and precise natural hair and silhouette edges, no colored halo.\nReplace only their old jersey with the exact black-red sleeveless jersey A from image 3: red neck and armhole binding, angular large red panels down both sides and thin red horizontal lower lines. Number must be solid RED \"4\" on viewer right upper chest, replacing \"00\", never 24 or another player number. Red PROTON on viewer left chest, centered yellow BeKaPaKa BOBOLICE emblem, white BAUMAL, Fem-Tech below it, correct reference layout. Remove old WAL RHC marks and white outlined numbers. Keep arms bare if they are bare in the source; do not add Damian's long black undershirt sleeves.\nMatch Damian's photographic treatment: soft frontal studio light, neutral balanced white balance, natural skin color, restrained realistic contrast, deep black fabric with visible texture and rich red like reference. No plastic skin, exaggerated wrinkles or HDR microcontrast.\nCamera and composition: upright head and level shoulders, centered straight-on eye-level camera, normal portrait-lens perspective without selfie/wide-angle distortion, preserve the person's original expression. Vertical 4:5 portrait, complete hair with about 4 percent headroom, shoulders and torso visible down to hips, comparable head-to-torso scale and side margins to Damian. Extend the existing uniform pattern naturally to the lower crop where necessary. Preserve the person's normal physique and recognizable identity.\nOnly this one player on a fully transparent background. No background scene, frame, captions or watermark. Output a transparent PNG.",
+  "description": "Wizualizacja AI na bezpośrednie zlecenie użytkownika: przezroczyste tło, strój A, numer zawodnika, światło, kąt i kadr według Damiana. Perspektywa/strój i dolna część kadru rekonstruowane; to nie dokumentalny portret ani gwarancja zachowania pikseli twarzy. Oryginał zachowany. Wyłącznie lokalny podgląd, zgody/autor niepotwierdzone, bez CMS/API/deployu.",
+  "dimensions": {
+    "width": 1122,
+    "height": 1402,
+    "mode": "RGBA"
+  },
+  "sourceSha256": "97cedea0c0fa7373be9de44fa6656fe371a5ef36cb7ce077b7016628cfc86e9e",
+  "outputSha256": "10ce1aba066276c3b0f423c352195aae9e1db94a564577091e2c3df27f4b27c9"
+}

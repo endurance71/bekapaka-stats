@@ -1,0 +1,3116 @@
+[
+  {
+    "title": "Kwarta 1",
+    "events": [
+      {
+        "time": "10:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Początek okresu",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zmiana: #-2 → Dawid Olearczyk (#1)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zmiana: #-2 → Piotr Sosiński (#10)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Zmiana: #-2 → Damian Motyliński (#24)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zmiana: #-2 → Alan Niwiński (#27)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zmiana: #-2 → Filip Karpiński (#69)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Zmiana: #-2 → Filip Filipczak (#11)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zmiana: #-2 → Jakub Redlarski (#12)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Zmiana: #-2 → Igor Fenkanin (#13)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zmiana: #-2 → Kornel Pawlak (#14)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zmiana: #-2 → Michał Stachowski (#15)",
+        "score": null
+      },
+      {
+        "time": "09:45",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Celny rzut za 2",
+        "score": "2:0"
+      },
+      {
+        "time": "09:44",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "09:33",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "09:32",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:25",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "09:25",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:15",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "08:59",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "08:59",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:52",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "4:0"
+      },
+      {
+        "time": "08:33",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "08:32",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:27",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "6:0"
+      },
+      {
+        "time": "08:26",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "08:03",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "08:03",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "07:37",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:36",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:29",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "07:29",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "07:29",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut wolny",
+        "score": "7:0"
+      },
+      {
+        "time": "07:17",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "07:17",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "07:17",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut wolny",
+        "score": "7:1"
+      },
+      {
+        "time": "07:03",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:03",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:01",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:01",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:58",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut za 2",
+        "score": "9:1"
+      },
+      {
+        "time": "06:46",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:45",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:40",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "06:22",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "11:1"
+      },
+      {
+        "time": "06:08",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:07",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:56",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Celny rzut za 2",
+        "score": "13:1"
+      },
+      {
+        "time": "05:55",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "05:39",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "05:39",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut wolny",
+        "score": "13:2"
+      },
+      {
+        "time": "05:39",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zmiana: Damian Motyliński (#24) → Maciej Tymiński (#29)",
+        "score": null
+      },
+      {
+        "time": "05:39",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Zmiana: Jakub Redlarski (#12) → Jakub Wójcik (#4)",
+        "score": null
+      },
+      {
+        "time": "05:39",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "05:33",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "05:33",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "05:33",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "05:33",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:30",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:30",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "05:24",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Celny rzut za 2",
+        "score": "15:2"
+      },
+      {
+        "time": "05:24",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "05:13",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "05:13",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:05",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "17:2"
+      },
+      {
+        "time": "04:45",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "04:44",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "04:40",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut za 2",
+        "score": "17:4"
+      },
+      {
+        "time": "04:18",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "04:18",
+        "side": "away",
+        "player": "",
+        "action": "Przerwa na żądanie",
+        "score": null
+      },
+      {
+        "time": "04:18",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Zmiana: Igor Fenkanin (#13) → Michał Niedbała (#8)",
+        "score": null
+      },
+      {
+        "time": "04:18",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zmiana: Piotr Sosiński (#10) → Tomasz Kaszubowski (#12)",
+        "score": null
+      },
+      {
+        "time": "04:18",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut wolny",
+        "score": "18:4"
+      },
+      {
+        "time": "04:18",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "04:18",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "04:03",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "04:03",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "04:01",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Celny rzut za 2",
+        "score": "20:4"
+      },
+      {
+        "time": "04:00",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "03:44",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "03:44",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "03:36",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "03:35",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "03:27",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zmiana: Alan Niwiński (#27) → Jędrzej Bortnik (#2)",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:48",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "02:48",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zmiana: Filip Karpiński (#69) → Przemysław Klimek (#16)",
+        "score": null
+      },
+      {
+        "time": "02:48",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Celny rzut wolny",
+        "score": "21:4"
+      },
+      {
+        "time": "02:48",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Celny rzut wolny",
+        "score": "22:4"
+      },
+      {
+        "time": "02:35",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:35",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "02:32",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Celny rzut za 2",
+        "score": "24:4"
+      },
+      {
+        "time": "02:32",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "02:23",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:23",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "02:20",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Celny rzut za 2",
+        "score": "26:4"
+      },
+      {
+        "time": "02:20",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "02:04",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:04",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "01:58",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "01:58",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "01:52",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "01:52",
+        "side": "away",
+        "player": "Jacek Szumowski",
+        "action": "Zmiana: Filip Filipczak (#11) → Jacek Szumowski (#10)",
+        "score": null
+      },
+      {
+        "time": "01:52",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "01:52",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "01:52",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:45",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "01:44",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:36",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "01:09",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "01:09",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:03",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "01:02",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:27",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:27",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:09",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "00:09",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Koniec okresu",
+        "score": null
+      }
+    ]
+  },
+  {
+    "title": "Kwarta 2",
+    "events": [
+      {
+        "time": "10:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Początek okresu",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zmiana: Dawid Olearczyk (#1) → Piotr Sosiński (#10)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zmiana: Jędrzej Bortnik (#2) → Jakub Gołębiowski (#15)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zmiana: Przemysław Klimek (#16) → Alan Niwiński (#27)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zmiana: Maciej Tymiński (#29) → Filip Karpiński (#69)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Zmiana: Jakub Wójcik (#4) → Igor Fenkanin (#13)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Zmiana: Michał Stachowski (#15) → Adrianna Bernacka (#23)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:53",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zmiana: Adrianna Bernacka (#23) → Jakub Redlarski (#12)",
+        "score": null
+      },
+      {
+        "time": "09:53",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "09:53",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:51",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "28:4"
+      },
+      {
+        "time": "09:51",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "08:15",
+        "side": "away",
+        "player": "Jacek Szumowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "08:15",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "08:01",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "08:01",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut wolny",
+        "score": "29:4"
+      },
+      {
+        "time": "08:01",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut wolny",
+        "score": "30:4"
+      },
+      {
+        "time": "07:44",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:44",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:37",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "32:4"
+      },
+      {
+        "time": "07:37",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "07:21",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Celny rzut za 3",
+        "score": "32:7"
+      },
+      {
+        "time": "07:20",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "07:07",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "34:7"
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "home",
+        "player": "",
+        "action": "Przerwa na żądanie",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Zmiana: Michał Niedbała (#8) → Konrad Niedbała (#2)",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Zmiana: Jacek Szumowski (#10) → Filip Filipczak (#11)",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zmiana: Igor Fenkanin (#13) → Michał Stachowski (#15)",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Zmiana: Kornel Pawlak (#14) → Adrianna Bernacka (#23)",
+        "score": null
+      },
+      {
+        "time": "06:41",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut za 2",
+        "score": "34:9"
+      },
+      {
+        "time": "06:36",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "36:9"
+      },
+      {
+        "time": "06:34",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zmiana: Tomasz Kaszubowski (#12) → Dawid Olearczyk (#1)",
+        "score": null
+      },
+      {
+        "time": "06:34",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:34",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:34",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zmiana: Filip Karpiński (#69) → Łukasz Mras (#13)",
+        "score": null
+      },
+      {
+        "time": "06:25",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Celny rzut za 2",
+        "score": "38:9"
+      },
+      {
+        "time": "06:10",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:10",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:04",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut za 2",
+        "score": "40:9"
+      },
+      {
+        "time": "05:50",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:50",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Zmiana: Piotr Sosiński (#10) → Damian Motyliński (#24)",
+        "score": null
+      },
+      {
+        "time": "05:42",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Celny rzut za 2",
+        "score": "42:9"
+      },
+      {
+        "time": "05:42",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "04:00",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "04:00",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "03:47",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "03:44",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "03:44",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "03:40",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "44:9"
+      },
+      {
+        "time": "03:39",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "03:16",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Zmiana: Jakub Redlarski (#12) → Jakub Wójcik (#4)",
+        "score": null
+      },
+      {
+        "time": "03:13",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zmiana: Alan Niwiński (#27) → Maciej Tymiński (#29)",
+        "score": null
+      },
+      {
+        "time": "03:08",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "03:07",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:22",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:01",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "02:00",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:58",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "01:58",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "01:51",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "01:51",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "",
+        "action": "Przerwa na żądanie",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zmiana: Łukasz Mras (#13) → Jędrzej Bortnik (#2)",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zmiana: Jakub Gołębiowski (#15) → Filip Karpiński (#69)",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "01:48",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:32",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "01:32",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "01:32",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Celny rzut wolny",
+        "score": "45:9"
+      },
+      {
+        "time": "01:24",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Celny rzut za 2",
+        "score": "47:9"
+      },
+      {
+        "time": "01:23",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "00:42",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "00:42",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zmiana: Damian Motyliński (#24) → Przemysław Klimek (#16)",
+        "score": null
+      },
+      {
+        "time": "00:42",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut wolny",
+        "score": "47:10"
+      },
+      {
+        "time": "00:42",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "00:42",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:30",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zablokowany rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:29",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Blok",
+        "score": null
+      },
+      {
+        "time": "00:28",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:28",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "00:28",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "00:18",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:17",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:10",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "00:08",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:08",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:07",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "49:10"
+      },
+      {
+        "time": "00:07",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Koniec okresu",
+        "score": null
+      }
+    ]
+  },
+  {
+    "title": "Kwarta 3",
+    "events": [
+      {
+        "time": "10:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Początek okresu",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zmiana: Dawid Olearczyk (#1) → Piotr Sosiński (#10)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zmiana: Przemysław Klimek (#16) → Tomasz Kaszubowski (#12)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zmiana: Maciej Tymiński (#29) → Łukasz Mras (#13)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Zmiana: Konrad Niedbała (#2) → Michał Niedbała (#8)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zmiana: Jakub Wójcik (#4) → Jakub Redlarski (#12)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Zmiana: Michał Stachowski (#15) → Igor Fenkanin (#13)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zmiana: Adrianna Bernacka (#23) → Kornel Pawlak (#14)",
+        "score": null
+      },
+      {
+        "time": "09:48",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "51:10"
+      },
+      {
+        "time": "09:47",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "09:26",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "09:26",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "09:21",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "09:20",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:19",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "09:18",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:10",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "09:10",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:56",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Celny rzut za 2",
+        "score": "53:10"
+      },
+      {
+        "time": "08:55",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "08:36",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "08:35",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:27",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "08:27",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:18",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "07:57",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "07:56",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:49",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "07:49",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "07:47",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Celny rzut za 2",
+        "score": "53:12"
+      },
+      {
+        "time": "07:23",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "07:19",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "06:54",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "06:54",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zmiana: Łukasz Mras (#13) → Alan Niwiński (#27)",
+        "score": null
+      },
+      {
+        "time": "06:54",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "06:54",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "06:54",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:45",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:45",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:38",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "06:32",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "55:12"
+      },
+      {
+        "time": "06:32",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "06:10",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "06:10",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:00",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:54",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zmiana: Jędrzej Bortnik (#2) → Przemysław Klimek (#16)",
+        "score": null
+      },
+      {
+        "time": "05:54",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zmiana: Piotr Sosiński (#10) → Jakub Gołębiowski (#15)",
+        "score": null
+      },
+      {
+        "time": "05:42",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:42",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "05:36",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:18",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "05:17",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:11",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "05:11",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "05:04",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:00",
+        "side": "away",
+        "player": "Jacek Szumowski",
+        "action": "Zmiana: Filip Filipczak (#11) → Jacek Szumowski (#10)",
+        "score": null
+      },
+      {
+        "time": "05:00",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zmiana: Jakub Redlarski (#12) → Michał Stachowski (#15)",
+        "score": null
+      },
+      {
+        "time": "03:31",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "03:12",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zmiana: Tomasz Kaszubowski (#12) → Maciej Tymiński (#29)",
+        "score": null
+      },
+      {
+        "time": "03:12",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "03:12",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "03:09",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "03:08",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:44",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:44",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "02:39",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "02:39",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "02:27",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zmiana: Filip Karpiński (#69) → Łukasz Mras (#13)",
+        "score": null
+      },
+      {
+        "time": "02:27",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "02:27",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:20",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "02:20",
+        "side": "away",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:02",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "01:16",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "01:16",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "01:16",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "01:16",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:05",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "01:04",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:49",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "00:49",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "00:49",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "00:46",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "00:34",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:33",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:29",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Celny rzut za 2",
+        "score": "57:12"
+      },
+      {
+        "time": "00:09",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:08",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:03",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "00:03",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Koniec okresu",
+        "score": null
+      }
+    ]
+  },
+  {
+    "title": "Kwarta 4",
+    "events": [
+      {
+        "time": "10:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Początek okresu",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zmiana: Łukasz Mras (#13) → Dawid Olearczyk (#1)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zmiana: Jakub Gołębiowski (#15) → Piotr Sosiński (#10)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zmiana: Przemysław Klimek (#16) → Tomasz Kaszubowski (#12)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Zmiana: Alan Niwiński (#27) → Damian Motyliński (#24)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Zmiana: Maciej Tymiński (#29) → Filip Karpiński (#69)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Zmiana: Michał Niedbała (#8) → Filip Filipczak (#11)",
+        "score": null
+      },
+      {
+        "time": "10:00",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zmiana: Igor Fenkanin (#13) → Jakub Redlarski (#12)",
+        "score": null
+      },
+      {
+        "time": "09:56",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "09:56",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:51",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "09:51",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:36",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "09:21",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "09:21",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "09:16",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut za 2",
+        "score": "59:12"
+      },
+      {
+        "time": "09:15",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "08:57",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "08:57",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "08:54",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut za 2",
+        "score": "61:12"
+      },
+      {
+        "time": "08:54",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "08:24",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Zmiana: Jacek Szumowski (#10) → Jakub Wójcik (#4)",
+        "score": null
+      },
+      {
+        "time": "08:19",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "08:19",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "08:09",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Celny rzut za 3",
+        "score": "64:12"
+      },
+      {
+        "time": "08:08",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "07:57",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "07:56",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:52",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zablokowany rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:51",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Blok",
+        "score": null
+      },
+      {
+        "time": "07:51",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:46",
+        "side": "away",
+        "player": "Jakub Redlarski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "07:45",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:41",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "07:41",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:36",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "07:36",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut wolny",
+        "score": "65:12"
+      },
+      {
+        "time": "07:36",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Celny rzut wolny",
+        "score": "66:12"
+      },
+      {
+        "time": "07:26",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "07:26",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "07:26",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut wolny",
+        "score": "66:13"
+      },
+      {
+        "time": "07:16",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "07:15",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "07:11",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "07:08",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "07:08",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "07:06",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Celny rzut za 2",
+        "score": "68:13"
+      },
+      {
+        "time": "06:52",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:52",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:48",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "70:13"
+      },
+      {
+        "time": "06:47",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "06:31",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "06:31",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "06:24",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "72:13"
+      },
+      {
+        "time": "06:02",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "06:02",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:46",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "05:45",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:35",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "05:35",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "05:25",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "74:13"
+      },
+      {
+        "time": "05:25",
+        "side": "home",
+        "player": "Tomasz Kaszubowski",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Zmiana: Jakub Wójcik (#4) → Konrad Niedbała (#2)",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Zmiana: Filip Filipczak (#11) → Michał Niedbała (#8)",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Zmiana: Jakub Redlarski (#12) → Igor Fenkanin (#13)",
+        "score": null
+      },
+      {
+        "time": "05:03",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Zmiana: Kornel Pawlak (#14) → Adrianna Bernacka (#23)",
+        "score": null
+      },
+      {
+        "time": "04:58",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "76:13"
+      },
+      {
+        "time": "04:58",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "04:36",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "04:36",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "04:34",
+        "side": "home",
+        "player": "Filip Karpiński",
+        "action": "Celny rzut za 2",
+        "score": "78:13"
+      },
+      {
+        "time": "04:34",
+        "side": "home",
+        "player": "Dawid Olearczyk",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "04:28",
+        "side": "away",
+        "player": "Filip Filipczak",
+        "action": "Zmiana: Adrianna Bernacka (#23) → Filip Filipczak (#11)",
+        "score": null
+      },
+      {
+        "time": "04:28",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "04:28",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "04:28",
+        "side": "home",
+        "player": "Damian Motyliński",
+        "action": "Celny rzut za 2",
+        "score": "80:13"
+      },
+      {
+        "time": "04:28",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Zmiana: Konrad Niedbała (#2) → Jakub Wójcik (#4)",
+        "score": null
+      },
+      {
+        "time": "03:26",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "03:25",
+        "side": "away",
+        "player": "Jakub Wójcik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "03:18",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut za 2",
+        "score": "80:15"
+      },
+      {
+        "time": "03:17",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "03:16",
+        "side": "home",
+        "player": "Piotr Sosiński",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "03:16",
+        "side": "home",
+        "player": "",
+        "action": "Przerwa na żądanie",
+        "score": null
+      },
+      {
+        "time": "03:14",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Zmiana: Jakub Wójcik (#4) → Konrad Niedbała (#2)",
+        "score": null
+      },
+      {
+        "time": "03:14",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Zmiana: Filip Filipczak (#11) → Adrianna Bernacka (#23)",
+        "score": null
+      },
+      {
+        "time": "03:14",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut wolny",
+        "score": null
+      },
+      {
+        "time": "03:14",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "03:12",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "03:02",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "02:55",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "82:15"
+      },
+      {
+        "time": "02:54",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "02:49",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:49",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "02:45",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Celny rzut za 2",
+        "score": "84:15"
+      },
+      {
+        "time": "02:45",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "02:42",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zmiana: Dawid Olearczyk (#1) → Jędrzej Bortnik (#2)",
+        "score": null
+      },
+      {
+        "time": "02:42",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zmiana: Piotr Sosiński (#10) → Jakub Gołębiowski (#15)",
+        "score": null
+      },
+      {
+        "time": "02:42",
+        "side": "home",
+        "player": "Przemysław Klimek",
+        "action": "Zmiana: Tomasz Kaszubowski (#12) → Przemysław Klimek (#16)",
+        "score": null
+      },
+      {
+        "time": "02:42",
+        "side": "home",
+        "player": "Alan Niwiński",
+        "action": "Zmiana: Damian Motyliński (#24) → Alan Niwiński (#27)",
+        "score": null
+      },
+      {
+        "time": "02:42",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Zmiana: Filip Karpiński (#69) → Maciej Tymiński (#29)",
+        "score": null
+      },
+      {
+        "time": "02:40",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "02:39",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zmiana: Alan Niwiński (#27) → Łukasz Mras (#13)",
+        "score": null
+      },
+      {
+        "time": "02:09",
+        "side": "home",
+        "player": "Maciej Tymiński",
+        "action": "Celny rzut za 2",
+        "score": "86:15"
+      },
+      {
+        "time": "02:09",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "01:49",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Celny rzut za 2",
+        "score": "86:17"
+      },
+      {
+        "time": "01:49",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Asysta",
+        "score": null
+      },
+      {
+        "time": "01:33",
+        "side": "away",
+        "player": "Adrianna Bernacka",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "01:25",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "01:24",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "01:10",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Celny rzut za 3",
+        "score": "86:20"
+      },
+      {
+        "time": "00:52",
+        "side": "away",
+        "player": "Igor Fenkanin",
+        "action": "Faul",
+        "score": null
+      },
+      {
+        "time": "00:52",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Zmiana: Igor Fenkanin (#13) → Kornel Pawlak (#14)",
+        "score": null
+      },
+      {
+        "time": "00:42",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:41",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:28",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Niecelny rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:28",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:19",
+        "side": "home",
+        "player": "Jakub Gołębiowski",
+        "action": "Zablokowany rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:18",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Blok",
+        "score": null
+      },
+      {
+        "time": "00:17",
+        "side": "home",
+        "player": "",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:16",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Strata",
+        "score": null
+      },
+      {
+        "time": "00:16",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Przechwyt",
+        "score": null
+      },
+      {
+        "time": "00:13",
+        "side": "away",
+        "player": "Kornel Pawlak",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:13",
+        "side": "away",
+        "player": "Michał Niedbała",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:10",
+        "side": "away",
+        "player": "Michał Stachowski",
+        "action": "Niecelny rzut za 2",
+        "score": null
+      },
+      {
+        "time": "00:09",
+        "side": "home",
+        "player": "Jędrzej Bortnik",
+        "action": "Zbiórka",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "home",
+        "player": "Łukasz Mras",
+        "action": "Zablokowany rzut za 3",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "away",
+        "player": "Konrad Niedbała",
+        "action": "Blok",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Koniec okresu",
+        "score": null
+      },
+      {
+        "time": "00:00",
+        "side": "neutral",
+        "player": null,
+        "action": "Początek okresu",
+        "score": null
+      }
+    ]
+  }
+]

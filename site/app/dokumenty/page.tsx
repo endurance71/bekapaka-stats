@@ -4,10 +4,11 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { getDocumentsState, getSiteMetadataBase } from '../../lib/data'
 import { formatDate } from '../../lib/format'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/dokumenty' },
   title: 'Dokumenty | BeKaPaKa Bobolice',
   description: 'Regulaminy, formularze i dokumenty klubu BeKaPaKa Bobolice.'
 }
@@ -18,17 +19,28 @@ export default async function DocumentsPage() {
 
   return (
     <EditorialListingTemplate
+      theme="papier"
       title='Dokumenty klubowe'
-      description='Regulaminy, formularze i materialy do pobrania.'
+      description='Regulaminy, formularze i materiały do pobrania.'
       hasItems={documents.length > 0}
       stateStatus={documentsState.status}
       stateSource={documentsState.source}
       stateMessage={documentsState.message}
-      emptyTitle={documentsState.status === 'error' ? 'Nie mozna pobrac dokumentow' : 'Brak dokumentow'}
+      emptyTitle={documentsState.status === 'error' ? 'Nie można pobrać dokumentów' : 'Brak dokumentów'}
       emptyDescription={
         documentsState.status === 'error'
-          ? 'Sprawdz konfiguracje CMS i token dostepu.'
-          : 'Po dodaniu dokumentow w CMS pojawia sie tutaj automatycznie.'
+          ? 'Odśwież stronę lub wróć za chwilę.'
+          : 'Klub nie opublikował jeszcze oficjalnych regulaminów ani formularzy do pobrania.'
+      }
+      emptyAction={
+        <div className="cluster" style={{ marginTop: 'var(--space-4)', gap: 'var(--space-4)' }}>
+          <Link href="/klub" className="button button--primary">
+            Wróć do informacji o klubie
+          </Link>
+          <Link href="/klub#kontakt" className="button button--ghost">
+            Skontaktuj się z klubem
+          </Link>
+        </div>
       }
     >
       <ul className='documents-list'>

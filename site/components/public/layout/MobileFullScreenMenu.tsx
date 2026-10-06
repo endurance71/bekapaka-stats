@@ -14,6 +14,7 @@ const MENU_ANIMATION_MS = 300
 interface MobileFullScreenMenuProps {
   isOpen: boolean
   onClose: () => void
+  onAfterClose?: () => void
   logoUrl?: string
 }
 
@@ -25,7 +26,7 @@ function MenuIcon() {
   )
 }
 
-export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }: MobileFullScreenMenuProps) {
+export function MobileFullScreenMenu({ isOpen, onClose, onAfterClose, logoUrl }: MobileFullScreenMenuProps) {
   const [isMounted, setIsMounted] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const dialogRef = useRef<HTMLDivElement | null>(null)
@@ -41,7 +42,8 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
     isClosingRef.current = false
     setIsMounted(false)
     setIsVisible(false)
-  }, [])
+    window.requestAnimationFrame(() => onAfterClose?.())
+  }, [onAfterClose])
 
   const startCloseAnimation = useCallback(() => {
     if (isClosingRef.current) return
@@ -63,7 +65,7 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
     }
 
     const handleTransitionEnd = (event: TransitionEvent) => {
-      if (!panel || event.target !== panel || event.propertyName !== 'transform') return
+      if (!panel || event.target !== panel || event.propertyName !== 'opacity') return
       complete()
     }
 
@@ -197,12 +199,6 @@ export function MobileFullScreenMenu({ isOpen, onClose, logoUrl = '/logo.png' }:
         <div className='mobile-fullscreen-menu__nav'>
           <MainNav
             onLinkClick={handleRequestClose}
-            onPanelClick={() => {
-              handleRequestClose()
-              window.setTimeout(() => {
-                window.open('https://panel.bekapaka.pl', '_blank', 'noopener,noreferrer')
-              }, MENU_ANIMATION_MS)
-            }}
             variant='fullscreen'
           />
         </div>

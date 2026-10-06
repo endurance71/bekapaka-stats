@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-06",
+  "tool": "image_gen.imagegen",
+  "purpose": "Background extraction for local jersey showcase",
+  "source": "/brand/jerseys/stroj-a-tyl.jpg",
+  "output": "/brand/jerseys/stroj-a-tyl-transparent-v1.png",
+  "prompt": "Use case: background-extraction. Edit target: the single attached photograph of the BeKaPaKa basketball jersey, stroj-a-tyl. Remove ONLY the pure black exterior background around the garment and replace it with true fully transparent alpha. Produce one clean isolated garment in exactly the same front/back view, pose, proportions, cut, crop and near-full-height composition as the source. This is background extraction, not a redesigned or regenerated jersey. Preserve all visible fabric pixels and folds, stitching, the black/red or blue/orange material colors, neck lining, shadows on the cloth, exact panel geometry, BeKaPaKa logo, sponsor logos PROTON, BAUMAL, Fem-Tech wherever present, and existing number 00 and lettering precisely. The black fabric within the garment is opaque and must remain intact. Only the background outside the silhouette becomes transparent; the light interior neck lining is part of the garment and stays. Keep entire hem, shoulders and edges visible with a small transparent safety margin. No background, floor, checkerboard painted into pixels, added shadow, new text, missing logos or color/lighting changes. Return a transparent PNG cutout.",
+  "generatedSource": "/Users/damianmotylinski/.codex/generated_images/01a10b13-9108-7722-930a-4333088962c5/exec-1136857e-991a-47e5-bb7a-81a1d8c5fcb7.png",
+  "width": 1086,
+  "height": 1448,
+  "mode": "RGBA",
+  "alphaRange": [
+    0,
+    255
+  ],
+  "bytes": 2060640,
+  "outputSha256": "ceaea43fa818ded1085a1a227d05001c177f9b77668b33a566023a21b049355b",
+  "sourceSha256": "947f661f455844c0fad3aa5d5c3c04cef53dde4478a59357aeea1f40d863e6b8"
+}

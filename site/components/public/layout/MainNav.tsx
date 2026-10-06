@@ -24,7 +24,7 @@ const navItems: { href: string; label: string; Icon: NavIcon }[] = [
   { href: '/mecze', label: 'Mecze', Icon: CalendarIcon },
   { href: '/tabela', label: 'Tabela', Icon: TrophyIcon },
   { href: '/sklad', label: 'Skład', Icon: UsersIcon },
-  { href: '/sponsorzy', label: 'Sponsorzy', Icon: HandshakeIcon },
+  { href: '/sponsorzy', label: 'Partnerzy', Icon: HandshakeIcon },
   { href: '/klub', label: 'Klub', Icon: BuildingIcon }
 ]
 
@@ -37,7 +37,6 @@ function isNavItemActive(pathname: string, href: string): boolean {
 
 export function MainNav({
   onLinkClick,
-  onPanelClick,
   variant = 'inline'
 }: {
   onLinkClick?: () => void
@@ -49,7 +48,7 @@ export function MainNav({
   const items = isFullscreen ? [homeNavItem, ...navItems] : navItems
 
   return (
-    <nav aria-label='Nawigacja glowna' className={isFullscreen ? 'main-nav--fullscreen' : undefined}>
+    <nav aria-label='Nawigacja główna' className={isFullscreen ? 'main-nav--fullscreen' : undefined}>
       <ul className='main-nav'>
         {items.map((item) => {
           const isActive = isNavItemActive(pathname, item.href)
@@ -82,16 +81,13 @@ export function MainNav({
             </li>
           )
         })}
-        {isFullscreen && onPanelClick ? (
+        {isFullscreen ? (
           <li className='main-nav__panel-item'>
             <a
               href='https://panel.bekapaka.pl'
               target='_blank'
               rel='noopener noreferrer'
-              onClick={(event) => {
-                event.preventDefault()
-                onPanelClick()
-              }}
+              onClick={onLinkClick}
             >
               <span className='main-nav__icon' aria-hidden>
                 <MonitorIcon size={18} />

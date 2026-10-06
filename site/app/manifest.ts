@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Oficjalna strona BeKaPaKa Bobolice',
     start_url: '/',
     display: 'standalone',
-    background_color: '#0B0B0C',
-    theme_color: '#ECA72C',
+    background_color: '#0B0B0B',
+    theme_color: '#0B0B0B',
     orientation: 'portrait',
     lang: 'pl-PL',
     categories: ['sports', 'news'],
@@ -20,25 +20,25 @@ export default function manifest(): MetadataRoute.Manifest {
         purpose: 'any'
       },
       {
-        src: '/logo.png',
-        sizes: '192x192',
+        src: '/favicon-180.png',
+        sizes: '180x180',
         type: 'image/png',
         purpose: 'any'
       },
       {
-        src: '/logo.png',
-        sizes: '192x192',
+        src: '/favicon-180.png',
+        sizes: '180x180',
         type: 'image/png',
         purpose: 'maskable'
       },
       {
-        src: '/logo.png',
+        src: '/favicon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'maskable'
       },
       {
-        src: '/logo.png',
+        src: '/favicon-512.png',
         sizes: '512x512',
         type: 'image/png',
         purpose: 'any'

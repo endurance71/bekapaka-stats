@@ -1,0 +1,11 @@
+{
+  "uniqueFindings": 34,
+  "statusCounts": {
+    "Zamknięte": 5,
+    "Częściowe": 20,
+    "Otwarte": 9
+  },
+  "referencedImages": 14,
+  "missingImages": [],
+  "singleHtmlH1": true
+}

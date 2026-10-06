@@ -1,0 +1,501 @@
+[
+  {
+    "page": "/sponsorzy",
+    "partners": [
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/gmina-bobolice.svg",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Gmina Bobolice",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 72.5,
+          "right": 241.640625,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 72.5,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/majster-official.svg",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Majster Plus Koszalin",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 257.640625,
+          "right": 426.78125,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 257.640625,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/fem-tech.webp",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Fem-Tech Tychowo",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 442.78125,
+          "right": 611.921875,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 442.78125,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/contema.png",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Contema Bobolice",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 627.921875,
+          "right": 797.0703125,
+          "top": 360.890625,
+          "width": 169.1484375,
+          "x": 627.921875,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/certe-wordmark.png",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 813.0703125,
+          "right": 982.2109375,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 813.0703125,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": null,
+        "name": "PST Sped-Trans Bobolice",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 998.2109375,
+          "right": 1167.3515625,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 998.2109375,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/lasy-vector.svg",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Nadleśnictwo Bobolice, Lasy Państwowe",
+        "rect": {
+          "bottom": 480.890625,
+          "height": 120,
+          "left": 1183.3515625,
+          "right": 1352.4921875,
+          "top": 360.890625,
+          "width": 169.140625,
+          "x": 1183.3515625,
+          "y": 360.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/alab-official.svg",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "ALAB laboratoria",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 72.5,
+          "right": 241.640625,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 72.5,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Piotr Adamus",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 257.640625,
+          "right": 426.78125,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 257.640625,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": null,
+        "name": "„Skup aut i Auto laweta” Remek Klimek",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 442.78125,
+          "right": 611.921875,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 442.78125,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/cesir.webp",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "CESIR Bobolice",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 627.921875,
+          "right": 797.0703125,
+          "top": 496.890625,
+          "width": 169.1484375,
+          "x": 627.921875,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Emil Jaświg",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 813.0703125,
+          "right": 982.2109375,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 813.0703125,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": {
+          "fit": "contain",
+          "loaded": true,
+          "src": "/images/partners/baumal-vector.svg",
+          "transform": "matrix(1, 0, 0, 1, 0, 0)"
+        },
+        "name": "Baumal e-hurtowniabudowlana.pl",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 998.2109375,
+          "right": 1167.3515625,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 998.2109375,
+          "y": 496.890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Insight Data Consulting Izabela Kaszubowska",
+        "rect": {
+          "bottom": 616.890625,
+          "height": 120,
+          "left": 1183.3515625,
+          "right": 1352.4921875,
+          "top": 496.890625,
+          "width": 169.140625,
+          "x": 1183.3515625,
+          "y": 496.890625
+        }
+      }
+    ],
+    "scrollWidth": 1425,
+    "width": 1440
+  },
+  {
+    "page": "/sponsorzy",
+    "partners": [
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/gmina-bobolice.svg"
+        },
+        "name": "Gmina Bobolice",
+        "rect": {
+          "bottom": 423.2890625,
+          "height": 112,
+          "left": 16,
+          "right": 189,
+          "top": 311.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 311.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/majster-official.svg"
+        },
+        "name": "Majster Plus Koszalin",
+        "rect": {
+          "bottom": 423.2890625,
+          "height": 112,
+          "left": 201,
+          "right": 374,
+          "top": 311.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 311.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/fem-tech.webp"
+        },
+        "name": "Fem-Tech Tychowo",
+        "rect": {
+          "bottom": 547.2890625,
+          "height": 112,
+          "left": 16,
+          "right": 189,
+          "top": 435.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 435.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/contema.png"
+        },
+        "name": "Contema Bobolice",
+        "rect": {
+          "bottom": 547.2890625,
+          "height": 112,
+          "left": 201,
+          "right": 374,
+          "top": 435.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 435.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/certe-wordmark.png"
+        },
+        "name": "CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak",
+        "rect": {
+          "bottom": 671.2890625,
+          "height": 112,
+          "left": 16,
+          "right": 189,
+          "top": 559.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 559.2890625
+        }
+      },
+      {
+        "img": null,
+        "name": "PST Sped-Trans Bobolice",
+        "rect": {
+          "bottom": 671.2890625,
+          "height": 112,
+          "left": 201,
+          "right": 374,
+          "top": 559.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 559.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/lasy-vector.svg"
+        },
+        "name": "Nadleśnictwo Bobolice, Lasy Państwowe",
+        "rect": {
+          "bottom": 795.2890625,
+          "height": 112,
+          "left": 16,
+          "right": 189,
+          "top": 683.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 683.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/alab-official.svg"
+        },
+        "name": "ALAB laboratoria",
+        "rect": {
+          "bottom": 795.2890625,
+          "height": 112,
+          "left": 201,
+          "right": 374,
+          "top": 683.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 683.2890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Piotr Adamus",
+        "rect": {
+          "bottom": 903.2890625,
+          "height": 96,
+          "left": 16,
+          "right": 189,
+          "top": 807.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 807.2890625
+        }
+      },
+      {
+        "img": null,
+        "name": "„Skup aut i Auto laweta” Remek Klimek",
+        "rect": {
+          "bottom": 903.2890625,
+          "height": 96,
+          "left": 201,
+          "right": 374,
+          "top": 807.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 807.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/cesir.webp"
+        },
+        "name": "CESIR Bobolice",
+        "rect": {
+          "bottom": 1027.2890625,
+          "height": 112,
+          "left": 16,
+          "right": 189,
+          "top": 915.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 915.2890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Emil Jaświg",
+        "rect": {
+          "bottom": 1027.2890625,
+          "height": 112,
+          "left": 201,
+          "right": 374,
+          "top": 915.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 915.2890625
+        }
+      },
+      {
+        "img": {
+          "loaded": true,
+          "src": "/images/partners/baumal-vector.svg"
+        },
+        "name": "Baumal e-hurtowniabudowlana.pl",
+        "rect": {
+          "bottom": 1154.4765625,
+          "height": 115.1875,
+          "left": 16,
+          "right": 189,
+          "top": 1039.2890625,
+          "width": 173,
+          "x": 16,
+          "y": 1039.2890625
+        }
+      },
+      {
+        "img": null,
+        "name": "Insight Data Consulting Izabela Kaszubowska",
+        "rect": {
+          "bottom": 1154.4765625,
+          "height": 115.1875,
+          "left": 201,
+          "right": 374,
+          "top": 1039.2890625,
+          "width": 173,
+          "x": 201,
+          "y": 1039.2890625
+        }
+      }
+    ],
+    "scrollWidth": 390,
+    "width": 390
+  },
+  {
+    "count": 14,
+    "loaded": true,
+    "page": "/sponsorzy",
+    "scrollWidth": 753,
+    "width": 768
+  },
+  {
+    "count": 14,
+    "loaded": true,
+    "page": "/",
+    "scrollWidth": 390,
+    "width": 390
+  },
+  {
+    "count": 14,
+    "loaded": true,
+    "page": "/",
+    "scrollWidth": 1425,
+    "width": 1440
+  }
+]

@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import type { NewsPost } from '../../../lib/data'
 import { getStrapiMediaProps } from '../../../lib/data/media'
-import { formatDateTime } from '../../../lib/format'
+import { getNewsCategory } from '../../../lib/news-category'
+import { formatDate } from '../../../lib/format'
 import { bindPolishOrphans } from '../../../lib/typography'
 import { FallbackImage } from './FallbackImage'
 
@@ -13,7 +14,7 @@ export function NewsCard({
   featured?: boolean
 }) {
   const imageFit = item.imageFit || 'cover'
-  const category = item.type || item.tags?.[0]
+  const category = getNewsCategory(item)
 
   return (
     <article className={`news-card ${featured ? 'news-card--featured' : ''} news-card--image-${imageFit}`}>
@@ -28,31 +29,31 @@ export function NewsCard({
                 height: item.coverImageHeight,
                 sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px'
               })}
-              alt=''
+              alt={item.coverImageAlt || ''}
               className='news-card__image'
               fallbackSrc={item.coverImageUrl}
               fallback={
-                <div className='news-card__placeholder' aria-label='Grafika artykułu niedostępna'>
-                  <span>BKP</span>
-                </div>
+                <div className='news-card__placeholder' aria-hidden='true'><span>BeKaPaKa</span></div>
               }
               fetchPriority={featured ? 'high' : 'auto'}
             />
           ) : (
             <div className='news-card__placeholder' aria-hidden='true'>
-              <span>BKP</span>
+              <span>BeKaPaKa</span>
             </div>
           )}
-          <div className='news-card__media-overlay' aria-hidden='true' />
-          <time className='news-card__date' dateTime={item.publishedAt}>
-            {formatDateTime(item.publishedAt)}
-          </time>
+
         </div>
         <div className='news-card__body'>
-          {category ? <span className='news-card__category'>{category}</span> : null}
+          <div className='news-card__meta-bar'>
+            {category ? <span className='news-card__category'>{category}</span> : null}
+            {item.eventDate && new Date(item.eventDate) < new Date() && (
+              <span className='news-card__archival-badge' title='Termin wydarzenia minął'>Wydarzenie zakończone</span>
+            )}
+          </div>
           <h2>{bindPolishOrphans(item.title)}</h2>
           <p>{bindPolishOrphans(item.excerpt || 'Brak opisu.')}</p>
-          <span className='news-card__cta'>Czytaj więcej</span>
+          <div className='news-card__foot'><time className='news-card__date' dateTime={item.publishedAt}>{formatDate(item.publishedAt)}</time><span aria-hidden='true'>→</span><span className='sr-only'>Czytaj więcej</span></div>
         </div>
       </Link>
     </article>

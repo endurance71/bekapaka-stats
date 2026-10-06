@@ -4,6 +4,7 @@ import { getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/wydarzenia' },
   title: 'Wydarzenia | Przekierowanie',
   description: 'Wydarzenia zostaly przeniesione do sekcji Mecze.'
 }

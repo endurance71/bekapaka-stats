@@ -1,5 +1,17 @@
 import { SITE_TIMEZONE } from './timezone'
 
+/** Krótki identyfikator do mobilnej tabeli; pełna nazwa pozostaje w nagłówku wiersza. */
+export function formatTeamShortName(name: string): string {
+  const trimmed = name.trim()
+  if (/bekapaka|bobolice/i.test(trimmed)) return 'BKP'
+  const words = trimmed.match(/[\p{L}\p{N}]+/gu) ?? []
+  const first = words[0]
+  if (!first) return '—'
+  if (first.length >= 2 && first.length <= 4 && first === first.toLocaleUpperCase('pl-PL')) return first
+  if (words.length > 1) return words.slice(0, 4).map(word => Array.from(word)[0]).join('').toLocaleUpperCase('pl-PL')
+  return Array.from(first).slice(0, 3).join('').toLocaleUpperCase('pl-PL')
+}
+
 /** Składa datę z części Intl — unika różnic SSR/CSR (np. „,” vs „o” w pl-PL). */
 function pickPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): string {
   return parts.find((part) => part.type === type)?.value ?? ''
@@ -64,4 +76,3 @@ export function formatDiffValue(diff: number): string {
   if (diff > 0) return `+${diff}`
   return String(diff)
 }
-

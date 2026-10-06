@@ -1,16 +1,16 @@
 import type { Metadata } from 'next'
-import { SponsorLogoFrame } from '../../components/public/sponsors/SponsorLogoFrame'
+import { PartnersGrid } from '../../components/public/sponsors/PartnersGrid'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
 import {
   getSiteMetadataBase,
-  getSponsorsState,
-  type SponsorItem
+  getSponsorsState
 } from '../../lib/data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/sponsorzy' },
   title: 'Sponsorzy | BeKaPaKa Bobolice',
   description: 'Poznaj sponsorów wspierających BeKaPaKa Bobolice.'
 }
@@ -21,7 +21,8 @@ export default async function SponsorsPage() {
 
   return (
     <EditorialListingTemplate
-      title='Sponsorzy'
+      title='Partnerzy klubu'
+      eyebrow='Dziękujemy'
       description='Dziękujemy firmom i osobom wspierającym rozwój klubu.'
       hasItems={sponsors.length > 0}
       stateStatus={sponsorsState.status}
@@ -30,79 +31,25 @@ export default async function SponsorsPage() {
       emptyTitle='Brak sponsorów'
       emptyDescription='Lista sponsorów jest aktualnie pusta.'
     >
-      <div className='sponsors-logo-grid'>
-        {sponsors.map((sponsor) => (
-          <SponsorCard key={sponsor.id} sponsor={sponsor} />
-        ))}
+      <div className="sponsors-content-wrap">
+        <PartnersGrid sponsors={sponsors}/>
+        <section className="sponsors-cooperation-card" aria-labelledby="sponsors-coop-title">
+          <div className="sponsors-cooperation-card__content">
+            <span className="label accent">Współpraca</span>
+            <h2 id="sponsors-coop-title" className="sponsors-cooperation-card__title">Zostań partnerem BeKaPaKa</h2>
+            <p className="sponsors-cooperation-card__desc">
+              Wspieraj rozwój koszykówki w Bobolicach, turnieje młodzieżowe i naszą drużynę w KALK.
+              Oferujemy ekspozycję na strojach, materiałach klubowych i podczas wydarzeń w hali CESiR.
+            </p>
+            <div className="sponsors-cooperation-card__actions">
+              <a className="btn btn--primary" href="mailto:kontakt@damianmotylinski.pl?subject=Wsp%C3%B3%C5%82praca%20partnerska%20z%20BeKaPaKa">
+                Skontaktuj się w sprawie współpracy →
+              </a>
+              <span className="muted text-sm">kontakt@damianmotylinski.pl</span>
+            </div>
+          </div>
+        </section>
       </div>
     </EditorialListingTemplate>
   )
 }
-
-function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
-  const isLink = !!sponsor.websiteUrl
-  const initials = sponsor.name.slice(0, 2).toUpperCase()
-
-  const cardContent = (
-    <>
-      {sponsor.logoUrl ? (
-        <SponsorLogoFrame sponsor={sponsor} variant='card' />
-      ) : (
-        <div
-          className='sponsor-card-premium__logo-container sponsor-card-premium__logo-container--monogram'
-          aria-hidden='true'
-        >
-          {initials}
-        </div>
-      )}
-      <div className='sponsor-card-premium__content'>
-        <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
-      </div>
-      <div className='sponsor-card-premium__footer'>
-        <span
-          className={`sponsor-card-premium__btn${
-            sponsor.websiteUrl ? '' : ' sponsor-card-premium__btn--placeholder'
-          }`}
-          aria-hidden={sponsor.websiteUrl ? undefined : true}
-        >
-          Strona
-          <svg
-            width='12'
-            height='12'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            aria-hidden='true'
-          >
-            <path d='M7 17L17 7M17 7H7M17 7V17' />
-          </svg>
-        </span>
-      </div>
-    </>
-  )
-
-  if (isLink) {
-    return (
-      <a
-        id={`sponsor-link-${sponsor.id}`}
-        href={sponsor.websiteUrl}
-        target='_blank'
-        rel='noreferrer'
-        className='sponsor-card-premium'
-      >
-        {cardContent}
-      </a>
-    )
-  }
-
-  return (
-    <div id={`sponsor-card-${sponsor.id}`} className='sponsor-card-premium'>
-      {cardContent}
-    </div>
-  )
-}
-
-

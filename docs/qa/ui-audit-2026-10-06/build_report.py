@@ -1,0 +1,345 @@
+from pathlib import Path
+import json, html, shutil, gzip
+
+ROOT = Path(__file__).resolve().parents[3]
+OUT = Path(__file__).resolve().parent
+BRAND = ROOT.parent / 'BeKaPaKa - brand'
+findings = []
+
+def add(id, priority, area, title, kind, observation, impact, recommendation, acceptance, effort, files, brand, shot):
+    findings.append(dict(id=id, priority=priority, area=area, title=title, kind=kind,
+        observation=observation, impact=impact, recommendation=recommendation,
+        acceptance=acceptance, effort=effort, files=files, brand=brand, shot=shot))
+
+add('UI-01','P1','Mecze','Jeden sposób otwierania szczegółów meczu','Potwierdzone zachowanie',
+    'Przycisk szczegółów w terminarzu otwiera panel boczny i pozostawia adres /mecze. Homepage prowadzi do osobnego adresu meczu. Ta sama intencja ma dwa różne zakończenia.',
+    'Kibic nie może łatwo przekazać adresu aktualnie oglądanego meczu z panelu. Telefon otrzymuje dodatkową warstwę interfejsu.',
+    'Prowadzić z terminarza bezpośrednio do istniejącej strony /mecze/kalk-[id]. Cały wiersz może być linkiem; opcjonalny szybki podgląd musi mieć osobną, jednoznaczną nazwę.',
+    'Kliknięcie meczu z homepage, terminarza i wyników otwiera ten sam adres. Wstecz przywraca wybrany widok listy. Udostępnianie przekazuje konkretny mecz.',
+    'S–M',['site/app/mecze/MatchesList.tsx','site/app/mecze/[slug]/page.tsx'], 'WWW s. 18–20; spójność ścieżek', '03-mecz-panel-desktop.png')
+add('UI-02','P1','Mecze','Usunąć instrukcję administracyjną z widoku kibica','Potwierdzony błąd treści',
+    'Panel zaplanowanego meczu wyświetla: „Brak szczegółowych statystyk dla tego meczu. Uruchom pełny sync KALK w panelu administracyjnym.” Ten sam komponent obsługuje stronę szczegółów.',
+    'Przed meczem brak statystyk jest normalny. Obecna treść sugeruje awarię i wymaga od kibica działania w panelu administratora.',
+    'Rozdzielić komunikaty według statusu: zaplanowany — statystyki po meczu; zakończony bez danych — oczekiwanie na statystyki; błąd pobrania — ponów. Przyszły mecz powinien oferować kalendarz i informacje o miejscu.',
+    'Żaden publiczny stan nie zawiera nazw sync, Scrapling ani instrukcji admina. Każdy stan ma właściwy komunikat i sensowną dalszą akcję.',
+    'S',['site/app/mecze/MatchDrawerContent.tsx'], 'WWW s. 28 — stany danych', '03-mecz-panel-desktop.png')
+add('UI-03','P1','Mecze','Jeden wynik i jedna hierarchia strony meczu','Potwierdzona duplikacja',
+    'Mecz BeKaPaKa–Kosz-All-In pokazuje duży wynik 86:20 w karcie, następnie ponownie 86:20 w starszym zielonym scoreboardzie. Dopiero dalej są kwarty i statystyki. Strona ma około 2912 px wysokości na desktopie.',
+    'Powielenie osłabia hierarchię, wydłuża scroll i miesza nowy system z wcześniejszym komponentem.',
+    'Zostawić jedną kartę wyniku. Poniżej umieścić kwarty, najważniejsze dane drużyny i box score. Zaplanowany mecz powinien mieć inny układ dolnej części niż rozegrany.',
+    'Wynik końcowy występuje raz jako główny wynik. Kwarty są kolejną sekcją. Brak danych nie tworzy zera. Dla LIVE/BREAK, przełożenia i anulowania układ zachowuje właściwe akcje.',
+    'M',['site/app/mecze/[slug]/page.tsx','site/app/mecze/MatchDrawerContent.tsx','site/components/public/shared/MatchCard.tsx'], 'WWW s. 18 — sześć stanów i wynik', '04-mecz-wynik-desktop.png')
+add('UI-04','P1','Mecze','Przebudować mobilny box score','Potwierdzony problem czytelności',
+    'Tabela zawodników ma około 428 px szerokości w obszarze 343 px. Nazwiska łamią się na kilka wierszy; numer bywa częścią nazwiska w jednej linii. Nie ma przełącznika podstawowych kolumn ani sticky zawodnika, które działają już w tabeli ligi.',
+    'Przewinięcie kolumn pozbawia kontekstu zawodnika. Duże różnice wysokości wierszy utrudniają porównania.',
+    'Zastosować wspólny wzorzec tabel: stała kolumna zawodnika, osobny numer, podstawowo MIN/PTS/AST oraz dodatkowe dane przez „Więcej kolumn”. Jeśli REB istnieje w źródle, uwzględnić je; nie dopisywać brakujących danych.',
+    'Przy 375/390/430 px nazwiska są rozpoznawalne, liczby nie nakładają się, kontekst pozostaje po scrollu. Tabela ma caption, właściwe nagłówki i legendę skrótów. Brak statystyki pozostaje „—”.',
+    'M',['site/app/mecze/MatchDrawerContent.tsx','site/components/public/shared/StandingsBoard.tsx','site/app/styles/digital.css'], 'WWW s. 20, 29 — czytelne dane i semantyka', '37-statystyki-mobile.png')
+add('UI-05','P1','Artykuły','Plakat powinien być widoczny w całości','Potwierdzone kadrowanie',
+    'W zapowiedzi III Turnieju cover ma narzucony pionowy kadr. Prawa część napisu „Start 10:…” jest ucięta. Wyrównanie szerokości poprzedniego i następnego artykułu z coverem zostało już poprawione.',
+    'Plakat zawiera informacje użytkowe; przycinanie tekstu może usuwać godzinę lub inne ważne dane.',
+    'Rozróżnić typ medium: fotografia może używać cover; plakat i dokument powinny używać contain z neutralną płytą/papierem oraz akcją powiększenia oryginału. Nie zmieniać treści historycznego plakatu.',
+    'Cały tekst plakatu pozostaje widoczny na telefonie i desktopie. Fotografie nadal zachowują przewidziany kadr. Czytelny oryginał otwiera się z klawiatury.',
+    'S–M',['site/components/public/templates/EditorialDetailTemplate.tsx','site/components/public/templates/EditorialNewsTemplate.tsx','site/app/styles/digital.css'], 'WWW s. 22, 31; priorytet czytelności informacji', '09-artykul-plakat-desktop.png')
+add('UI-06','P1','Dostępność','Naprawić tokeny i kontrast etykiety artykułu','Potwierdzony pomiar i kod',
+    'Etykieta „Aktualności” ma w przeglądarce kolor #F7F6F2 na #EF1734, font 18 px / 400. Kontrast wynosi około 4,01:1. Zmienne --fs-tag, --lh-tag i --tr-tag są puste; shorthand font wypada i etykieta dziedziczy tekst body.',
+    'Tekst tej wielkości i grubości potrzebuje 4,5:1. Brak tokenów zmienia także zamierzoną hierarchię wizualną.',
+    'Zastosować istniejącą rolę label albo kompletną rolę tag. Zmienić tło etykiety na czerwień akcji #D9142F z odpowiednim jasnym tekstem lub użyć czerwonej etykiety bez wypełnienia. Sprawdzić wszystkie użycia niezdefiniowanych tokenów.',
+    'Computed style zgadza się z zatwierdzoną rolą typograficzną, a para kolorów osiąga co najmniej 4,5:1 dla małego tekstu. Kontrola obejmuje również etykietę „Mecze”.',
+    'S',['site/app/styles/digital.css','packages/digital-design/tokens.json','site/components/public/templates/EditorialDetailTemplate.tsx'], 'WWW s. 10, 12, 29; WCAG 1.4.3', '09-artykul-plakat-desktop.png')
+add('UI-07','P1','Dostępność','Nie zostawiać niewidocznego linku w kolejności Tab','Potwierdzony kod i geometria',
+    'Link „Wróć do listy” w szablonie szczegółów jest zwykłym linkiem z klasą visually-hidden. Ma 1×1 px i clip rect(0,0,0,0); reguła nie odsłania go po uzyskaniu fokusu.',
+    'Użytkownik klawiatury może trafić na aktywny element, którego nie widzi. To inna sytuacja niż poprawnie odsłaniany skip link.',
+    'Pokazywać link powrotu normalnie albo użyć wariantu visually-hidden-focusable. Jeśli breadcrumb już zapewnia powrót, usunąć nadmiarowy fokusowalny link.',
+    'Każdy przystanek Tab w szczegółach artykułu i meczu ma widoczny cel oraz obrys. Kolejność odpowiada ekranowi.',
+    'S',['site/components/public/templates/EditorialDetailTemplate.tsx','site/app/styles/digital.css'], 'WWW s. 29 — widoczny fokus', '09-artykul-plakat-desktop.png')
+add('UI-08','P1','Galerie','Uzupełnić opisy zdjęć i autora','Potwierdzony brak opisów użytkowych',
+    '20 zdjęć relacji ma opisy w rodzaju tytuł artykułu + „Zdjęcie 1”. Galeria nie pokazuje autora ani indywidualnych podpisów. Lightbox bez podpisu wyświetla osamotnione „· 1/20”.',
+    'Czytnik ekranu nie otrzymuje informacji o zdjęciu. Klub i fotograf nie mają czytelnego przypisania materiału. Brak podpisu wygląda jak niedokończony interfejs.',
+    'Przeprowadzić inwentaryzację istniejących mediów w CMS i uzupełniać alt/caption/author/consentStatus na podstawie wiedzy klubu. Nie zgadywać osób ani zgód. Oddzielić sam licznik od opcjonalnego podpisu.',
+    'Każda publikowana fotografia ludzi ma potwierdzony status i sensowny opis; dekoracyjna ma pusty alt. Podpis i autor są dostępne przy zdjęciu lub w lightboxie. Bez caption licznik ma formę „1 z 20”.',
+    'M + treść',['site/components/public/shared/ArticleImageCarousel.tsx','site/lib/data/media-review.ts','cms-app/src/api/media-record'], 'WWW s. 23, 31; brandbook główny s. 31–33', '29-lightbox-mobile.png')
+add('UI-09','P1','Kontakt','Zatwierdzić publiczny kontakt klubu','Potwierdzony stan + decyzja klubu',
+    'Stopka i strona klubu nadal publikują kontakt@damianmotylinski.pl. Plan pozostawiał docelowy kontakt jako otwartą decyzję; nie można uznać osobistej domeny za zatwierdzony docelowy kontakt stowarzyszenia.',
+    'Partner lub nowy zawodnik może nie rozpoznać oficjalnego kanału. Jednocześnie usunięcie jedynego działającego kontaktu bez zastępstwa byłoby regresją.',
+    'Potwierdzić istniejący adres albo skonfigurować zatwierdzony adres klubowy. Używać tej samej konfiguracji na klubie, w stopce, partnerach i pustych stanach. Dodać zatwierdzoną politykę prywatności, kiedy jest gotowa.',
+    'Wszystkie miejsca pokazują ten sam zatwierdzony kontakt. Nie ma przykładowych maili ani fikcyjnych danych formalnych. KRS FSMM pozostaje opisany jako KRS fundacji.',
+    'S + decyzja',['site/lib/site-settings.ts','site/components/public/layout/SiteFooter.tsx','site/app/klub/page.tsx'], 'WWW s. 26; otwarte decyzje planu', '12-klub-desktop.png')
+add('UI-10','P1','Dokumenty','Dać dalszą akcję w pustych dokumentach','Potwierdzony pusty stan',
+    'Dokumenty są promowane w stopce i na stronie klubu, ale lista zawiera jedynie „Brak dokumentów”. Na desktopie po papierowej części zostaje około 460 px pustej czerni przed stopką.',
+    'Użytkownik szukający regulaminu lub formularza trafia w ślepą uliczkę; pustka wygląda jak brakujący blok.',
+    'Dodać „Wróć do klubu” i możliwość zapytania przez zatwierdzony kontakt. Opublikować rzeczywiste, zatwierdzone dokumenty; do tego czasu uczciwie wyjaśnić dostępność. Naprawić tło i wysokość krótkiej strony.',
+    'Pusty stan ma działającą akcję. Papier obejmuje całą właściwą sekcję, bez przypadkowego czarnego pasa. Pliki mają nazwę, typ i rozmiar, gdy zostaną dostarczone.',
+    'S + treść',['site/app/dokumenty/page.tsx','site/components/public/shared/EmptyState.tsx','site/app/styles/digital.css'], 'WWW s. 28 — empty state z dalszym krokiem', '13-dokumenty-desktop.png')
+add('UI-11','P2','Homepage','Skrócić drugą połowę strony głównej','Rekomendacja hierarchii',
+    'Homepage ma około 5014 px na desktopie i 8997 px przy mobilnym viewporcie. Po aktualnościach występują dane sezonu, czterech zawodników, stroje, pełna lista partnerów i kolejne bloki klubu/wsparcia.',
+    'Dobry pierwszy ekran nie przekłada się na równie wyraźną hierarchię dalszej strony. Stroje i powtarzane zaproszenia odciągają od aktualnych informacji sportowych.',
+    'Zachować kolejność głównych stref. Przenieść pełną prezentację strojów na Skład lub Klub, na homepage zostawić krótkie odwołanie. Po siatce partnerów zostawić jedno zaproszenie do współpracy. Skrócić tekst stopki na telefonie.',
+    'Najbliższy mecz, ostatni wynik, news i sezon pozostają łatwo dostępne. Docelowo skrócić wysokość homepage o 20–30% względem baseline bez ukrywania informacji podstawowych; to cel projektu, nie osiągnięty wynik.',
+    'M',['site/components/public/templates/MegaHomeTemplate.tsx','site/components/public/home/JerseyShowcase.tsx','site/components/public/layout/SiteFooter.tsx'], 'WWW s. 19, 25–26; priorytety pierwotnego planu', '01-home-desktop.png')
+add('UI-12','P2','Homepage','Ujednolicić znaki rywala i nazwy kolejki','Potwierdzona niespójność',
+    'Hero potrafi pokazać rzeczywiste niebieskie logo rywala, a szczegóły innego meczu neutralną tarczę z fragmentem nazwy. Metadane wyświetlają również „Kolejka - 3”, co wizualnie przypomina liczbę ujemną.',
+    'Ten sam system meczu nie ma jednej konsekwentnej prezentacji rywali i rozgrywek.',
+    'Wydzielić wspólny znak rywala i ustalić wariant: referencyjna neutralna tarcza albo zaakceptowane logo źródłowe. Normalizować etykietę rundy do „3. kolejka” dopiero po potwierdzeniu danych; nie przestawiać samego terminarza.',
+    'Hero, terminarz i szczegóły używają tego samego schematu. Długie nazwy nie kolidują ze znakami. Oznaczenie kolejki nie wygląda jak ujemny numer.',
+    'S–M',['site/components/public/shared/MatchCard.tsx','site/lib/data/map-game.ts'], 'WWW s. 18–19 — para znaków i metadane', '16a-home-mobile-first-screen.png')
+add('UI-13','P2','Mecze','Dodać prostą akcję dojazdu na mecz','Możliwość usprawnienia',
+    'Karta przyszłego meczu ma miejsce, godzinę i kalendarz. Nazwa KOSiR jest tekstem; brakuje bezpośredniego kroku dla kibica, który chce dotrzeć na halę.',
+    'Nowy kibic musi sam wyszukać właściwy obiekt. Na telefonie to ważniejsza funkcja niż kolejny dekoracyjny blok.',
+    'Dodać wtórny link „Dojazd” do map po zatwierdzeniu dokładnego obiektu/adresu. Nie dokładać ciężkiego embedu mapy. Przy braku miejsca pokazać uczciwy stan oczekiwania.',
+    'Kliknięcie otwiera właściwą halę. Główny CTA i kalendarz pozostają wyraźne. Przełożony lub odwołany mecz nie promuje nieaktualnego terminu.',
+    'S + dane',['site/components/public/shared/MatchCard.tsx','site/components/public/home/NearestEventCalendarActions.tsx'], 'WWW s. 18–19 — praktyczne informacje meczu', '16a-home-mobile-first-screen.png')
+add('UI-14','P2','Tabela','Pokazać sezon, dywizję i świeżość danych','Potwierdzona luka kontekstu',
+    'Widoczny nagłówek to „Tabela ligi” oraz „KALK · KOSiR Koszalin”. Dywizja występuje w opisie tabeli, ale nie jest równie czytelna w głównym nagłówku. Brakuje widocznej informacji, z kiedy są dane.',
+    'W sezonach przejściowych łatwo pomylić rozgrywki lub uznać nieaktualną tabelę za bieżącą.',
+    'Dodać sezon i dywizję z danych źródłowych oraz czas rzeczywistej aktualizacji. Oddzielić ostatni sync od czasu wygenerowania strony. Dla cache/offline wyjaśnić stan.',
+    'Sezon/dywizja są widoczne przy nagłówku. Znacznik aktualizacji nie jest wymyślaną datą. Cache ma czytelną etykietę, a brak informacji nie udaje świeżego odczytu.',
+    'S–M',['site/app/tabela/page.tsx','site/components/public/shared/StandingsBoard.tsx','site/components/public/shared/DataStateNotice.tsx'], 'WWW s. 20, 28 — dane i aktualizacja', '18-tabela-mobile.png')
+add('UI-15','P2','Tabela','Wyjaśnić skróty i ujednolicić serię','Potwierdzony język + rekomendacja',
+    'Tabela pokazuje M/W/P/Pkt i dane rozszerzone, w tym serię W1/L1. Litera L miesza angielski zapis porażki z polskim P w innych kolumnach.',
+    'Nowy użytkownik może nie odczytać +/−, formy i serii. Rodzice lub kibice okazjonalni nie muszą znać wszystkich skrótów.',
+    'Dodać krótką legendę. Ujednolicić polskie W/P w formie i serii, z pełnym opisem dla czytnika. Zachować logo + rozpoznawalny skrót na telefonie i pełną nazwę w dostępnej nazwie.',
+    'Legenda wyjaśnia każdą kolumnę rozszerzoną. Seria ma jeden język. Przy poziomym scrollu krótka kolumna drużyny nadal nie zasłania danych.',
+    'S',['site/components/public/shared/StandingsBoard.tsx','site/lib/data/backend.ts'], 'WWW s. 20 — informacja poza samym kolorem', '19a-tabela-scrolled-mobile.png')
+add('UI-16','P2','Skład','Uporządkować kompletność składu','Potwierdzony stan danych',
+    'Lista zawiera 20 osób: 11 dostępnych portretów i 9 kart zastępczych. Część profili ma nieznany numer/pozycję. W box score istnieją numery zawodników, które nie są uzupełnione w odpowiednich kartach składu.',
+    'Powtarzające się placeholdery i „—” osłabiają jakość bardzo dobrych gotowych portretów. Bez sezonu nie wiadomo, czy oglądamy aktualny skład czy szerszą bazę zawodników.',
+    'Zatwierdzić aktywny skład dla sezonu, powiązać tożsamości po ID i uzupełnić numery/pozycje tylko na podstawie potwierdzonych danych. Pokazać sezon; archiwum oddzielić, jeśli jest potrzebne. Zachować gotowe portrety i zamówiony wygląd strojów.',
+    'Wszystkie aktywne osoby mają zgodne dane w kartach, profilu i meczach. Nie usuwamy zawodników wyłącznie z powodu braku zdjęcia. Placeholder pozostaje numerem + monogramem marki, bez fikcyjnego portretu.',
+    'M + dane',['site/app/sklad/RosterList.tsx','site/components/public/shared/PlayerCard.tsx','site/lib/data/player-identity.ts','site/lib/data/local-player-portraits.ts'], 'WWW s. 24; brandbook główny s. 31 — wspólna sesja', '06-sklad-desktop.png')
+add('UI-17','P2','Zawodnik','Dać sezon i kontekst statystyk profilu','Rekomendacja interpretacji danych',
+    'Profil prezentuje duże średnie w hero i ponownie podobne wartości w części statystyk. Procenty FG/FT/3P nie pokazują obok liczby trafień i prób; samo 0% nie wyjaśnia, czy zawodnik rzucał.',
+    'Jednomeczowa próbka może wyglądać jak stabilna średnia sezonowa. Brak mianownika utrudnia interpretację procentów.',
+    'Pokazać sezon i liczbę meczów przy średnich. W hero zostawić trzy najważniejsze dane, niżej pełne statystyki. Dodać trafienia/próby, jeśli źródło je udostępnia; zero prób oznaczać „—”, realne nietrafione próby mogą dawać 0%.',
+    'Każdy procent ma kontekst źródłowy. Brak danych nie udaje zera. EVAL/eFG/TS mają objaśnienie. Historia rozróżnia sezon i mecz; bezpośredni adres zawodnika pozostaje.',
+    'M',['site/components/public/shared/PlayerProfile.tsx','site/app/sklad/[id]/page.tsx'], 'WWW s. 24 — profil i brak danych', '07-zawodnik-desktop.png')
+add('UI-18','P2','Zawodnik','Ograniczyć cięcia do danych ekspozycyjnych','Rekomendacja zgodności marki',
+    'Cięcia są stosowane w dużych liczbach profilu, także w pasku średnich statystyk. Brandbook dopuszcza charakterystyczne cięcie dla numeru, czasu i wyniku, a krytyczne tabele/dane każe zostawić czytelne.',
+    'Przenoszenie efektu na kolejne liczby może osłabić czytelność i przestaje być wyróżnikiem.',
+    'Zostawić cięcie na numerze zawodnika, ekspozycyjnym wyniku i czasie hero. Dla średnich, procentów, tabel i dat używać zwykłych cyfr tablicowych. Zweryfikować linię przecięcia na rzeczywistym cap-height, nie na środku boxa.',
+    'Efekt pojawia się wyłącznie w uzgodnionych rolach. Safari/Firefox otrzymują czytelny fallback. Zero, dwukropek i cyfry z łukami nie tracą rozpoznawalności.',
+    'S–M',['site/app/styles/digital.css','site/components/public/shared/PlayerProfile.tsx','packages/digital-design/tokens.json'], 'WWW s. 11 — zakres i położenie cięcia', '07-zawodnik-desktop.png')
+add('UI-19','P2','Aktualności','Pokazać wszystkie kategorie na telefonie','Potwierdzona widoczność',
+    'Przy 390 px widać Wszystkie/Turniej/Drużyna, a Klub jest poza pierwszym widokiem poziomego paska. Widoczny natywny scrollbar nie mówi jasno, że istnieje czwarta kategoria. Link Drużyna poprawnie zmienia URL i zawartość.',
+    'Użytkownik może nie odkryć części treści, mimo że filtrowanie jest poprawnie zaimplementowane.',
+    'Dla obecnych czterech kategorii rozważyć układ 2×2 lub dopasowane zakładki z minimalnym celem dotykowym. Dla większej liczby zostawić poziomy scroll z widocznym fragmentem kolejnej pozycji i oznaczeniem aktywnej kategorii.',
+    'Każda kategoria jest od razu widoczna albo jej istnienie jest jednoznacznie sygnalizowane. URL i obsługa bez JS pozostają. Zmiana kategorii resetuje numer strony.',
+    'S',['site/app/aktualnosci/page.tsx','site/app/styles/digital.css'], 'WWW s. 21 — filtry i URL', '35-aktualnosci-mobile-first-screen.png')
+add('UI-20','P2','Aktualności','Oznaczać historyczne zapowiedzi','Rekomendacja aktualności treści',
+    'Kategoria Drużyna pokazuje jako wyróżniony artykuł zaproszenie na trening 17 czerwca. Data publikacji jest widoczna, ale karta nadal brzmi jak bieżący nabór.',
+    'Osoba chcąca dołączyć może kierować się nieaktualnym terminem. Nie oznacza to, że historyczny artykuł należy usuwać.',
+    'Dla treści z terminem dodać „Wydarzenie zakończone” lub „Archiwalna zapowiedź” po potwierdzeniu pola wydarzenia. Zachować oryginalną treść i URL; bieżący nabór promować osobnym, aktualnym komunikatem dopiero gdy klub go zatwierdzi.',
+    'Status terminu jest czytelny, a nieaktualne zapowiedzi nie udają aktywnych akcji. Nie automatyzować interpretacji terminów przez zgadywanie dat z tekstu.',
+    'M + treść',['site/components/public/shared/NewsCard.tsx','site/components/public/shared/FeaturedStory.tsx','site/lib/data/cms.ts'], 'WWW s. 21, 28 — aktualność i uczciwe stany', '36-filtr-druzyna-mobile.png')
+add('UI-21','P2','Artykuły','Dodać skróty do długiej relacji','Potwierdzona długość + rekomendacja',
+    'Relacja turnieju ma na desktopie około 11,3 tys. px wysokości, wiele nagłówków i galerię 20 zdjęć w środku. Po karcie poprzedniego artykułu prawa kolumna przez większość czytania pozostaje niewykorzystana.',
+    'Trudno szybko dotrzeć do klasyfikacji, galerii lub wyników własnej drużyny. Tekst jest czytelny, lecz słabo skanowalny.',
+    'Pod leadem pokazać krótkie podsumowanie i linki „Wyniki / Klasyfikacja / Galeria (20)”. Na desktopie użyć bocznego spisu treści; na telefonie krótkiej listy kotwic. Klasyfikację można podsumować wcześnie, zachowując pełną relację.',
+    'Do galerii i klasyfikacji można dotrzeć jednym kliknięciem. Kotwice nie chowają nagłówka pod sticky headerem. URL z hashem i powrót działają bez JS.',
+    'M',['site/components/public/templates/EditorialDetailTemplate.tsx','site/components/public/shared/ArticleMarkdown.tsx','site/components/public/shared/ArticleRelations.tsx'], 'WWW s. 22–23 — editorial i galeria', '34-gallery-desktop.png')
+add('UI-22','P2','Artykuły','Uprościć metadane i breadcrumb','Rekomendacja hierarchii',
+    'Nad artykułem jest pełny tytuł w breadcrumb, duży powtórzony tytuł, etykieta Aktualności, data, czas czytania, licznik wyświetleń, autor i udostępnianie. Linki breadcrumb mają około 19 px wysokości.',
+    'Na telefonie długa ścieżka zabiera miejsce. Licznik odsłon nie pomaga zaplanować wizyty ani zrozumieć relacji; lokalne odsłony nie są miarą popularności produkcji.',
+    'Skrócić widoczną ścieżkę na telefonie i powiększyć cel linku. Pokazywać rzeczywistą kategorię artykułu, datę, autora i czas czytania. Rozważyć usunięcie odsłon z publicznej prezentacji przy zachowaniu mechanizmu statystyk.',
+    'Tytuł nie jest powtarzany w dwóch długich blokach na telefonie. Linki nawigacyjne spełniają klubowy standard 44 px. Autor i udostępnianie pozostają dostępne.',
+    'S–M',['site/components/public/templates/EditorialDetailTemplate.tsx','site/components/public/templates/EditorialNewsTemplate.tsx'], 'WWW s. 9, 22, 29; brief — cele 44×44', '24-artykul-plakat-mobile.png')
+add('UI-23','P2','Galerie','Powiększyć użyteczne zdjęcie w lightboxie','Potwierdzony układ + rekomendacja',
+    'Na telefonie strzałki zajmują boczne kolumny, przez co poziome zdjęcie ma tylko około 246 px szerokości przy viewporcie 390 px. Wokół pozostaje duża pusta przestrzeń. Zamknięcie jest tekstowym ×.',
+    'W podglądzie fotografia jest niewiele większa niż miniatura; mały glif zamknięcia wygląda mniej pewnie niż ikony reszty serwisu.',
+    'Przenieść sterowanie poniżej zdjęcia lub na jego krawędź z bezpiecznym kontrastem. Zastosować wspólne SVG dla zamknięcia i strzałek. Dodać czytelny stan ładowania/błędu oryginału oraz informację o autorze.',
+    'Fotografia wykorzystuje szerokość po odjęciu marginesów 16 px. Swipe, strzałki, Escape, licznik i powrót fokusu nadal działają. Przy wolnym obrazie widać stan zamiast pustej przestrzeni.',
+    'M',['site/components/public/shared/ArticleImageCarousel.tsx','site/components/public/shared/PublicIcons.tsx','site/app/styles/digital.css'], 'WWW s. 23, 28–29', '29-lightbox-mobile.png')
+add('UI-24','P2','Galerie','Dopasować sizes do kolumny artykułu','Potwierdzony kod i pomiar; bez pomiaru transferu',
+    'Galeria używa desktopowego sizes=33vw. Przy 1440 px zwykła miniatura ma około 223 px, a przeglądarka wybiera obraz o szerokości 475 px; wyróżniona fotografia ma około 457 px. Wszystkie dostają tę samą deklarację.',
+    'Zwykłe miniatury mogą pobierać większy wariant niż potrzebny dla ich kontenera. Wielkość zależy również od DPR; nie jest to jeszcze pomiar oszczędności bajtów.',
+    'Rozróżnić sizes zdjęcia wyróżnionego i zwykłego, z uwzględnieniem maksymalnej szerokości kolumny tekstu. Zachować oryginał w lightboxie oraz poprawne wymiary i lazy loading.',
+    'Wybrany currentSrc odpowiada rzeczywistemu rozmiarowi i DPR dla 390/768/1440 px. Porównanie HAR pokaże transfer przed/po. LCP nie jest opóźniany lazy loadingiem.',
+    'S–M',['site/components/public/shared/ArticleImageCarousel.tsx','site/components/public/shared/FallbackImage.tsx'], 'WWW s. 31–32 — obrazy responsive', '34-gallery-desktop.png')
+add('UI-25','P2','Partnerzy','Dopracować optyczną wagę logotypów','Rekomendacja wizualna',
+    '15 partnerów, w tym ShipApp, jest obecnych. Różne proporcje i pole własne sprawiają, że niektóre cienkie logotypy wyglądają dużo mniejsze niż nazwy zastępcze. Ostatni rząd jest niepełny; desktopowy nagłówek tej strony jest wyśrodkowany.',
+    'Równe kafle nie dają równej optycznej obecności. Jeden bardzo ciężki fallback dominuje nad prawdziwymi znakami.',
+    'Ustalić optyczne pole dla każdego znaku, zmieniając padding/max-height bez rozciągania i przemalowywania logo. Rozważyć 5 kolumn przy 15 partnerach i wyrównanie nagłówka do lewej. Zachować jedną listę bez niezatwierdzonych poziomów.',
+    'Każdy znak jest czytelny przy 390/768/1440 px, bez naruszenia proporcji i pola ochronnego. ShipApp pozostaje na stronie i homepage. Różna szerokość nie sugeruje niezatwierdzonych poziomów.',
+    'S–M',['site/components/public/sponsors/PartnersGrid.tsx','site/components/public/sponsors/SponsorLogoFrame.tsx','site/app/sponsorzy/page.tsx'], 'WWW s. 7, 25 — wyrównanie i optyczna wielkość', '11-partnerzy-desktop.png')
+add('UI-26','P2','Partnerzy','Dodać jasny krok do współpracy','Możliwość usprawnienia',
+    'Strona partnerów ma podziękowanie i siatkę. Po przejrzeniu firm brakuje konkretnego następnego kroku dla zainteresowanego partnera.',
+    'Lista buduje wiarygodność, ale nie zamienia zainteresowania w kontakt.',
+    'Dodać krótki blok „Współpraca z BeKaPaKa” z zatwierdzonym kontaktem i konkretną propozycją rozmowy. Formularz, korzyści pakietów i partner główny pozostają decyzją klubu; nie publikować przykładowych ofert.',
+    'Jeden wyraźny kontakt jest dostępny po siatce i z klawiatury. Nie ma fikcyjnych pakietów, kwot ani gwarancji.',
+    'S + treść/decyzja',['site/app/sponsorzy/page.tsx','site/lib/site-settings.ts'], 'WWW s. 25, 30; otwarte decyzje planu', '27-partnerzy-mobile.png')
+add('UI-27','P2','Klub','Pokazać ludzi i fakty, ograniczyć ogólniki','Rekomendacja treści i kompozycji',
+    'Strona klubu ma już hero z herbem, wordmarkiem i deseniem, sekcje aktywności, wartości, wsparcie i kontakt. To znacząca poprawa. Wciąż składa się głównie z tekstowych bloków o podobnym przekazie; wysokość to około 4405 px desktop / 7151 px mobile.',
+    'Marka jest widoczna, lecz nie widać życia klubu tak dobrze jak w relacjach turniejowych. Powtarzanie wartości zmniejsza konkretność.',
+    'Dodać jedno prawdziwe, zatwierdzone zdjęcie drużyny lub wydarzenia; dwie konkretne karty z linkami do istniejących relacji; krótką historię na potwierdzonych datach. Przyciąć powtarzające się wartości. Zostawić herb i dyskretny deseń.',
+    'Po pierwszym ekranie użytkownik rozumie kto gra, gdzie działa klub i co organizuje. Każdy fakt ma źródło; nie dopisujemy roku założenia, zarządu ani godzin treningów z makiety.',
+    'M + treść',['site/app/klub/page.tsx','site/app/styles/digital.css'], 'WWW s. 13, 26; brandbook główny s. 28–32', '12-klub-desktop.png')
+add('UI-28','P2','Klub','Dodać skróty do długiej strony klubu','Rekomendacja nawigacji',
+    'Sekcje działalność, wartości, wsparcie i kontakt są odległe na telefonie. Do wsparcia prowadzi link ze stopki, ale wejście na /klub nie oferuje równie wyraźnej nawigacji po sekcjach.',
+    'Kto chce tylko kontakt lub dane do wsparcia, musi przejść długą prezentację marki.',
+    'Dodać pod leadem krótką nawigację „Drużyna / Działalność / Wsparcie / Kontakt”. Skierować do składu i istniejących kotwic. Nie rozbudowywać jej do drugiego stale przyklejonego headera.',
+    'Kontakt i wsparcie są dostępne jednym kliknięciem. Nagłówki po skoku nie są zasłonięte. Kotwice działają bez JavaScript.',
+    'S',['site/app/klub/page.tsx','site/app/styles/digital.css'], 'WWW s. 9, 26 — nawigacja i odstępy', '25-klub-mobile.png')
+add('UI-29','P2','Wsparcie','Na telefonie pokazać kopiowanie przed QR','Potwierdzony układ',
+    'Modal wsparcia na telefonie ma kilkuliniowy nagłówek i duży kod QR. Akcje kopiowania znajdują się niżej, poza pierwszym ekranem. Na tym samym telefonie skanowanie własnego ekranu nie jest najprostszą ścieżką.',
+    'Najbardziej użyteczna akcja wymaga dodatkowego przewinięcia, mimo że wszystkie dane już są dostępne.',
+    'Ustawić krótki nagłówek, numer rachunku i „Kopiuj” przed kodem. QR pozostawić jako alternatywę. Ujednolicić akcje homepage/klub/modal oraz feedback z aria-live.',
+    'Kopiowanie najważniejszych danych jest dostępne bez scrolla przy 390×844. Sukces/błąd ma komunikat dla czytnika. Escape i powrót fokusu pozostają. Dane rachunku i FSMM nie ulegają zmianie.',
+    'S–M',['site/components/public/support/DonationQrModal.tsx','site/components/public/support/DonationSupportPanel.tsx','site/components/public/support/FsmmSupportSection.tsx'], 'WWW s. 26, 28–29 — proste akcje', '26-qr-mobile.png')
+add('UI-30','P2','Shell','Skrócić stopkę na telefonie','Rekomendacja gęstości',
+    'Mobilna stopka kolejno pokazuje duży znak, wielowierszowy opis, sześć linków klubu, kontakt, wsparcie i dolny pasek. Na krótkich stronach staje się dużą częścią całego dokumentu.',
+    'Koniec strony przypomina kolejną pełną podstronę, a kontakt i wsparcie są daleko od początku stopki.',
+    'Skrócić opis do jednego zdania; ułożyć linki w dwie kolumny i kontakt bliżej góry. Zachować nazwę formalną, FSMM, panel i ShipApp. Nie ukrywać istotnego kontaktu w rozwijanym akordeonie.',
+    'Stopka przy 375/390/430 px ma wyraźne grupy i cele 44 px, bez drobniejszej czcionki. Wszystkie obecne funkcje są zachowane.',
+    'S–M',['site/components/public/layout/SiteFooter.tsx','site/app/styles/digital.css'], 'WWW s. 26 — kolejność mobilnej stopki', '17-mecze-mobile.png')
+add('UI-31','P2','Shell','Poprawić wysokość i tło krótkich podstron','Potwierdzona geometria',
+    'main ma min-height:calc(100svh - 60px). Stopka dochodzi jeszcze po tej wysokości. Na /dokumenty papier kończy się znacznie wcześniej niż main, tworząc duży czarny pas; krótkie mecze/tabela również mają dużo pustki.',
+    'Różnice tła wyglądają jak niedokończony layout, a proporcje krótkiej strony odbiegają od dłuższych.',
+    'Zbudować shell z elastycznym main i pełnym tłem danej strony. Odstępy sekcji powinny wynikać z roli, nie z narzuconej wysokości ekranu. Nie ściskać tabel ani tekstu dla samego skrócenia.',
+    'Krótkie strony nie mają przypadkowej czarnej dziury. Przy małej ilości treści stopka domyka viewport; przy dużej nic nie jest ucinane. Sprawdzić 768/1024 px i zoom 200%.',
+    'M',['site/components/public/layout/PublicShell.tsx','site/components/public/templates/PageScaffold.tsx','site/app/styles/digital.css'], 'WWW s. 7, 9, 13 — pełne tła i rytm', '13-dokumenty-desktop.png')
+add('UI-32','P2','Shell','Domknąć menu i zachować sprawne zamykanie','Potwierdzone działanie + drobna rekomendacja',
+    'Menu mobilne ma czytelne linki i panel. Escape zamyka je po animacji, a fokus wraca do hamburgera. Brandbook przewiduje również nazwę stowarzyszenia w dolnej części; aktualnie jej tam nie ma.',
+    'Mechanika jest dobra i wymaga ochrony przed regresją. Krótki podpis może domknąć pustą dolną część, lecz nie powinien wypchnąć linków poza ekran.',
+    'Dodać dyskretną nazwę klubu, jeśli mieści się przy małej wysokości. Ujednolicić ikonę zamknięcia między menu, QR i lightboxem. Zachować plain link do panelu i istniejący focus trap.',
+    'Na krótkim ekranie wszystkie linki są osiągalne. Tab/Shift+Tab pozostają w menu, Escape przywraca fokus, scroll strony jest odblokowany po zamknięciu. Nie mylić czasu animacji z awarią.',
+    'S',['site/components/public/layout/MobileFullScreenMenu.tsx','site/components/public/layout/PublicShell.tsx','site/components/public/shared/PublicIcons.tsx'], 'WWW s. 15, 29', '28-menu-mobile.png')
+add('UI-33','P2','System','Uprościć kaskadę CSS po migracji','Potwierdzony kod; ryzyko utrzymania',
+    'Legacy pliki zostały usunięte, ale digital.css zawiera około 101 KB źródła i wielokrotne reguły tych samych komponentów: warstwę referencyjną i późniejsze dostosowania. Sama liczba linii nie dowodzi wolnego renderowania, lecz brakujące tokeny pokazują realne skutki.',
+    'Kolejna lokalna poprawka może zmienić inne podstrony albo przywrócić wcześniejsze odstępy. Projekt traci jedną definicję komponentu.',
+    'Porządkować komponent po komponencie: jedna docelowa reguła, jawne warianty, usuwanie zastąpionych definicji. Zachować wersjonowane źródło brandbooka i generator. Nie dodawać kolejnej globalnej warstwy nadpisującej.',
+    'Właściwe komponenty nie mają konkurujących historycznych definicji. Wizualne porównanie 390/768/1024/1440 px pozostaje stabilne; wygląd panelu bez zmian.',
+    'M–L',['site/app/styles/digital.css','packages/digital-design/reference.source.css','packages/digital-design/build_tokens.py'], 'WWW s. 34–35; plan — usuwanie legacy', '33-home-1024.png')
+add('UI-34','P2','Jakość','Uzupełnić pomiary i stany przed odbiorem','Brak pełnej weryfikacji; nie zgłoszenie awarii',
+    'Ten audyt obejmuje bieżący lokalny UI i wybrane interakcje. Nie wykonano Lighthouse, axe, VoiceOver/TalkBack, testów offline ani testu wszystkich sześciu statusów na rzeczywistych danych. Dawny baseline 64 testów nie jest wynikiem tego audytu.',
+    'Wizualnie dobry ekran nie potwierdza wydajności, dostępności całego serwisu ani stabilności podczas błędu API.',
+    'Przed odbiorem przeprowadzić macierz stanów i szerokości, pomiary mobile/desktop oraz testy regresji. Oddzielnie zmierzyć interakcje/INP; nie wyprowadzać INP z samego wyniku Lighthouse.',
+    'Raport odbioru zawiera rzeczywiste wyniki testów, typecheck/lint/build, Lighthouse, a11y oraz transferów. Każdy niezmierzony cel jest jawnie oznaczony, a nie deklarowany jako spełniony.',
+    'M–L',['site/tests','docs/qa','site/scripts/preview-local.mjs'], 'WWW s. 29, 32, 35; plan QA', '19a-tabela-scrolled-mobile.png')
+
+pages = [
+    dict(id='home',title='1. Strona główna',route='/',health='Dobra baza; skrócić dalszą część',good='Bento rzeczywiście eksponuje mecz. Na pierwszym ekranie telefonu mieszczą się rywal, data, godzina, hala i kalendarz. Płyta/papier, czerwone akcje i ręcznie przewijany pasek wyników odpowiadają kierunkowi 2.0.',ids=['UI-11','UI-12','UI-13'],shots=['01-home-desktop.png','16a-home-mobile-first-screen.png','33-home-1024.png']),
+    dict(id='mecze',title='2. Terminarz i wyniki',route='/mecze',health='Wymaga spójnej nawigacji',good='Wiersze desktop i karty mobile są znacznie czytelniejsze od poprzedniej wersji. Tabela ligi nie jest powielana jako zakładka na stronie meczów. Przełącznik terminarz/wyniki używa URL.',ids=['UI-01','UI-02'],shots=['02-mecze-desktop.png','03-mecz-panel-desktop.png','17-mecze-mobile.png']),
+    dict(id='mecz',title='3. Szczegóły rozegranego meczu',route='/mecze/kalk-4124',health='Najpilniejsza przebudowa UI',good='Istnieje bezpośredni adres i udostępnianie. Wynik, kwarty oraz indywidualne statystyki są dostępne. Główna karta zachowuje BeKaPaKa po lewej.',ids=['UI-03','UI-04','UI-02'],shots=['04-mecz-wynik-desktop.png','37-statystyki-mobile.png']),
+    dict(id='tabela',title='4. Tabela ligi',route='/tabela',health='Dobra; dopracować kontekst',good='Mobilne logo + rozpoznawalny skrót oraz rozszerzane kolumny działają. Po scrollu sticky drużyna nie nakłada się na wartości. Własny wiersz ma czerwoną belkę, nie złote tło.',ids=['UI-14','UI-15'],shots=['05-tabela-desktop.png','18-tabela-mobile.png','19a-tabela-scrolled-mobile.png']),
+    dict(id='sklad',title='5. Lista zawodników',route='/sklad',health='Dobry kierunek; nierówna kompletność',good='Karty prowadzą do osobnej strony zamiast draweru. Gotowe portrety mają wspólny charakter czarno-czerwonego stroju. Fallback nie udaje prawdziwej twarzy.',ids=['UI-16'],shots=['06-sklad-desktop.png','20-sklad-mobile.png']),
+    dict(id='zawodnik',title='6. Profil zawodnika',route='/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e',health='Dobra forma; poprawić interpretację danych',good='Zdjęcie jest pierwsze na telefonie, nazwisko i numer są wyraziste. Breadcrumb Skład/#24 jest wyrównany. Statystyki i historia są dostępne bez panelu bocznego.',ids=['UI-17','UI-18'],shots=['07-zawodnik-desktop.png','21-zawodnik-mobile.png']),
+    dict(id='aktualnosci',title='7. Lista aktualności i kategorie',route='/aktualnosci',health='Dobra; poprawić mobilne odkrywanie',good='Papier, wyróżniony artykuł i siatka kart są spójne. Kliknięcie kategorii Drużyna zmienia query i pokazuje odpowiednią treść. Mechanizm paginacji pozostaje w kodzie; pełnego przebiegu bez JS nie odtworzono.',ids=['UI-19','UI-20'],shots=['08-aktualnosci-desktop.png','35-aktualnosci-mobile-first-screen.png','36-filtr-druzyna-mobile.png']),
+    dict(id='artykul',title='8. Artykuł z plakatem',route='/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026',health='Czytelny tekst; istotne usterki covera i a11y',good='Układ 7/5, papier i ograniczona szerokość tekstu działają. Poprzedni i następny artykuł mają już szerokość kolumny covera. Data, autor i udostępnianie są obecne.',ids=['UI-05','UI-06','UI-07','UI-22'],shots=['09-artykul-plakat-desktop.png','24-artykul-plakat-mobile.png']),
+    dict(id='galeria',title='9. Długa relacja i galeria',route='/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026',health='Wymaga lepszej nawigacji i metadanych',good='Siatka zastąpiła karuzelę. Na telefonie są dwie kolumny; desktop wyróżnia pierwsze zdjęcie. Sprawdzono przejście strzałką do 2/20, Escape i powrót fokusu do miniatury.',ids=['UI-08','UI-21','UI-23','UI-24'],shots=['34-gallery-desktop.png','30-gallery-mobile.png','29-lightbox-mobile.png']),
+    dict(id='partnerzy',title='10. Partnerzy',route='/sponsorzy',health='Kompletna lista; dopracować ekspozycję',good='15 partnerów, w tym ShipApp, jest widocznych. Statyczna siatka nie powiela DOM ani nie wymusza animacji. Nie ma wymyślonych poziomów współpracy.',ids=['UI-25','UI-26'],shots=['11-partnerzy-desktop.png','27-partnerzy-mobile.png']),
+    dict(id='klub',title='11. O klubie i wsparcie',route='/klub',health='Wyraźnie bogatsza; brakuje konkretów i skrótów',good='Herb, wordmark i deseń tworzą rozpoznawalne hero. Działalność, wartości, kontakt oraz FSMM mają własne sekcje. KRS opisuje fundację. QR otwiera się, Escape i powrót fokusu działają.',ids=['UI-09','UI-27','UI-28','UI-29'],shots=['12-klub-desktop.png','25-klub-mobile.png','26-qr-mobile.png']),
+    dict(id='pomocnicze',title='12. Dokumenty, 404 i wspólny shell',route='/dokumenty · /o-klubie · /wydarzenia · nieistniejący adres',health='Mieszana: dobre 404/menu, słabe dokumenty',good='404 jest po polsku i ma dwie drogi wyjścia. /o-klubie przekierowuje do /klub, a /wydarzenia do /mecze. Header nie łamie menu przy 1024 px, tylko pokazuje hamburger. Escape w menu przywraca fokus po zakończeniu animacji.',ids=['UI-10','UI-30','UI-31','UI-32','UI-33','UI-34'],shots=['13-dokumenty-desktop.png','15-404-desktop.png','28-menu-mobile.png']),
+]
+
+intro = '''Strona ma już rzeczywistą, rozpoznawalną bazę BeKaPaKa 2.0. Największy zysk da teraz dopracowanie hierarchii, danych i wspólnych komponentów. Najsłabszą ścieżką jest obecnie przejście z terminarza do szczegółów meczu i mobilnego box score. Najmocniejsze elementy to hero meczu, tabela ligi po ostatniej poprawce, bezpośrednie profile oraz statyczna lista partnerów. Oceny poniżej są ocenami jakości UI, nie wynikami automatycznych testów ani badań użytkowników.'''
+scope = '''Audyt dotyczy bieżącego lokalnego podglądu http://127.0.0.1:3100, 6 października 2026. Sprawdzono główne publiczne typy stron przy viewportach 1440×1000 i 390×844, dodatkowo homepage przy 768 i 1024 px. Przy pionowym scrollbarze dostępny obszar strony jest około 15 px węższy. Zrzuty są nowe, z tej sesji; historyczne screenshoty użytkownika służyły wyłącznie jako kontekst. Część pełnostronicowych prób pomijała lazy loading — takich pustych fragmentów nie potraktowano jako błędów strony i nie wykorzystano ich jako dowodów w raporcie. Zmiany UI, CMS, VPS ani deploy nie były wykonywane.'''
+limits = '''Nie sprawdzono pełnego panelu, draft preview, cyklu publish/unpublish, wszystkich dokumentów szczegółowych (lista jest pusta), wszystkich profili ani wszystkich artykułów. Nie przeprowadzono badań z kibicami, Lighthouse, axe, VoiceOver/TalkBack ani testów Safari/Firefox. Nie potwierdzono transferu JS/CSS w przeglądarce, INP ani zachowania offline. Odczyt kodu służył wyjaśnieniu konkretnych obserwacji; nie zastępuje testów stanów, których nie było w bieżących danych.'''
+sources = [
+    ('CURRENT.md — nadrzędna wersja marki',str(BRAND/'CURRENT.md')),
+    ('Brandbook 2.0 WWW — komponenty, siatka i odbiór',str(BRAND/'05_brandbook/BeKaPaKa_Brandbook_2.0_WWW.pdf')),
+    ('Brandbook 2.0 — znaki, materiał i fotografia',str(BRAND/'05_brandbook/BeKaPaKa_Brandbook_2.0.pdf')),
+    ('System WWW i referencje HTML',str(BRAND/'06_www/README.md')),
+    ('WCAG — Contrast Minimum','https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html'),
+    ('WCAG — Target Size Minimum','https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html'),
+    ('web.dev — Web Vitals','https://web.dev/articles/vitals'),
+]
+decisions = [
+    'Kontakt klubu, formularz współpracy, poziomy partnerów, partner główny i procedura usuwania zdjęć pozostają decyzjami/konfiguracją z TODO. Nie publikować wartości z makiety.',
+    'WWW s. 22 podaje cover 4:5 desktop i 3:2 mobile, a checklista s. 31 wspomina 16:9. To rozbieżność dokumentu. Przyjąć komponentowy opis i referencję HTML; plakat ma dodatkowo wymóg pełnej czytelności, dlatego contain powinien mieć pierwszeństwo przed automatycznym cropem.',
+    'Brandbook dopuszcza drobne role label/meta, ale brief wymaga pomocniczego tekstu minimum 16 px. Używać 13 px tylko dla krótkich etykiet; opisy, wyjaśnienia i stany danych minimum 16 px. Bieżące metadane artykułu zmierzone na telefonie mają 16 px, nie należy ich bez powodu zmniejszać.',
+    'Standard marki to cele 44×44 px. WCAG 2.2 AA 2.5.8 określa 24×24 px z wyjątkami dotyczącymi m.in. odstępów i tekstu inline. Każdy link niższy niż 44 px nie jest automatycznie naruszeniem WCAG, lecz może odbiegać od klubowego standardu wygody.',
+    'Błędy i rekomendacje nie oznaczają zgody na usuwanie danych. Zachować URL, CMS, ICS, statystyki, QR, udostępnianie i szkice. Panel zachowuje swój wygląd. Wszystkie wcześniejsze, wyraźne życzenia użytkownika — bezpośrednie profile, portrety w stroju A, mobilne skróty drużyn — pozostają.',
+    'Portrety zostały wcześniej przerobione na wyraźne życzenie użytkownika. Audyt nie nakazuje ich cofnięcia. Przed publikacją potrzebna jest klubowa weryfikacja podobieństwa, zgód i pochodzenia mediów; nie wolno uznać lokalnego override za potwierdzenie zgody.',
+]
+roadmap = [
+    ('Etap A — naprawy o największym wpływie','UI-01–07, UI-10','Ujednolicić szczegóły meczu, usunąć admin copy i powtórzony wynik, poprawić box score, plakat, tokeny/kontrast i widoczny fokus. Każdy komponent kończyć porównaniem desktop/mobile i testem odpowiednim do zmiany.'),
+    ('Etap B — hierarchia i wspólne wzorce','UI-11–15, UI-19, UI-21–24, UI-29–32','Skrócić homepage i stopkę, uporządkować krótkie strony, dodać kontekst tabel oraz nawigację relacji, zoptymalizować lightbox i działania wsparcia. Porządkować CSS podczas migracji komponentów.'),
+    ('Etap C — treść i dane klubu','UI-08–09, UI-16–17, UI-20, UI-25–28','Uzupełnić media i aktywny skład, zatwierdzić kontakt, dodać konkretne materiały o klubie, dopracować znaki partnerów. Ten etap wymaga wiarygodnych danych klubu, a nie przykładowych treści.'),
+    ('Etap D — odbiór','UI-18, UI-33–34 + regresja całości','Domknąć kaskadę i role cięcia, wykonać pełną macierz QA, zmierzyć wydajność i dostępność. Deploy pozostaje osobnym etapem z runbookami, backupem i rollbackiem.'),
+]
+qa = [
+    ('Responsywność','375/390/430/768/820/1024/1280/1440/1920 px; zoom 200%; długie nazwiska/tytuły; brak zdjęcia; bez poziomego overflow dokumentu.'),
+    ('Dane meczowe','SCHEDULED/LIVE/BREAK/FINAL/POSTPONED/CANCELLED; null vs rzeczywiste 0; przełożenie bez daty; orientacja wyniku; ręczna edycja zachowana po imporcie.'),
+    ('Interakcje','Menu i modale: Tab/Shift+Tab, Escape, scroll lock i powrót fokusu; galeria swipe/strzałki; share/fallback; QR/kopiowanie; kalendarz Europe/Warsaw; profile i linki meczów.'),
+    ('CMS i SEO','Publish/unpublish → home/lista/szczegóły/sitemap/OG; izolacja szkiców; canonical; paginacja/kategorie bez JS; istniejące przekierowania i pełne media metadata.'),
+    ('Stany awaryjne','Błąd API/CMS, offline, wolna sieć, cache ze znacznikiem świeżości, pusty skład/dokumenty/lista, obraz niedostępny; użytkownik ma dalszą akcję.'),
+    ('Dostępność','Automatyczny skan plus klawiatura i realny VoiceOver/TalkBack; kontrast wszystkich ról, semantyka tabel, nazwy kontrolek, focus visible, reduced motion, Safari/Firefox i fallback cięć.'),
+    ('Wydajność','Lighthouse mobile/desktop, 3 powtórzenia na produkcyjnym buildzie z opisem warunków. Cele: LCP <2,5 s, CLS <0,1, INP <200 ms; INP osobno z interakcji/danych terenowych. HAR/gzip: homepage JS ≤120 KB, CSS ≤50 KB, fonty ≤90 KB.'),
+    ('Regresja kodu','Aktualne testy, typecheck, lint i build. Nie przepisywać dawnych 64 testów jako dzisiejszego wyniku. Sprawdzać także izolację publicznych tokenów od panelu.'),
+]
+
+md = ['# BeKaPaKa 2.0 — kompleksowy audyt UI/UX', '\n6 października 2026 · bieżący podgląd lokalny · raport analityczny\n', intro, '\n## Zakres, metoda i ograniczenia\n', scope, '\n'+limits, '\nPriorytety: **P1** — naprawa przed odbiorem; **P2** — kolejny etap dopracowania. Nie potwierdzono P0 blokującego podstawowe zadania. **S**: mała zmiana; **M**: zmiana komponentu/ścieżki; **L**: większe porządki lub macierz QA. To względny zakres, nie obietnica czasu.\n', '## Najważniejsze wnioski\n',
+    '1. Szczegóły meczu są obecnie najsłabszą ścieżką: dwa sposoby wejścia, instrukcja admina, powtórzony wynik i ciasna tabela mobilna.\n2. Część drobnych usterek ma konkretną przyczynę techniczną: puste tokeny etykiety, kontrast około 4,01:1 i ukryty fokusowalny link.\n3. Homepage i Klub potrzebują selekcji oraz nawigacji, a nie kolejnych dużych bloków dekoracyjnych.\n4. Galerie, skład i dokumenty wymagają uzupełnienia prawdziwych danych oraz dobrych pustych stanów.\n5. Zachować poprawione elementy: bento, mobilne skróty tabel, bezpośrednie profile, siatkę partnerów z ShipApp i działające zamykanie menu/modali.\n',
+    '## Ocena strona po stronie\n','| Ekran / ścieżka | Stan |\n|---|---|']
+for p in pages: md.append(f"| {p['title']} | {p['health']} |")
+for p in pages:
+    md += [f"\n### {p['title']}\n",f"**Adres:** {p['route']}\n\n**Ocena:** {p['health']}.\n\n**Co działa:** {p['good']}\n\n**Do poprawy:** {', '.join(p['ids'])}.\n"]
+    md += ['**Dowody:** '+', '.join(f"[{s}](<{OUT/s}>)" for s in p['shots'])+'.\n']
+md += ['\n## Szczegółowy backlog: 34 zalecenia\n', '| ID | Priorytet | Obszar | Zmiana | Zakres |\n|---|---|---|---|---|']
+for f in findings: md.append(f"| {f['id']} | {f['priority']} | {f['area']} | {f['title']} | {f['effort']} |")
+for f in findings:
+    md += [f"\n### {f['id']} · {f['priority']} · {f['title']}\n",f"**Charakter:** {f['kind']}. **Zakres:** {f['effort']}.\n\n**Obserwacja:** {f['observation']}\n\n**Skutek:** {f['impact']}\n\n**Proponowana zmiana:** {f['recommendation']}\n\n**Kryterium odbioru:** {f['acceptance']}\n\n**Podstawa:** {f['brand']}.\n",'**Pliki:** '+', '.join(f'[{Path(s).name}](<{ROOT/s}>)' for s in f['files'])+'.\n',f"**Dowód:** [{f['shot']}](<{OUT/f['shot']}>).\n"]
+md += ['\n## Zgodność z brandbookiem i decyzje\n']
+for d in decisions: md.append('- '+d)
+md += ['\n## Kolejność prac\n']
+for title,ids,description in roadmap: md.append(f'### {title}\n\n**Zakres:** {ids}.\n\n{description}\n')
+md += ['\n## Pomiary dostępne i niedostępne\n',
+    'Pomiar lokalnych plików: trzy fonty WOFF2 mają łącznie **72 888 B (71,2 KiB)**. Źródłowy digital.css ma **101 316 B**, a jego osobna kompresja gzip około **21 254 B**. To nie jest całkowity transfer CSS aplikacji ani wynik Lighthouse. W bieżących zmierzonych widokach nie wykryto poziomego overflow całego dokumentu; tabele mogą celowo przewijać się we własnym obszarze.\n',
+    'Wybrane udane interakcje: kategoria Drużyna i zmiana query; przełącznik kolumn i poziomy scroll tabeli ligi; bezpośredni profil; menu Escape i powrót fokusu po animacji; galeria następne zdjęcie, Escape i powrót do miniatury; QR Escape i powrót do przycisku. Nie wykonano transakcji ani wysyłania formularzy.\n',
+    'Do wykonania przed odbiorem:\n']
+for title,text in qa: md.append(f'- **{title}:** {text}')
+md += ['\n## Źródła\n']
+for label,url in sources: md.append(f'- [{label}](<{url}>)')
+md += ['\n## Materiały i status pracy\n',f'Raport HTML: [index.html](<{OUT/"index.html"}>). Backlog maszynowy: [findings.json](<{OUT/"findings.json"}>). Surowe obserwacje DOM: [evidence.json](<{OUT/"evidence.json"}>). Manifest użytych dowodów: [evidence-manifest.json](<{OUT/"evidence-manifest.json"}>).\n',
+    'W tym etapie dodano wyłącznie lokalne materiały audytu. Nie zmieniono interfejsu aplikacji, nie wykonano deployu ani zapisów do CMS. Bieżący podgląd 3100 pozostaje miejscem przeglądania serwisu.\n']
+(OUT/'RAPORT-UI-UX.md').write_text('\n'.join(md))
+(OUT/'findings.json').write_text(json.dumps(dict(date='2026-10-06',scope=scope,limits=limits,pages=pages,findings=findings,roadmap=roadmap,qa=qa),ensure_ascii=False,indent=2))
+
+used=sorted({s for p in pages for s in p['shots']} | {f['shot'] for f in findings})
+assert all((OUT/s).exists() for s in used)
+manifest=dict(date='2026-10-06',used=used,notes='Zrzuty użyte w raporcie sprawdzono wizualnie. Pełnostronicowe próby z pominiętym lazy loadingiem wyłączono z dowodów; nie wskazują one potwierdzonej awarii mediów.',excluded=[s.name for s in OUT.glob('*.png') if s.name not in used])
+(OUT/'evidence-manifest.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2))
+(OUT/'fonts').mkdir(exist_ok=True)
+for name in ['Barlow-Regular.woff2','Barlow-SemiBold.woff2','BarlowCondensed-ExtraBold.woff2']:
+    shutil.copyfile(ROOT/'site/app/fonts'/name,OUT/'fonts'/name)
+
+e=html.escape
+def shot_html(s):
+    mobile='mobile' in s
+    return f'<a class="shot {"mobile" if mobile else "desktop"}" href="{e(s)}" target="_blank" rel="noopener"><img src="{e(s)}" alt="Zrzut dowodowy: {e(s)}" loading="lazy"><span>{e(s)} ↗</span></a>'
+nav=''.join(f'<a href="#{p["id"]}">{e(p["title"])}</a>' for p in pages)
+page_html=''
+for p in pages:
+    page_html+=f'<section class="page" id="{p["id"]}"><div class="page-head"><div><p class="eyebrow">{e(p["route"])}</p><h3>{e(p["title"])}</h3></div><span class="health">{e(p["health"])}</span></div><p>{e(p["good"])}</p><div class="refs">'+''.join(f'<a href="#{id}">{id}</a>' for id in p['ids'])+'</div><div class="shots">'+''.join(shot_html(s) for s in p['shots'])+'</div></section>'
+finding_html=''
+for f in findings:
+    finding_html+=f'''<details class="finding" id="{f['id']}" data-priority="{f['priority']}" data-area="{e(f['area'])}"><summary><span class="priority {f['priority']}">{f['priority']}</span><span class="finding-title"><small>{f['id']} · {e(f['area'])} · {e(f['kind'])}</small><strong>{e(f['title'])}</strong></span><span class="effort">{e(f['effort'])}</span><span class="expand" aria-hidden="true">+</span></summary><div class="finding-body"><div><p><b>Obserwacja</b>{e(f['observation'])}</p><p><b>Dlaczego to ma znaczenie</b>{e(f['impact'])}</p><p><b>Proponowana zmiana</b>{e(f['recommendation'])}</p><p class="acceptance"><b>Kryterium odbioru</b>{e(f['acceptance'])}</p><p class="basis">{e(f['brand'])}</p><ul class="files">{''.join('<li>'+e(s)+'</li>' for s in f['files'])}</ul></div><aside>{shot_html(f['shot'])}</aside></div></details>'''
+road_html=''.join(f'<article><span class="step">0{i+1}</span><h3>{e(t)}</h3><small>{e(ids)}</small><p>{e(d)}</p></article>' for i,(t,ids,d) in enumerate(roadmap))
+qa_html=''.join(f'<details class="qa-row"><summary>{e(t)}</summary><p>{e(d)}</p></details>' for t,d in qa)
+sources_html=''.join(f'<li>'+ (f'<a href="{e(url)}" target="_blank" rel="noopener">{e(label)} ↗</a>' if url.startswith('https') else f'<b>{e(label)}</b><code>{e(url)}</code>')+'</li>' for label,url in sources)
+area_options=''.join(f'<option>{e(a)}</option>' for a in sorted({f['area'] for f in findings}))
+
+document='''<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BeKaPaKa — audyt UI/UX 06.10.2026</title><style>
+@font-face{font-family:Barlow;src:url(fonts/Barlow-Regular.woff2);font-weight:400;font-display:swap}@font-face{font-family:Barlow;src:url(fonts/Barlow-SemiBold.woff2);font-weight:600;font-display:swap}@font-face{font-family:Condensed;src:url(fonts/BarlowCondensed-ExtraBold.woff2);font-weight:800;font-display:swap}
+:root{--paper:#f3f1ec;--ink:#0b0b0b;--red:#d9142f;--line:#d9d6cf;--muted:#615e57;--gold:#ffb30b}*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:90px}body{margin:0;font:18px/1.6 Barlow,system-ui,sans-serif;background:var(--paper);color:var(--ink)}a{color:inherit;text-underline-offset:4px}button,select,input{font:inherit}a:focus-visible,button:focus-visible,summary:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:4px}.top{position:sticky;top:0;z-index:5;background:var(--ink);color:#f7f6f2;display:flex;justify-content:space-between;align-items:center;gap:24px;padding:14px 4vw;border-bottom:3px solid var(--red)}.word{font:800 28px/1 Condensed;letter-spacing:.03em}.top nav{display:flex;gap:20px;font-size:16px}.top a{display:flex;align-items:center;min-height:44px}.wrap{max-width:1360px;margin:auto;padding:0 48px}.hero{background:var(--ink);color:#f7f6f2;padding:64px 0 52px}.eyebrow{font-size:16px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:0 0 12px}.hero .eyebrow{color:#ff6076}h1,h2,h3{font-family:Condensed;font-weight:800;line-height:1.05;margin:0;text-transform:uppercase}h1{font-size:clamp(50px,6.4vw,92px);max-width:850px}h2{font-size:46px;margin-bottom:24px}h3{font-size:30px}.lead{max-width:920px;color:#d5d2cb;font-size:22px;line-height:1.5;margin:24px 0 32px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;border-top:1px solid #383630;padding-top:24px}.stats strong{display:block;font:800 56px/1 Condensed;color:var(--gold)}.stats span{font-size:16px;color:#d5d2cb}.section{padding:64px 0;border-bottom:1px solid var(--line)}.intro-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:44px}.intro-grid p{margin-top:0}.callout{border-left:4px solid var(--red);padding:8px 24px;background:#eae7df}.callout h3{font-size:26px;margin-bottom:16px}.callout ol{margin:0;padding-left:22px}.callout li+li{margin-top:12px}.scope{font-size:17px;color:var(--muted);max-width:1000px}.toc{display:grid;grid-template-columns:repeat(3,1fr);gap:0 24px;margin-top:28px}.toc a{display:flex;align-items:center;min-height:52px;border-bottom:1px solid var(--line);font-weight:600;font-size:17px}.page{padding:40px 0;border-top:1px solid var(--line);scroll-margin-top:20px}.page-head{display:flex;justify-content:space-between;align-items:start;gap:24px}.page-head h3{font-size:34px}.page .eyebrow{text-transform:none;letter-spacing:0;overflow-wrap:anywhere}.health{display:inline-block;max-width:290px;border:1px solid #a09b91;padding:7px 12px;font-size:16px;line-height:1.4}.page>p{max-width:940px}.refs{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}.refs a{border-bottom:2px solid var(--red);font-size:16px;font-weight:600;min-height:32px}.shots{display:flex;gap:20px;align-items:start;flex-wrap:wrap}.shot{display:block;text-decoration:none;background:#e7e4dd;border:1px solid var(--line);overflow:hidden}.shot img{display:block;width:100%;height:290px;object-fit:cover;object-position:top}.shot.desktop{width:min(100%,560px)}.shot.mobile{width:190px}.shot.mobile img{height:360px}.shot span{display:block;padding:8px 12px;font-size:13px;line-height:1.4;overflow-wrap:anywhere}.filters{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 18px}.filters select,.filters input,.filters button{min-height:44px;padding:9px 12px;border:1px solid #938d81;background:white;color:var(--ink);border-radius:0}.filters input{flex:1;min-width:230px}.filters button{cursor:pointer}.count{font-size:16px;color:var(--muted)}.finding{border-top:1px solid var(--line);scroll-margin-top:95px}.finding:last-child{border-bottom:1px solid var(--line)}.finding summary{display:flex;align-items:center;gap:16px;cursor:pointer;list-style:none;padding:20px 0;min-height:88px}.finding summary::-webkit-details-marker{display:none}.priority{font-size:16px;font-weight:600;padding:4px 10px;border:1px solid}.P1{background:var(--red);color:white;border-color:var(--red)}.P2{color:#594117;background:#f6e4b8;border-color:#cfb366}.finding-title{display:block;flex:1}.finding-title small{display:block;font-size:15px;color:var(--muted)}.finding-title strong{display:block;font-size:22px;font-weight:600;line-height:1.35}.effort{font-size:16px;white-space:nowrap}.expand{font-size:28px;width:24px;text-align:center}.finding[open] .expand{transform:rotate(45deg)}.finding-body{display:grid;grid-template-columns:1.7fr 1fr;gap:40px;padding:4px 0 32px}.finding-body p{margin:0 0 20px}.finding-body b{display:block;text-transform:uppercase;letter-spacing:.07em;font-size:15px;color:var(--muted);margin-bottom:6px}.finding-body .shot{width:100%}.finding-body .shot.mobile{width:230px;margin:auto}.finding-body .shot img{height:380px}.finding-body .shot.mobile img{height:500px}.acceptance{background:#e6e2d8;padding:16px 20px;border-left:3px solid var(--ink)}.basis{font-size:16px;color:var(--muted)}.files{font-size:14px;line-height:1.6;overflow-wrap:anywhere;padding-left:18px}.decisions li{margin-bottom:18px}.roadmap{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}.roadmap article{background:#e8e4db;padding:28px;border-top:3px solid var(--red)}.step{font:800 46px/1 Condensed;color:var(--red);display:block;margin-bottom:16px}.roadmap small{display:block;font-size:16px;margin:12px 0;color:var(--muted)}.roadmap p{margin-bottom:0}.qa-row{border-top:1px solid var(--line);padding:16px 0}.qa-row summary{cursor:pointer;font-weight:600;min-height:36px}.qa-row p{margin:8px 0}.sources{font-size:16px;list-style:none;padding:0}.sources li{margin-bottom:20px}.sources code{display:block;font:13px/1.5 monospace;color:var(--muted);overflow-wrap:anywhere;margin-top:4px}.foot{padding:36px 0;background:var(--ink);color:#d5d2cb;font-size:16px}.foot a{display:inline-flex;min-height:44px;align-items:center;margin-right:24px}[hidden]{display:none!important}.download{display:flex;gap:20px;flex-wrap:wrap;margin-top:24px}.download a{font-size:16px;font-weight:600;padding:12px 16px;border:1px solid #827d71}.print-note{display:none}
+@media(max-width:850px){.wrap{padding:0 24px}.intro-grid,.finding-body{grid-template-columns:1fr}.toc{grid-template-columns:repeat(2,1fr)}.stats{grid-template-columns:repeat(2,1fr)}.page-head{display:block}.health{margin-top:16px;max-width:100%}.roadmap{grid-template-columns:1fr}.finding-title strong{font-size:20px}.top{padding:8px 24px}.top nav{gap:12px}.top nav a:last-child{display:none}.finding-body{gap:20px}}@media(max-width:480px){.wrap{padding:0 16px}.hero{padding:40px 0}.lead{font-size:20px}.section{padding:44px 0}h2{font-size:38px}.toc{grid-template-columns:1fr}.top{padding:8px 16px}.top nav a:not(:first-child){display:none}.shot.mobile{width:calc(50% - 10px)}.shot.mobile img{height:310px}.finding summary{gap:10px}.effort{display:none}.filters select{width:calc(50% - 6px)}.filters button{flex:1}.stats strong{font-size:48px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}@media print{.top,.filters,.download{display:none}.hero{background:white;color:black}.lead,.hero .eyebrow,.stats span{color:black}.section{padding:20px 0}.finding-body{display:block}.finding-body aside{display:none}.shots img{height:160px}.finding{break-inside:avoid}.print-note{display:block}.wrap{padding:0}.finding[hidden]{display:block!important}body{font-size:12pt}.files{font-size:9pt}}
+</style></head><body><header class="top"><span class="word">BEKAPAKA / AUDYT</span><nav aria-label="Nawigacja raportu"><a href="#ocena">Strony</a><a href="#backlog">34 zalecenia</a><a href="#plan">Kolejność prac</a></nav></header>
+<main><section class="hero"><div class="wrap"><p class="eyebrow">06.10.2026 · podgląd lokalny · UI / UX</p><h1>Dobra baza.<br>Teraz spójność<br>i czytelność.</h1><p class="lead">__INTRO__</p><div class="stats"><div><strong>12</strong><span>obszarów i ścieżek</span></div><div><strong>34</strong><span>konkretne zalecenia</span></div><div><strong>10</strong><span>priorytetów P1</span></div><div><strong>__SHOTS__</strong><span>zrzutów użytych jako dowody</span></div></div><div class="download"><a href="RAPORT-UI-UX.md">Pełny raport Markdown ↗</a><a href="findings.json">Backlog JSON ↗</a><a href="evidence-manifest.json">Manifest dowodów ↗</a></div></div></section>
+<section class="section"><div class="wrap intro-grid"><div><p class="eyebrow">Wniosek z audytu</p><h2>Najpierw poprawić<br>ścieżkę meczu.</h2><p>Najwięcej zyska użytkownik po uporządkowaniu wejścia w szczegóły, usunięciu powtórzonego wyniku i poprawie tabeli statystyk na telefonie. Dodawanie kolejnych ozdobników nie rozwiąże tych problemów.</p><p class="scope">__SCOPE__</p></div><aside class="callout"><h3>Pięć kierunków</h3><ol><li>Jeden mecz — jeden adres i wynik.</li><li>Czytelne tabele, plakat i widoczny fokus.</li><li>Krótsza homepage i lepsze skróty w relacjach.</li><li>Prawdziwe dane składu, zdjęć i dokumentów.</li><li>Dopracowanie partnerów, kontaktu i wsparcia.</li></ol></aside></div></section>
+<section class="section" id="ocena"><div class="wrap"><p class="eyebrow">Ocena strona po stronie</p><h2>Co działa. Co wymaga pracy.</h2><p class="scope">Oceny są jakościowe. Każda podstrona ma własne dowody i powiązane zalecenia. Kliknij zrzut, aby obejrzeć go w pełnej rozdzielczości.</p><nav class="toc" aria-label="Spis analizowanych stron">__NAV__</nav>__PAGES__</div></section>
+<section class="section" id="backlog"><div class="wrap"><p class="eyebrow">Backlog do wdrożenia</p><h2>34 konkretne poprawki</h2><p class="scope">P1 — naprawić przed odbiorem. P2 — kolejny etap dopracowania. Nie potwierdzono blokera P0. Zakres S/M/L jest względny, nie jest estymacją godzin. Obserwacje, sugestie i braki pomiaru są oznaczone osobno.</p><div class="filters"><select id="priority" aria-label="Priorytet"><option value="">Wszystkie priorytety</option><option value="P1">P1</option><option>P2</option></select><select id="area" aria-label="Obszar"><option value="">Wszystkie obszary</option>__AREAS__</select><input id="query" type="search" aria-label="Szukaj w zaleceniach" placeholder="Szukaj: tabela, plakat, kontakt…"><button id="open-all" type="button">Rozwiń widoczne</button></div><p id="count" class="count" aria-live="polite">34 zalecenia</p>__FINDINGS__</div></section>
+<section class="section"><div class="wrap"><p class="eyebrow">Zgodność z marką</p><h2>Decyzje i ograniczenia</h2><ul class="decisions">__DECISIONS__</ul></div></section>
+<section class="section" id="plan"><div class="wrap"><p class="eyebrow">Kolejność refaktoryzacji</p><h2>Cztery etapy</h2><div class="roadmap">__ROADMAP__</div></div></section>
+<section class="section"><div class="wrap"><p class="eyebrow">Odbiór i jakość</p><h2>Co jest sprawdzone,<br>co jeszcze zmierzyć</h2><p>Sprawdzono m.in. filtr kategorii, sticky drużynę po przewinięciu tabeli, bezpośredni profil, zamykanie menu/QR/galerii przez Escape i powrót fokusu. Oryginał zdjęcia w lightboxie został poprawnie załadowany.</p><p>Trzy lokalne WOFF2: <b>72 888 B</b>. Sam źródłowy digital.css: <b>101 316 B</b>, osobny gzip około <b>21 254 B</b>. Te liczby nie oznaczają całkowitego transferu strony ani osiągnięcia Web Vitals.</p><p class="scope">__LIMITS__</p>__QA__</div></section>
+<section class="section"><div class="wrap"><p class="eyebrow">Źródła</p><h2>Dokumentacja i standardy</h2><ul class="sources">__SOURCES__</ul><p class="scope">Użyto bieżących zrzutów lokalnego podglądu i odczytu kodu. Puste fragmenty spowodowane pominiętym lazy loadingiem podczas próby pełnostronicowej nie są zgłoszeniami błędów. Dokładny manifest rozdziela użyte i wyłączone materiały.</p></div></section></main><footer class="foot"><div class="wrap"><p>Dodano wyłącznie materiały audytu. UI aplikacji, CMS i produkcja pozostały bez zmian.</p><a href="RAPORT-UI-UX.md">Raport Markdown</a><a href="findings.json">Backlog JSON</a><a href="evidence.json">Obserwacje DOM</a><a href="#">Na początek ↑</a></div></footer>
+<script>
+const entries=[...document.querySelectorAll('.finding')],priority=document.getElementById('priority'),area=document.getElementById('area'),query=document.getElementById('query');
+function filter(){const q=query.value.toLocaleLowerCase('pl');let n=0;for(const x of entries){x.hidden=!!((priority.value&&x.dataset.priority!==priority.value)||(area.value&&x.dataset.area!==area.value)||(q&&!x.textContent.toLocaleLowerCase('pl').includes(q)));if(!x.hidden)n++}document.getElementById('count').textContent=n+' z 34 zaleceń'}
+[priority,area,query].forEach(x=>x.addEventListener('input',filter));document.getElementById('open-all').addEventListener('click',()=>{const visible=entries.filter(x=>!x.hidden),open=visible.some(x=>!x.open);visible.forEach(x=>x.open=open);document.getElementById('open-all').textContent=open?'Zwiń widoczne':'Rozwiń widoczne'});
+function reveal(){const id=location.hash.slice(1),el=document.getElementById(id);if(el?.classList.contains('finding')){priority.value='';area.value='';query.value='';filter();el.open=true;el.scrollIntoView({block:'start'})}}window.addEventListener('hashchange',reveal);reveal();window.addEventListener('beforeprint',()=>entries.forEach(x=>x.open=true));
+</script></body></html>'''
+replacements={'INTRO':e(intro),'SCOPE':e(scope),'LIMITS':e(limits),'NAV':nav,'PAGES':page_html,'FINDINGS':finding_html,'SHOTS':str(len(used)),'AREAS':area_options,'DECISIONS':''.join('<li>'+e(d)+'</li>' for d in decisions),'ROADMAP':road_html,'QA':qa_html,'SOURCES':sources_html}
+for key,value in replacements.items():document=document.replace('__'+key+'__',value)
+assert '__INTRO__' not in document
+(OUT/'index.html').write_text(document)
+print(json.dumps({'findings':len(findings),'pages':len(pages),'used_screenshots':len(used),'P1':sum(f['priority']=='P1' for f in findings),'markdown_bytes':(OUT/'RAPORT-UI-UX.md').stat().st_size,'html_bytes':(OUT/'index.html').stat().st_size},ensure_ascii=False))

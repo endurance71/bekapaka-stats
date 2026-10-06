@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { siteSettings } from '../lib/site-settings'
 import type {
   EventItem,
   HomepageSection,
@@ -81,11 +82,11 @@ export function HeroSection({ teamStanding }: { teamStanding?: TeamStanding }) {
           </p>
         ) : null}
         <div className='hero__actions hero-actions'>
-          <a className='button button--primary' href='https://panel.bekapaka.pl'>
-            Przejdz do panelu druzyny
+          <a className='btn btn--primary' href='https://panel.bekapaka.pl'>
+            Przejdź do panelu drużyny
           </a>
-          <Link className='button button--ghost' href='/aktualnosci'>
-            Zobacz aktualnosci
+          <Link className='btn btn--secondary' href='/aktualnosci'>
+            Zobacz aktualności
           </Link>
         </div>
       </div>
@@ -299,8 +300,8 @@ export function SiteFooter() {
   return (
     <footer className='site-footer'>
       <div className='container site-footer__inner'>
-        <p>© 2026 by MT HUB Damian Motyliński</p>
-        <a href='mailto:kontakt@damianmotylinski.pl'>kontakt@damianmotylinski.pl</a>
+        <p>© 2026 {siteSettings.organizationName}</p>
+        <a href={`mailto:${siteSettings.contactEmail}`}>{siteSettings.contactEmail}</a>
       </div>
     </footer>
   )

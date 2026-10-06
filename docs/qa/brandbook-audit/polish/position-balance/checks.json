@@ -1,0 +1,44 @@
+[
+  {
+    "balance": "+/− +66",
+    "balanceAccessibleName": "Bilans punktów: +66",
+    "href": "/tabela",
+    "overflow": false,
+    "text": "Tabela KALK1Miejsce2 pkt · 1 mecz · +/− +66BeKaPaKa: 1. miejsce w tabeli KALK, bilans 1–0Pełna tabela",
+    "tile": {
+      "height": 303.0859375,
+      "left": 941.828125,
+      "top": 226.984375,
+      "width": 410.6640625
+    },
+    "width": 1440
+  },
+  {
+    "balance": "+/− +66",
+    "balanceAccessibleName": "Bilans punktów: +66",
+    "href": "/tabela",
+    "overflow": false,
+    "text": "Tabela KALK1Miejsce2 pkt · 1 mecz · +/− +66BeKaPaKa: 1. miejsce w tabeli KALK, bilans 1–0Pełna tabela",
+    "tile": {
+      "height": 269.5078125,
+      "left": 678,
+      "top": 214.984375,
+      "width": 299
+    },
+    "width": 1024
+  },
+  {
+    "balance": "+/− +66",
+    "balanceAccessibleName": "Bilans punktów: +66",
+    "href": "/tabela",
+    "overflow": false,
+    "text": "Tabela KALK1Miejsce2 pkt · 1 mecz · +/− +66BeKaPaKa: 1. miejsce w tabeli KALK, bilans 1–0Pełna tabela",
+    "tile": {
+      "height": 251,
+      "left": 16,
+      "top": 776.1640625,
+      "width": 343
+    },
+    "width": 390
+  }
+]

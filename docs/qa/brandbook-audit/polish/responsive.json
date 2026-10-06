@@ -1,0 +1,182 @@
+[
+  {
+    "kitControls": [
+      [
+        46.6171875,
+        44
+      ],
+      [
+        46.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 2,
+    "players": 4,
+    "width": 375
+  },
+  {
+    "kitControls": [
+      [
+        46.6171875,
+        44
+      ],
+      [
+        46.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 2,
+    "players": 4,
+    "width": 390
+  },
+  {
+    "kitControls": [
+      [
+        46.6171875,
+        44
+      ],
+      [
+        46.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 2,
+    "players": 4,
+    "width": 430
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 4,
+    "players": 4,
+    "width": 768
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 4,
+    "players": 4,
+    "width": 820
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 4,
+    "players": 4,
+    "width": 1024
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 7,
+    "players": 4,
+    "width": 1280
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 7,
+    "players": 4,
+    "width": 1440
+  },
+  {
+    "kitControls": [
+      [
+        70.6171875,
+        44
+      ],
+      [
+        70.6171875,
+        44
+      ]
+    ],
+    "kitHeadHeights": [
+      61,
+      61
+    ],
+    "overflow": false,
+    "partnerColumns": 7,
+    "players": 4,
+    "width": 1920
+  }
+]

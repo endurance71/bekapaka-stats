@@ -1,7 +1,7 @@
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const CMS_TAGS = ['cms', 'cms-news', 'cms-events', 'cms-documents', 'cms-homepage'] as const
+const CMS_TAGS = ['cms', 'cms-news', 'cms-events', 'cms-documents', 'cms-homepage', 'cms-media', 'backend', 'backend-games', 'backend-table', 'backend-roster'] as const
 
 function getProvidedSecret(request: NextRequest): string {
   const fromQuery = request.nextUrl.searchParams.get('secret') || ''
@@ -21,6 +21,8 @@ function revalidatePublicCms() {
   }
   revalidatePath('/')
   revalidatePath('/aktualnosci')
+  for (const path of ['/aktualnosci/[slug]', '/mecze/[slug]', '/sklad/[id]', '/wydarzenia/[slug]', '/dokumenty/[slug]']) revalidatePath(path, 'page')
+  for (const path of ['/mecze', '/tabela', '/sklad', '/wydarzenia', '/dokumenty', '/sitemap.xml', '/api/og']) revalidatePath(path)
 }
 
 async function handle(request: NextRequest) {

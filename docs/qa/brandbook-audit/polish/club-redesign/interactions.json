@@ -1,0 +1,11 @@
+{
+  "qr": {
+    "loaded": true,
+    "width": 250
+  },
+  "close": {
+    "dialogs": 0,
+    "focused": "Pokaż kod QR do przelewu"
+  },
+  "redirectUrl": "http://127.0.0.1:3100/klub"
+}

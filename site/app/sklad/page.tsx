@@ -3,10 +3,11 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { getRosterState, getSiteMetadataBase } from '../../lib/data'
 import { RosterList } from './RosterList'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/sklad' },
   title: 'Skład | BeKaPaKa Bobolice',
   description: 'Pełny skład i interaktywne statystyki zawodników drużyny BeKaPaKa Bobolice.'
 }
@@ -18,7 +19,8 @@ export default async function RosterPage() {
   return (
     <EditorialListingTemplate
       title='Skład drużyny'
-      description='Kliknij na dowolnego zawodnika, aby zobaczyć zaawansowane i szczegółowe statystyki sezonowe.'
+      description={`Sezon 2026/2027 · II Dywizja KALK · ${roster.length} zawodników w kadrze BeKaPaKa Bobolice.`}
+      eyebrow='Drużyna · KALK Koszalin'
       hasItems={roster.length > 0}
       stateStatus={rosterState.status}
       stateSource={rosterState.source}
@@ -26,8 +28,8 @@ export default async function RosterPage() {
       emptyTitle={rosterState.status === 'error' ? 'Nie można pobrać składu' : 'Brak składu'}
       emptyDescription={
         rosterState.status === 'error'
-          ? 'Sprawdź backend i endpoint /api/roster.'
-          : 'Po imporcie składu dane pojawią się automatycznie.'
+          ? 'Odśwież stronę lub wróć za chwilę.'
+          : 'Skład zostanie uzupełniony po potwierdzeniu przez klub.'
       }
     >
       <div className='listing-panel'>

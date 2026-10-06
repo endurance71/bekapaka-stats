@@ -1,0 +1,176 @@
+[
+  {
+    "file": "01-home-desktop.jpg",
+    "sha256": "7dbbe2e46d1ad8256a383db21b017d4002959a24d13525760c6689bf626bdfc8",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "02-mecze-desktop.jpg",
+    "sha256": "c5d73e808cc1e3b8cc70bb5911115002e7256c3f4991c43a9fcc5700e506b890",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "03-scheduled-desktop.jpg",
+    "sha256": "95cc0ab9ceec6a1e6b689ad5822dff9e09ab87913331e3bba1a352a532a71b50",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "04-scheduled-false-zeros.jpg",
+    "sha256": "b554ad937858aba908bcf3a7ae9e3f66a771c5665b16c553bf6ad4d1016a0458",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "05-finished-desktop.jpg",
+    "sha256": "3b0363b9f1267c49dc025ed80d5e5aa4a758914babcf00b3c307b3ca27ec4f93",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "06-boxscore-mobile.jpg",
+    "sha256": "18e4fab55cde216634ee30cf96a234bf6132706619f5ae75677ba328e29d806c",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "07-boxscore-mobile-scroll.jpg",
+    "sha256": "6c9eb79f6f1563409e68cd4e0af0227b022dd2eeca4ca8bf532080ca628d4f74",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "08-poster-mobile.jpg",
+    "sha256": "8ea4525bdb12b7aa397c003f6d418d1059eb7af2ad3e3d873dbf134f5774e8ab",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "09-poster-mobile-full-image.jpg",
+    "sha256": "b0fa0918770cb14ae56ad7885f3e4938418c890ea8694b2a8ca415607cffb2fc",
+    "referencedInReport": false,
+    "excludedFromEvidence": true
+  },
+  {
+    "file": "10-back-link-focus-mobile.jpg",
+    "sha256": "b4fd17c23ab4a1405f38184164c775d371c27b980e5d63256e6ad0efe4f402ac",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "11-poster-desktop.jpg",
+    "sha256": "edbe9f7a823933d12fc4a1218d53a89d04ba1562a0afa007e5f00be97c698f7e",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "12-lightbox-mobile.jpg",
+    "sha256": "b054770a159ba522e7a73068f6c4eddb3c5c54569d2449adcdd3b54f4acb313f",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "13-news-mobile.jpg",
+    "sha256": "9b89251d368ade352ed0e6726d715027db9e63288f714882402258aa635549fa",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "14-archive-team-news-mobile.jpg",
+    "sha256": "36bf82b424cfc31108073ece3ee02c2679ab1780afac235ef30a11c922a30390",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "15-roster-mobile.jpg",
+    "sha256": "944be2702cbc25ae86afb9fac1b3f865bc2a7f46df8f600d464aa2e9a32c9832",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "16-player-mobile.jpg",
+    "sha256": "c3ccace6e1b005b953127892894ffd45d535b0d4d29e8b6fbef2e94ffedeb729",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "17-player-desktop.jpg",
+    "sha256": "38ea87b6a27b04b10703d36124c1c8b197936325ed1c23b24a42cc468a2acc28",
+    "referencedInReport": false,
+    "excludedFromEvidence": true
+  },
+  {
+    "file": "18-partners-desktop.jpg",
+    "sha256": "5667756e2868bce251de91f4eb205093b123c42ee3803ae8051ef3808269583d",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "19-club-desktop.jpg",
+    "sha256": "0d7ce2bc3e1c5a7d6ed5816d81fb4c251facf57cc4c9aac6f0f7aac2189dc766",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "20-club-mobile.jpg",
+    "sha256": "4c48c24ecb54be7f49650e13c2a0efcf16cd00efeacf405575c5692cc856c889",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "21-donation-mobile.jpg",
+    "sha256": "ef715060ad365164e62fea89ef619f61cbbee8ef163773b279c30134467747e4",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "22-menu-mobile.jpg",
+    "sha256": "0295fcac8188a89bed7d1e2d6865ee8398dd2e76e06bfe8c0f0f4c54c974b1cd",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "23-documents-mobile.jpg",
+    "sha256": "d6068b3d7c7c108dbf1161c6a10f759830fdeae3c691cad98d2e871f418452a7",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "24-documents-desktop.jpg",
+    "sha256": "137525aa144bb032b8705d9b214ec81894d50d08a5a210a23aae395c6185e83f",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "25-table-desktop.jpg",
+    "sha256": "34a82a4b4591cc98644a8ee0728d58380b76b78de485e0895a2709a1609c8180",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "26-table-mobile.jpg",
+    "sha256": "408eb85d9638920d5a7cd003629b3d1c27a46e2c799938b7ff149ca0f4273a8d",
+    "referencedInReport": false,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "27-table-mobile-expanded.jpg",
+    "sha256": "d47139ddca0720fb373aa404a20e6c073d30433e688a07573bba5563d4365e38",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  },
+  {
+    "file": "28-home-mobile.jpg",
+    "sha256": "9c09eaae66123f1d91d514d1b1fe8130a5b36856fa4177020add36ea5a6d34b4",
+    "referencedInReport": false,
+    "excludedFromEvidence": true
+  },
+  {
+    "file": "29-production-home-desktop.jpg",
+    "sha256": "37495b0acdd53e2a2be8e1e0cdf3691d186d6e5052b603e88431d89d8b9e48cc",
+    "referencedInReport": true,
+    "excludedFromEvidence": false
+  }
+]

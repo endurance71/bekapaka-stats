@@ -1,3 +1,4 @@
+import { approvedMedia, type MediaRecord } from '../../../lib/data/media-review'
 import ReactMarkdown from 'react-markdown'
 import { ArticleImageCarousel } from './ArticleImageCarousel'
 import { FallbackImage } from './FallbackImage'
@@ -359,13 +360,15 @@ function normalizeNewsMarkdown(content: string): string {
 interface ArticleMarkdownProps {
   content: string
   contextTitle?: string
+  mediaRecords?: MediaRecord[]
+  mediaPreview?: boolean
 }
 
 /**
  * Renders Strapi news body (Markdown) as semantic HTML for the public site,
  * automatically compiling sports schedules and tournament groups into rich editorial widgets.
  */
-export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: ArticleMarkdownProps) {
+export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaRecords = [], mediaPreview = false }: ArticleMarkdownProps) {
   if (!content.trim()) {
     return <p className='muted'>Treść artykułu zostanie uzupełniona przez redakcję.</p>
   }
@@ -379,7 +382,7 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: Arti
         if (block.type === 'gallery') {
           return (
             <div key={idx} className='article-markdown__breakout'>
-              <ArticleImageCarousel images={block.images} />
+              <ArticleImageCarousel images={block.images.flatMap(image => { const review = approvedMedia(mediaRecords, image.src); return review ? [{ ...image, alt: review.alt, caption: review.caption, author: review.author }] : mediaPreview ? [{ ...image, alt: isCameraOrUuidFilename(image.alt) ? '' : image.alt }] : [] })} />
             </div>
           )
         }
@@ -454,7 +457,9 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność' }: Arti
                 </a>
               ),
               img: ({ src, alt }) => {
-                const cleanAlt = resolveImageAlt(alt, contextTitle, 0)
+                const review = approvedMedia(mediaRecords, typeof src === 'string' ? src : '')
+                if (!review && !mediaPreview) return null
+                const cleanAlt = review?.alt || (typeof alt === 'string' && !isCameraOrUuidFilename(alt) ? alt : '')
                 return (
                   <figure className='article-markdown__figure'>
                     <FallbackImage

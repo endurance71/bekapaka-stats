@@ -13,7 +13,9 @@ export function EditorialListingTemplate({
   stateMessage,
   emptyTitle,
   emptyDescription,
-  eyebrow = ''
+  emptyAction,
+  eyebrow = '',
+  theme = 'plyta'
 }: {
   title: string
   description: string
@@ -24,25 +26,28 @@ export function EditorialListingTemplate({
   stateMessage?: string
   emptyTitle: string
   emptyDescription: string
+  emptyAction?: React.ReactNode
   eyebrow?: string
+  theme?: 'plyta' | 'papier'
 }) {
   return (
-    <section className='listing-page'>
-      <article className='surface-card listing-page__hero'>
+    <section className='listing-page' data-theme={theme}>
+      <div className='listing-page__hero'>
         <ListingPageHero title={title} description={description} eyebrow={eyebrow} />
-      </article>
+      </div>
 
       <DataStateNotice status={stateStatus} source={stateSource} message={stateMessage} />
 
-      <article className='surface-card listing-page__body'>
+      <div className='listing-page__body'>
         {hasItems ? children : (
           <EmptyState
             mode={stateStatus === 'error' ? 'error' : 'empty'}
             title={emptyTitle}
             description={emptyDescription}
+            action={emptyAction}
           />
         )}
-      </article>
+      </div>
     </section>
   )
 }

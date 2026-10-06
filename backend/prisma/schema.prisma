@@ -31,6 +31,8 @@ model KalkSeason {
 }
 
 model Game {
+  presentation Json?
+  presentationUpdatedAt DateTime?
   id          String   @id @default(uuid())
   seasonId    String?
   season      KalkSeason? @relation(fields: [seasonId], references: [id])
@@ -218,6 +220,8 @@ model KalkTeam {
 }
 
 model KalkMatch {
+  presentation Json?
+  presentationUpdatedAt DateTime?
   id             String
   seasonId       String
   season         KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)

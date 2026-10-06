@@ -1,0 +1,393 @@
+- link "Przejdz do tresci":
+  - /url: "#content"
+- banner:
+  - link "Strona glowna BeKaPaKa Bobolice":
+    - /url: /
+    - strong: BeKaPaKa Bobolice
+  - navigation "Nawigacja glowna":
+    - list:
+      - link "Aktualności":
+        - /url: /aktualnosci
+      - link "Mecze":
+        - /url: /mecze
+      - link "Tabela":
+        - /url: /tabela
+      - link "Skład":
+        - /url: /sklad
+      - link "Sponsorzy":
+        - /url: /sponsorzy
+      - link "Klub":
+        - /url: /klub
+  - button "Panel Klubu"
+- main:
+  - article:
+    - paragraph: Koszykówka to nasza pasja
+    - heading "BeKaPaKa Bobolice" [level=1]
+    - paragraph: Gramy dla frajdy, rozwijamy pasję i pokazujemy, że basket jest dla każdego. Zobacz, jak radzi sobie nasza ekipa, sprawdź terminarz i zakochaj się w koszykówce razem z nami.
+    - generic: Pozycja
+    - generic: "#1"
+    - generic: Bilans
+    - generic: 1 - 0
+    - generic: Bilans pkt.
+    - generic: "+66"
+    - link "Aktualności":
+      - /url: /aktualnosci
+    - link "Terminarz":
+      - /url: /mecze
+  - article:
+    - heading "Najnowsze aktualności" [level=2]
+    - link "Zobacz wszystkie":
+      - /url: /aktualnosci
+    - generic: 29 wrz 2026 o 17:00
+    - heading "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju" [level=3]
+    - paragraph: Politechnika Koszalińska wygrała III Turniej Koszykówki o Puchar Burmistrza Bobolic. 8 drużyn, 16 meczów i pełna klasyfikacja.
+    - link "Czytaj artykuł":
+      - /url: /aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026
+  - article:
+    - paragraph: Najbliższe wydarzenie
+    - generic: Zmagania ligowe · KALK
+    - heading "BEKAPAKA VS GMVT TEAM" [level=2]:
+      - generic: BEKAPAKA
+      - generic: VS
+      - generic: GMVT TEAM
+    - generic: Termin
+    - strong: 18 paź 2026 o 14:40
+    - generic: Miejsce
+    - strong: KOSiR Koszalin
+    - generic: Do startu
+    - generic: 11 d 22 h 51 min 00 s
+    - generic: Odliczanie do rozpoczęcia wydarzenia
+    - link "Dodaj do kalendarza":
+      - /url: /api/calendar?uid=bekapaka-kalk-4144%40bekapaka.pl&title=BeKaPaKa+vs+GMVT+TEAM&description=Mecz+ligowy+BeKaPaKa+Bobolice+%28terminarz+KALK%29.&location=KOSiR+Koszalin&startAt=2026-10-18T12%3A40%3A00.000Z&endAt=2026-10-18T14%3A40%3A00.000Z
+  - article:
+    - paragraph: Liderzy zespołu
+    - generic: Punkty
+    - strong: Karpiński Filip
+    - generic: 28.0 PPG
+    - generic: Zbiórki
+    - strong: Sosiński Piotr
+    - generic: 8.0 RPG
+    - generic: Asysty
+    - strong: Olearczyk Dawid
+    - generic: 11.0 APG
+  - article:
+    - heading "Tabela ligowa" [level=2]
+    - link "Pełna tabela":
+      - /url: /tabela
+    - table "Skrócona tabela ligowa":
+      - rowgroup:
+        - row "# Drużyna M W P + - +/- PKT Forma Seria":
+          - columnheader "#"
+          - columnheader "Drużyna"
+          - columnheader "M"
+          - columnheader "W"
+          - columnheader "P"
+          - columnheader "+"
+          - columnheader "-"
+          - columnheader "+/-"
+          - columnheader "PKT"
+          - columnheader "Forma"
+          - columnheader "Seria"
+      - rowgroup:
+        - row "1 BeKaPaKa Bobolice 1 1 0 86 20 +66 2 W W1":
+          - cell "1":
+            - generic: "1"
+          - cell "BeKaPaKa Bobolice":
+            - generic "BeKaPaKa Bobolice"
+          - cell "1"
+          - cell "1"
+          - cell "0"
+          - cell "86"
+          - cell "20"
+          - cell "+66"
+          - cell "2":
+            - strong: "2"
+          - cell "W":
+            - generic "Wygrana": W
+          - cell "W1":
+            - generic: W1
+        - row "2 Młode Wilki 1 1 0 78 55 +23 2 W W1":
+          - cell "2":
+            - generic: "2"
+          - cell "Młode Wilki":
+            - generic "Młode Wilki"
+          - cell "1"
+          - cell "1"
+          - cell "0"
+          - cell "78"
+          - cell "55"
+          - cell "+23"
+          - cell "2":
+            - strong: "2"
+          - cell "W":
+            - generic "Wygrana": W
+          - cell "W1":
+            - generic: W1
+        - row "3 Maxbau Okna Dako PSP 1 1 0 66 45 +21 2 W W1":
+          - cell "3":
+            - generic: "3"
+          - cell "Maxbau Okna Dako PSP":
+            - generic: M
+            - generic "Maxbau Okna Dako PSP"
+          - cell "1"
+          - cell "1"
+          - cell "0"
+          - cell "66"
+          - cell "45"
+          - cell "+21"
+          - cell "2":
+            - strong: "2"
+          - cell "W":
+            - generic "Wygrana": W
+          - cell "W1":
+            - generic: W1
+        - row "4 Grubik Team 1 0 1 45 66 -21 1 L L1":
+          - cell "4":
+            - generic: "4"
+          - cell "Grubik Team":
+            - generic: G
+            - generic "Grubik Team"
+          - cell "1"
+          - cell "0"
+          - cell "1"
+          - cell "45"
+          - cell "66"
+          - cell "-21"
+          - cell "1":
+            - strong: "1"
+          - cell "L":
+            - generic "Porażka": L
+          - cell "L1":
+            - generic: L1
+        - row "5 GMVT TEAM 1 0 1 55 78 -23 1 L L1":
+          - cell "5":
+            - generic: "5"
+          - cell "GMVT TEAM":
+            - generic "GMVT TEAM"
+          - cell "1"
+          - cell "0"
+          - cell "1"
+          - cell "55"
+          - cell "78"
+          - cell "-23"
+          - cell "1":
+            - strong: "1"
+          - cell "L":
+            - generic "Porażka": L
+          - cell "L1":
+            - generic: L1
+  - article:
+    - heading "Ostatnie mecze" [level=2]
+    - link "Kalendarz":
+      - /url: /mecze
+    - generic: W
+    - strong: vs Kosz-All-In
+    - generic: 4 paź 2026 o 12:00
+    - strong: 86:20
+  - article:
+    - paragraph: Zbudujmy to razem
+    - heading "Dołącz do drużyny" [level=3]
+    - paragraph: Chcesz trenować w barwach BeKaPaKa? Szukamy talentów z Bobolic i okolic. Przyjdź na otwarty trening!
+    - link "Zagraj z nami":
+      - /url: mailto:kontakt@damianmotylinski.pl?subject=Gra w druzynie BeKaPaKa
+      - text: Zagraj z nami
+  - article:
+    - paragraph: Wspieraj klub
+    - heading "Zostań sponsorem" [level=3]
+    - paragraph: Twój biznes na koszulkach meczowych, grafikach społecznościowych i stronie klubu. Wspieraj lokalny sport!
+    - link "Zostań sponsorem":
+      - /url: mailto:kontakt@damianmotylinski.pl?subject=Wspolpraca sponsorska BeKaPaKa
+      - text: Zostań sponsorem
+  - article "Wesprzyj BeKaPaKa":
+    - paragraph: Wsparcie inicjatywy
+    - heading "Wesprzyj BeKaPaKa" [level=2]
+    - paragraph: Twoje wsparcie pomaga rozwijać koszykówkę w Bobolicach — od treningów młodzieży po mecze ligowe. Możesz przekazać 1,5% podatku lub zasilić stowarzyszenie darowizną na nasz rachunek bankowy.
+    - region "Przekaż 1,5% podatku":
+      - heading "Przekaż 1,5% podatku" [level=3]
+      - paragraph: W zeznaniu PIT wskaż organizację pożytku publicznego i cel szczegółowy — rozliczenie możesz zrobić także przez darmowy program na stronie FSMM.
+      - term: KRS
+      - definition:
+        - code: "0000270261"
+      - term: Cel szczegółowy
+      - definition:
+        - code: BKPK 23372
+      - link "Rozlicz PIT i przekaż 1,5%":
+        - /url: https://panel.fsmm.pl/23372/bobolicki_klub_przyjaciol_koszykowki_bkpk
+        - text: Rozlicz PIT i przekaż 1,5%
+    - region "Wesprzyj indywidualnie":
+      - heading "Wesprzyj indywidualnie" [level=3]
+      - paragraph: Darowiznę możesz wpłacić bezpośrednim przelewem na rachunek stowarzyszenia. W tytule przelewu wpisz „darowizna” — kwotę wybierasz samodzielnie.
+      - term: Rachunek bankowy
+      - definition:
+        - code: 38 1090 2590 0000 0001 5548 5269
+        - generic: Erste Bank Polska S.A.
+      - term: Tytuł przelewu
+      - definition:
+        - code: darowizna
+      - button "Pokaż kod QR do przelewu":
+        - text: Pokaż kod QR do przelewu
+      - link "Więcej o klubie":
+        - /url: /klub
+  - article:
+    - heading "Skład drużyny" [level=2]
+    - link "Wszyscy zawodnicy":
+      - /url: /sklad
+    - link "#2 Bortnik Jędrzej Niski skrzydłowy":
+      - /url: /sklad
+      - generic: BJ
+      - generic: "#2"
+      - strong: Bortnik Jędrzej
+      - generic: Niski skrzydłowy
+    - link "#3 Samusionek Paweł Rozgrywający":
+      - /url: /sklad
+      - generic: SP
+      - generic: "#3"
+      - strong: Samusionek Paweł
+      - generic: Rozgrywający
+    - link "#4 Pablo Iriarte Silny skrzydłowy":
+      - /url: /sklad
+      - generic: "#4"
+      - strong: Pablo Iriarte
+      - generic: Silny skrzydłowy
+    - link "#7 Szczęśniak Patryk Silny skrzydłowy":
+      - /url: /sklad
+      - generic: SP
+      - generic: "#7"
+      - strong: Szczęśniak Patryk
+      - generic: Silny skrzydłowy
+    - link "#10 Trawiński Marcin Środkowy":
+      - /url: /sklad
+      - generic: TM
+      - generic: "#10"
+      - strong: Trawiński Marcin
+      - generic: Środkowy
+    - link "#11 Malina Mirosław Silny skrzydłowy":
+      - /url: /sklad
+      - generic: MM
+      - generic: "#11"
+      - strong: Malina Mirosław
+      - generic: Silny skrzydłowy
+    - link "#12 Kaszubowski Tomasz Rzucający obrońca":
+      - /url: /sklad
+      - generic: KT
+      - generic: "#12"
+      - strong: Kaszubowski Tomasz
+      - generic: Rzucający obrońca
+    - link "#16 Klimek Przemysław Silny skrzydłowy":
+      - /url: /sklad
+      - generic: KP
+      - generic: "#16"
+      - strong: Klimek Przemysław
+      - generic: Silny skrzydłowy
+    - link "#21 Kulik Robert Środkowy":
+      - /url: /sklad
+      - generic: KR
+      - generic: "#21"
+      - strong: Kulik Robert
+      - generic: Środkowy
+    - link "#23 Kłos Emil Środkowy":
+      - /url: /sklad
+      - generic: KE
+      - generic: "#23"
+      - strong: Kłos Emil
+      - generic: Środkowy
+    - link "#24 Motyliński Damian Niski skrzydłowy":
+      - /url: /sklad
+      - generic: MD
+      - generic: "#24"
+      - strong: Motyliński Damian
+      - generic: Niski skrzydłowy
+    - link "#34 Łukasz Gośniak Rozgrywający":
+      - /url: /sklad
+      - generic: ŁG
+      - generic: "#34"
+      - strong: Łukasz Gośniak
+      - generic: Rozgrywający
+    - link "#69 Karpiński Filip Środkowy":
+      - /url: /sklad
+      - generic: KF
+      - generic: "#69"
+      - strong: Karpiński Filip
+      - generic: Środkowy
+    - link "#77 Filip Kawecki Środkowy":
+      - /url: /sklad
+      - generic: "#77"
+      - strong: Filip Kawecki
+      - generic: Środkowy
+    - link "#- Olearczyk Dawid Brak":
+      - /url: /sklad
+      - generic: OD
+      - generic: "#-"
+      - strong: Olearczyk Dawid
+      - generic: Brak
+    - link "#- Niwiński Alan Brak":
+      - /url: /sklad
+      - generic: NA
+      - generic: "#-"
+      - strong: Niwiński Alan
+      - generic: Brak
+    - link "#- Tymiński Maciej Brak":
+      - /url: /sklad
+      - generic: TM
+      - generic: "#-"
+      - strong: Tymiński Maciej
+      - generic: Brak
+    - link "#- Gołębiowski Jakub Brak":
+      - /url: /sklad
+      - generic: GJ
+      - generic: "#-"
+      - strong: Gołębiowski Jakub
+      - generic: Brak
+    - link "#- Mras Łukasz Brak":
+      - /url: /sklad
+      - generic: MŁ
+      - generic: "#-"
+      - strong: Mras Łukasz
+      - generic: Brak
+    - link "#- Sosiński Piotr Brak":
+      - /url: /sklad
+      - generic: SP
+      - generic: "#-"
+      - strong: Sosiński Piotr
+      - generic: Brak
+  - article:
+    - heading "Sponsorzy" [level=2]
+    - link "Wszyscy sponsorzy":
+      - /url: /sponsorzy
+    - img "Gmina Bobolice"
+    - img "Majster Plus Koszalin"
+    - img "Fem-Tech Tychowo"
+    - generic: Contema Bobolice
+    - generic: CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak
+    - generic: PST Sped-Trans Bobolice
+    - generic: Nadleśnictwo Bobolice, Lasy Państwowe
+    - generic: ALAB laboratoria
+    - generic: Piotr Adamus
+    - generic: „Skup aut i Auto laweta” Remek Klimek
+    - generic: CESIR Bobolice
+    - generic: Emil Jaświg
+    - img "Baumal e-hurtowniabudowlana.pl"
+    - generic: Insight Data Consulting Izabela Kaszubowska
+    - img "Gmina Bobolice"
+    - img "Majster Plus Koszalin"
+    - img "Fem-Tech Tychowo"
+    - generic: Contema Bobolice
+    - generic: CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak
+    - generic: PST Sped-Trans Bobolice
+    - generic: Nadleśnictwo Bobolice, Lasy Państwowe
+    - generic: ALAB laboratoria
+    - generic: Piotr Adamus
+    - generic: „Skup aut i Auto laweta” Remek Klimek
+    - generic: CESIR Bobolice
+    - generic: Emil Jaświg
+    - img "Baumal e-hurtowniabudowlana.pl"
+    - generic: Insight Data Consulting Izabela Kaszubowska
+- contentinfo:
+  - paragraph:
+    - text: "Oficjalny panel statystyk:"
+    - link "panel.bekapaka.pl":
+      - /url: https://panel.bekapaka.pl
+  - paragraph: © 2026 by MT HUB Damian Motyliński
+  - link "kontakt@damianmotylinski.pl":
+    - /url: mailto:kontakt@damianmotylinski.pl
+- alert

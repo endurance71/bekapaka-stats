@@ -66,9 +66,9 @@ describe('StandingsBoard 11-column component', () => {
 
     // Mobile tabs switcher presence
     expect(html).toContain('standings-mobile-tabs')
-    expect(html).toContain('Główne')
-    expect(html).toContain('Forma i seria')
-    expect(html).toContain('Wszystkie (11)')
+    expect(html).toContain('Więcej kolumn')
+    expect(html).toContain('aria-expanded="false"')
+    expect(html).toContain('Więcej kolumn')
   })
 
   it('renders stats, differential with + sign, and badges properly', () => {
@@ -99,7 +99,7 @@ describe('StandingsBoard 11-column component', () => {
 
     expect(html).toContain('is-bkp')
     expect(html).toContain('standings-team-logo--bkp')
-    expect(html).toContain('src="/logo.png"')
+    expect(html).toContain('src="/brand/sygnet2-kolor-ciasny.svg"')
   })
 
   it('renders fallback shield icon for teams with placeholder logo', () => {
@@ -114,6 +114,6 @@ describe('StandingsBoard 11-column component', () => {
     const html = renderToStaticMarkup(<StandingsBoard table={testStandings} />)
 
     expect(html).toContain('standings-table--tab-main')
-    expect(html).toContain('aria-selected="true" class="standings-tab-btn is-active">Główne</button>')
+    expect(html).toContain('aria-expanded="false">Więcej kolumn</button>')
   })
 })

@@ -1,20 +1,23 @@
+import { isLocalMediaPreview } from '../lib/data/media-review'
 import type { Metadata, Viewport } from 'next'
-import { Montserrat, Bebas_Neue } from 'next/font/google'
+import localFont from 'next/font/local'
 import './globals.css'
+import { SiteFooter } from '../components/public/layout/SiteFooter'
 import { PublicShell } from '../components/public/layout/PublicShell'
 import { getSiteMetadataBase } from '../lib/data'
 
-const montserrat = Montserrat({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-montserrat',
-  weight: ['400', '500', '600', '700', '800'],
+const barlow = localFont({
+  src: [
+    { path: './fonts/Barlow-Regular.woff2', weight: '400' },
+    { path: './fonts/Barlow-SemiBold.woff2', weight: '600' }
+  ],
+  variable: '--font-barlow',
   display: 'swap'
 })
-
-const bebasNeue = Bebas_Neue({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-bebas-neue',
-  weight: ['400'],
+const display = localFont({
+  src: './fonts/BarlowCondensed-ExtraBold.woff2',
+  weight: '800',
+  variable: '--font-barlow-condensed',
   display: 'swap'
 })
 
@@ -22,25 +25,34 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#0B0B0C',
+  themeColor: '#0B0B0B',
   colorScheme: 'dark'
 }
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
   title: 'BeKaPaKa Bobolice',
-  description: 'Oficjalna strona BeKaPaKa Bobolice: aktualności, terminarz, tabela, skład oraz sponsorzy.',
+  description:
+    'Oficjalna strona BeKaPaKa Bobolice: aktualności, terminarz, tabela, skład oraz sponsorzy.',
   alternates: {
     canonical: '/'
   },
-  keywords: ['BeKaPaKa', 'Bobolice', 'koszykówka', 'klub sportowy', 'terminarz', 'tabela', 'skład', 'sponsorzy'],
+  keywords: [
+    'BeKaPaKa',
+    'Bobolice',
+    'koszykówka',
+    'klub sportowy',
+    'terminarz',
+    'tabela',
+    'skład',
+    'sponsorzy'
+  ],
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: '32x32' },
-      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
-      { url: '/logo.png', type: 'image/png', sizes: '512x512' }
+      { url: '/favicon.svg', type: 'image/svg+xml' }
     ],
-    apple: '/apple-touch-icon.png'
+    apple: '/favicon-180.png'
   },
   appleWebApp: {
     capable: true,
@@ -54,9 +66,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang='pl' className={`${montserrat.variable} ${bebasNeue.variable}`}>
-      <body className='site-body'>
-        <PublicShell logoUrl='/logo.png'>{children}</PublicShell>
+    <html lang="pl" className={`${barlow.variable} ${display.variable}`}>
+      <body className="site-body">
+        <PublicShell footer={<SiteFooter />}>
+          {isLocalMediaPreview() && (
+            <div className="local-preview-notice sr-only" role="status">
+              Podgląd lokalny ze zdjęciami. Metadane i zgody wymagają weryfikacji przed publikacją.
+            </div>
+          )}
+          {children}
+        </PublicShell>
       </body>
     </html>
   )

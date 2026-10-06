@@ -9,8 +9,8 @@ const defaultStroke = {
   fill: 'none' as const,
   stroke: 'currentColor',
   strokeWidth: 2,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
+  strokeLinecap: 'square' as const,
+  strokeLinejoin: 'miter' as const,
 }
 
 function iconProps({ size = 16, className }: PublicIconProps) {

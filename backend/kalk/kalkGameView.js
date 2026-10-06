@@ -65,7 +65,8 @@ export function kalkMatchToGameDetail(km) {
       Boolean(currentHash && currentHash !== km.aiSummaryHash);
   }
 
-  return view;
+  const isHome = isBekapakaTeamName(km.homeTeamName);
+  return { ...view, scoreUs: isHome ? km.scoreHome : km.scoreAway, scoreThem: isHome ? km.scoreAway : km.scoreHome, isFinished: km.isFinished, seasonId: km.seasonId, presentation: km.presentation, presentationUpdatedAt: km.presentationUpdatedAt };
 }
 
 /**
@@ -91,6 +92,8 @@ export function kalkMatchToListItem(km) {
     homeAway: isHome ? 'home' : 'away',
     dataSource: 'kalk',
     isFromKalkMatch: true,
-    roundCode: km.roundCode
+    roundCode: km.roundCode,
+    isFinished: km.isFinished, seasonId: km.seasonId,
+    presentation: km.presentation, presentationUpdatedAt: km.presentationUpdatedAt
   };
 }

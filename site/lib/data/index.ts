@@ -80,6 +80,7 @@ export async function getPublicSiteData() {
 
   return {
     table,
+    allGames,
     roster,
     recentGames,
     nearestEvent,
@@ -89,7 +90,7 @@ export async function getPublicSiteData() {
     documents,
     homepageSections,
     ourPosition,
-    clubLogoUrl: '/logo.png',
+    clubLogoUrl: '/brand/herb2-mini-kolor.svg',
     dataErrors,
     dataFallbacks,
     states: {

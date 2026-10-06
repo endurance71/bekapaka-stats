@@ -2,7 +2,7 @@ import { sponsorSchema, type DataState, type SponsorItem } from './schemas'
 
 /**
  * Ręcznie utrzymywana lista sponsorów (bez CMS).
- * Logo w `site/public/images/` — źródła w `Sponsorzy/`.
+ * Lokalne logotypy i ich pochodzenie: docs/qa/partner-logos-2026-10-06.md.
  */
 export const sponsors: SponsorItem[] = [
   {
@@ -13,24 +13,17 @@ export const sponsors: SponsorItem[] = [
     order: 1,
     logoUrl: '/images/gmina-bobolice.svg',
     logoBgColor: '#ffffff',
-    logoFit: 'contain',
-    logoSliderScale: 1.08
+    logoFit: 'contain'
   },
   {
     id: 's-2',
     name: 'Majster Plus Koszalin',
     slug: 'majster-plus-koszalin',
-    websiteUrl: 'https://majsterplus.pl',
+    websiteUrl: 'https://koszalin.majsterplus.com/',
     order: 2,
-    logoUrl: '/images/majster-plus.png',
-    logoBgColor: '#e80808',
-    logoFit: 'fill',
-    logoSliderFit: 'contain',
-    logoCardFit: 'contain',
-    logoSliderScale: 0.82,
-    logoSliderPadding: '0.38rem',
-    logoCardScale: 0.9,
-    logoCardPadding: '0.3rem'
+    logoUrl: '/images/partners/majster-official.svg',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-3',
@@ -38,27 +31,29 @@ export const sponsors: SponsorItem[] = [
     slug: 'fem-tech-tychowo',
     websiteUrl: '',
     order: 3,
-    logoUrl: '/images/fem-tech.jpg',
+    logoUrl: '/images/partners/fem-tech.webp',
     logoBgColor: '#ffffff',
-    logoFit: 'contain',
-    logoSliderScale: 1.26,
-    logoSliderPadding: '0.12rem',
-    logoCardScale: 1.2,
-    logoCardPadding: '0.16rem'
+    logoFit: 'contain'
   },
   {
     id: 's-4',
     name: 'Contema Bobolice',
     slug: 'contema-bobolice',
-    websiteUrl: '',
-    order: 4
+    websiteUrl: 'http://www.contema.eu/',
+    order: 4,
+    logoUrl: '/images/partners/contema.png',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-5',
     name: 'CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak',
     slug: 'certe-inez-szczesniak',
-    websiteUrl: '',
-    order: 5
+    websiteUrl: 'https://certe.com.pl/',
+    order: 5,
+    logoUrl: '/images/partners/certe-wordmark.png',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-6',
@@ -72,14 +67,20 @@ export const sponsors: SponsorItem[] = [
     name: 'Nadleśnictwo Bobolice, Lasy Państwowe',
     slug: 'nadlesnictwo-bobolice',
     websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
-    order: 7
+    order: 7,
+    logoUrl: '/images/partners/lasy-vector.svg',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-8',
     name: 'ALAB laboratoria',
     slug: 'alab-laboratoria',
-    websiteUrl: 'https://www.alab-laboratoria.pl',
-    order: 8
+    websiteUrl: 'https://www.alab.pl/',
+    order: 8,
+    logoUrl: '/images/partners/alab-official.svg',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-9',
@@ -99,8 +100,11 @@ export const sponsors: SponsorItem[] = [
     id: 's-11',
     name: 'CESIR Bobolice',
     slug: 'cesir-bobolice',
-    websiteUrl: 'http://www.cesir.bobolice.pl',
-    order: 11
+    websiteUrl: 'https://hala.spbobolice.pl/',
+    order: 11,
+    logoUrl: '/images/partners/cesir.webp',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-12',
@@ -115,11 +119,9 @@ export const sponsors: SponsorItem[] = [
     slug: 'baumal',
     websiteUrl: 'https://e-hurtowniabudowlana.pl',
     order: 13,
-    logoUrl: '/images/baumal.png',
+    logoUrl: '/images/partners/baumal-vector.svg',
     logoBgColor: '#ffffff',
-    logoFit: 'contain',
-    logoSliderScale: 1.1,
-    logoSliderPadding: '0.28rem'
+    logoFit: 'contain'
   },
   {
     id: 's-14',
@@ -127,6 +129,16 @@ export const sponsors: SponsorItem[] = [
     slug: 'insight-data-consulting',
     websiteUrl: '',
     order: 14
+  },
+  {
+    id: 's-15',
+    name: 'ShipApp',
+    slug: 'shipapp',
+    websiteUrl: 'https://shipapp.pl',
+    order: 15,
+    logoUrl: '/images/partners/shipapp.png',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   }
 ].map((item) => sponsorSchema.parse(item))
 

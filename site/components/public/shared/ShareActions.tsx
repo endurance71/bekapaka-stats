@@ -37,10 +37,22 @@ export function ShareActions() {
 
   return (
     <span className='article-share'>
-      <button type='button' className='article-share__button' onClick={handleShare} aria-label='Udostępnij artykuł'>
+      <button type='button' className='btn btn--secondary btn--sm' onClick={handleShare} aria-label='Udostępnij stronę'>
+        <svg
+          className='ico'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='square'
+          strokeLinejoin='miter'
+          aria-hidden='true'
+        >
+          <path d='M12 3v12M7 8l5-5 5 5M5 13v8h14v-8' />
+        </svg>
         Udostępnij
       </button>
-      <span className='article-share__status' aria-live='polite'>{status}</span>
+      {status ? <span className='article-share__status' aria-live='polite'>{status}</span> : null}
     </span>
   )
 }

@@ -1,0 +1,1312 @@
+[
+  {
+    "name": "03-mecz-panel-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Terminarz i wyniki"
+    ],
+    "headings": [
+      "Terminarz i wyniki",
+      "październik 2026"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/mecze",
+        "text": "Terminarz"
+      },
+      {
+        "href": "/mecze?widok=wyniki",
+        "text": "Wyniki"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/mecze",
+    "width": 1440
+  },
+  {
+    "name": "04-mecz-wynik-desktop",
+    "brokenImages": [],
+    "h1": [
+      "BeKaPaKa — Kosz-All-In"
+    ],
+    "headings": [
+      "BeKaPaKa — Kosz-All-In",
+      "Wyniki w kwartach",
+      "Statystyki indywidualne BeKaPaKa"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/",
+        "text": "Start"
+      },
+      {
+        "href": "/mecze",
+        "text": "Mecze"
+      },
+      {
+        "href": "/mecze",
+        "text": "Wróć do listy"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 2912,
+    "small": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Mecze"
+      },
+      {
+        "height": 1,
+        "text": "Wróć do listy"
+      }
+    ],
+    "url": "/mecze/kalk-4124",
+    "width": 1440
+  },
+  {
+    "name": "05-tabela-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Tabela ligi"
+    ],
+    "headings": [
+      "Tabela ligi"
+    ],
+    "height": 1000,
+    "links": [],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/tabela",
+    "width": 1440
+  },
+  {
+    "name": "06-sklad-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Skład drużyny"
+    ],
+    "headings": [
+      "Skład drużyny"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/sklad/75dd853d-e6d4-4089-883c-9392b05c252f",
+        "text": "2Jędrzej · #2BortnikNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52",
+        "text": "3Paweł · #3SamusionekRozgrywający"
+      },
+      {
+        "href": "/sklad/428899fd-f115-48da-be46-67e3d401f075",
+        "text": "4Pablo · #4IriarteSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9",
+        "text": "7Patryk · #7SzczęśniakSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/21b5cd72-2f43-41cc-beea-c5dc471f5295",
+        "text": "10Marcin · #10TrawińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/4e1f208b-c0fa-40a0-9f8a-3d5a83cb0c4f",
+        "text": "11Mirosław · #11MalinaSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/6e4b3066-85ba-4448-9d88-1437c68f8b05",
+        "text": "12Tomasz · #12KaszubowskiRzucający obrońca"
+      },
+      {
+        "href": "/sklad/7ecbfdcc-c83e-4e55-800a-ae9a8e654cee",
+        "text": "16Przemysław · #16KlimekSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/5b93fd48-790e-44ba-bfaa-f4e754b09b0b",
+        "text": "21Robert · #21KulikŚrodkowy"
+      },
+      {
+        "href": "/sklad/1a13d025-0978-4640-8568-2bc4b4c9a2ef",
+        "text": "23Emil · #23KłosŚrodkowy"
+      },
+      {
+        "href": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+        "text": "24Damian · #24MotylińskiNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/bf4c6f9f-92dd-4159-8960-cab60cf935c3",
+        "text": "34Łukasz · #34GośniakRozgrywający"
+      },
+      {
+        "href": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+        "text": "69Filip · #69KarpińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/30ed3c7c-f2c6-498b-952f-5b97c409a47a",
+        "text": "77Filip · #77KaweckiŚrodkowy"
+      },
+      {
+        "href": "/sklad/c32599b4-752b-4a3b-bddd-95ea7b2751b7",
+        "text": "—DawidOlearczykZawodnik"
+      },
+      {
+        "href": "/sklad/aa7d4cc7-8f0a-4d43-ba3d-a04c7ee242c1",
+        "text": "—AlanNiwińskiZawodnik"
+      },
+      {
+        "href": "/sklad/03f5c874-a56e-480c-b3b2-79d8252de411",
+        "text": "—MaciejTymińskiZawodnik"
+      },
+      {
+        "href": "/sklad/8f0d5018-e396-45d3-a8f3-5367d14a504d",
+        "text": "—JakubGołębiowskiZawodnik"
+      },
+      {
+        "href": "/sklad/7cef7f40-840e-4251-93b7-a6a0284b4322",
+        "text": "—ŁukaszMrasZawodnik"
+      },
+      {
+        "href": "/sklad/12fbd4ce-69e2-40d8-bdcf-720982b0b4f4",
+        "text": "—PiotrSosińskiZawodnik"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 2922,
+    "small": [],
+    "url": "/sklad",
+    "width": 1440
+  },
+  {
+    "name": "07-zawodnik-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Damian Motyliński"
+    ],
+    "headings": [
+      "Damian Motyliński",
+      "Średnie statystyki sezonu",
+      "Skuteczność rzutowa",
+      "Historia występów"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/sklad",
+        "text": "Skład"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 1961,
+    "small": [],
+    "url": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+    "width": 1440
+  },
+  {
+    "name": "08-aktualnosci-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Z klubu"
+    ],
+    "headings": [
+      "Z klubu",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+      "II Turniej Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Harmonogram II Turnieju Koszykówki „Parafiada 2026”",
+      "Znamy grupy II Turnieju Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Szukasz drużyny na nowy sezon? Dołącz do BeKaPaKa Bobolice! Zapraszamy na otwarty trening",
+      "II Turniej Koszykówki",
+      "Jesteśmy online — BeKaPaKa Bobolice ma swoją stronę"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/aktualnosci",
+        "text": "Wszystkie"
+      },
+      {
+        "href": "/aktualnosci?category=Turniej",
+        "text": "Turniej"
+      },
+      {
+        "href": "/aktualnosci?category=Dru%C5%BCyna",
+        "text": "Drużyna"
+      },
+      {
+        "href": "/aktualnosci?category=Klub",
+        "text": "Klub"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejPolitechnika Koszalińska z Pucharem Burmistrza Boboli"
+      },
+      {
+        "href": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejIII Turniej Koszykówki o Puchar Burmistrza Bobolic – "
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026",
+        "text": "TurniejII Turniej Koszykówki Społecznika Subregionu D – Para"
+      },
+      {
+        "href": "/aktualnosci/harmonogram-turnieju-koszykowki-parafiada-2026",
+        "text": "TurniejHarmonogram II Turnieju Koszykówki „Parafiada 2026”Ju"
+      },
+      {
+        "href": "/aktualnosci/znamy-grupy-ii-turniej-parafiada-2026",
+        "text": "TurniejZnamy grupy II Turnieju Koszykówki Społecznika Subreg"
+      },
+      {
+        "href": "/aktualnosci/szukamy-druzyny-otwarty-trening-2026",
+        "text": "DrużynaSzukasz drużyny na nowy sezon? Dołącz do BeKaPaKa Bob"
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki",
+        "text": "TurniejII Turniej KoszykówkiJuż dziś zapraszamy na turniej k"
+      },
+      {
+        "href": "/aktualnosci/oficjalna-strona-bekapaka",
+        "text": "KlubJesteśmy online — BeKaPaKa Bobolice ma swoją stronęNasza"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 3336,
+    "small": [],
+    "url": "/aktualnosci",
+    "width": 1440
+  },
+  {
+    "name": "09-artykul-plakat-desktop",
+    "brokenImages": [],
+    "h1": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września"
+    ],
+    "headings": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+      "8 drużyn i kilka etapów rywalizacji",
+      "Najważniejsze informacje",
+      "Organizator i partnerzy",
+      "II Turniej Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/",
+        "text": "Start"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Aktualności"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Wróć do aktualności"
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026",
+        "text": "Poprzedni artykułII Turniej Koszykówki Społecznika Subregion"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "Następny artykułPolitechnika Koszalińska z Pucharem Burmistr"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 2655,
+    "small": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Aktualności"
+      },
+      {
+        "height": 1,
+        "text": "Wróć do aktualności"
+      }
+    ],
+    "url": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 1440
+  },
+  {
+    "name": "10-relacja-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju"
+    ],
+    "headings": [
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+      "Od symbolicznej wstęgi do pierwszego podrzutu",
+      "Alfa Trans najlepsza w grupie A",
+      "Politechnika bez porażki w grupie B",
+      "Czas na mecze o miejsca",
+      "MAXBAU wygrywa mecz o 7. miejsce",
+      "Brąz dla LKS Bonin Bio-Energetyka",
+      "Dwie dogrywki i rzut z niemal 10 metrów",
+      "Puchar dla Politechniki Koszalińskiej",
+      "MVP dla Alexa Zająca",
+      "Galeria z III Turnieju",
+      "Klasyfikacja końcowa",
+      "Turniej tworzą ludzie",
+      "Dziękujemy za III edycję",
+      "Za wsparcie wydarzenia dziękujemy",
+      "Sponsorzy wspierający BeKaPakę przez cały sezon",
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/",
+        "text": "Start"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Aktualności"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Wróć do aktualności"
+      },
+      {
+        "href": "https://bobolice.pl/",
+        "text": "Gminie Bobolice"
+      },
+      {
+        "href": "https://www.kalk-koszalin.com/",
+        "text": "Koszalińskiej Amatorskiej Lidze Koszykówki - KALK Koszalin"
+      },
+      {
+        "href": "https://www.alab.pl/",
+        "text": "ALAB laboratoria"
+      },
+      {
+        "href": "https://www.contema.eu/",
+        "text": "Contema"
+      },
+      {
+        "href": "https://bobolice.pl/cms/5479",
+        "text": "OSP Bobolice"
+      },
+      {
+        "href": "https://hala.spbobolice.pl/",
+        "text": "CESiR"
+      },
+      {
+        "href": "https://jarzynscy.pl/",
+        "text": "PHU Mirosława Jarzyńska"
+      },
+      {
+        "href": "https://bobolice.szczecinek.lasy.gov.pl/",
+        "text": "Nadleśnictwa Bobolice, Lasy Państwowe"
+      },
+      {
+        "href": "https://certe.com.pl/",
+        "text": "CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak"
+      },
+      {
+        "href": "https://koszalin.majsterplus.com/",
+        "text": "Majster Plus Koszalin"
+      },
+      {
+        "href": "https://e-hurtowniabudowlana.pl/",
+        "text": "Baumal e-hurtowniabudowlana.pl"
+      },
+      {
+        "href": "https://koszalininfo.pl/",
+        "text": "KoszalinInfo.pl"
+      },
+      {
+        "href": "https://prk24.pl/",
+        "text": "Polskie Radio Koszalin"
+      },
+      {
+        "href": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "Poprzedni artykułIII Turniej Koszykówki o Puchar Burmistrza "
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 11345,
+    "small": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Aktualności"
+      },
+      {
+        "height": 1,
+        "text": "Wróć do aktualności"
+      },
+      {
+        "height": 22,
+        "text": "Gminie Bobolice"
+      },
+      {
+        "height": 22,
+        "text": "Koszalińskiej Amatorskiej Lidze Koszykówki - KALK "
+      },
+      {
+        "height": 22,
+        "text": "ALAB laboratoria"
+      },
+      {
+        "height": 22,
+        "text": "Contema"
+      },
+      {
+        "height": 22,
+        "text": "OSP Bobolice"
+      },
+      {
+        "height": 22,
+        "text": "CESiR"
+      },
+      {
+        "height": 22,
+        "text": "PHU Mirosława Jarzyńska"
+      },
+      {
+        "height": 22,
+        "text": "Nadleśnictwa Bobolice, Lasy Państwowe"
+      },
+      {
+        "height": 22,
+        "text": "CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśn"
+      },
+      {
+        "height": 22,
+        "text": "Majster Plus Koszalin"
+      },
+      {
+        "height": 22,
+        "text": "Baumal e-hurtowniabudowlana.pl"
+      },
+      {
+        "height": 22,
+        "text": "KoszalinInfo.pl"
+      },
+      {
+        "height": 22,
+        "text": "Polskie Radio Koszalin"
+      }
+    ],
+    "url": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 1440
+  },
+  {
+    "name": "11-partnerzy-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Partnerzy klubu"
+    ],
+    "headings": [
+      "Partnerzy klubu"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "https://bobolice.pl",
+        "text": ""
+      },
+      {
+        "href": "https://koszalin.majsterplus.com/",
+        "text": ""
+      },
+      {
+        "href": "http://www.contema.eu/",
+        "text": ""
+      },
+      {
+        "href": "https://certe.com.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://bobolice.szczecinek.lasy.gov.pl",
+        "text": ""
+      },
+      {
+        "href": "https://www.alab.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://hala.spbobolice.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://e-hurtowniabudowlana.pl",
+        "text": ""
+      },
+      {
+        "href": "https://shipapp.pl",
+        "text": ""
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/sponsorzy",
+    "width": 1440
+  },
+  {
+    "name": "12-klub-desktop",
+    "brokenImages": [],
+    "h1": [
+      "O klubie"
+    ],
+    "headings": [
+      "O klubie",
+      "Koszykówka z Bobolic",
+      "Klub w skrócie",
+      "Drużyna, społeczność, wydarzenia",
+      "Gramy w KALK",
+      "Łączy nas koszykówka",
+      "Turnieje w Bobolicach",
+      "Na parkiecie i poza nim",
+      "Wesprzyj BeKaPaKa",
+      "Przekaż 1,5% podatku",
+      "Wesprzyj indywidualnie",
+      "Kontakt z klubem"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/sklad",
+        "text": "Poznaj drużynę"
+      },
+      {
+        "href": "#dzialalnosc",
+        "text": "Co robimy ↓"
+      },
+      {
+        "href": "/dokumenty",
+        "text": "Dokumenty stowarzyszenia →"
+      },
+      {
+        "href": "/mecze",
+        "text": "Mecze i wyniki →"
+      },
+      {
+        "href": "/sponsorzy",
+        "text": "Partnerzy klubu →"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Relacje z wydarzeń →"
+      },
+      {
+        "href": "https://panel.fsmm.pl/23372/bobolicki_klub_przyjaciol_koszykowki_bkpk",
+        "text": "Rozlicz PIT i przekaż 1,5%"
+      },
+      {
+        "href": "mailto:kontakt@damianmotylinski.pl",
+        "text": "kontakt@damianmotylinski.pl"
+      },
+      {
+        "href": "/dokumenty",
+        "text": "Dokumenty klubu →"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 4405,
+    "small": [],
+    "url": "/klub",
+    "width": 1440
+  },
+  {
+    "name": "13-dokumenty-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Dokumenty klubowe"
+    ],
+    "headings": [
+      "Dokumenty klubowe",
+      "Brak dokumentów"
+    ],
+    "height": 1000,
+    "links": [],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/dokumenty",
+    "width": 1440
+  },
+  {
+    "name": "14-wydarzenia-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Terminarz i wyniki"
+    ],
+    "headings": [
+      "Terminarz i wyniki",
+      "październik 2026"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/mecze",
+        "text": "Terminarz"
+      },
+      {
+        "href": "/mecze?widok=wyniki",
+        "text": "Wyniki"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/mecze",
+    "width": 1440
+  },
+  {
+    "name": "15-404-desktop",
+    "brokenImages": [],
+    "h1": [
+      "Piłka poza boiskiem"
+    ],
+    "headings": [
+      "Piłka poza boiskiem"
+    ],
+    "height": 1000,
+    "links": [
+      {
+        "href": "/",
+        "text": "Strona główna"
+      },
+      {
+        "href": "/mecze",
+        "text": "Mecze i wyniki"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 1512,
+    "small": [],
+    "url": "/audyt-nie-istniejaca-strona",
+    "width": 1440
+  },
+  {
+    "name": "16-home-mobile",
+    "brokenImages": [],
+    "h1": [
+      "BeKaPaKa Bobolice — koszykówka"
+    ],
+    "headings": [
+      "BeKaPaKa Bobolice — koszykówka",
+      "Miejsce",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+      "Z klubu",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+      "II Turniej Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Sezon i drużyna",
+      "Tabela KALK",
+      "Nasi zawodnicy",
+      "Stroje meczowe",
+      "Partnerzy klubu",
+      "Poznaj nasz klub",
+      "Partnerzy klubu",
+      "Wesprzyj BeKaPaKa",
+      "Przekaż 1,5% podatku",
+      "Darowizna przelewem"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/mecze/kalk-4124",
+        "text": "KALK · Kolejka - 3 · 4 paź 2026BeKaPaKa86Kosz-All-In20"
+      },
+      {
+        "href": "/mecze/kalk-4144",
+        "text": "Następny · 18 paź 2026BeKaPaKa—GMVT TEAM—"
+      },
+      {
+        "href": "/api/calendar?uid=bekapaka-kalk-4144%40bekapaka.pl&title=BeKaPaKa+vs+GMVT+TEAM&description=Mecz+ligowy+BeKaPaKa+Bobolice+%28terminarz+KALK%29.&location=KOSiR+Koszalin&startAt=2026-10-18T12%3A40%3A00.000Z&endAt=2026-10-18T14%3A40%3A00.000Z",
+        "text": "Dodaj do kalendarza"
+      },
+      {
+        "href": "/mecze/kalk-4144",
+        "text": "Szczegóły meczu"
+      },
+      {
+        "href": "/tabela",
+        "text": "Tabela KALK1Miejsce2 pkt · 1 mecz · +/− +66BeKaPaKa: 1. miej"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "Ostatnia relacjaPolitechnika Koszalińska z Pucharem Burmistr"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Wszystkie aktualności"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejPolitechnika Koszalińska z Pucharem Burmistrza Boboli"
+      },
+      {
+        "href": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejIII Turniej Koszykówki o Puchar Burmistrza Bobolic – "
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026",
+        "text": "TurniejII Turniej Koszykówki Społecznika Subregionu D – Para"
+      },
+      {
+        "href": "/tabela",
+        "text": "Pełna tabela"
+      },
+      {
+        "href": "/sklad",
+        "text": "Pełny skład"
+      },
+      {
+        "href": "/sklad/75dd853d-e6d4-4089-883c-9392b05c252f",
+        "text": "2Jędrzej · #2BortnikNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52",
+        "text": "3Paweł · #3SamusionekRozgrywający"
+      },
+      {
+        "href": "/sklad/428899fd-f115-48da-be46-67e3d401f075",
+        "text": "4Pablo · #4IriarteSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9",
+        "text": "7Patryk · #7SzczęśniakSilny skrzydłowy"
+      },
+      {
+        "href": "/sponsorzy",
+        "text": "Poznaj partnerów"
+      },
+      {
+        "href": "https://bobolice.pl",
+        "text": ""
+      },
+      {
+        "href": "https://koszalin.majsterplus.com/",
+        "text": ""
+      },
+      {
+        "href": "http://www.contema.eu/",
+        "text": ""
+      },
+      {
+        "href": "https://certe.com.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://bobolice.szczecinek.lasy.gov.pl",
+        "text": ""
+      },
+      {
+        "href": "https://www.alab.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://hala.spbobolice.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://e-hurtowniabudowlana.pl",
+        "text": ""
+      },
+      {
+        "href": "https://shipapp.pl",
+        "text": ""
+      },
+      {
+        "href": "/klub",
+        "text": "DrużynaPoznaj nasz klubDrużyna, społeczność i wydarzenia kos"
+      },
+      {
+        "href": "/sponsorzy",
+        "text": "PartnerzyPartnerzy klubuPoznaj firmy i instytucje wspierając"
+      },
+      {
+        "href": "https://panel.fsmm.pl/23372/bobolicki_klub_przyjaciol_koszykowki_bkpk",
+        "text": "Rozlicz PIT"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 8997,
+    "small": [],
+    "url": "/",
+    "width": 390
+  },
+  {
+    "name": "17-mecze-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Terminarz i wyniki"
+    ],
+    "headings": [
+      "Terminarz i wyniki",
+      "październik 2026"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/mecze",
+        "text": "Terminarz"
+      },
+      {
+        "href": "/mecze?widok=wyniki",
+        "text": "Wyniki"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 2156,
+    "small": [],
+    "url": "/mecze",
+    "width": 390
+  },
+  {
+    "name": "18-tabela-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Tabela ligi"
+    ],
+    "headings": [
+      "Tabela ligi"
+    ],
+    "height": 844,
+    "links": [],
+    "overflow": false,
+    "pageHeight": 2176,
+    "small": [],
+    "url": "/tabela",
+    "width": 390
+  },
+  {
+    "name": "20-sklad-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Skład drużyny"
+    ],
+    "headings": [
+      "Skład drużyny"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/sklad/75dd853d-e6d4-4089-883c-9392b05c252f",
+        "text": "2Jędrzej · #2BortnikNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52",
+        "text": "3Paweł · #3SamusionekRozgrywający"
+      },
+      {
+        "href": "/sklad/428899fd-f115-48da-be46-67e3d401f075",
+        "text": "4Pablo · #4IriarteSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9",
+        "text": "7Patryk · #7SzczęśniakSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/21b5cd72-2f43-41cc-beea-c5dc471f5295",
+        "text": "10Marcin · #10TrawińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/4e1f208b-c0fa-40a0-9f8a-3d5a83cb0c4f",
+        "text": "11Mirosław · #11MalinaSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/6e4b3066-85ba-4448-9d88-1437c68f8b05",
+        "text": "12Tomasz · #12KaszubowskiRzucający obrońca"
+      },
+      {
+        "href": "/sklad/7ecbfdcc-c83e-4e55-800a-ae9a8e654cee",
+        "text": "16Przemysław · #16KlimekSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/5b93fd48-790e-44ba-bfaa-f4e754b09b0b",
+        "text": "21Robert · #21KulikŚrodkowy"
+      },
+      {
+        "href": "/sklad/1a13d025-0978-4640-8568-2bc4b4c9a2ef",
+        "text": "23Emil · #23KłosŚrodkowy"
+      },
+      {
+        "href": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+        "text": "24Damian · #24MotylińskiNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/bf4c6f9f-92dd-4159-8960-cab60cf935c3",
+        "text": "34Łukasz · #34GośniakRozgrywający"
+      },
+      {
+        "href": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+        "text": "69Filip · #69KarpińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/30ed3c7c-f2c6-498b-952f-5b97c409a47a",
+        "text": "77Filip · #77KaweckiŚrodkowy"
+      },
+      {
+        "href": "/sklad/c32599b4-752b-4a3b-bddd-95ea7b2751b7",
+        "text": "—DawidOlearczykZawodnik"
+      },
+      {
+        "href": "/sklad/aa7d4cc7-8f0a-4d43-ba3d-a04c7ee242c1",
+        "text": "—AlanNiwińskiZawodnik"
+      },
+      {
+        "href": "/sklad/03f5c874-a56e-480c-b3b2-79d8252de411",
+        "text": "—MaciejTymińskiZawodnik"
+      },
+      {
+        "href": "/sklad/8f0d5018-e396-45d3-a8f3-5367d14a504d",
+        "text": "—JakubGołębiowskiZawodnik"
+      },
+      {
+        "href": "/sklad/7cef7f40-840e-4251-93b7-a6a0284b4322",
+        "text": "—ŁukaszMrasZawodnik"
+      },
+      {
+        "href": "/sklad/12fbd4ce-69e2-40d8-bdcf-720982b0b4f4",
+        "text": "—PiotrSosińskiZawodnik"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 3958,
+    "small": [],
+    "url": "/sklad",
+    "width": 390
+  },
+  {
+    "name": "21-zawodnik-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Damian Motyliński"
+    ],
+    "headings": [
+      "Damian Motyliński",
+      "Średnie statystyki sezonu",
+      "Skuteczność rzutowa",
+      "Historia występów"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/sklad",
+        "text": "Skład"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 3476,
+    "small": [],
+    "url": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+    "width": 390
+  },
+  {
+    "name": "22-mecz-wynik-mobile",
+    "brokenImages": [],
+    "h1": [
+      "BeKaPaKa — Kosz-All-In"
+    ],
+    "headings": [
+      "BeKaPaKa — Kosz-All-In",
+      "Wyniki w kwartach",
+      "Statystyki indywidualne BeKaPaKa"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/",
+        "text": "Start"
+      },
+      {
+        "href": "/mecze",
+        "text": "Mecze"
+      },
+      {
+        "href": "/mecze",
+        "text": "Wróć do listy"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 3954,
+    "small": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Mecze"
+      },
+      {
+        "height": 1,
+        "text": "Wróć do listy"
+      }
+    ],
+    "url": "/mecze/kalk-4124",
+    "width": 390
+  },
+  {
+    "name": "23-aktualnosci-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Z klubu"
+    ],
+    "headings": [
+      "Z klubu",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+      "II Turniej Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Harmonogram II Turnieju Koszykówki „Parafiada 2026”",
+      "Znamy grupy II Turnieju Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Szukasz drużyny na nowy sezon? Dołącz do BeKaPaKa Bobolice! Zapraszamy na otwarty trening",
+      "II Turniej Koszykówki",
+      "Jesteśmy online — BeKaPaKa Bobolice ma swoją stronę"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/aktualnosci",
+        "text": "Wszystkie"
+      },
+      {
+        "href": "/aktualnosci?category=Turniej",
+        "text": "Turniej"
+      },
+      {
+        "href": "/aktualnosci?category=Dru%C5%BCyna",
+        "text": "Drużyna"
+      },
+      {
+        "href": "/aktualnosci?category=Klub",
+        "text": "Klub"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejPolitechnika Koszalińska z Pucharem Burmistrza Boboli"
+      },
+      {
+        "href": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "TurniejIII Turniej Koszykówki o Puchar Burmistrza Bobolic – "
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026",
+        "text": "TurniejII Turniej Koszykówki Społecznika Subregionu D – Para"
+      },
+      {
+        "href": "/aktualnosci/harmonogram-turnieju-koszykowki-parafiada-2026",
+        "text": "TurniejHarmonogram II Turnieju Koszykówki „Parafiada 2026”Ju"
+      },
+      {
+        "href": "/aktualnosci/znamy-grupy-ii-turniej-parafiada-2026",
+        "text": "TurniejZnamy grupy II Turnieju Koszykówki Społecznika Subreg"
+      },
+      {
+        "href": "/aktualnosci/szukamy-druzyny-otwarty-trening-2026",
+        "text": "DrużynaSzukasz drużyny na nowy sezon? Dołącz do BeKaPaKa Bob"
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki",
+        "text": "TurniejII Turniej KoszykówkiJuż dziś zapraszamy na turniej k"
+      },
+      {
+        "href": "/aktualnosci/oficjalna-strona-bekapaka",
+        "text": "KlubJesteśmy online — BeKaPaKa Bobolice ma swoją stronęNasza"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 6368,
+    "small": [],
+    "url": "/aktualnosci",
+    "width": 390
+  },
+  {
+    "name": "24-artykul-plakat-mobile",
+    "brokenImages": [],
+    "h1": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września"
+    ],
+    "headings": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+      "8 drużyn i kilka etapów rywalizacji",
+      "Najważniejsze informacje",
+      "Organizator i partnerzy",
+      "II Turniej Koszykówki Społecznika Subregionu D – Parafiada 2026",
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/",
+        "text": "Start"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Aktualności"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Wróć do aktualności"
+      },
+      {
+        "href": "/aktualnosci/ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026",
+        "text": "Poprzedni artykułII Turniej Koszykówki Społecznika Subregion"
+      },
+      {
+        "href": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+        "text": "Następny artykułPolitechnika Koszalińska z Pucharem Burmistr"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 4404,
+    "small": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Aktualności"
+      },
+      {
+        "height": 1,
+        "text": "Wróć do aktualności"
+      }
+    ],
+    "url": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 390
+  },
+  {
+    "name": "25-klub-mobile",
+    "brokenImages": [],
+    "h1": [
+      "O klubie"
+    ],
+    "headings": [
+      "O klubie",
+      "Koszykówka z Bobolic",
+      "Klub w skrócie",
+      "Drużyna, społeczność, wydarzenia",
+      "Gramy w KALK",
+      "Łączy nas koszykówka",
+      "Turnieje w Bobolicach",
+      "Na parkiecie i poza nim",
+      "Wesprzyj BeKaPaKa",
+      "Przekaż 1,5% podatku",
+      "Wesprzyj indywidualnie",
+      "Kontakt z klubem"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "/sklad",
+        "text": "Poznaj drużynę"
+      },
+      {
+        "href": "#dzialalnosc",
+        "text": "Co robimy ↓"
+      },
+      {
+        "href": "/dokumenty",
+        "text": "Dokumenty stowarzyszenia →"
+      },
+      {
+        "href": "/mecze",
+        "text": "Mecze i wyniki →"
+      },
+      {
+        "href": "/sponsorzy",
+        "text": "Partnerzy klubu →"
+      },
+      {
+        "href": "/aktualnosci",
+        "text": "Relacje z wydarzeń →"
+      },
+      {
+        "href": "https://panel.fsmm.pl/23372/bobolicki_klub_przyjaciol_koszykowki_bkpk",
+        "text": "Rozlicz PIT i przekaż 1,5%"
+      },
+      {
+        "href": "mailto:kontakt@damianmotylinski.pl",
+        "text": "kontakt@damianmotylinski.pl"
+      },
+      {
+        "href": "/dokumenty",
+        "text": "Dokumenty klubu →"
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 7151,
+    "small": [],
+    "url": "/klub",
+    "width": 390
+  },
+  {
+    "name": "27-partnerzy-mobile",
+    "brokenImages": [],
+    "h1": [
+      "Partnerzy klubu"
+    ],
+    "headings": [
+      "Partnerzy klubu"
+    ],
+    "height": 844,
+    "links": [
+      {
+        "href": "https://bobolice.pl",
+        "text": ""
+      },
+      {
+        "href": "https://koszalin.majsterplus.com/",
+        "text": ""
+      },
+      {
+        "href": "http://www.contema.eu/",
+        "text": ""
+      },
+      {
+        "href": "https://certe.com.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://bobolice.szczecinek.lasy.gov.pl",
+        "text": ""
+      },
+      {
+        "href": "https://www.alab.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://hala.spbobolice.pl/",
+        "text": ""
+      },
+      {
+        "href": "https://e-hurtowniabudowlana.pl",
+        "text": ""
+      },
+      {
+        "href": "https://shipapp.pl",
+        "text": ""
+      }
+    ],
+    "overflow": false,
+    "pageHeight": 2647,
+    "small": [],
+    "url": "/sponsorzy",
+    "width": 390
+  }
+]

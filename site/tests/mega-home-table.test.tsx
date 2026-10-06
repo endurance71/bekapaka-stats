@@ -109,6 +109,21 @@ const testStandings: TeamStanding[] = [
 ]
 
 describe('MegaHomeTemplate Standings Table', () => {
+  it.each([
+    { pointsDiff: 66, expected: '+66' },
+    { pointsDiff: -12, expected: '-12' },
+    { pointsDiff: 0, expected: '0' },
+    { pointsFor: 86, pointsAgainst: 20, expected: '+66' },
+    { pointsFor: 86, expected: '—' }
+  ])('shows the point balance in the position tile: $expected', ({ expected, ...balance }) => {
+    const standing = { ...testStandings[6], pointsDiff: undefined, pointsFor: undefined, pointsAgainst: undefined, ...balance }
+    const html = renderToStaticMarkup(
+      <MegaHomeTemplate news={[]} recentGames={[]} nearestEvent={null}
+        table={[standing]} roster={[]} sponsors={[]} />
+    )
+    expect(html).toContain(`aria-label="Bilans punktów: ${expected}">+/− ${expected}</span>`)
+  })
+
   it('renders all 11 columns in the homepage preview table', () => {
     const html = renderToStaticMarkup(
       <MegaHomeTemplate
@@ -141,8 +156,7 @@ describe('MegaHomeTemplate Standings Table', () => {
     expect(html).toContain('standings-row-v2 is-bkp')
     expect(html).toContain('BeKaPaKa Bobolice')
 
-    // Separator between top 4 and BeKaPaKa #10
-    expect(html).toContain('tr-separator')
-    expect(html).toContain('colSpan="11"')
+    expect(html).toContain('Max BAU')
+    expect(html).toContain('Tartak Sekwoja')
   })
 })

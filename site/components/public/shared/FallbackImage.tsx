@@ -1,43 +1,42 @@
 'use client'
-
-import { useEffect, useState } from 'react'
-import type { ReactNode } from 'react'
+import Image from 'next/image'
+import { useState, type ReactNode } from 'react'
 import type { ResponsiveMediaProps } from '../../../lib/data/media'
-
-type FallbackImageProps = ResponsiveMediaProps & {
+type Props = ResponsiveMediaProps & {
   alt: string
   className?: string
   fallbackSrc?: string
   fallback?: ReactNode
   fetchPriority?: 'high' | 'low' | 'auto'
+  preload?: boolean
 }
-
-/**
- * Keeps a broken Strapi derivative from leaving an empty card. The first error
- * removes srcset so the browser retries the original upload URL directly.
- */
-export function FallbackImage({ fallbackSrc, fallback, srcSet, alt, ...props }: FallbackImageProps) {
-  const [useFallback, setUseFallback] = useState(false)
+export function FallbackImage({
+  fallbackSrc,
+  fallback,
+  srcSet: _srcSet,
+  src,
+  alt,
+  width,
+  height,
+  loading,
+  decoding: _decoding,
+  ...props
+}: Props) {
+  void _srcSet
+  void _decoding
   const [failed, setFailed] = useState(false)
-  const [hydrated, setHydrated] = useState(false)
-  const originalSrc = fallbackSrc || props.src
-
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
-
-  if (failed) return fallback ? <>{fallback}</> : null
-
+  const [original, setOriginal] = useState(false)
+  if (!src || failed) return fallback || null
   return (
-    <img
+    <Image
       {...props}
+      src={original ? fallbackSrc || src : src}
       alt={alt}
-      src={useFallback ? originalSrc : props.src}
-      srcSet={hydrated && !useFallback ? srcSet : undefined}
-      onError={() => {
-        if (useFallback) setFailed(true)
-        else setUseFallback(true)
-      }}
+      width={width || 1200}
+      height={height || 800}
+      loading={loading || 'lazy'}
+      unoptimized={original}
+      onError={() => (original ? setFailed(true) : setOriginal(true))}
     />
   )
 }

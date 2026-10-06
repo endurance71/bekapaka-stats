@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-05",
+  "tool": "image_gen.imagegen (built-in)",
+  "useCase": "identity-preserve",
+  "status": "local_preview_mockup",
+  "source": "site/public/brand/photography/tomasz-kaszubowski-cutout-v1.png",
+  "jerseyReference": "site/public/brand/jerseys/stroj-a-przod.jpg",
+  "output": "site/public/brand/photography/tomasz-kaszubowski-stroj-a-v2.png",
+  "prompt": "Use case: identity-preserve, garment replacement.\nImage 1 is the edit target: accepted transparent cutout portrait of Tomasz Kaszubowski, player #12. Image 2 is ONLY the exact jersey design reference: club's black and red sleeveless jersey A laid flat.\nChange ONLY the basketball jersey in image 1 to match image 2: black fabric, red neck and armhole binding, large angular symmetrical red panels sweeping in from both sides, thin red horizontal lines below the chest. Match the photographed jersey design, emblem and sponsor placement from image 2, adapting fabric folds to Tomasz's existing torso. Change the reference's placeholder number \"00\" to solid red \"12\" in the same typeface and placement on the wearer's left chest (viewer right). Reference chest layout: red PROTON on viewer left, centered yellow BeKaPaKa BOBOLICE emblem, white BAUMAL below it, Fem-Tech below that. Remove the old WAL RHC mark and old white outlined 12.\nKeep everything outside the existing garment unchanged: Tomasz's original face, expression, eyes, hair, beard, skin, neck, bare arms, body shape, pose, lighting, crop and position. Do not add black undershirt or sleeves. Do not copy or create another person's face. No beautification, skin smoothing, facial retouch, new body parts, new pose or extended torso. Keep the same square composition and bottom crop as image 1; retain genuine alpha transparency everywhere outside his silhouette. No background, no text outside clothing, no watermark. Photographic edit, natural existing lighting, faithful jersey reference.",
+  "description": "Zmiana koszulki na czarno-czerwony wzór A z numerem 12 na bezpośrednią prośbę użytkownika. Wizualizacja AI, nie dokumentalny portret w nowym stroju. Oryginał i wcześniejszy wariant zachowane; tylko lokalny podgląd, bez zapisów CMS/API."
+}

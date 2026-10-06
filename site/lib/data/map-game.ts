@@ -1,22 +1,39 @@
+import { resolvePresentation } from '../../../packages/match-presentation'
 import { gameSummarySchema, type GameSummary } from './schemas'
-import { sanitizeNumber, sanitizeText } from './utils'
+import { sanitizeText } from './utils'
 
-function isTeamComparisonStats(value: unknown): value is Record<string, { home?: number; away?: number }> {
+function isTeamComparisonStats(
+  value: unknown
+): value is Record<string, { home?: number; away?: number }> {
   return Boolean(value && typeof value === 'object' && !Array.isArray(value))
 }
 
 /**
  * Mapuje odpowiedź backendu (lista lub szczegóły) na {@link GameSummary} używany w site.
  */
-export function mapApiGameToSummary(game: Record<string, unknown>, index = 0): GameSummary {
-  const scoreUs = game.scoreUs !== undefined && game.scoreUs !== null ? sanitizeNumber(game.scoreUs, 0) : null
-  const scoreThem =
-    game.scoreThem !== undefined && game.scoreThem !== null ? sanitizeNumber(game.scoreThem, 0) : null
+export function mapApiGameToSummary(source: Record<string, unknown>, index = 0): GameSummary {
+  const game: Record<string, unknown> = resolvePresentation({
+    ...source,
+    date: String(source.date || '')
+  } as Record<string, unknown> & { date: string })
+  const score = (value: unknown) =>
+    (typeof value === 'number' || (typeof value === 'string' && /^\d+$/.test(value.trim()))) &&
+    value !== null &&
+    value !== undefined &&
+    value !== '' &&
+    Number.isInteger(Number(value)) &&
+    Number(value) >= 0
+      ? Number(value)
+      : null
+  const scoreUs = score(game.scoreUs)
+  const scoreThem = score(game.scoreThem)
   const result = game.result ? sanitizeText(game.result, '-') : null
 
   const teams = Array.isArray(game.teams)
     ? game.teams
-    : Array.isArray(game.teamStats) && game.teamStats.length > 0 && typeof game.teamStats[0] === 'object'
+    : Array.isArray(game.teamStats) &&
+        game.teamStats.length > 0 &&
+        typeof game.teamStats[0] === 'object'
       ? (game.teamStats as unknown[])
       : undefined
 
@@ -41,6 +58,7 @@ export function mapApiGameToSummary(game: Record<string, unknown>, index = 0): G
         : undefined
 
   return gameSummarySchema.parse({
+    ...game,
     id: sanitizeText(game.id, String(index)),
     date: sanitizeText(game.date, ''),
     opponent: sanitizeText(game.opponent, 'Rywal'),
@@ -73,22 +91,6 @@ export function mapApiGameToSummarySafe(
   try {
     return mapApiGameToSummary(game, index)
   } catch {
-    const parsed = gameSummarySchema.safeParse({
-      id: sanitizeText(game.id, String(index)),
-      date: sanitizeText(game.date, ''),
-      opponent: sanitizeText(game.opponent, 'Rywal'),
-      result: game.result ? sanitizeText(game.result, '-') : null,
-      scoreUs:
-        game.scoreUs !== undefined && game.scoreUs !== null ? sanitizeNumber(game.scoreUs, 0) : null,
-      scoreThem:
-        game.scoreThem !== undefined && game.scoreThem !== null
-          ? sanitizeNumber(game.scoreThem, 0)
-          : null,
-      homeAway: sanitizeText(game.homeAway, 'home'),
-      coachNotes: game.coachNotes ? sanitizeText(game.coachNotes, '') : null,
-      aiSummary: game.aiSummary ? sanitizeText(game.aiSummary, '') : null,
-      videoUrl: game.videoUrl ? String(game.videoUrl) : null
-    })
-    return parsed.success ? parsed.data : null
+    return null
   }
 }

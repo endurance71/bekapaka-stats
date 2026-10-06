@@ -18,6 +18,18 @@ describe('P0/P1: KALK 2026/2027 Safe Sync & Player Stats', () => {
     vi.resetModules();
   });
 
+  it('preserves presentation overrides through the real KALK importer', async () => {
+    prismaMock.kalkSeason.findFirst.mockResolvedValue({ id: 's', slug: '2026-2027', isActive: true });
+    prismaMock.leagueMatch.findMany.mockResolvedValue([]);
+    const row = { id: '42', date: '2026-10-18T12:40:00Z', homeTeamName: 'Rywal', guestTeamName: 'BeKaPaKa Bobolice', scoreHome: 20, scoreAway: 86, isFinished: true, presentation: { status: 'POSTPONED' } };
+    await dataStore.ingestKalkMatches([row]);
+    const upsert = prismaMock.kalkMatch.upsert.mock.calls[0][0];
+    expect(upsert.where).toEqual({ seasonId_id: { seasonId: 's', id: '42' } });
+    expect(upsert.update).not.toHaveProperty('presentation');
+    expect(upsert.update).not.toHaveProperty('presentationUpdatedAt');
+    expect(upsert.update.scoreAway).toBe(86);
+  });
+
   it('Test 1: Empty KALK roster for BeKaPaKa does NOT unlink players, preserves existing mappings and logs warning', async () => {
     const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 

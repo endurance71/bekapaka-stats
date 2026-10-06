@@ -3,12 +3,13 @@ import { EditorialListingTemplate } from '../../components/public/templates/Edit
 import { StandingsBoardInteractive } from '../../components/public/shared/StandingsBoardInteractive'
 import { getLeagueTableState, getSiteMetadataBase } from '../../lib/data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/tabela' },
   title: 'Tabela ligi | BeKaPaKa Bobolice',
-  description: 'Aktualna tabela ligi z pozycja BeKaPaKa Bobolice.'
+  description: 'Aktualna tabela ligi z pozycją BeKaPaKa Bobolice.'
 }
 
 export default async function LeagueTablePage() {
@@ -18,16 +19,17 @@ export default async function LeagueTablePage() {
   return (
     <EditorialListingTemplate
       title='Tabela ligi'
-      description='Aktualna pozycja zespolow i bilans sezonu.'
+      eyebrow='KALK Koszalin · Dywizja II'
+      description='Sezon 2026/2027 · Aktualna pozycja zespołów, bilans meczów i punktacja.'
       hasItems={table.length > 0}
       stateStatus={tableState.status}
       stateSource={tableState.source}
       stateMessage={tableState.message}
-      emptyTitle={tableState.status === 'error' ? 'Nie mozna pobrac tabeli' : 'Brak danych tabeli'}
+      emptyTitle={tableState.status === 'error' ? 'Nie można pobrać tabeli' : 'Brak danych tabeli'}
       emptyDescription={
         tableState.status === 'error'
-          ? 'Sprawdz backend i endpoint /api/league/table.'
-          : 'Tabela pojawi sie po imporcie danych sezonu.'
+          ? 'Odśwież stronę lub wróć za chwilę.'
+          : 'Tabela zostanie uzupełniona po potwierdzeniu danych sezonu.'
       }
     >
       <StandingsBoardInteractive table={table} />

@@ -25,10 +25,10 @@ export function EditorialNewsTemplate({
   emptyDescription: string
 }) {
   return (
-    <section className='editorial-news-page'>
-      <article className='surface-card listing-page__hero'>
-        <ListingPageHero title={title} description={description} />
-      </article>
+    <section className='editorial-news-page' data-theme='papier'>
+      <div className='listing-page__hero'>
+        <ListingPageHero title={title} description={description} eyebrow="Aktualności" />
+      </div>
 
       <DataStateNotice status={stateStatus} source={stateSource} message={stateMessage} />
 

@@ -1,13 +1,8 @@
 import Link from 'next/link'
-
 export default function NotFound() {
-  return (
-    <section className='section-card'>
-      <h1>Nie znaleziono strony</h1>
-      <p>Ta podstrona nie istnieje lub zostala przeniesiona.</p>
-      <Link className='button button--primary' href='/'>
-        Wroc na strone glowna
-      </Link>
-    </section>
-  )
+ return <section className="section" data-theme="plyta"><div className="container not-found">
+   <span className="not-found__code brand-cut" aria-hidden="true">404</span>
+   <div className="not-found__text"><p className="label accent">Błąd 404</p><h1>Piłka poza boiskiem</h1><p>Ta podstrona nie istnieje lub została przeniesiona.</p>
+   <div className="cluster"><Link className="btn btn--primary" href="/">Strona główna</Link><Link className="btn btn--secondary" href="/mecze">Mecze i wyniki</Link></div></div>
+ </div></section>
 }

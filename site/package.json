@@ -9,7 +9,8 @@
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "quality": "npm run typecheck && npm run lint && npm run build"
+    "quality": "npm run typecheck && npm run lint && npm run build",
+    "preview:local": "node scripts/preview-local.mjs"
   },
   "dependencies": {
     "micromark-util-character": "^2.1.1",
