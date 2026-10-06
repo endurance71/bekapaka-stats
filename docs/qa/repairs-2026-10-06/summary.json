@@ -1,0 +1,125 @@
+{
+  "date": "2026-10-06",
+  "branch": "codex/2.0",
+  "sourceCommit": "035cff5",
+  "baselineCommit": "1d95db8",
+  "previous": {
+    "closed": 5,
+    "partial": 20,
+    "open": 9
+  },
+  "current": {
+    "closed": 21,
+    "partial": 12,
+    "open": 1
+  },
+  "tests": {
+    "site": 151,
+    "backend": 109,
+    "frontend": 6,
+    "cms": 9,
+    "total": 275
+  },
+  "checks": {
+    "typecheck": true,
+    "lint": true,
+    "siteBuild": true,
+    "panelBuild": true,
+    "cmsBuild": true,
+    "isolatedApi": true,
+    "isolatedCms": true
+  },
+  "responsive": {
+    "pages": 12,
+    "widths": [
+      375,
+      390,
+      430,
+      768,
+      1024,
+      1440
+    ],
+    "checks": 72,
+    "documentOverflow": 0
+  },
+  "home": {
+    "mobileBefore": 9099,
+    "mobileAfter": 7125,
+    "mobileReductionPercent": 21.7,
+    "desktopBefore": 5535,
+    "desktopAfter": 4110,
+    "desktopReductionPercent": 25.7
+  },
+  "lighthouse": [
+    {
+      "label": "Homepage · desktop",
+      "file": "lighthouse-home-desktop.json",
+      "scores": {
+        "performance": 98,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "1.2 s",
+      "cls": "0",
+      "bytes": 1013662,
+      "date": "2026-10-06T18:35:24.782Z",
+      "version": "13.5.0"
+    },
+    {
+      "label": "Homepage · telefon",
+      "file": "lighthouse-home-mobile.json",
+      "scores": {
+        "performance": 93,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "3.1 s",
+      "cls": "0",
+      "bytes": 531172,
+      "date": "2026-10-06T18:35:59.016Z",
+      "version": "13.5.0"
+    },
+    {
+      "label": "Relacja · telefon",
+      "file": "lighthouse-article-mobile.json",
+      "scores": {
+        "performance": 95,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "2.9 s",
+      "cls": "0",
+      "bytes": 385128,
+      "date": "2026-10-06T18:36:57.321Z",
+      "version": "13.5.0"
+    },
+    {
+      "label": "Mecz · telefon",
+      "file": "lighthouse-match-mobile.json",
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100,
+        "seo": 100
+      },
+      "lcp": "3.4 s",
+      "cls": "0",
+      "bytes": 393593,
+      "date": "2026-10-06T18:44:41.695Z",
+      "version": "13.5.0"
+    }
+  ],
+  "notVerified": [
+    "Safari",
+    "Firefox",
+    "VoiceOver",
+    "native browser zoom 200%",
+    "physical swipe",
+    "HAR before/after",
+    "media sizing DPR 2/3",
+    "manual color contrast over photographic backgrounds"
+  ]
+}

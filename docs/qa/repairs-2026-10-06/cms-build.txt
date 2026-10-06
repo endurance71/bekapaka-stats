@@ -1,0 +1,8 @@
+npm notice run cms-app@0.1.0 build
+npm notice run strapi build
+- Building build context
+
+✔ Building build context (68ms)
+- Building admin panel
+
+✔ Building admin panel (8163ms)

@@ -1,0 +1,179 @@
+{
+  "navigation": [
+    {
+      "domContentLoaded": 442.89999997615814,
+      "load": 457,
+      "transferSize": 21134
+    }
+  ],
+  "resources": [
+    {
+      "duration": 7.100000023841858,
+      "encodedBodySize": 24284,
+      "name": "http://127.0.0.1:3100/_next/static/media/BarlowCondensed_ExtraBold-s.p.3gjskbasw18jr.woff2",
+      "transferSize": 0
+    },
+    {
+      "duration": 7.399999976158142,
+      "encodedBodySize": 24696,
+      "name": "http://127.0.0.1:3100/_next/static/media/Barlow_SemiBold-s.p.327vj8fs_pdnk.woff2",
+      "transferSize": 0
+    },
+    {
+      "duration": 7.299999952316284,
+      "encodedBodySize": 23908,
+      "name": "http://127.0.0.1:3100/_next/static/media/Barlow_Regular-s.p.265r1d3y9jq-i.woff2",
+      "transferSize": 0
+    },
+    {
+      "duration": 17.299999952316284,
+      "encodedBodySize": 3549,
+      "name": "http://127.0.0.1:3100/brand/wordmark-negatyw.svg",
+      "transferSize": 300
+    },
+    {
+      "duration": 18.199999928474423,
+      "encodedBodySize": 15863,
+      "name": "http://127.0.0.1:3100/brand/sygnet2-kolor-ciasny.svg",
+      "transferSize": 300
+    },
+    {
+      "duration": 6.800000071525574,
+      "encodedBodySize": 19181,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/0pisix1yjmjtd.css",
+      "transferSize": 0
+    },
+    {
+      "duration": 6.700000047683716,
+      "encodedBodySize": 2155,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/3ph3sciyv8ym7.css",
+      "transferSize": 0
+    },
+    {
+      "duration": 6.900000095367432,
+      "encodedBodySize": 9975,
+      "name": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2Fpolitechnika_a3af645931.png&w=384&q=75",
+      "transferSize": 0
+    },
+    {
+      "duration": 16.300000071525574,
+      "encodedBodySize": 2028,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/1km21gh256b4v.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 16.399999976158142,
+      "encodedBodySize": 7628,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/3_m7pmjuxajzz.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 18.899999976158146,
+      "encodedBodySize": 45088,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/3sqcxemguayqz.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 18.700000047683716,
+      "encodedBodySize": 71587,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/2ac3caztfyqvr.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 19.5,
+      "encodedBodySize": 4304,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/turbopack-3fnu9fjl84h6s.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 19.600000023841854,
+      "encodedBodySize": 10334,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/2n0pwx-_2hdyn.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 20.200000047683716,
+      "encodedBodySize": 7993,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/20bykbscxgzx4.js",
+      "transferSize": 0
+    },
+    {
+      "duration": 1.5,
+      "encodedBodySize": 327,
+      "name": "http://127.0.0.1:3100/?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 0
+    },
+    {
+      "duration": 9.399999976158142,
+      "encodedBodySize": 170,
+      "name": "http://127.0.0.1:3100/aktualnosci?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 470
+    },
+    {
+      "duration": 1.100000023841858,
+      "encodedBodySize": 19188,
+      "name": "http://127.0.0.1:3100/_next/static/chunks/0jpnti57n2iuh.css",
+      "transferSize": 0
+    },
+    {
+      "duration": 8,
+      "encodedBodySize": 1137,
+      "name": "http://127.0.0.1:3100/aktualnosci?_rsc=w4KBhc5COWLf2j9R",
+      "transferSize": 1437
+    },
+    {
+      "duration": 2.5999999046325684,
+      "encodedBodySize": 28360,
+      "name": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2Fpolitechnika_a3af645931.png&w=768&q=75",
+      "transferSize": 0
+    },
+    {
+      "duration": 9.799999952316284,
+      "encodedBodySize": 169,
+      "name": "http://127.0.0.1:3100/mecze?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 469
+    },
+    {
+      "duration": 2.100000023841858,
+      "encodedBodySize": 338,
+      "name": "http://127.0.0.1:3100/tabela?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 0
+    },
+    {
+      "duration": 2.100000023841858,
+      "encodedBodySize": 337,
+      "name": "http://127.0.0.1:3100/sklad?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 0
+    },
+    {
+      "duration": 2.100000023841858,
+      "encodedBodySize": 341,
+      "name": "http://127.0.0.1:3100/sponsorzy?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 0
+    },
+    {
+      "duration": 0.8999999761581421,
+      "encodedBodySize": 377,
+      "name": "http://127.0.0.1:3100/klub?_rsc=i_JKAc1j5a0_0ZEm",
+      "transferSize": 0
+    },
+    {
+      "duration": 1.7999999523162842,
+      "encodedBodySize": 5180,
+      "name": "http://127.0.0.1:3100/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026?_rsc=4d1LifhK-sv-kWeW",
+      "transferSize": 0
+    },
+    {
+      "duration": 24.699999928474423,
+      "encodedBodySize": 17053,
+      "name": "http://127.0.0.1:3100/brand/herb2-kolor.svg",
+      "transferSize": 300
+    },
+    {
+      "duration": 23.899999976158146,
+      "encodedBodySize": 1494,
+      "name": "http://127.0.0.1:3100/mecze?_rsc=eeOjnSeRCPDepKlP",
+      "transferSize": 1794
+    }
+  ]
+}

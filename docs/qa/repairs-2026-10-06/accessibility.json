@@ -1,0 +1,73 @@
+[
+  {
+    "path": "/",
+    "viewport": 390,
+    "incomplete": [
+      "color-contrast"
+    ],
+    "passes": 29,
+    "violations": []
+  },
+  {
+    "path": "/mecze/kalk-4144",
+    "viewport": 390,
+    "incomplete": [],
+    "passes": 24,
+    "violations": []
+  },
+  {
+    "path": "/mecze/kalk-4124",
+    "viewport": 390,
+    "incomplete": [
+      "color-contrast"
+    ],
+    "passes": 28,
+    "violations": []
+  },
+  {
+    "path": "/tabela",
+    "viewport": 390,
+    "incomplete": [
+      "color-contrast"
+    ],
+    "passes": 25,
+    "violations": []
+  },
+  {
+    "path": "/dokumenty",
+    "viewport": 390,
+    "incomplete": [],
+    "passes": 23,
+    "violations": []
+  },
+  {
+    "path": "/klub",
+    "viewport": 390,
+    "incomplete": [],
+    "passes": 26,
+    "violations": []
+  },
+  {
+    "path": "/sponsorzy",
+    "viewport": 390,
+    "incomplete": [],
+    "passes": 24,
+    "violations": []
+  },
+  {
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 390,
+    "incomplete": [],
+    "passes": 25,
+    "violations": []
+  },
+  {
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 390,
+    "incomplete": [
+      "color-contrast"
+    ],
+    "passes": 28,
+    "violations": []
+  }
+]

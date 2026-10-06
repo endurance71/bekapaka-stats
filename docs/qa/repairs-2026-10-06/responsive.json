@@ -1,0 +1,572 @@
+[
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 7171,
+    "path": "/",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 7125,
+    "path": "/",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 7055,
+    "path": "/",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 6272,
+    "path": "/",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 3937,
+    "path": "/",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "BeKaPaKa Bobolice — koszykówka",
+    "height": 4110,
+    "path": "/",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 2156,
+    "path": "/mecze/kalk-4144",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 2129,
+    "path": "/mecze/kalk-4144",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 2034,
+    "path": "/mecze/kalk-4144",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 1925,
+    "path": "/mecze/kalk-4144",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 1658,
+    "path": "/mecze/kalk-4144",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "BeKaPaKa — GMVT TEAM",
+    "height": 1756,
+    "path": "/mecze/kalk-4144",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 4397,
+    "path": "/mecze/kalk-4124",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 4294,
+    "path": "/mecze/kalk-4124",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 4137,
+    "path": "/mecze/kalk-4124",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 3809,
+    "path": "/mecze/kalk-4124",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 3576,
+    "path": "/mecze/kalk-4124",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "BeKaPaKa — Kosz-All-In",
+    "height": 3682,
+    "path": "/mecze/kalk-4124",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Tabela ligi",
+    "height": 2067,
+    "path": "/tabela",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Tabela ligi",
+    "height": 2040,
+    "path": "/tabela",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Tabela ligi",
+    "height": 1985,
+    "path": "/tabela",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Tabela ligi",
+    "height": 1803,
+    "path": "/tabela",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Tabela ligi",
+    "height": 1509,
+    "path": "/tabela",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Tabela ligi",
+    "height": 1528,
+    "path": "/tabela",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Skład drużyny",
+    "height": 3521,
+    "path": "/sklad",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Skład drużyny",
+    "height": 3588,
+    "path": "/sklad",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Skład drużyny",
+    "height": 3784,
+    "path": "/sklad",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Skład drużyny",
+    "height": 3252,
+    "path": "/sklad",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Skład drużyny",
+    "height": 2403,
+    "path": "/sklad",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Skład drużyny",
+    "height": 2922,
+    "path": "/sklad",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Partnerzy klubu",
+    "height": 2685,
+    "path": "/sponsorzy",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Partnerzy klubu",
+    "height": 2658,
+    "path": "/sponsorzy",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Partnerzy klubu",
+    "height": 2601,
+    "path": "/sponsorzy",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Partnerzy klubu",
+    "height": 2235,
+    "path": "/sponsorzy",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Partnerzy klubu",
+    "height": 1656,
+    "path": "/sponsorzy",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Partnerzy klubu",
+    "height": 1675,
+    "path": "/sponsorzy",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "O klubie",
+    "height": 7302,
+    "path": "/klub",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "O klubie",
+    "height": 7133,
+    "path": "/klub",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "O klubie",
+    "height": 6821,
+    "path": "/klub",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "O klubie",
+    "height": 5195,
+    "path": "/klub",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "O klubie",
+    "height": 5081,
+    "path": "/klub",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "O klubie",
+    "height": 4936,
+    "path": "/klub",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Dokumenty klubowe",
+    "height": 1660,
+    "path": "/dokumenty",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Dokumenty klubowe",
+    "height": 1576,
+    "path": "/dokumenty",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Dokumenty klubowe",
+    "height": 1501,
+    "path": "/dokumenty",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Dokumenty klubowe",
+    "height": 1389,
+    "path": "/dokumenty",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Dokumenty klubowe",
+    "height": 1129,
+    "path": "/dokumenty",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Dokumenty klubowe",
+    "height": 1152,
+    "path": "/dokumenty",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Z klubu",
+    "height": 6128,
+    "path": "/aktualnosci",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Z klubu",
+    "height": 6125,
+    "path": "/aktualnosci",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Z klubu",
+    "height": 6115,
+    "path": "/aktualnosci",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Z klubu",
+    "height": 4414,
+    "path": "/aktualnosci",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Z klubu",
+    "height": 3428,
+    "path": "/aktualnosci",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Z klubu",
+    "height": 3376,
+    "path": "/aktualnosci",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 4388,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 4316,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 4074,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 3652,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 2936,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września",
+    "height": 2745,
+    "path": "/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 16208,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 16062,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 15275,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 14102,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 13163,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "h1": "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju",
+    "height": 12622,
+    "path": "/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "viewport": 1440
+  },
+  {
+    "doc": 375,
+    "footer": 901.640625,
+    "height": 2160,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 375
+  },
+  {
+    "doc": 390,
+    "footer": 874.4453125,
+    "height": 2133,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 390
+  },
+  {
+    "doc": 430,
+    "footer": 820,
+    "height": 2079,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 430
+  },
+  {
+    "doc": 768,
+    "footer": 768.453125,
+    "height": 2027,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 768
+  },
+  {
+    "doc": 1024,
+    "footer": 500,
+    "height": 1691,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 1024
+  },
+  {
+    "doc": 1440,
+    "footer": 500,
+    "height": 1703,
+    "path": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+    "viewport": 1440
+  }
+]

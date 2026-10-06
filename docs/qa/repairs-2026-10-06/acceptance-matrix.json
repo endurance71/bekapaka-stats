@@ -1,0 +1,240 @@
+[
+  {
+    "id": "UI-01",
+    "title": "Jeden sposób otwierania szczegółów meczu",
+    "previousStatus": "Zamknięte",
+    "status": "Zamknięte",
+    "verification": "Zachowano bezpośrednie adresy meczów i powrót do widoku wyników."
+  },
+  {
+    "id": "UI-02",
+    "title": "Usunąć instrukcję administracyjną z widoku kibica",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Sześć statusów ma odrębne komunikaty, a błąd strony akcję ponowienia. Testy statusów i lokalny odczyt."
+  },
+  {
+    "id": "UI-03",
+    "title": "Jeden wynik i jedna hierarchia strony meczu",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Jeden wynik; porównania wyłącznie dla LIVE/BREAK/FINAL i par kompletnych statystyk. Zaplanowany mecz nie ma tabeli ani pozornych zer. Hierarchia sekcji h2 oraz osobny ekran ładowania zapobiegający skokowi stopki."
+  },
+  {
+    "id": "UI-04",
+    "title": "Przebudować mobilny box score",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "375/390/430 px: 5 widocznych kolumn, tabela 343/358/398 px. Pełny widok ma sticky zawodnika; brak danych = —."
+  },
+  {
+    "id": "UI-05",
+    "title": "Plakat powinien być widoczny w całości",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Plakat iii-… ma contain, odczyt oryginału i powiększenie klawiaturą. Relacja 3-… zachowuje fotograficzny kadr."
+  },
+  {
+    "id": "UI-06",
+    "title": "Naprawić tokeny i kontrast etykiety artykułu",
+    "previousStatus": "Zamknięte",
+    "status": "Zamknięte",
+    "verification": "Zachowano zatwierdzone role etykiet. Brak nowych naruszeń axe/Lighthouse; wcześniejsze pomiary kontrastu pozostają w raporcie bazowym."
+  },
+  {
+    "id": "UI-07",
+    "title": "Nie zostawiać niewidocznego linku w kolejności Tab",
+    "previousStatus": "Zamknięte",
+    "status": "Zamknięte",
+    "verification": "Powrót ma widoczny cel i obrys; odnośniki breadcrumb mają minimum 44 px."
+  },
+  {
+    "id": "UI-08",
+    "title": "Uzupełnić opisy zdjęć i autora",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "CMS przekazuje podpis i autora; lokalny podgląd oznacza braki, publiczny filtr zatwierdzonych mediów działa. Brak rzeczywistych zatwierdzeń i kompletu opisów/autorów."
+  },
+  {
+    "id": "UI-09",
+    "title": "Zatwierdzić publiczny kontakt klubu",
+    "previousStatus": "Otwarte",
+    "status": "Otwarte",
+    "verification": "Jeden siteSettings.contactEmail, bez wymyślonego maila. Właściciel nie zatwierdził jeszcze kontakt@damianmotylinski.pl jako kontaktu klubu."
+  },
+  {
+    "id": "UI-10",
+    "title": "Dać dalszą akcję w pustych dokumentach",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Pusty stan ma działające linki do klubu i kontaktu; papier kończy się dokładnie przy stopce. Dokumenty oczekują na dostarczenie."
+  },
+  {
+    "id": "UI-11",
+    "title": "Skrócić drugą połowę strony głównej",
+    "previousStatus": "Otwarte",
+    "status": "Zamknięte",
+    "verification": "Homepage 390 px: 9099 → 7125 px (−21,7%); 1440 px: 5535 → 4110 px (−25,7%). Zachowano wyniki, najbliższy mecz, 3 newsy, tabelę, liderów i wszystkich partnerów."
+  },
+  {
+    "id": "UI-12",
+    "title": "Ujednolicić znaki rywala i nazwy kolejki",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Znaki rywala są uzupełniane z tej samej tabeli ligi; nazwa kolejki ma wspólny schemat. GMVT sprawdzony w hero i szczegółach."
+  },
+  {
+    "id": "UI-13",
+    "title": "Dodać prostą akcję dojazdu na mecz",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Link nazwano uczciwie „Szukaj hali w mapach”; usunięto dopisywanie miasta. Dokładny adres/geolokalizacja wszystkich hal nadal wymaga źródła."
+  },
+  {
+    "id": "UI-14",
+    "title": "Pokazać sezon, dywizję i świeżość danych",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Nowe opt-in API sezon/dywizja/data wierszy, zachowany stary format tablicy. Brak daty nie daje 1970 ani bieżącego czasu. Lokalny podgląd czyta starszy backend: niepotwierdzony sezon i aktualizacja pozostają jawne."
+  },
+  {
+    "id": "UI-15",
+    "title": "Wyjaśnić skróty i ujednolicić serię",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Legenda wszystkich kolumn, polska seria i opisy wygrana/porażka dla czytnika; nazwa zespołu pozostaje sticky."
+  },
+  {
+    "id": "UI-16",
+    "title": "Uporządkować kompletność składu",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Nie usuwano zawodników bez zdjęcia. Fallback numeru klubowego opisano. Aktywność, pozycje i numer Sosińskiego wymagają potwierdzenia danych."
+  },
+  {
+    "id": "UI-17",
+    "title": "Dać sezon i kontekst statystyk profilu",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Kontekst sezonu/liczby meczów, celne/próby, 0/0 = — i objaśnienia wskaźników. W podglądzie sezon nadal niepotwierdzony, bo źródłowy backend nie ma jeszcze nowych pól."
+  },
+  {
+    "id": "UI-18",
+    "title": "Ograniczyć cięcia do danych ekspozycyjnych",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Cięcia usunięto z nazwiska i 404; pozostały role ekspozycyjne. Safari/Firefox oraz czytelność wszystkich cyfr w tych silnikach nie zostały odebrane."
+  },
+  {
+    "id": "UI-19",
+    "title": "Pokazać wszystkie kategorie na telefonie",
+    "previousStatus": "Zamknięte",
+    "status": "Zamknięte",
+    "verification": "Zachowano mobilne kategorie, linki i reset paginacji."
+  },
+  {
+    "id": "UI-20",
+    "title": "Oznaczać historyczne zapowiedzi",
+    "previousStatus": "Otwarte",
+    "status": "Zamknięte",
+    "verification": "Jawne eventDate w CMS i dwie zweryfikowane daty lokalne. Trening oraz zapowiedź III turnieju oznaczone historycznie; bez zgadywania z tekstu."
+  },
+  {
+    "id": "UI-21",
+    "title": "Dodać skróty do długiej relacji",
+    "previousStatus": "Otwarte",
+    "status": "Zamknięte",
+    "verification": "Spis treści relacji prowadzi m.in. do galerii i klasyfikacji. Kotwica klasyfikacji ma top 152 px przy headerze 60 px; unikalne ID i zwykłe odnośniki hash."
+  },
+  {
+    "id": "UI-22",
+    "title": "Uprościć metadane i breadcrumb",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Breadcrumb używa kategorii zamiast pełnego tytułu; autor i udostępnianie pozostają; cele 44 px."
+  },
+  {
+    "id": "UI-23",
+    "title": "Powiększyć użyteczne zdjęcie w lightboxie",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Zdjęcie ma 358 px przy viewport 390; licznik 2 z 20, strzałki, Escape, pułapka i powrót fokusu. Potwierdzony stan błędu oraz skuteczne ponowienie pobrania. Fizycznego gestu swipe nie potwierdzono: IAB nie obsługuje dispatchTouchEvent; zachowano handler i poprawiono jego warunek."
+  },
+  {
+    "id": "UI-24",
+    "title": "Dopasować sizes do kolumny artykułu",
+    "previousStatus": "Otwarte",
+    "status": "Częściowe",
+    "verification": "Warianty sizes dla okładki i galerii, eagerness okładki oraz dodatkowe szerokości optymalizatora. Zapisano currentSrc/DPR 1 i transfer Lighthouse. Nie ma porównywalnego HAR przed/po ani odbioru DPR 2/3."
+  },
+  {
+    "id": "UI-25",
+    "title": "Dopracować optyczną wagę logotypów",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Wszyscy 15 partnerzy i ShipApp zachowani, kompaktowa siatka i korekta pola logo Lasów. Ostateczna optyczna aprobata znaków/pól ochronnych pozostaje po stronie klubu."
+  },
+  {
+    "id": "UI-26",
+    "title": "Dodać jasny krok do współpracy",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Neutralna propozycja współpracy i kontakt z konfiguracji; brak fikcyjnych pakietów i kwot. Formalne zatwierdzenie adresu nadal w UI-09."
+  },
+  {
+    "id": "UI-27",
+    "title": "Pokazać ludzi i fakty, ograniczyć ogólniki",
+    "previousStatus": "Otwarte",
+    "status": "Częściowe",
+    "verification": "Ogólną sekcję wartości zastąpiono linkami do dwóch faktycznie opublikowanych relacji. Brak zatwierdzonego zdjęcia życia klubu i historii ze źródłami."
+  },
+  {
+    "id": "UI-28",
+    "title": "Dodać skróty do długiej strony klubu",
+    "previousStatus": "Zamknięte",
+    "status": "Zamknięte",
+    "verification": "Działalność, wsparcie i kontakt dostępne przez kotwice; zachowano semantyczne nagłówki."
+  },
+  {
+    "id": "UI-29",
+    "title": "Na telefonie pokazać kopiowanie przed QR",
+    "previousStatus": "Częściowe",
+    "status": "Zamknięte",
+    "verification": "Kopiowanie przed QR, trwały role=status i ręczny fallback błędu; sukces i Escape/powrót fokusu potwierdzone. Dane rachunku i FSMM zachowane."
+  },
+  {
+    "id": "UI-30",
+    "title": "Skrócić stopkę na telefonie",
+    "previousStatus": "Otwarte",
+    "status": "Zamknięte",
+    "verification": "Stopka 390 px: około 1215 → 874 px; kontakt przed linkami, 2 kolumny linków na telefonie. Najmniejszy cel odnośnika 44 px, również ShipApp."
+  },
+  {
+    "id": "UI-31",
+    "title": "Poprawić wysokość i tło krótkich podstron",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Flex main zastąpił min-height wyliczany od headera. Papier styka się ze stopką przy 768/1024 px. Prawdziwy zoom 200% nie jest potwierdzony: klawisz zoomu nie zmienia viewportu w IAB."
+  },
+  {
+    "id": "UI-32",
+    "title": "Domknąć menu i zachować sprawne zamykanie",
+    "previousStatus": "Otwarte",
+    "status": "Zamknięte",
+    "verification": "Nazwa organizacji, wszystkie linki osiągalne przy 390×500, Tab/Shift+Tab w menu, Escape przywraca fokus po animacji, scroll jest odblokowany."
+  },
+  {
+    "id": "UI-33",
+    "title": "Uprościć kaskadę CSS po migracji",
+    "previousStatus": "Otwarte",
+    "status": "Częściowe",
+    "verification": "Scalono okładkę/breadcrumb/bazowe sekcje, usunięto 6 identycznych historycznych reguł i martwy wariant darowizny. Wspólne ikony i blokada scrolla. Cały historyczny arkusz nadal wymaga szerszej konsolidacji."
+  },
+  {
+    "id": "UI-34",
+    "title": "Uzupełnić pomiary i stany przed odbiorem",
+    "previousStatus": "Częściowe",
+    "status": "Częściowe",
+    "verification": "Nowe wyniki testów, typecheck/lint/build, izolowane integracje, axe, Lighthouse i resource timing. Pozostają ręczny odbiór kolorów, VoiceOver, Safari/Firefox, zoom i pełny HAR przed/po."
+  }
+]

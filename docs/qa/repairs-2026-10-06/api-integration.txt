@@ -1,0 +1,8 @@
+[2026-10-06T18:28:17.265Z] PATCH /api/admin/matches/game/repair-season/repair-game/presentation 401 - 2ms
+[2026-10-06T18:28:17.271Z] PATCH /api/admin/matches/game/repair-season/repair-game/presentation 403 - 3ms
+[2026-10-06T18:28:17.304Z] PATCH /api/admin/matches/game/repair-season/repair-game/presentation 200 - 25ms
+Auto-seeding skipped. Set ENABLE_AUTO_SEED=true to enable.
+[2026-10-06T18:28:17.323Z] GET /api/games/repair-game?seasonId=repair-season 200 - 15ms
+[2026-10-06T18:28:17.332Z] GET /api/league/table?seasonId=repair-season 200 - 7ms
+[2026-10-06T18:28:17.338Z] GET /api/league/table?seasonId=repair-season&includeMeta=1 200 - 4ms
+{"authorizedSave":true,"unauthenticated":401,"nonAdmin":403,"publicRead":true,"persistedZero":true,"revalidationHttp":true,"legacyTableArray":true,"tableMetadata":true}
