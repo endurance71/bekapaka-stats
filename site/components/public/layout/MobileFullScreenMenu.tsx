@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { ClubLogo } from '../shared/ClubLogo'
 import { CloseIcon } from '../shared/PublicIcons'
+import { siteSettings } from '../../../lib/site-settings'
 import { MainNav } from './MainNav'
 
 /** Must match `--mobile-menu-duration` in base.css */
@@ -202,6 +203,7 @@ export function MobileFullScreenMenu({ isOpen, onClose, onAfterClose, logoUrl }:
             variant='fullscreen'
           />
         </div>
+        <p className='mobile-fullscreen-menu__organization'>{siteSettings.organizationName}</p>
       </div>
     </div>,
     document.body

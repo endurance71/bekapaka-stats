@@ -129,6 +129,19 @@ export function MatchDrawerContent({
           .filter(Boolean) as { label: string; home: number; away: number }[]
       : []
 
+  const comparisonStats = all.length === 2 ? [
+              ...[['Zbiórki łącznie (REB)', 'reb'], ['Zbiórki w ataku (ORB)', 'orb'], ['Asysty (AST)', 'ast'], ['Przechwyty (STL)', 'stl'], ['Straty (TOV)', 'tov'], ['Bloki (BLK)', 'blk']].map(([label, key]) => {
+                const home = all[0][key as keyof TeamData]
+                const away = all[1][key as keyof TeamData]
+                return { label, home: displayStat(typeof home === 'number' ? home : undefined), away: displayStat(typeof away === 'number' ? away : undefined), valHome: typeof home === 'number' ? home : undefined, valAway: typeof away === 'number' ? away : undefined }
+              }),
+              ...[['Punkty z gry (FG)', 'fgm', 'fga'], ['Rzuty za 3 pkt (3P)', 'three_pm', 'three_pa'], ['Rzuty wolne (FT)', 'ftm', 'fta']].map(([label, made, attempted]) => {
+                const a = all[0][made as keyof TeamData], b = all[1][made as keyof TeamData]
+                const aa = all[0][attempted as keyof TeamData], ba = all[1][attempted as keyof TeamData]
+                return { label, home: formatShot(typeof a === 'number' ? a : undefined, typeof aa === 'number' ? aa : undefined), away: formatShot(typeof b === 'number' ? b : undefined, typeof ba === 'number' ? ba : undefined), valHome: typeof a === 'number' && typeof aa === 'number' ? a : undefined, valAway: typeof b === 'number' && typeof ba === 'number' ? b : undefined }
+              })
+            ].filter(stat => knownStat(stat.valHome) && knownStat(stat.valAway)) : []
+
   const players: PlayerStats[] = Array.isArray(activeTeam?.players)
     ? [...activeTeam.players].sort((a, b) => (b.pts || 0) - (a.pts || 0))
     : []
@@ -209,22 +222,11 @@ export function MatchDrawerContent({
       ) : null}
 
       {/* Advanced Team Comparison Stats */}
-      {statsAllowed && all.length === 2 && ['reb', 'orb', 'ast', 'stl', 'tov', 'blk', 'fgm', 'three_pm', 'ftm'].some(key => all.every(team => knownStat(team[key as keyof TeamData] as number | undefined))) && (
+      {statsAllowed && comparisonStats.length > 0 && (
         <section className='drawer-match-section'>
           <h3 className='drawer-section-title-small'>Porównanie zespołowe</h3>
           <div className='team-comparison-list'>
-            {[
-              ...[['Zbiórki łącznie (REB)', 'reb'], ['Zbiórki w ataku (ORB)', 'orb'], ['Asysty (AST)', 'ast'], ['Przechwyty (STL)', 'stl'], ['Straty (TOV)', 'tov'], ['Bloki (BLK)', 'blk']].map(([label, key]) => {
-                const home = all[0][key as keyof TeamData]
-                const away = all[1][key as keyof TeamData]
-                return { label, home: displayStat(typeof home === 'number' ? home : undefined), away: displayStat(typeof away === 'number' ? away : undefined), valHome: typeof home === 'number' ? home : undefined, valAway: typeof away === 'number' ? away : undefined }
-              }),
-              ...[['Punkty z gry (FG)', 'fgm', 'fga'], ['Rzuty za 3 pkt (3P)', 'three_pm', 'three_pa'], ['Rzuty wolne (FT)', 'ftm', 'fta']].map(([label, made, attempted]) => {
-                const a = all[0][made as keyof TeamData], b = all[1][made as keyof TeamData]
-                const aa = all[0][attempted as keyof TeamData], ba = all[1][attempted as keyof TeamData]
-                return { label, home: formatShot(typeof a === 'number' ? a : undefined, typeof aa === 'number' ? aa : undefined), away: formatShot(typeof b === 'number' ? b : undefined, typeof ba === 'number' ? ba : undefined), valHome: typeof a === 'number' && typeof aa === 'number' ? a : undefined, valAway: typeof b === 'number' && typeof ba === 'number' ? b : undefined }
-              })
-            ].filter(stat => knownStat(stat.valHome) && knownStat(stat.valAway)).map((stat, idx) => {
+            {comparisonStats.map((stat, idx) => {
               const total = stat.valHome! + stat.valAway!
               const homePct = total > 0 ? (stat.valHome! / total) * 100 : 50
               return (

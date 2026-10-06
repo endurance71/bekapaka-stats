@@ -41,12 +41,12 @@ function Grid({ sponsors }: { sponsors: SponsorItem[] }) {
   )
 }
 
-export function PartnersGrid({ sponsors }: { sponsors: SponsorItem[] }) {
+export function PartnersGrid({ sponsors, compact = false }: { sponsors: SponsorItem[]; compact?: boolean }) {
   const sorted = [...sponsors].sort((a, b) => a.order - b.order)
 
   if (!siteSettings.partnersLevelsApproved) {
     return (
-      <div className="partners">
+      <div className={`partners${compact ? ' partners--compact' : ''}`}>
         <div className="tier">
           <div className="tier__label">Partnerzy</div>
           <Grid sponsors={sorted} />
@@ -56,7 +56,7 @@ export function PartnersGrid({ sponsors }: { sponsors: SponsorItem[] }) {
   }
 
   return (
-    <div className="partners">
+    <div className={`partners${compact ? ' partners--compact' : ''}`}>
       {Object.entries(levels).map(([tier, label]) => {
         const items = sorted.filter((item) => (item.tier || 'other') === tier)
         return items.length ? (

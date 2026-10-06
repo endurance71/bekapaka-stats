@@ -45,6 +45,9 @@ const isHorizontalRule = (line: string) => /^[-*_]{3,}$/.test(line)
 interface ImageInfo {
   src: string
   alt: string
+  caption?: string
+  author?: string
+  metadataMissing?: boolean
 }
 
 interface MatchScore {
@@ -399,7 +402,7 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
         if (block.type === 'gallery') {
           return (
             <div key={idx} id={`gallery-${idx}`} className='article-markdown__breakout'>
-              <ArticleImageCarousel images={block.images.flatMap(image => { const review = approvedMedia(mediaRecords, image.src); return review ? [{ ...image, alt: review.alt, caption: review.caption, author: review.author }] : mediaPreview ? [{ ...image, alt: isCameraOrUuidFilename(image.alt) ? '' : image.alt, metadataMissing: true }] : [] })} />
+              <ArticleImageCarousel images={block.images.flatMap<ImageInfo>(image => { const review = approvedMedia(mediaRecords, image.src); return review ? [{ ...image, alt: review.alt, caption: review.caption, author: review.author }] : mediaPreview ? [{ ...image, alt: isCameraOrUuidFilename(image.alt) ? '' : image.alt, metadataMissing: true }] : [] })} />
             </div>
           )
         }
@@ -485,9 +488,7 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
                       className='article-markdown__img'
                       fallbackSrc={typeof src === 'string' ? src : undefined}
                     />
-                    {alt && !isCameraOrUuidFilename(alt) ? (
-                      <figcaption className='article-markdown__figcaption'>{alt}</figcaption>
-                    ) : null}
+                    <figcaption className='article-markdown__figcaption'>{review ? <>{review.caption}{review.author && ` · Fot. ${review.author}`}</> : 'Podgląd lokalny: opis i autor wymagają uzupełnienia.'}</figcaption>
                   </figure>
                 )
               }

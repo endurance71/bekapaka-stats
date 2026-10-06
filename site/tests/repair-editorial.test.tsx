@@ -6,9 +6,9 @@ import { ArticleImageCarousel } from '../components/public/shared/ArticleImageCa
 
 describe('Editorial corrections', () => {
   it('uses explicit fit and does not classify a tournament report as a poster', () => {
-    expect(newsImageFit({ slug: 'iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026' })).toBe('cover')
-    expect(newsImageFit({ slug: '3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026' })).toBe('contain')
-    expect(newsImageFit({ slug: '3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', imageFit: 'cover' })).toBe('cover')
+    expect(newsImageFit({ slug: '3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026' })).toBe('cover')
+    expect(newsImageFit({ slug: 'iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026' })).toBe('contain')
+    expect(newsImageFit({ slug: 'iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', imageFit: 'cover' })).toBe('cover')
   })
   it('archives using a verified event date, never publication age', () => {
     expect(isArchivedEvent({ slug: 'szukamy-druzyny-otwarty-trening-2026' }, Date.parse('2026-10-06'))).toBe(true)

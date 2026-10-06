@@ -6,7 +6,7 @@ export function SiteFooter() {
     <footer className="site-footer" data-theme="plyta">
       <div className="container">
         <div className="site-footer__top">
-          <div className="stack" style={{ '--stack': 'var(--space-5)' } as React.CSSProperties}>
+          <div className="stack site-footer__brand" style={{ '--stack': 'var(--space-5)' } as React.CSSProperties}>
             <img
               src="/brand/herb2-kolor.svg"
               width={160}
@@ -15,10 +15,19 @@ export function SiteFooter() {
               alt="BeKaPaKa Bobolice — Znak główny 2.0"
             />
             <p className="muted" style={{ maxWidth: '34ch' }}>
-              Klub koszykówki z Bobolic. Gramy w Koszalińskiej Amatorskiej Lidze Koszykówki (KALK). Organizujemy Turniej o Puchar Burmistrza Bobolic.
+              BeKaPaKa — koszykówka z Bobolic, drużyna KALK.
             </p>
           </div>
           <div>
+            <h2>Kontakt</h2>
+            <address>
+              {siteSettings.organizationName}
+              <br />
+              {siteSettings.associationKrs && <>KRS: {siteSettings.associationKrs}<br /></>}
+              <a href={`mailto:${siteSettings.contactEmail}`}>{siteSettings.contactEmail}</a>
+            </address>
+          </div>
+          <div className="site-footer__nav">
             <h2>Klub</h2>
             <ul>
               <li>
@@ -38,15 +47,6 @@ export function SiteFooter() {
               </li>
               <li><Link href="/dokumenty">Dokumenty</Link></li>
             </ul>
-          </div>
-          <div>
-            <h2>Kontakt</h2>
-            <address>
-              {siteSettings.organizationName}
-              <br />
-              {siteSettings.associationKrs && <>KRS: {siteSettings.associationKrs}<br /></>}
-              <a href={`mailto:${siteSettings.contactEmail}`}>{siteSettings.contactEmail}</a>
-            </address>
           </div>
           <div>
             <h2>Wesprzyj</h2>

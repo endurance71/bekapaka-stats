@@ -109,12 +109,15 @@ export function StreakBadge({ streak }: { streak?: string | null }) {
   )
 }
 
-export function StandingsBoard({ table, className }: { table: TeamStanding[]; className?: string }) {
+export function StandingsBoard({ table, className, compact = false }: { table: TeamStanding[]; className?: string; compact?: boolean }) {
   const [viewMode, setViewMode] = useState<'main' | 'all'>('main')
+  const ownIndex = table.findIndex(row => isBekapakaRow(row.name))
+  const start = ownIndex < 0 ? 0 : Math.min(Math.max(ownIndex - 2, 0), Math.max(table.length - 5, 0))
+  const visibleRows = compact ? table.slice(start, start + 5) : table
 
   return (
-    <div className={`standings-board-wrapper standings-board-wrapper--${viewMode}${className ? ` ${className}` : ''}`}>
-      <div className='standings-mobile-tabs'><button type='button' className='btn btn--secondary btn--sm' aria-expanded={viewMode === 'all'} onClick={() => setViewMode(viewMode === 'all' ? 'main' : 'all')}>{viewMode === 'all' ? 'Podstawowe kolumny' : 'Więcej kolumn'}</button></div>
+    <div className={`standings-board-wrapper standings-board-wrapper--${viewMode}${className ? ` ${className}` : ''}${compact ? ' standings-board-wrapper--compact' : ''}`}>
+      <div className='standings-mobile-tabs' hidden={compact}><button type='button' className='btn btn--secondary btn--sm' aria-expanded={viewMode === 'all'} onClick={() => setViewMode(viewMode === 'all' ? 'main' : 'all')}>{viewMode === 'all' ? 'Podstawowe kolumny' : 'Więcej kolumn'}</button></div>
 
       {viewMode === 'all' && (
         <div className='standings-scroll-hint' aria-hidden='true'>
@@ -140,9 +143,9 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
             </tr>
           </thead>
           <tbody>
-            {table.map((row, index) => {
+            {visibleRows.map((row) => {
               const isBkp = isBekapakaRow(row.name)
-              const position = row.position > 0 ? row.position : index + 1
+              const position = row.position > 0 ? row.position : table.indexOf(row) + 1
               const matches = row.matches ?? (row.wins + row.losses)
               const pointsFor = row.pointsFor ?? 0
               const pointsAgainst = row.pointsAgainst ?? 0
@@ -189,11 +192,12 @@ export function StandingsBoard({ table, className }: { table: TeamStanding[]; cl
         </table>
       </div>
 
+      {compact && table.length > 5 && <p className='muted text-xs'>Wybrane 5 z {table.length} zespołów. Pełne zestawienie na stronie tabeli.</p>}
       <div className='standings-legend' aria-label='Objaśnienia skrótów tabeli'>
         <span><strong>M</strong> – mecze</span>
         <span><strong>W</strong> – wygrane</span>
         <span><strong>P</strong> – porażki</span>
-        <span><strong>+</strong> – punkty zdobyte</span><span><strong>−</strong> – punkty stracone</span><span><strong>+/−</strong> – różnica punktów zdobytych i straconych</span><span><strong>Forma</strong> – ostatnie wyniki: W wygrana, P porażka</span><span><strong>Seria</strong> – liczba kolejnych wygranych lub porażek</span>
+        <span className={compact ? 'standings-legend__extended' : undefined}><strong>+</strong> – punkty zdobyte</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>−</strong> – punkty stracone</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>+/−</strong> – różnica punktów zdobytych i straconych</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>Forma</strong> – ostatnie wyniki: W wygrana, P porażka</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>Seria</strong> – liczba kolejnych wygranych lub porażek</span>
         <span><strong>PKT</strong> – punkty ligowe (2 za wygraną, 1 za porażkę)</span>
       </div>
     </div>

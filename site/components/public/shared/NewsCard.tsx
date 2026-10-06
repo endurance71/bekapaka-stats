@@ -9,16 +9,18 @@ import { FallbackImage } from './FallbackImage'
 
 export function NewsCard({
   item,
-  featured = false
+  featured = false,
+  compact = false
 }: {
   item: NewsPost
   featured?: boolean
+  compact?: boolean
 }) {
   const imageFit = newsImageFit(item)
   const category = getNewsCategory(item)
 
   return (
-    <article className={`news-card ${featured ? 'news-card--featured' : ''} news-card--image-${imageFit}`}>
+    <article className={`news-card ${featured ? 'news-card--featured' : ''}${compact ? ' news-card--compact' : ''} news-card--image-${imageFit}`}>
       <Link href={`/aktualnosci/${item.slug}`} className='news-card__link'>
         <div className='news-card__media'>
           {item.coverImageUrl ? (

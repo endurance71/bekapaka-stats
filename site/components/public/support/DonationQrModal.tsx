@@ -18,6 +18,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
 
+  const [qrError, setQrError] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle')
 
@@ -38,6 +39,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
       return
     }
 
+    setQrError(false)
     let cancelled = false
 
     import('qrcode')
@@ -56,7 +58,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
         if (!cancelled) setQrDataUrl(url)
       })
       .catch(() => {
-        if (!cancelled) setQrDataUrl(null)
+        if (!cancelled) { setQrDataUrl(null); setQrError(true) }
       })
 
     return () => {
@@ -100,10 +102,8 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
     try {
       await navigator.clipboard.writeText(BKPK_DONATION.bankAccountCopy)
       setCopyStatus('copied')
-      window.setTimeout(() => setCopyStatus('idle'), 2000)
     } catch {
       setCopyStatus('error')
-      window.setTimeout(() => setCopyStatus('idle'), 2500)
     }
   }
 
@@ -185,7 +185,8 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
             </button>
           </div>
 
-          <div className="donation-qr-modal__qr-wrap" aria-busy={!qrDataUrl}>
+          <p role="status">{copyStatus === 'copied' ? 'Numer konta skopiowany.' : copyStatus === 'error' ? 'Nie udało się skopiować. Zaznacz i skopiuj numer rachunku powyżej.' : ''}</p>
+          <div className="donation-qr-modal__qr-wrap" aria-busy={!qrDataUrl && !qrError}>
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
@@ -194,7 +195,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
                 height={250}
                 className="donation-qr-modal__qr"
               />
-            ) : (
+            ) : qrError ? <p role="status">Kod QR jest niedostępny. Skorzystaj z numeru rachunku powyżej.</p> : (
               <div className="donation-qr-modal__qr-skeleton" aria-hidden="true" />
             )}
           </div>

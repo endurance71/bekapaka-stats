@@ -70,7 +70,9 @@ export const sponsors: SponsorItem[] = [
     order: 7,
     logoUrl: '/images/partners/lasy-vector.svg',
     logoBgColor: '#ffffff',
-    logoFit: 'contain'
+    logoFit: 'contain',
+    logoCardScale: 1.25,
+    logoCardPadding: '8px'
   },
   {
     id: 's-8',

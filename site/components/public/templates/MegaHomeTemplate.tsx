@@ -18,7 +18,6 @@ import { Section } from '../shared/Section'
 import { StandingsBoard } from '../shared/StandingsBoard'
 import { NewsCard } from '../shared/NewsCard'
 import { PlayerCard } from '../shared/PlayerCard'
-import { JerseyShowcase } from '../home/JerseyShowcase'
 import { PartnersGrid } from '../sponsors/PartnersGrid'
 import { NearestEventCard } from '../home/NearestEventCard'
 import { DataStateNotice } from '../shared/DataStateNotice'
@@ -54,7 +53,7 @@ export function MegaHomeTemplate({
     : formatPointBalance(our?.pointsFor, our?.pointsAgainst)
   const results = recentGames
     .filter((game) => resolvePresentation(game).status === 'FINAL')
-    .slice(0, 6)
+    .slice(0, 3)
   return (
     <div className="digital-home">
       <div className="ticker">
@@ -204,13 +203,13 @@ export function MegaHomeTemplate({
         {newsState && <DataStateNotice {...newsState} />}
         <div className="news-grid">
           {news.slice(0, 3).map((item) => (
-            <NewsCard key={item.id} item={item} />
+            <NewsCard key={item.id} item={item} compact />
           ))}
         </div>
         {!news.length && <p>Nowe relacje pojawią się tutaj po publikacji.</p>}
       </Section>
       <Section
-        tag="KALK 2026/27"
+        tag={tableState?.meta?.season?.label || 'KALK'}
         title="Sezon i drużyna"
         titleId="h-liga"
       >
@@ -238,7 +237,7 @@ export function MegaHomeTemplate({
               </Link>
             </div>
             {tableState && <DataStateNotice {...tableState} />}
-            <StandingsBoard table={table} />
+            <StandingsBoard table={table} compact />
           </div>
           <div className="home-sport-col home-sport-roster">
             <div className="home-sport-head">
@@ -259,39 +258,14 @@ export function MegaHomeTemplate({
         </div>
       </Section>
       <Section
-        tag="Barwy klubu"
-        title="Stroje meczowe 2026/27"
-        titleId="h-stroje"
-        link={<Link href="/sklad" className="btn btn--text">Zobacz skład</Link>}
-      >
-        <JerseyShowcase />
-      </Section>
-      <Section
         tag="Dziękujemy"
         title="Partnerzy klubu"
         titleId="h-pz"
         link={<Link href="/sponsorzy" className="btn btn--text">Poznaj partnerów</Link>}
       >
-        <PartnersGrid sponsors={sponsors} />
+        <PartnersGrid sponsors={sponsors} compact />
       </Section>
-      <section className="section section--tight" aria-label="Klub i społeczność">
-        <div className="container">
-          <div className="grid">
-            <Link className="span-all card" href="/klub" style={{ display: 'block' }}>
-              <div className="card__body">
-                <span className="tag tag--accent">Drużyna</span>
-                <h3 className="h2">Poznaj nasz klub</h3>
-                <p className="muted measure">
-                  Historia drużyny, społeczność i koszykówka amatorska w Bobolicach.
-                </p>
-                <div className="card__foot">
-                  <span className="btn btn--text">O klubie →</span>
-                </div>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
+      <p className="container"><Link className="btn btn--text" href="/klub">Drużyna, relacje i kontakt — poznaj klub →</Link></p>
       <FsmmSupportSection variant="home" />
     </div>
   )

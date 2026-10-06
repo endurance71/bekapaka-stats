@@ -124,7 +124,7 @@ describe('MegaHomeTemplate Standings Table', () => {
     expect(html).toContain(`aria-label="Bilans punktów: ${expected}">+/− ${expected}</span>`)
   })
 
-  it('renders all 11 columns in the homepage preview table', () => {
+  it('renders a compact preview around BeKaPaKa with the complete table link', () => {
     const html = renderToStaticMarkup(
       <MegaHomeTemplate
         news={[]}
@@ -150,7 +150,8 @@ describe('MegaHomeTemplate Standings Table', () => {
 
     // Team logo and identity
     expect(html).toContain('standings-team-identity')
-    expect(html).toContain('src="https://www.kalk-koszalin.com/storage/legacy/teams/1.jpg"')
+    expect(html).toContain('Wybrane 5 z 7 zespołów')
+    expect(html).not.toContain('src="https://www.kalk-koszalin.com/storage/legacy/teams/1.jpg"')
 
     // BeKaPaKa highlight row
     expect(html).toContain('standings-row-v2 is-bkp')

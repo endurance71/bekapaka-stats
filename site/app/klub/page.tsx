@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { JerseyShowcase } from '../../components/public/home/JerseyShowcase'
 import type { Metadata } from 'next'
 import { siteSettings } from '../../lib/site-settings'
 import { Section } from '../../components/public/shared/Section'
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 }
 
 export default async function ClubPage() {
-  const reports = (await getNewsPosts(100)).filter(item => ['iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', 'ii-turniej-koszykowki'].includes(item.slug)).slice(0, 2)
+  const reports = (await getNewsPosts(100)).filter(item => ['3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', 'ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026'].includes(item.slug)).slice(0, 2)
   return (
     <div className="club-page">
       <Section>
@@ -42,7 +43,7 @@ export default async function ClubPage() {
             <span className="label accent">Kim jesteśmy</span>
             <h2>Koszykówka z Bobolic</h2>
             <p><strong>{siteSettings.organizationName}</strong> to stowarzyszenie pasjonatów i amatorów koszykówki z Bobolic oraz okolicznych miejscowości. Nasza drużyna reprezentuje miasto i gminę w Koszalińskiej Amatorskiej Lidze Koszykówki.</p>
-            
+
           </div>
           <aside className="club-facts" aria-labelledby="club-facts-heading">
             <h3 id="club-facts-heading">Klub w skrócie</h3>
@@ -79,6 +80,7 @@ export default async function ClubPage() {
         <span className="label accent">Z życia klubu</span><h2>Relacje z wydarzeń</h2>
         {reports.length ? <ul className="club-reports">{reports.map(item => <li key={item.id}><Link href={`/aktualnosci/${item.slug}`}>{item.title}</Link><p>{item.excerpt}</p></li>)}</ul> : <p>Relacje pojawią się po publikacji przez redakcję.</p>}
       </Section>
+      <Section tag="Barwy klubu" title="Stroje meczowe" titleId="h-stroje"><JerseyShowcase /></Section>
       <Section tone="paper" id="wsparcie">
         <FsmmSupportSection variant="page" />
         <section className="club-contact" id="kontakt" aria-labelledby="club-contact-heading">

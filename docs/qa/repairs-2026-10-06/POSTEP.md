@@ -17,3 +17,11 @@ Jawny imageFit oraz lokalne przypisania istniejących plakatów zastępują zgad
 Archiwalność pochodzi z eventDate lub jawnie zweryfikowanej lokalnej daty treningu. CMS ma opcjonalne imageFit/eventDate. Nie zapisano treści do CMS. Oferta współpracy jest neutralna i używa siteSettings.contactEmail. Klub pokazuje odnośniki do opublikowanych relacji zamiast sekcji ogólnych wartości. Nie dodano wymyślonego zdjęcia/historii/autorów.
 
 151 testów strony przechodzi. Pozostałe zależności redakcyjne: zatwierdzony kontakt, aktywny skład/pozycje, numer Sosińskiego, metadane i zgody zdjęć, zdjęcie życia klubu i historia ze źródłami.
+
+## Etap 3 — homepage, wsparcie i wzorce
+
+Homepage pokazuje skrócone aktualności, 5 wierszy tabeli wokół BeKaPaKa i 4 liderów. Pełne widoki pozostają pod odnośnikami. Usunięto powielony blok stroju i dużą kartę prowadzącą do klubu. Wszyscy partnerzy pozostają w kompaktowej siatce. Wsparcie używa jednego komponentu; kopiowanie poprzedza QR, ma trwały status i ręczny fallback. Stopka jest krótsza, menu ma nazwę organizacji i obsługuje małą wysokość ekranu.
+
+Scalono reguły okładki, breadcrumbs i bazowej sekcji, usunięto martwy wariant darowizny, lightbox używa wspólnych ikon i blokady scrolla. Nie uznajemy tego za pełną redukcję całego historycznego arkusza CSS. Podczas odbioru skorygowano mapowanie rzeczywistych slugów: `iii-…` jest zapowiedzią z plakatem, `3-…` relacją. Data aktualizacji tabeli pozostaje nieznana, gdy źródło jej nie podaje.
+
+Testy strony: 151/151. Izolowany CMS: szkic ukryty, publikacja, wycofanie i opcjonalne imageFit/eventDate potwierdzone. Izolowany PostgreSQL: 109 testów backendu oraz zapis prezentacji przez API, autoryzacja, trwałość zera, publiczny odczyt i rzeczywista rewalidacja HTTP potwierdzone. Odbiór geometrii i raport końcowy w etapie 4.

@@ -19,16 +19,6 @@ export const revalidate = 60
 
 type Params = { slug: string }
 
-function formatViewsCount(count: number): string {
-  const mod10 = count % 10
-  const mod100 = count % 100
-  if (count === 1) return '1 wyświetlenie'
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) {
-    return `${count} wyświetlenia`
-  }
-  return `${count} wyświetleń`
-}
-
 function matchesNewsSlug(item: NewsPost, rawSlug: string): boolean {
   const slug = decodeURIComponent(rawSlug).trim()
   if (item.slug === slug) return true

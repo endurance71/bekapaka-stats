@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { createPortal } from 'react-dom'
 import { CloseIcon, ArrowRightIcon } from './PublicIcons'
 import { FallbackImage } from './FallbackImage'
@@ -13,13 +14,12 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
   const trigger = useRef<HTMLElement | null>(null)
   const start = useRef<number | null>(null)
   const open = index !== null
+  usePageScrollLock(open, { htmlClass: 'is-overlay-open' })
   useEffect(() => {
     if (!open) return
     const shell = document.querySelector<HTMLElement>('.site-shell')
     const wasInert = shell?.inert || false
     if (shell) shell.inert = true
-    const oldOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     modal.current?.querySelector<HTMLButtonElement>('button')?.focus()
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -47,7 +47,6 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
     document.addEventListener('keydown', keyboard)
     return () => {
       if (shell) shell.inert = wasInert
-      document.body.style.overflow = oldOverflow
       document.removeEventListener('keydown', keyboard)
       trigger.current?.focus()
     }
@@ -101,7 +100,7 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
               if (
                 start.current !== null &&
                 Math.abs(event.changedTouches[0].clientX - start.current) > 50
-              )
+              ) {
                 setImageState('loading')
                 setIndex(
                   (value) =>
@@ -110,6 +109,7 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
                       images.length) %
                     images.length
                 )
+              }
               start.current = null
             }}
           >
