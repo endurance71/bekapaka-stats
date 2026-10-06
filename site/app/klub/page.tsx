@@ -31,7 +31,7 @@ export default async function ClubPage() {
               <a className="btn btn--text" href="#kontakt">Kontakt ↓</a>
             </div>
           </div>
-          <div className="club-hero__identity" aria-label="Identyfikacja BeKaPaKa Bobolice">
+          <div className="club-hero__identity" role="group" aria-label="Identyfikacja BeKaPaKa Bobolice">
             <img className="club-hero__crest" src="/brand/herb2-kolor.svg" width={300} height={289} alt="BeKaPaKa Bobolice — Znak główny 2.0" />
             <img className="club-hero__wordmark" src="/brand/wordmark-negatyw.svg" width={300} height={60} alt="BeKaPaKa Bobolice" />
           </div>

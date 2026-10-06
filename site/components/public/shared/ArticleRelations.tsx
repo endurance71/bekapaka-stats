@@ -57,7 +57,7 @@ export function ArticleRelations({
   if (related.length === 0 && !previous && !next) return null
 
   return (
-    <div className="article-relations-wrapper" aria-label="Powiązane artykuły">
+    <div className="article-relations-wrapper" role="group" aria-label="Powiązane artykuły">
       {previous || next ? (
         <nav className="article-relations__pager" aria-label="Nawigacja między artykułami">
           {previous ? <PagerCard item={previous} label="Poprzedni artykuł" /> : null}

@@ -6,5 +6,6 @@ describe('league source metadata', () => {
   })
   it('does not replace unavailable metadata with current time', () => {
     expect(leagueMetadata(null, [])).toEqual({ season: null, division: null, updatedAt: null })
+    expect(leagueMetadata(null, [{ updatedAt: null }, { updatedAt: undefined }, { updatedAt: 'invalid' }]).updatedAt).toBeNull()
   })
 })

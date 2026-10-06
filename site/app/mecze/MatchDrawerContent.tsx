@@ -100,6 +100,7 @@ export function MatchDrawerContent({
   const { us, all } = getTeamsFromGame(game)
 
   const [activeTeamIndex, setActiveTeamIndex] = useState<number>(0)
+  const SectionHeading = hideScoreHeader ? 'h2' : 'h3'
   const [activeMainTab, setActiveMainTab] = useState<'boxscore' | 'pbp'>('boxscore')
   const activeTeam = all[activeTeamIndex] || us || all[0]
   const hasAnyPlayers = all.some((t) => Array.isArray(t.players) && t.players.length > 0)
@@ -205,7 +206,7 @@ export function MatchDrawerContent({
       {/* Quarters Breakdown */}
       {statsAllowed && quarters && quarters.length > 0 ? (
         <section className='drawer-match-section'>
-          <h3 className='drawer-section-title-small'>Wyniki w kwartach</h3>
+          <SectionHeading className='drawer-section-title-small'>Wyniki w kwartach</SectionHeading>
           <div className='quarters-grid-premium'>
             {quarters.map((q: { label: string; home: number; away: number }, idx: number) => (
               <div key={idx} className='quarter-cell-premium'>
@@ -224,7 +225,7 @@ export function MatchDrawerContent({
       {/* Advanced Team Comparison Stats */}
       {statsAllowed && comparisonStats.length > 0 && (
         <section className='drawer-match-section'>
-          <h3 className='drawer-section-title-small'>Porównanie zespołowe</h3>
+          <SectionHeading className='drawer-section-title-small'>Porównanie zespołowe</SectionHeading>
           <div className='team-comparison-list'>
             {comparisonStats.map((stat, idx) => {
               const total = stat.valHome! + stat.valAway!
@@ -250,7 +251,7 @@ export function MatchDrawerContent({
       {/* Additional team comparison stats if present */}
       {statsAllowed && availableStats.length > 0 ? (
         <section className='drawer-match-section'>
-          <h3 className='drawer-section-title-small'>Punkty specjalne</h3>
+          <SectionHeading className='drawer-section-title-small'>Punkty specjalne</SectionHeading>
           <div className='team-comparison-list'>
             {availableStats.map((stat, idx) => {
               const total = stat.home + stat.away
@@ -276,7 +277,7 @@ export function MatchDrawerContent({
       {/* Coach Notes */}
       {game.coachNotes ? (
         <section className='drawer-match-section coach-notes-block'>
-          <h3 className='drawer-section-title-small'>Notatki sztabu trenerskiego</h3>
+          <SectionHeading className='drawer-section-title-small'>Notatki sztabu trenerskiego</SectionHeading>
           <p className='coach-notes-text'>{game.coachNotes}</p>
         </section>
       ) : null}
@@ -308,7 +309,7 @@ export function MatchDrawerContent({
       {/* Play-by-Play View */}
       {activeMainTab === 'pbp' ? (
         <section className='drawer-match-section'>
-          <h3 className='drawer-section-title-small'>Przebieg meczu akcja po akcji</h3>
+          <SectionHeading className='drawer-section-title-small'>Przebieg meczu akcja po akcji</SectionHeading>
           <p className='profile__table-hint'>Szczegółowy zapis każdego posiadania piłki, celnych rzutów i zmian prosto z oficjalnego protokołu KALK.</p>
           <MatchPlayByPlay
             gameId={game.id}
@@ -321,7 +322,7 @@ export function MatchDrawerContent({
         statsAllowed && hasAnyPlayers ? (
           <section className='drawer-match-section'>
             <div className='boxscore-header-row'>
-              <h3 className='drawer-section-title-small'>Statystyki indywidualne (Box Score)</h3>
+              <SectionHeading className='drawer-section-title-small'>Statystyki indywidualne (Box Score)</SectionHeading>
               {all.length > 1 && (
                 <div className='boxscore-team-tabs' role='tablist' aria-label='Wybór drużyny w statystykach'>
                   {all.map((team, idx) => (
@@ -341,7 +342,7 @@ export function MatchDrawerContent({
             </div>
 
             <button type='button' className='btn btn--secondary boxscore-view-toggle' aria-expanded={fullStats} onClick={() => setFullStats(!fullStats)}>{fullStats ? 'Podstawowe statystyki' : 'Pełne statystyki'}</button>
-            <p className='profile__table-hint'>Przewiń tabelę w bok, aby zobaczyć pełne statystyki rzutowe i obronne (zgodne z protokołem KALK).</p>
+            <p className='profile__table-hint'>{fullStats ? 'Przewiń tabelę w bok, aby zobaczyć pełne statystyki rzutowe i obronne.' : 'Na telefonie pokazujemy MIN, PKT, ZB i AS. Wybierz pełne statystyki, aby zobaczyć pozostałe kolumny.'}</p>
 
             <div className='table-shell-v2 boxscore-scroll-shell' tabIndex={0} role='region' aria-label={`Statystyki ${activeTeam?.name}, przewijaj poziomo`}>
               <table className='data-table-v2 boxscore-table text-sm' data-view={fullStats ? 'all' : 'basic'}>

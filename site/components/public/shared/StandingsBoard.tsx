@@ -193,7 +193,7 @@ export function StandingsBoard({ table, className, compact = false }: { table: T
       </div>
 
       {compact && table.length > 5 && <p className='muted text-xs'>Wybrane 5 z {table.length} zespołów. Pełne zestawienie na stronie tabeli.</p>}
-      <div className='standings-legend' aria-label='Objaśnienia skrótów tabeli'>
+      <div className='standings-legend' role='group' aria-label='Objaśnienia skrótów tabeli'>
         <span><strong>M</strong> – mecze</span>
         <span><strong>W</strong> – wygrane</span>
         <span><strong>P</strong> – porażki</span>

@@ -72,8 +72,10 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
                 src={image.src}
                 width={image.width || 800}
                 height={image.height || 600}
-                sizes={variant === 'cover' ? '(max-width: 1023px) calc(100vw - 32px), (max-width: 1440px) 40vw, 560px' : i === 0 ? '(max-width: 1023px) calc((100vw - 44px)/2), (max-width: 1440px) 32vw, 457px' : '(max-width: 1023px) calc((100vw - 44px)/2), (max-width: 1440px) 16vw, 223px'}
+                sizes={variant === 'cover' ? '(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) calc(41.667vw - 46.667px), min(513.34px, calc(41.667vw - 60px))' : i === 0 ? '(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 32vw, 457px' : '(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px'}
                 alt={image.alt}
+                loading={variant === 'cover' ? 'eager' : 'lazy'}
+                fetchPriority={variant === 'cover' ? 'high' : 'auto'}
               />
             </button>
             {(image.caption || image.author || image.metadataMissing || variant === 'cover') && (

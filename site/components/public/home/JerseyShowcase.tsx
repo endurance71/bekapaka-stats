@@ -57,7 +57,7 @@ export function JerseyShowcase() {
   }
 
   return (
-    <div className="jersey-grid" aria-label="Oficjalne stroje meczowe BeKaPaKa Bobolice">
+    <div className="jersey-grid" role="group" aria-label="Oficjalne stroje meczowe BeKaPaKa Bobolice">
       {JERSEYS.map((jersey) => {
         const side = activeSide[jersey.id] || 'front'
         const isBack = side === 'back'

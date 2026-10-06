@@ -83,7 +83,7 @@ export function SiteFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="ShipApp"
-                style={{ display: 'inline-flex', alignItems: 'center', minHeight: 'auto', padding: '0 2px' }}
+                style={{ display: 'inline-flex', alignItems: 'center', minHeight: '44px', padding: '0 2px' }}
               >
                 <img
                   src="/brand/shipapp-logo-white.svg"
