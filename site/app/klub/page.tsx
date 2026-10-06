@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { siteSettings } from '../../lib/site-settings'
 import { Section } from '../../components/public/shared/Section'
 import { FsmmSupportSection } from '../../components/public/support/FsmmSupportSection'
-import { getSiteMetadataBase } from '../../lib/data'
+import { getNewsPosts, getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
@@ -12,7 +12,8 @@ export const metadata: Metadata = {
   description: 'Poznaj BeKaPaKa Bobolice: drużynę KALK, stowarzyszenie i organizowane w Bobolicach turnieje. Kontakt, dokumenty i wsparcie klubu.'
 }
 
-export default function ClubPage() {
+export default async function ClubPage() {
+  const reports = (await getNewsPosts(100)).filter(item => ['iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', 'ii-turniej-koszykowki'].includes(item.slug)).slice(0, 2)
   return (
     <div className="club-page">
       <Section>
@@ -21,7 +22,7 @@ export default function ClubPage() {
             <span className="label accent">BeKaPaKa Bobolice</span>
             <h1>O klubie</h1>
             <p className="club-hero__lead">Jesteśmy drużyną koszykówki z Bobolic. Gramy w KALK, organizujemy turnieje i łączymy ludzi wokół sportu.</p>
-            <p className="muted">Za BeKaPaKa stoją zawodnicy, kibice i lokalni partnerzy. Na parkiecie reprezentujemy nasze miasto, poza nim tworzymy przestrzeń do wspólnego działania.</p>
+            <p className="muted">Za BeKaPaKa stoją zawodnicy, kibice i lokalni partnerzy. Wyniki spotkań publikujemy w terminarzu, a relacje z wydarzeń w aktualnościach.</p>
             <div className="club-page__actions">
               <Link className="btn btn--primary" href="/sklad">Poznaj drużynę</Link>
               <a className="btn btn--text" href="#dzialalnosc">Działalność ↓</a>
@@ -41,7 +42,7 @@ export default function ClubPage() {
             <span className="label accent">Kim jesteśmy</span>
             <h2>Koszykówka z Bobolic</h2>
             <p><strong>{siteSettings.organizationName}</strong> to stowarzyszenie pasjonatów i amatorów koszykówki z Bobolic oraz okolicznych miejscowości. Nasza drużyna reprezentuje miasto i gminę w Koszalińskiej Amatorskiej Lidze Koszykówki.</p>
-            <p>Sportowa rywalizacja to jedna część naszej działalności. Równie ważne są aktywność, integracja mieszkańców i lokalne wydarzenia, podczas których można grać i kibicować razem.</p>
+            
           </div>
           <aside className="club-facts" aria-labelledby="club-facts-heading">
             <h3 id="club-facts-heading">Klub w skrócie</h3>
@@ -74,16 +75,9 @@ export default function ClubPage() {
           </article>
         </div>
       </Section>
-      <Section>
-        <div className="club-values">
-          <div className="club-page__copy"><span className="label accent">Nasze wartości</span><h2>Na parkiecie i poza nim</h2><p className="muted">Chcemy rozwijać koszykówkę w Bobolicach przez regularną grę, wspólne działania i sportową rywalizację.</p></div>
-          <dl className="club-values__list">
-            <div><dt>Pasja i zaangażowanie</dt><dd>Każdy trening i mecz to okazja do rozwoju.</dd></div>
-            <div><dt>Wspólnota</dt><dd>Łączymy bobolickich koszykarzy i kibiców.</dd></div>
-            <div><dt>Aktywność i fair play</dt><dd>Zachęcamy do ruchu i uczciwej rywalizacji.</dd></div>
-            <div><dt>Nasze miasto</dt><dd>Reprezentujemy Bobolice na regionalnych parkietach.</dd></div>
-          </dl>
-        </div>
+      <Section tone="paper" id="relacje">
+        <span className="label accent">Z życia klubu</span><h2>Relacje z wydarzeń</h2>
+        {reports.length ? <ul className="club-reports">{reports.map(item => <li key={item.id}><Link href={`/aktualnosci/${item.slug}`}>{item.title}</Link><p>{item.excerpt}</p></li>)}</ul> : <p>Relacje pojawią się po publikacji przez redakcję.</p>}
       </Section>
       <Section tone="paper" id="wsparcie">
         <FsmmSupportSection variant="page" />

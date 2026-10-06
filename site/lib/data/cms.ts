@@ -306,11 +306,6 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
       const coverImage = review || isLocalMediaPreview() ? rawCover : {} as ReturnType<typeof mapMediaImage>
       const tags = mapNewsTags(item.tags)
       const explicitImageFit = item.imageFit === 'cover' || item.imageFit === 'contain' ? item.imageFit : undefined
-      const inferredImageFit = explicitImageFit || (
-        coverImage.width && coverImage.height
-          ? coverImage.width / coverImage.height >= 1.15 ? 'cover' : 'contain'
-          : undefined
-      )
       return {
         id: sanitizeText(item.id, String(index)),
         title,
@@ -324,7 +319,8 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
         ...(sanitizeText(item.author, sanitizeText(item.authorName, '')) ? { author: sanitizeText(item.author, sanitizeText(item.authorName, '')) } : {}),
         ...(tags ? { tags } : {}),
         ...(typeof item.isPinned === 'boolean' ? { isPinned: item.isPinned } : {}),
-        ...(inferredImageFit ? { imageFit: inferredImageFit } : {}),
+        ...(explicitImageFit ? { imageFit: explicitImageFit } : {}),
+        ...(typeof item.eventDate === 'string' && Number.isFinite(Date.parse(item.eventDate)) ? { eventDate: item.eventDate } : {}),
         ...(coverImage.url ? { coverImageUrl: coverImage.url } : {}),
         ...(coverImage.sources ? { coverImageSources: coverImage.sources } : {}),
         ...(coverImage.width ? { coverImageWidth: coverImage.width } : {}),

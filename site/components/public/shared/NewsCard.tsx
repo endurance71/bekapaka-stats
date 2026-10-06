@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { newsImageFit, isArchivedEvent } from '../../../lib/news-presentation'
 import type { NewsPost } from '../../../lib/data'
 import { getStrapiMediaProps } from '../../../lib/data/media'
 import { getNewsCategory } from '../../../lib/news-category'
@@ -13,7 +14,7 @@ export function NewsCard({
   item: NewsPost
   featured?: boolean
 }) {
-  const imageFit = item.imageFit || 'cover'
+  const imageFit = newsImageFit(item)
   const category = getNewsCategory(item)
 
   return (
@@ -47,7 +48,7 @@ export function NewsCard({
         <div className='news-card__body'>
           <div className='news-card__meta-bar'>
             {category ? <span className='news-card__category'>{category}</span> : null}
-            {item.eventDate && new Date(item.eventDate) < new Date() && (
+            {isArchivedEvent(item) && (
               <span className='news-card__archival-badge' title='Termin wydarzenia minął'>Wydarzenie zakończone</span>
             )}
           </div>

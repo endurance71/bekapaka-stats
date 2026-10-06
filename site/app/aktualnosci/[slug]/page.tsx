@@ -1,15 +1,16 @@
+import { newsImageFit, isArchivedEvent } from '../../../lib/news-presentation'
+import { getNewsCategory } from '../../../lib/news-category'
+import { ArticleImageCarousel } from '../../../components/public/shared/ArticleImageCarousel'
 import { serializeJsonLd } from '../../../lib/json-ld'
 import { getAllNewsPosts } from '../../../lib/data/cms'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
 import { ArticleRelations } from '../../../components/public/shared/ArticleRelations'
-import { FallbackImage } from '../../../components/public/shared/FallbackImage'
 import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
 import { ViewTracker } from '../../../components/public/shared/ViewTracker'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
 import { getNewsPosts, getSiteMetadataBase, type NewsPost } from '../../../lib/data'
-import { getStrapiMediaProps } from '../../../lib/data/media'
 import { calculateReadingTime, excerptFromContent, slugifyTitle } from '../../../lib/data/utils'
 import { formatDateTime } from '../../../lib/format'
 import { draftMode } from 'next/headers'
@@ -94,17 +95,13 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
 
   const formattedDate = formatDateTime(item.publishedAt)
   const readingTime = calculateReadingTime(item.content)
-  const viewsText = typeof item.views === 'number' && item.views > 0 ? formatViewsCount(item.views) : null
-  const metaText = [formattedDate, readingTime, viewsText].filter(Boolean).join(' · ')
+  const metaText = [formattedDate, readingTime, isArchivedEvent(item) ? 'Wydarzenie zakończone' : null].filter(Boolean).join(' · ')
   const leadText = item.excerpt || excerptFromContent(item.content)
-  const isPoster =
-    item.type?.toLowerCase().includes('turniej') ||
-    item.slug.includes('turniej') ||
-    Boolean(item.tags?.some((t) => /turniej|plakat|afisz/i.test(t)))
+  const isPoster = newsImageFit(item) === 'contain'
 
   return (
     <EditorialDetailTemplate
-      sectionLabel={item.type || 'Aktualności'}
+      sectionLabel={getNewsCategory(item) || 'Aktualności'}
       title={item.title}
       meta={metaText}
       lead={leadText}
@@ -117,19 +114,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
       cover={
         item.coverImageUrl ? (
             <div className={`article-detail__cover-media${isPoster ? ' article-detail__cover-media--contain' : ''}`}>
-              <FallbackImage
-                {...getStrapiMediaProps(item.coverImageUrl, {
-                  isCover: true,
-                  sources: item.coverImageSources,
-                  width: item.coverImageWidth,
-                  height: item.coverImageHeight,
-                  sizes: '(max-width: 1023px) 100vw, 42vw'
-                })}
-                alt={item.coverImageAlt || ''}
-                className='article-detail__cover-image'
-                fallbackSrc={item.coverImageUrl}
-                fetchPriority='high'
-              />
+              <ArticleImageCarousel variant="cover" images={[{ src: item.coverImageUrl, alt: item.coverImageAlt || `Okładka: ${item.title}`, width: item.coverImageWidth, height: item.coverImageHeight, author: item.mediaRecords?.find(record => record.url === item.coverImageUrl)?.author }]} />
             </div>
           ) : null
       }

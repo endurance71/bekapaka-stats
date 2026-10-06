@@ -1,9 +1,13 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { CloseIcon, ArrowRightIcon } from './PublicIcons'
 import { FallbackImage } from './FallbackImage'
-type ImageInfo = { src: string; alt: string; caption?: string; author?: string }
-export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
+type ImageInfo = { src: string; alt: string; caption?: string; author?: string; width?: number; height?: number; metadataMissing?: boolean }
+export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: ImageInfo[]; variant?: 'gallery' | 'cover' }) {
+  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading')
+  const [attempt, setAttempt] = useState(0)
+  const selectImage = (next: number) => { setImageState('loading'); setIndex(next) }
   const [index, setIndex] = useState<number | null>(null)
   const modal = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLElement | null>(null)
@@ -22,12 +26,12 @@ export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
         event.preventDefault()
         setIndex(null)
       }
-      if (event.key === 'ArrowRight') setIndex((value) => ((value || 0) + 1) % images.length)
-      if (event.key === 'ArrowLeft')
-        setIndex((value) => ((value || 0) - 1 + images.length) % images.length)
+      if (event.key === 'ArrowRight') { setImageState('loading'); setIndex((value) => ((value || 0) + 1) % images.length) }
+      if (event.key === 'ArrowLeft') { setImageState('loading');
+        setIndex((value) => ((value || 0) - 1 + images.length) % images.length) }
       if (event.key === 'Tab') {
         const buttons = Array.from(
-          modal.current?.querySelectorAll<HTMLButtonElement>('button') || []
+          modal.current?.querySelectorAll<HTMLElement>('button,a[href]') || []
         )
         const first = buttons[0],
           last = buttons.at(-1)
@@ -51,7 +55,7 @@ export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
   if (!images.length) return null
   const active = index === null ? null : images[index]
   return (
-    <div className="article-gallery">
+    <div className={`article-gallery${variant === 'cover' ? ' article-gallery--cover' : ''}`}>
       <div className="article-gallery__grid">
         {images.map((image, i) => (
           <figure key={`${image.src}-${i}`}>
@@ -61,21 +65,21 @@ export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
               aria-label={`Powiększ zdjęcie: ${image.alt}`}
               onClick={(event) => {
                 trigger.current = event.currentTarget
-                setIndex(i)
+                selectImage(i)
               }}
             >
               <FallbackImage
                 className="article-gallery__image"
                 src={image.src}
-                width={800}
-                height={600}
-                sizes="(max-width: 768px) 50vw, 33vw"
+                width={image.width || 800}
+                height={image.height || 600}
+                sizes={variant === 'cover' ? '(max-width: 1023px) calc(100vw - 32px), (max-width: 1440px) 40vw, 560px' : i === 0 ? '(max-width: 1023px) calc((100vw - 44px)/2), (max-width: 1440px) 32vw, 457px' : '(max-width: 1023px) calc((100vw - 44px)/2), (max-width: 1440px) 16vw, 223px'}
                 alt={image.alt}
               />
             </button>
-            {(image.caption || image.author) && (
+            {(image.caption || image.author || image.metadataMissing || variant === 'cover') && (
               <figcaption>
-                {image.caption}
+                {variant === 'cover' && <span>Powiększ okładkę · </span>}{image.metadataMissing && <span>Podgląd lokalny: opis i autor wymagają uzupełnienia. </span>}{image.caption}
                 {image.author && ` · Fot. ${image.author}`}
               </figcaption>
             )}
@@ -98,6 +102,7 @@ export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
                 start.current !== null &&
                 Math.abs(event.changedTouches[0].clientX - start.current) > 50
               )
+                setImageState('loading')
                 setIndex(
                   (value) =>
                     ((value || 0) +
@@ -114,34 +119,36 @@ export function ArticleImageCarousel({ images }: { images: ImageInfo[] }) {
               type="button"
               aria-label="Zamknij galerię"
             >
-              ×
+              <CloseIcon size={24} />
             </button>
             <button
               className="article-lightbox__prev"
-              onClick={() => setIndex(((index || 0) - 1 + images.length) % images.length)}
+              onClick={() => selectImage(((index || 0) - 1 + images.length) % images.length)}
               type="button"
               aria-label="Poprzednie zdjęcie"
             >
-              ←
+              <ArrowRightIcon size={24} className="icon-back" />
             </button>
             <figure className="article-lightbox__figure">
-              <img src={active.src} alt={active.alt} />
+              <p role="status" className="article-lightbox__status">{imageState === 'loading' ? 'Ładowanie zdjęcia…' : imageState === 'error' ? 'Nie udało się pobrać zdjęcia.' : ''}</p>
+              {imageState === 'error' && <button type="button" className="btn btn--secondary" onClick={() => { setImageState('loading'); setAttempt(attempt + 1) }}>Spróbuj ponownie</button>}
+              <img key={`${active.src}-${attempt}`} src={active.src} alt={active.alt} onLoad={() => setImageState('loaded')} onError={() => setImageState('error')} hidden={imageState === 'error'} />
               <figcaption>
                 {active.caption ? <span>{active.caption}</span> : null}
                 {active.author ? <span> · Fot. {active.author}</span> : null}
                 {active.caption || active.author ? <span> · </span> : null}
-                <span className="article-lightbox__counter">
+                <a href={active.src} target="_blank" rel="noopener noreferrer">Otwórz oryginał</a><span className="article-lightbox__counter">
                   {(index || 0) + 1} z {images.length}
                 </span>
               </figcaption>
             </figure>
             <button
               className="article-lightbox__next"
-              onClick={() => setIndex(((index || 0) + 1) % images.length)}
+              onClick={() => selectImage(((index || 0) + 1) % images.length)}
               type="button"
               aria-label="Następne zdjęcie"
             >
-              →
+              <ArrowRightIcon size={24} />
             </button>
           </div>,
           document.body

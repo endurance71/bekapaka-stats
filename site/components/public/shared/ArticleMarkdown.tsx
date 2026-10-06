@@ -375,21 +375,38 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
 
   const normalized = normalizeNewsMarkdown(content)
   const blocks = extractSemanticBlocks(normalized, contextTitle)
+  const navigation: Array<{ id: string; title: string }> = []
+  blocks.forEach((block, blockIndex) => {
+    if (block.type === 'gallery') {
+      if (mediaPreview || block.images.some(image => approvedMedia(mediaRecords, image.src))) navigation.push({ id: `gallery-${blockIndex}`, title: 'Galeria zdjęć' })
+    } else if (block.type === 'schedule') navigation.push({ id: `schedule-${blockIndex}`, title: block.title || 'Harmonogram' })
+    else if (block.type === 'tournament_groups') navigation.push({ id: `groups-${blockIndex}`, title: block.title || 'Grupy i klasyfikacja' })
+    else {
+      let fence: string | null = null
+      block.content.split('\n').forEach((line, lineIndex) => {
+        const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1]
+        if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return }
+        const heading = !fence && line.match(/^#{2,3}\s+(.+?)\s*#*$/)
+        if (heading) navigation.push({ id: `section-${blockIndex}-${lineIndex + 1}`, title: heading[1].replace(/[*_`]/g, '') })
+      })
+    }
+  })
 
   return (
     <div className='article-markdown'>
+      {navigation.length > 0 && (content.length > 2000 || navigation.length >= 3) && <nav className='article-toc' aria-label='Spis treści'><strong>W tym artykule</strong><ul>{navigation.map(item => <li key={item.id}><a href={`#${item.id}`}>{item.title}</a></li>)}</ul></nav>}
       {blocks.map((block, idx) => {
         if (block.type === 'gallery') {
           return (
-            <div key={idx} className='article-markdown__breakout'>
-              <ArticleImageCarousel images={block.images.flatMap(image => { const review = approvedMedia(mediaRecords, image.src); return review ? [{ ...image, alt: review.alt, caption: review.caption, author: review.author }] : mediaPreview ? [{ ...image, alt: isCameraOrUuidFilename(image.alt) ? '' : image.alt }] : [] })} />
+            <div key={idx} id={`gallery-${idx}`} className='article-markdown__breakout'>
+              <ArticleImageCarousel images={block.images.flatMap(image => { const review = approvedMedia(mediaRecords, image.src); return review ? [{ ...image, alt: review.alt, caption: review.caption, author: review.author }] : mediaPreview ? [{ ...image, alt: isCameraOrUuidFilename(image.alt) ? '' : image.alt, metadataMissing: true }] : [] })} />
             </div>
           )
         }
 
         if (block.type === 'schedule') {
           return (
-            <div key={idx} className='article-markdown__breakout'>
+            <div key={idx} id={`schedule-${idx}`} className='article-markdown__breakout'>
               <ScheduleTimeline items={block.items} title={block.title} />
             </div>
           )
@@ -397,7 +414,7 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
 
         if (block.type === 'tournament_groups') {
           return (
-            <div key={idx} className='article-markdown__breakout'>
+            <div key={idx} id={`groups-${idx}`} className='article-markdown__breakout'>
               <TournamentGroupsBoard groups={block.groups} title={block.title} />
             </div>
           )
@@ -408,8 +425,8 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
             key={idx}
             remarkPlugins={[remarkBindPolishOrphans]}
             components={{
-              h2: ({ children }) => <h2 className='article-markdown__h2'>{sentenceCaseHeading(children)}</h2>,
-              h3: ({ children }) => <h3 className='article-markdown__h3'>{sentenceCaseHeading(children)}</h3>,
+              h2: ({ children, node }) => <h2 id={`section-${idx}-${node?.position?.start.line}`} className='article-markdown__h2'>{sentenceCaseHeading(children)}</h2>,
+              h3: ({ children, node }) => <h3 id={`section-${idx}-${node?.position?.start.line}`} className='article-markdown__h3'>{sentenceCaseHeading(children)}</h3>,
               p: ({ children }) => {
                 const text = getChildrenText(children).replace(/\s+/g, ' ').trim()
                 const score = parseMatchScore(text)
@@ -452,7 +469,7 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
               li: ({ children }) => <li className='article-markdown__li'>{children}</li>,
               hr: () => <hr className='article-markdown__hr' />,
               a: ({ href, children }) => (
-                <a href={href} target='_blank' rel='noopener noreferrer' className='article-markdown__a'>
+                <a href={href} target={href?.startsWith('#') ? undefined : '_blank'} rel={href?.startsWith('#') ? undefined : 'noopener noreferrer'} className='article-markdown__a'>
                   {children}
                 </a>
               ),

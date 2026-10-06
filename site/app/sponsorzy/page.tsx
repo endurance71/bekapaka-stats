@@ -1,3 +1,4 @@
+import { siteSettings } from '../../lib/site-settings'
 import type { Metadata } from 'next'
 import { PartnersGrid } from '../../components/public/sponsors/PartnersGrid'
 import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
@@ -38,14 +39,13 @@ export default async function SponsorsPage() {
             <span className="label accent">Współpraca</span>
             <h2 id="sponsors-coop-title" className="sponsors-cooperation-card__title">Zostań partnerem BeKaPaKa</h2>
             <p className="sponsors-cooperation-card__desc">
-              Wspieraj rozwój koszykówki w Bobolicach, turnieje młodzieżowe i naszą drużynę w KALK.
-              Oferujemy ekspozycję na strojach, materiałach klubowych i podczas wydarzeń w hali CESiR.
+              Chcesz porozmawiać o współpracy z BeKaPaKa? Napisz do nas, aby wspólnie ustalić jej zakres i warunki.
             </p>
             <div className="sponsors-cooperation-card__actions">
-              <a className="btn btn--primary" href="mailto:kontakt@damianmotylinski.pl?subject=Wsp%C3%B3%C5%82praca%20partnerska%20z%20BeKaPaKa">
+              <a className="btn btn--primary" href={`mailto:${siteSettings.contactEmail}?subject=${encodeURIComponent('Współpraca partnerska z BeKaPaKa')}`}>
                 Skontaktuj się w sprawie współpracy →
               </a>
-              <span className="muted text-sm">kontakt@damianmotylinski.pl</span>
+              <span className="muted text-sm">{siteSettings.contactEmail}</span>
             </div>
           </div>
         </section>
