@@ -9,7 +9,7 @@ export function DataStateNotice({
   source: DataStateSource
   message?: string
 }) {
-  if (status === 'ok' && source === 'live') return null
+  if ((status === 'ok' || status === 'empty') && source === 'live') return null
 
   if (source === 'fallback') {
     return (
@@ -22,9 +22,8 @@ export function DataStateNotice({
 
   if (status === 'error') {
     return (
-      <div className='data-state-notice data-state-notice--error' role='status' aria-live='polite'>
-        <strong>Uwaga:</strong> nie udało się pobrać danych z źródła.
-        {message ? <span> {message}</span> : null}
+      <div className='data-state-notice data-state-notice--error' role='alert'>
+        <strong>Nie udało się pobrać danych.</strong> Odśwież stronę lub spróbuj ponownie za chwilę.
       </div>
     )
   }

@@ -1,0 +1,42 @@
+[
+  {
+    "path": "site/app/mecze/MatchDrawerContent.tsx",
+    "sha256": "e083a632d571fc300f7c0e373e5d9b79184c90b9e95b8f8d7512a2bd7d8345e9"
+  },
+  {
+    "path": "site/app/mecze/MatchesList.tsx",
+    "sha256": "af44f6c5955715a9617198e4b07a1aa0833defcfa19813a7616098fb8769589c"
+  },
+  {
+    "path": "site/app/aktualnosci/[slug]/page.tsx",
+    "sha256": "96ce47398f1429b19eaf1e09c2b9f2a1b7353c82179f0947c38a842fa924f8cb"
+  },
+  {
+    "path": "site/app/styles/digital.css",
+    "sha256": "8f082a44cae235a90f5e876d49990b5941ff0216ac51ed9aac0fcaf428a40e70"
+  },
+  {
+    "path": "site/components/public/shared/ArticleImageCarousel.tsx",
+    "sha256": "c03af6eabfe2af62386d378de1b7bb3343738a080435f9a81f3ff56f8d210398"
+  },
+  {
+    "path": "site/components/public/shared/PlayerProfile.tsx",
+    "sha256": "9cbaefa84b2fc79c86ff0e11b1554eff0178589056795ecad2a6319fe7f608fe"
+  },
+  {
+    "path": "site/app/klub/page.tsx",
+    "sha256": "1ec5d5f3c2adedf6f20c4cd7aa3ae54cac05d8ba90f43f173b77b058e0a5d493"
+  },
+  {
+    "path": "site/app/sponsorzy/page.tsx",
+    "sha256": "2264ecc9d74da6f93486da8ee2b233f8623f8cfe7f2b52a441037ce80cd9971d"
+  },
+  {
+    "path": "site/app/tabela/page.tsx",
+    "sha256": "de3116b8b1149766f07fd7551401060aee7472c27833e2710b0f00eb3f7edadc"
+  },
+  {
+    "path": "site/lib/data/player-identity.ts",
+    "sha256": "38b2373e74a433c889f72d1f716136a98f31980c437870c73c18d2dadb2264f8"
+  }
+]

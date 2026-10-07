@@ -1,0 +1,220 @@
+{
+  "researchedAt": "2026-10-06",
+  "scope": "Local preview only; 15 partners including ShipApp added at user request",
+  "partners": [
+    {
+      "id": "s-1",
+      "name": "Gmina Bobolice",
+      "asset": "/images/gmina-bobolice.svg",
+      "status": "retained-vector",
+      "sources": [
+        "https://bobolice.pl/cms/4857/herb_miasta",
+        "https://commons.wikimedia.org/wiki/File:POL_Bobolice_COA.svg"
+      ],
+      "note": "Istniejący wektor zachowany; miejskie rastry nie zapewniają lepszej jakości.",
+      "bytes": 100577,
+      "sha256": "1e8756e60d31fe6504b9d688772e2fa254a054e282349b47b26bafa7d9c3ee93",
+      "format": "svg",
+      "dimensions": "747.61395 × 872.13623"
+    },
+    {
+      "id": "s-2",
+      "name": "Majster Plus Koszalin",
+      "asset": "/images/partners/majster-official.svg",
+      "status": "upgraded-official-vector",
+      "sources": [
+        "https://koszalin.majsterplus.com/"
+      ],
+      "note": "SVG z nagłówka oficjalnej witryny sklepu. Dodano wyłącznie xmlns dla samodzielnego pliku; bez zmiany ścieżek i kolorów.",
+      "bytes": 20253,
+      "sha256": "efcbed8b5b05faa0a8458316a849979797cae1e8aba00439470064a604ceaf8d",
+      "format": "svg",
+      "dimensions": "0 0 430.09 107.52"
+    },
+    {
+      "id": "s-3",
+      "name": "Fem-Tech Tychowo",
+      "asset": "/images/partners/fem-tech.webp",
+      "status": "normalized-club-raster",
+      "sources": [
+        "https://sport.szczecinek.pl/dofinansowania.html",
+        "https://oneplace.marketplanet.pl/baza-firm/-/bc/company/91096/fem-tech-barbara-kawecka"
+      ],
+      "note": "Najlepszy dostępny klubowi raster 720×720; usunięto wyłącznie białe marginesy: crop (22,230,688,453), WebP lossless bez upscalingu. Nie znaleziono potwierdzonego publicznego SVG.",
+      "bytes": 31650,
+      "sha256": "d5478e7509be772f79199c040ef977a449d4c2aa83d27e3a05d007aa2f84582c",
+      "format": "webp",
+      "dimensions": [
+        666,
+        223
+      ]
+    },
+    {
+      "id": "s-4",
+      "name": "Contema Bobolice",
+      "asset": "/images/partners/contema.png",
+      "status": "added-club-raster",
+      "sources": [
+        "http://www.contema.eu/",
+        "https://www.contema.eu/kontakt.htm"
+      ],
+      "note": "Logo z dostarczonego materiału marki: 02_system/partnerzy/logo-raster/logo-00.png. Oficjalny plik logo01.jpg to baner fotograficzny, a sam znak w nim jest mniejszy i na kolorowym tle; odrzucony jako gorszy.",
+      "bytes": 44710,
+      "sha256": "c9cafb0f6085bf7b54079cc25be212abebc17ead16c72512ced38b1ad7be998d",
+      "format": "png",
+      "dimensions": [
+        371,
+        98
+      ]
+    },
+    {
+      "id": "s-5",
+      "name": "CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak",
+      "asset": "/images/partners/certe-wordmark.png",
+      "status": "added-club-wordmark",
+      "sources": [
+        "https://certe.com.pl/"
+      ],
+      "note": "Z materiału marki logo-09.png pozostawiono tylko znak CERTE: crop (0,0,216,57), bez przerysowania. Stary podpis Ireneusz i adres nie są prezentowane. Aktualna oficjalna witryna używa tekstu, bez pliku logotypu. Raster do wymiany po otrzymaniu oryginału od kancelarii.",
+      "bytes": 15995,
+      "sha256": "5819ffc7876a1a9898fb7d95a125d460d7c7041165cf68ef4bca145d388594c8",
+      "format": "png",
+      "dimensions": [
+        216,
+        57
+      ]
+    },
+    {
+      "id": "s-6",
+      "name": "PST Sped-Trans Bobolice",
+      "asset": null,
+      "status": "unresolved-name-only",
+      "sources": [
+        "https://rowery.wzp.pl/9247-pomorze-zachodnie-i-turniej-4-miast-o-puchar-burmistrza-bobolic",
+        "https://rejestr.io/krs/616209/przedsiebiorstwo-spedycyjno-transportowe-sped-trans"
+      ],
+      "note": "Zbadano Bobolice/Chociwle, warianty PST i nazwisko Okupski. Potwierdzono podmiot i współpracę, nie znaleziono autorytatywnego pliku logo. Odrzucono inne firmy Sped-Trans."
+    },
+    {
+      "id": "s-7",
+      "name": "Nadleśnictwo Bobolice, Lasy Państwowe",
+      "asset": "/images/partners/lasy-vector.svg",
+      "status": "added-official-vector",
+      "sources": [
+        "https://bobolice.szczecinek.lasy.gov.pl/",
+        "https://www.lasy.gov.pl/pl/dla-mediow/logotypy-lp",
+        "https://www.lasy.gov.pl/pl/dla-mediow/logotypy-lp/lp_logo_pl_c1.eps"
+      ],
+      "note": "Oficjalny EPS C1, konwersja EPS → PDF → SVG, geometria i kolory zachowane, litery jako ścieżki. Porównano A1/B1/C1; pionowy C1 czytelniejszy w kaflu. Znak ogólny LP, pełna nazwa nadleśnictwa w etykiecie.",
+      "bytes": 40584,
+      "sha256": "4266d20af01ce10d1032248436f8093f6acde38c8650edfcf695ef00dddedbc8",
+      "format": "svg",
+      "dimensions": "0 0 98.73 55.94"
+    },
+    {
+      "id": "s-8",
+      "name": "ALAB laboratoria",
+      "asset": "/images/partners/alab-official.svg",
+      "status": "added-official-vector",
+      "sources": [
+        "https://www.alab.pl/"
+      ],
+      "note": "Oryginalny inline SVG oficjalnego nagłówka, zachowane kolory oraz ścieżki. Żadnych zależności od zewnętrznych fontów.",
+      "bytes": 4673,
+      "sha256": "101bb2a1300e60d4147685b6be3d7957c5e856a7ab614fdb80ac79c72c96588b",
+      "format": "svg",
+      "dimensions": "0 0 165.8 26.4"
+    },
+    {
+      "id": "s-9",
+      "name": "Piotr Adamus",
+      "asset": null,
+      "status": "unresolved-name-only",
+      "sources": [
+        "https://bobolice.pl/cms/5144"
+      ],
+      "note": "Partner zapisany imieniem i nazwiskiem. Nie potwierdzono własnego znaku ani powiązania z konkretnym logotypem usług muzycznych; nie użyto herbu gminy jako jego logo."
+    },
+    {
+      "id": "s-10",
+      "name": "„Skup aut i Auto laweta” Remek Klimek",
+      "asset": null,
+      "status": "unresolved-name-only",
+      "sources": [
+        "https://www.orlymotoryzacji.pl/profile-1852024-skup-aut-autolaweta-auto-handel-remigiusz-klimek",
+        "https://rowery.wzp.pl/9247-pomorze-zachodnie-i-turniej-4-miast-o-puchar-burmistrza-bobolic"
+      ],
+      "note": "Zbadano Remigiusz/Remek Klimek, Skup Aut, Autolaweta i RK-TRANS. Brak potwierdzonego pliku logo. Odrzucono klubowy logo-04.png: POM-PUI, K. Błażejak — inny podmiot, zgodnie z uwagą w materiałach marki."
+    },
+    {
+      "id": "s-11",
+      "name": "CESIR Bobolice",
+      "asset": "/images/partners/cesir.webp",
+      "status": "added-official-raster",
+      "sources": [
+        "https://hala.spbobolice.pl/",
+        "https://hala.spbobolice.pl/wp-content/uploads/2018/05/logo.png"
+      ],
+      "note": "Oryginalny PNG 3333×1592 z nagłówka działającej oficjalnej witryny. Dla WWW zmniejszony do 1200×573, Lanczos, WebP lossless, oryginał zachowany. Stary cesir.bobolice.pl nie rozwiązywał DNS. Odrzucono logo CESiR Warka.",
+      "bytes": 130142,
+      "sha256": "e7c7ebc659db0ef772238d322a9ef4735d07813f05cd4c54dcb6401122720ae4",
+      "format": "webp",
+      "dimensions": [
+        1200,
+        573
+      ]
+    },
+    {
+      "id": "s-12",
+      "name": "Emil Jaświg",
+      "asset": null,
+      "status": "unresolved-name-only",
+      "sources": [
+        "https://powiat.koszalin.pl/wp-content/uploads/2020/05/gaz-ziemska-10-2019-int.pdf"
+      ],
+      "note": "Potwierdzono firmę Auto-Części i Oleje w Bobolicach w źródle samorządowym. Wyszukiwanie imienia/nazwiska i pełnej nazwy nie przyniosło potwierdzonego logotypu; pozostaje osobowa nazwa partnera."
+    },
+    {
+      "id": "s-13",
+      "name": "Baumal e-hurtowniabudowlana.pl",
+      "asset": "/images/partners/baumal-vector.svg",
+      "status": "upgraded-club-vector",
+      "sources": [
+        "https://e-hurtowniabudowlana.pl/"
+      ],
+      "note": "Oryginał klubowy Sponsorzy/baumal.eps, porównany z oficjalną stroną. Konwersja EPS → PDF → SVG, bez wektoryzacji rastra, bez fontów i obrazów; zastępuje PNG 1767×604.",
+      "bytes": 23012,
+      "sha256": "1f3826b99cdcd1886919530530b9189bee37ec75b9267c808c8d0f8cbf2e92de",
+      "format": "svg",
+      "dimensions": "0 0 424 145"
+    },
+    {
+      "id": "s-14",
+      "name": "Insight Data Consulting Izabela Kaszubowska",
+      "asset": null,
+      "status": "unresolved-name-only",
+      "sources": [
+        "https://www.oferteo.pl/insight-data-consulting-izabela-kaszubowska/firma/6139645"
+      ],
+      "note": "Sprawdzono dokładną nazwę i profil firmy Bobolice/Głodowa. Profil nie ma własnego logo (awatar literowy). Nie użyto znaków zagranicznych firm o podobnej nazwie ani grafiki portalu."
+    },
+    {
+      "id": "s-15",
+      "name": "ShipApp",
+      "asset": "/images/partners/shipapp.png",
+      "status": "added-club-original",
+      "sources": [
+        "BeKaPaKa - brand/02_system/partnerzy/partnerzy.json",
+        "BeKaPaKa - brand/02_system/partnerzy/logo-raster/logo-10.png"
+      ],
+      "note": "Dodany po wskazaniu pominięcia przez użytkownika. Oryginalny PNG z systemu partnerów marki, bez skalowania ani przerysowania. Osobno zachowane Powered by w stopce.",
+      "bytes": 133035,
+      "sha256": "e898266ae3c80ba082920848e3263f9809537560524b11979f5b682340a239da",
+      "format": "png",
+      "dimensions": [
+        1884,
+        366
+      ]
+    }
+  ]
+}

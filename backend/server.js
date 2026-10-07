@@ -1,3 +1,6 @@
+import { leagueMetadata } from './leagueMetadata.js';
+import { Prisma } from '@prisma/client';
+import { updateMatchPresentation, invalidateMatchPages } from './matchPresentation.js';
 import express from 'express';
 import { createStudioRouter } from './studio/routes.js';
 import cors from 'cors';
@@ -263,6 +266,18 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
     res.json(game);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania meczu' });
+  }
+});
+
+app.patch('/api/admin/matches/:source/:seasonId/:id/presentation', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await updateMatchPresentation({ game: prisma.game, kalkMatch: prisma.kalkMatch, jsonNull: Prisma.DbNull }, { ...req.params, presentation: req.body.presentation });
+    if (!result) return res.status(404).json({ error: 'Nie znaleziono meczu w tym sezonie' });
+    let revalidated = false;
+    try { revalidated = await invalidateMatchPages(); } catch (error) { revalidated = false; console.error(error.message); }
+    return res.json({ presentation: result.presentation, updatedAt: result.presentationUpdatedAt, revalidated });
+  } catch (error) {
+    return res.status(error.code ? 500 : 400).json({ error: error.code ? 'Nie udało się zapisać prezentacji' : error.message });
   }
 });
 
@@ -1111,7 +1126,10 @@ app.delete(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requ
 app.get(['/api/plays', '/plays'], authenticateToken, async (req, res) => res.json(await listAllPlays(req.query.category)));
 app.get(['/api/league/table', '/league/table'], async (req, res) => {
   const phase = req.query.phase || 'regular';
-  res.json(await getLeagueTable(phase, req.query.seasonId));
+  const rows = await getLeagueTable(phase, req.query.seasonId);
+  if (req.query.includeMeta !== '1') return res.json(rows);
+  const season = req.query.seasonId ? await getSeasonById(req.query.seasonId) : await getActiveSeason();
+  res.json({ data: rows, meta: leagueMetadata(season, rows) });
 });
 app.get(['/api/league/schedule', '/league/schedule'], async (req, res) => {
   res.json(await getLeagueSchedule(req.query.seasonId));

@@ -1,0 +1,16 @@
+{
+  "date": "2026-10-06",
+  "reference": "/Volumes/External-drive-lexar/Dev/Projects/BeKaPaKa - stats/docs/qa/ui-audit-2026-10-06/RAPORT-UI-UX.md",
+  "total": 34,
+  "closed": 5,
+  "partial": 20,
+  "open": 9,
+  "production": "Publiczna homepage pokazuje poprzedni interfejs; brak odbioru wdrożenia 2.0.",
+  "tests": {
+    "site": 134,
+    "backendPassed": 94,
+    "backendSkipped": 13,
+    "frontend": 6
+  },
+  "productCodeChangedDuringAudit": false
+}

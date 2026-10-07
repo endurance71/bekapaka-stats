@@ -1,0 +1,13 @@
+npm notice run bekapaka-frontend@0.1.0 npx
+npm notice run 'vitest' run
+
+ RUN  v4.1.11 /Volumes/External-drive-lexar/Dev/Projects/BeKaPaKa - stats/frontend
+
+Not implemented: Window's scrollTo() method
+Not implemented: Window's scrollTo() method
+
+ Test Files  3 passed (3)
+      Tests  6 passed (6)
+   Start at  20:11:12
+   Duration  1.28s (transform 242ms, setup 180ms, import 886ms, tests 86ms, environment 1.54s)
+

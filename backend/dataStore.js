@@ -438,6 +438,8 @@ export async function getRoster(querySeasonId = undefined) {
       threePm,
       ftm,
 
+      seasonId: targetSeason?.id,
+      seasonLabel: targetSeason?.label,
       // Game Log
       games: playerGames,
 

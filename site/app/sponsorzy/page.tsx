@@ -1,16 +1,17 @@
+import { siteSettings } from '../../lib/site-settings'
 import type { Metadata } from 'next'
-import { SponsorLogoFrame } from '../../components/public/sponsors/SponsorLogoFrame'
-import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { PartnersGrid } from '../../components/public/sponsors/PartnersGrid'
+import { ListingTemplate } from '../../components/public/templates/ListingTemplate'
 import {
   getSiteMetadataBase,
-  getSponsorsState,
-  type SponsorItem
+  getSponsorsState
 } from '../../lib/data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/sponsorzy' },
   title: 'Sponsorzy | BeKaPaKa Bobolice',
   description: 'Poznaj sponsorów wspierających BeKaPaKa Bobolice.'
 }
@@ -19,90 +20,39 @@ export default async function SponsorsPage() {
   const sponsorsState = await getSponsorsState(60)
   const sponsors = [...sponsorsState.data].sort((a, b) => (a.order || 999) - (b.order || 999))
 
+  const mailto = `mailto:${siteSettings.contactEmail}?subject=${encodeURIComponent('Współpraca partnerska z BeKaPaKa')}`
+
   return (
-    <EditorialListingTemplate
-      title='Sponsorzy'
-      description='Dziękujemy firmom i osobom wspierającym rozwój klubu.'
+    <ListingTemplate
+      theme='papier'
+      kicker='Kto nas wspiera?'
+      title='Partnerzy klubu'
+      lead='Firmy, instytucje i osoby, dzięki którym gramy w lidze KALK i organizujemy turnieje w Bobolicach. Dziękujemy.'
       hasItems={sponsors.length > 0}
       stateStatus={sponsorsState.status}
       stateSource={sponsorsState.source}
       stateMessage={sponsorsState.message}
-      emptyTitle='Brak sponsorów'
-      emptyDescription='Lista sponsorów jest aktualnie pusta.'
+      emptyTitle='Brak partnerów'
+      emptyDescription='Lista partnerów jest aktualnie pusta.'
     >
-      <div className='sponsors-logo-grid'>
-        {sponsors.map((sponsor) => (
-          <SponsorCard key={sponsor.id} sponsor={sponsor} />
-        ))}
-      </div>
-    </EditorialListingTemplate>
-  )
-}
-
-function SponsorCard({ sponsor }: { sponsor: SponsorItem }) {
-  const isLink = !!sponsor.websiteUrl
-  const initials = sponsor.name.slice(0, 2).toUpperCase()
-
-  const cardContent = (
-    <>
-      {sponsor.logoUrl ? (
-        <SponsorLogoFrame sponsor={sponsor} variant='card' />
-      ) : (
-        <div
-          className='sponsor-card-premium__logo-container sponsor-card-premium__logo-container--monogram'
-          aria-hidden='true'
-        >
-          {initials}
+      <PartnersGrid sponsors={sponsors} />
+      <section id='wspolpraca' className='cooperation' aria-labelledby='h-cooperation'>
+        <div className='cooperation__text'>
+          <p className='kicker'>Współpraca</p>
+          <h2 id='h-cooperation' className='band-head__title'>Zostań partnerem BeKaPaKa</h2>
+          <p className='cooperation__lead'>
+            Twoja firma na parkiecie, na koszulkach i w relacjach z meczów. Napisz do nas — wspólnie ustalimy zakres i warunki współpracy.
+          </p>
         </div>
-      )}
-      <div className='sponsor-card-premium__content'>
-        <h3 className='sponsor-card-premium__name'>{sponsor.name}</h3>
-      </div>
-      <div className='sponsor-card-premium__footer'>
-        <span
-          className={`sponsor-card-premium__btn${
-            sponsor.websiteUrl ? '' : ' sponsor-card-premium__btn--placeholder'
-          }`}
-          aria-hidden={sponsor.websiteUrl ? undefined : true}
-        >
-          Strona
-          <svg
-            width='12'
-            height='12'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            aria-hidden='true'
-          >
-            <path d='M7 17L17 7M17 7H7M17 7V17' />
-          </svg>
-        </span>
-      </div>
-    </>
-  )
-
-  if (isLink) {
-    return (
-      <a
-        id={`sponsor-link-${sponsor.id}`}
-        href={sponsor.websiteUrl}
-        target='_blank'
-        rel='noreferrer'
-        className='sponsor-card-premium'
-      >
-        {cardContent}
-      </a>
-    )
-  }
-
-  return (
-    <div id={`sponsor-card-${sponsor.id}`} className='sponsor-card-premium'>
-      {cardContent}
-    </div>
+        <div className='cooperation__action'>
+          <a className='btn btn--primary' href={mailto}>
+            Napisz w sprawie współpracy
+          </a>
+          <a className='cooperation__email' href={mailto}>
+            {siteSettings.contactEmail}
+          </a>
+        </div>
+      </section>
+    </ListingTemplate>
   )
 }
-
-

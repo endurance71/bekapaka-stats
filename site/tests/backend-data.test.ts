@@ -26,3 +26,40 @@ describe('public league table data', () => {
     expect(options.next?.revalidate).toBeLessThanOrEqual(60)
   })
 })
+
+// Exercise the actual API mapper, including the separate CMS media request.
+describe('optional public roster statistics', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('retains missing measurements, recorded zeros, season metadata and numeric jersey provenance', async () => {
+    const { getRosterState } = await import('../lib/data/backend')
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(
+      url.includes('/api/roster') ? [{
+        id: 'test', firstName: 'Jan', lastName: 'Testowy', number: 12,
+        seasonId: '2026', seasonLabel: '2026/2027',
+        ppg: null, rpg: 0, apg: '0', eval: 'brak', gamesPlayed: null,
+        fgPercentage: '', fgm: '0', fga: '3', threePa: '3 rzuty',
+        ftm: null, fta: 0, heightCm: null
+      }] : { data: [] }
+    ), { status: 200 })))
+    const state = await getRosterState()
+    expect(state.status).toBe('ok')
+    expect(state.data).toHaveLength(1)
+    expect(state.data[0]).toMatchObject({
+      seasonId: '2026', seasonLabel: '2026/2027', number: '12', numberSource: 'source',
+      rpg: 0, apg: 0, fgm: 0, fga: 3, fta: 0, eval: null, heightCm: null
+    })
+    for (const key of ['ppg', 'gamesPlayed', 'fgPercentage', 'threePa', 'ftm'] as const) {
+      expect(state.data[0][key]).toBeUndefined()
+    }
+  })
+
+  it('marks an unknown jersey as unknown rather than claiming a club source', async () => {
+    const { getRosterState } = await import('../lib/data/backend')
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => new Response(JSON.stringify(
+      url.includes('/api/roster') ? [{ id: 'test', firstName: 'Jan', lastName: 'Testowy', number: '-' }] : { data: [] }
+    ), { status: 200 })))
+    const state = await getRosterState()
+    expect(state.data[0].numberSource).toBe('unknown')
+  })
+})

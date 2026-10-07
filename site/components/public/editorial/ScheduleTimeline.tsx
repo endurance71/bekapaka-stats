@@ -17,7 +17,7 @@ export function ScheduleTimeline({ items, title }: ScheduleTimelineProps) {
   return (
     <section className='schedule-timeline' aria-label={title || 'Harmonogram godzinowy'}>
       {title ? <h3 className='schedule-timeline__title'>{title}</h3> : null}
-      <ol className='schedule-timeline__list'>
+      <ol className='schedule-timeline__list zebra-list'>
         {items.map((item, idx) => {
           const isHighlight =
             item.isHighlight ||

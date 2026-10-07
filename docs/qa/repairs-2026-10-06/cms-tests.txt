@@ -1,0 +1,73 @@
+npm notice run cms-app@0.1.0 test
+npm notice run node --test tests/**/*.test.js
+TAP version 13
+# Subtest: HEIC pipeline test suite
+    # Subtest: 1. HEIC landscape conversion
+    ok 1 - 1. HEIC landscape conversion
+      ---
+      duration_ms: 833.73025
+      type: 'test'
+      ...
+    # Subtest: 2. HEIC portrait conversion with EXIF orientation
+    ok 2 - 2. HEIC portrait conversion with EXIF orientation
+      ---
+      duration_ms: 714.98475
+      type: 'test'
+      ...
+# [media] HEIC detected: IMG_1764.HEIC
+# [media] converted: IMG_1764.jpg
+# [media] original: 2.78 MB
+# [media] result: 0.64 MB
+# [media] dimensions: 5712x4284 -> 2400x1800
+    # Subtest: 3. convertUploadedFileIfHeic handles uploaded file object
+    ok 3 - 3. convertUploadedFileIfHeic handles uploaded file object
+      ---
+      duration_ms: 719.134291
+      type: 'test'
+      ...
+    # Subtest: 4. Existing JPEG is not converted by HEIC converter
+    ok 4 - 4. Existing JPEG is not converted by HEIC converter
+      ---
+      duration_ms: 2.210542
+      type: 'test'
+      ...
+    # Subtest: 5. PNG with alpha is preserved and not converted
+    ok 5 - 5. PNG with alpha is preserved and not converted
+      ---
+      duration_ms: 1.934709
+      type: 'test'
+      ...
+    # Subtest: 6. Small image is not upscaled
+    ok 6 - 6. Small image is not upscaled
+      ---
+      duration_ms: 6.634333
+      type: 'test'
+      ...
+# [media] Failed to convert HEIC corrupt.heic: No working HEIC decoder available or file decoding failed
+    # Subtest: 7. Invalid HEIC throws controlled Polish error
+    ok 7 - 7. Invalid HEIC throws controlled Polish error
+      ---
+      duration_ms: 29.777542
+      type: 'test'
+      ...
+    # Subtest: 8. Oversized file exceeds MAX_FILE_SIZE limit
+    ok 8 - 8. Oversized file exceeds MAX_FILE_SIZE limit
+      ---
+      duration_ms: 0.340833
+      type: 'test'
+      ...
+    1..8
+ok 1 - HEIC pipeline test suite
+  ---
+  duration_ms: 2311.075042
+  type: 'test'
+  ...
+1..1
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2599.203792

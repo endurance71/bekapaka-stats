@@ -1,3 +1,4 @@
+import { getMediaRecords, approvedMedia, isLocalMediaPreview } from './media-review'
 import { cmsHeaders, cmsPath, fetchJsonState, toAbsoluteCmsUrl } from './client'
 import { resolveFallbackState } from './fallback'
 import {
@@ -208,8 +209,8 @@ const fallbackEvents: EventItem[] = [
   },
   {
     id: 'fe-2',
-    title: 'Trening otwarty dla młodzieży z Bobolic',
-    slug: 'trening-otwarty-mlodziez',
+    title: 'Trening otwarty BeKaPaKa Bobolice',
+    slug: 'trening-otwarty-bekapaka',
     type: 'other',
     description: 'Chcesz spróbować swoich sił na parkiecie? Przyjdź na nasz otwarty trening prowadzony przez zawodników pierwszego składu!',
     location: 'Hala CESIR Bobolice, ul. Głowackiego 1',
@@ -279,7 +280,7 @@ function resolveNewsDate(item: Record<string, unknown>): string {
 export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: boolean; start?: number }): Promise<DataState<NewsPost[]>> {
   try {
     const includeDrafts = Boolean(options?.includeDrafts)
-    const statusQuery = includeDrafts ? '&status=draft' : ''
+    const statusQuery = includeDrafts ? '&status=draft' : '&status=published'
     const startQuery = options?.start && options.start > 0 ? `&pagination[start]=${Math.floor(options.start)}` : ''
     const response = await fetchJsonState<unknown>(
       cmsPath(
@@ -295,31 +296,31 @@ export async function getNewsPostsState(limit = 6, options?: { includeDrafts?: b
       return resolveFallbackState('error', fallbackNews.slice(0, limit), [], response.message)
     }
 
+    const mediaRecords = await getMediaRecords()
     const mapped = toNormalizedArray(response.payload).map((item, index) => {
       const title = sanitizeText(item.title, 'Bez tytulu')
       const content = sanitizeText(item.content, '')
       const excerptRaw = sanitizeText(item.excerpt, sanitizeText(item.description, ''))
-      const coverImage = mapMediaImage(item.coverImage)
+      const rawCover = mapMediaImage(item.coverImage)
+      const review = approvedMedia(mediaRecords, rawCover.url)
+      const coverImage = review || isLocalMediaPreview() ? rawCover : {} as ReturnType<typeof mapMediaImage>
       const tags = mapNewsTags(item.tags)
       const explicitImageFit = item.imageFit === 'cover' || item.imageFit === 'contain' ? item.imageFit : undefined
-      const inferredImageFit = explicitImageFit || (
-        coverImage.width && coverImage.height
-          ? coverImage.width / coverImage.height >= 1.15 ? 'cover' : 'contain'
-          : undefined
-      )
       return {
         id: sanitizeText(item.id, String(index)),
         title,
         slug: resolveNewsSlug(sanitizeText(item.slug, ''), title, index),
         excerpt: excerptRaw || excerptFromContent(content),
         content,
+        mediaRecords, mediaPreview: isLocalMediaPreview(), coverImageAlt: review?.alt || String(getSingleMediaRecord(item.coverImage)?.alternativeText || ''),
         publishedAt: resolveNewsDate(item),
         ...(sanitizeText(item.updatedAt, '') ? { updatedAt: sanitizeText(item.updatedAt, '') } : {}),
         ...(sanitizeText(item.type, sanitizeText(item.category, '')) ? { type: sanitizeText(item.type, sanitizeText(item.category, '')) } : {}),
         ...(sanitizeText(item.author, sanitizeText(item.authorName, '')) ? { author: sanitizeText(item.author, sanitizeText(item.authorName, '')) } : {}),
         ...(tags ? { tags } : {}),
         ...(typeof item.isPinned === 'boolean' ? { isPinned: item.isPinned } : {}),
-        ...(inferredImageFit ? { imageFit: inferredImageFit } : {}),
+        ...(explicitImageFit ? { imageFit: explicitImageFit } : {}),
+        ...(typeof item.eventDate === 'string' && Number.isFinite(Date.parse(item.eventDate)) ? { eventDate: item.eventDate } : {}),
         ...(coverImage.url ? { coverImageUrl: coverImage.url } : {}),
         ...(coverImage.sources ? { coverImageSources: coverImage.sources } : {}),
         ...(coverImage.width ? { coverImageWidth: coverImage.width } : {}),
@@ -350,10 +351,10 @@ export async function getEvents(limit = 6): Promise<EventItem[]> {
   return state.data
 }
 
-export async function getEventsState(limit = 6): Promise<DataState<EventItem[]>> {
+export async function getEventsState(limit = 6, start = 0): Promise<DataState<EventItem[]>> {
   try {
     const response = await fetchJsonState<unknown>(
-      cmsPath(`/api/events?sort=startAt:asc&pagination[limit]=${limit}`),
+      cmsPath(`/api/events?sort=startAt:asc&status=published&pagination[limit]=${limit}&pagination[start]=${start}`),
       { headers: cmsHeaders(), revalidate: 60, tags: ['cms', 'cms-events'] }
     )
     if (response.status === 'error') {
@@ -388,10 +389,10 @@ export async function getDocuments(limit = 20): Promise<DocumentItem[]> {
   return state.data
 }
 
-export async function getDocumentsState(limit = 20): Promise<DataState<DocumentItem[]>> {
+export async function getDocumentsState(limit = 20, start = 0): Promise<DataState<DocumentItem[]>> {
   try {
     const response = await fetchJsonState<unknown>(
-      cmsPath(`/api/documents?sort=effectiveDate:desc&pagination[limit]=${limit}`),
+      cmsPath(`/api/documents?sort=effectiveDate:desc&status=published&pagination[limit]=${limit}&pagination[start]=${start}`),
       { headers: cmsHeaders(), revalidate: 600, tags: ['cms', 'cms-documents'] }
     )
     if (response.status === 'error') {
@@ -454,4 +455,23 @@ export async function getHomepageSectionsState(): Promise<DataState<HomepageSect
   } catch {
     return resolveFallbackState('error', fallbackHomepageSections, [], 'Nie udało się pobrać sekcji homepage z CMS.')
   }
+}
+
+/** Published pagination; also used by detail resolution and sitemap. */
+export async function getAllNewsPosts(options?: { includeDrafts?: boolean }) {
+ const items: NewsPost[] = []
+ for (let start = 0; ; start += 100) {
+  const state = await getNewsPostsState(100, { ...options, start })
+  if (state.status === 'error') break
+  items.push(...state.data)
+  if (state.data.length < 100) break
+ }
+ return items
+}
+
+export async function getAllEvents() {
+ const items: EventItem[] = []; for(let start=0;;start+=100) { const state=await getEventsState(100,start); if(state.status === 'error') break; items.push(...state.data); if(state.data.length<100) break } return items
+}
+export async function getAllDocuments() {
+ const items: DocumentItem[] = []; for(let start=0;;start+=100) { const state=await getDocumentsState(100,start); if(state.status === 'error') break; items.push(...state.data); if(state.data.length<100) break } return items
 }

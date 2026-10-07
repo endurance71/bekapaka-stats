@@ -1,53 +1,41 @@
 import Link from 'next/link'
 import type { NewsPost } from '../../../lib/data'
-import { formatDateTime } from '../../../lib/format'
+import { formatDate } from '../../../lib/format'
+import { bindPolishOrphans } from '../../../lib/typography'
 
-function RelationLink({ item }: { item: NewsPost }) {
+function RelationLink({ item, label }: { item: NewsPost; label?: string }) {
   return (
-    <Link href={`/aktualnosci/${item.slug}`} className='article-relations__link'>
-      <span className='article-relations__date'>{formatDateTime(item.publishedAt)}</span>
-      <span className='article-relations__title'>{item.title}</span>
+    <Link href={`/aktualnosci/${item.slug}`} className="relation">
+      <span className="relation__meta">{label ?? formatDate(item.publishedAt)}</span>
+      <span className="relation__title">{bindPolishOrphans(item.title)}</span>
     </Link>
   )
 }
 
-export function ArticleRelations({
-  related,
-  previous,
-  next
-}: {
-  related: NewsPost[]
-  previous?: NewsPost
-  next?: NewsPost
-}) {
-  if (related.length === 0 && !previous && !next) return null
+/** Kolumna boczna artykułu: nowszy / starszy, potem najnowsze — lista z liniami, bez kart. */
+export function ArticleRelations({ previous, next, latest = [] }: { previous?: NewsPost; next?: NewsPost; latest?: NewsPost[] }) {
+  if (!previous && !next && latest.length === 0) return null
 
   return (
-    <aside className='article-relations' aria-label='Powiązane artykuły'>
-      {related.length > 0 ? (
-        <section className='article-relations__related'>
-          <h2>Powiązane artykuły</h2>
-          <div className='article-relations__grid'>
-            {related.map((item) => <RelationLink key={item.id} item={item} />)}
-          </div>
-        </section>
-      ) : null}
-      {previous || next ? (
-        <nav className='article-relations__pager' aria-label='Nawigacja między artykułami'>
-          {previous ? (
-            <div className='article-relations__pager-item'>
-              <span>Poprzedni artykuł</span>
-              <RelationLink item={previous} />
-            </div>
-          ) : <span />}
-          {next ? (
-            <div className='article-relations__pager-item'>
-              <span>Następny artykuł</span>
-              <RelationLink item={next} />
-            </div>
-          ) : <span />}
-        </nav>
-      ) : null}
-    </aside>
+    <nav className="relations" aria-label="Czytaj dalej">
+      <p className="t-label muted">Czytaj dalej</p>
+      <ul className="rule-list" role="list">
+        {next && (
+          <li>
+            <RelationLink item={next} label="Nowszy artykuł" />
+          </li>
+        )}
+        {previous && (
+          <li>
+            <RelationLink item={previous} label="Starszy artykuł" />
+          </li>
+        )}
+        {latest.map((item) => (
+          <li key={item.id}>
+            <RelationLink item={item} />
+          </li>
+        ))}
+      </ul>
+    </nav>
   )
 }

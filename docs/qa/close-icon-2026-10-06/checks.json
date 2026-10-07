@@ -1,0 +1,58 @@
+{
+  "before": {
+    "offsetX": -5,
+    "offsetY": 0
+  },
+  "after": [
+    {
+      "button": {
+        "bottom": 84,
+        "height": 44,
+        "left": 306,
+        "right": 350,
+        "top": 40,
+        "width": 44,
+        "x": 306,
+        "y": 40
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "svg": {
+        "bottom": 72,
+        "height": 20,
+        "left": 318,
+        "right": 338,
+        "top": 52,
+        "width": 20,
+        "x": 318,
+        "y": 52
+      },
+      "width": 390
+    },
+    {
+      "button": {
+        "bottom": 157.4609375,
+        "height": 44,
+        "left": 964.5,
+        "right": 1008.5,
+        "top": 113.4609375,
+        "width": 44,
+        "x": 964.5,
+        "y": 113.4609375
+      },
+      "offsetX": 0,
+      "offsetY": 0,
+      "svg": {
+        "bottom": 145.4609375,
+        "height": 20,
+        "left": 976.5,
+        "right": 996.5,
+        "top": 125.4609375,
+        "width": 20,
+        "x": 976.5,
+        "y": 125.4609375
+      },
+      "width": 1440
+    }
+  ]
+}

@@ -4,7 +4,7 @@ Kanoniczna paleta marki jest w [`packages/design-tokens/bkp-tokens.css`](../pack
 
 | Aplikacja | Plik importu |
 |-----------|--------------|
-| Strona publiczna (`site/`) | [`site/app/styles/tokens.css`](../site/app/styles/tokens.css) |
+| Strona publiczna (`site/`) | [`packages/digital-design/dist/tokens.css`](../packages/digital-design/dist/tokens.css) (Brandbook 2.0) → role w [`site/app/styles/foundation.css`](../site/app/styles/foundation.css) |
 | Panel (`frontend/`) | [`frontend/src/styles/global.css`](../frontend/src/styles/global.css) |
 
 ## Zasady
@@ -40,17 +40,18 @@ Kanoniczna paleta marki jest w [`packages/design-tokens/bkp-tokens.css`](../pack
 </button>
 ```
 
-## Strona publiczna (CSS)
+## Strona publiczna (CSS) — Website 2.0
+
+Strona nie używa złotych gradientów ani poświaty. Złoto to wyróżnienie (aktywna nawigacja, lider statystyki, focus na płycie), nigdy CTA.
 
 ```css
-.cta {
-  background: var(--gold-gradient);
-  color: #000;
-  box-shadow: var(--glow-gold);
-}
+/* Role semantyczne zależne od materiału: data-theme="plyta" | "papier" */
+.btn--primary { background: var(--action); color: var(--action-text); }
+.kicker::before { background: var(--brand); }
+.story__category { color: var(--brand-text); }
 ```
 
-Aliasy strony (`--accent`, `--bg-app`) mapują na tokeny wspólne w `tokens.css`.
+Role (`--bg`, `--bg-muted`, `--surface`, `--surface-elevated`, `--text`, `--text-secondary`, `--text-muted`, `--line`, `--brand`, `--brand-gold`, `--action`, `--success`, `--warning`, `--danger`, `--focus`) definiuje `site/app/styles/foundation.css`. Sekcja „Kontrast / WCAG” poniżej dotyczy panelu (`frontend/`).
 
 ## Kontrast / WCAG
 

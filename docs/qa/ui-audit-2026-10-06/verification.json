@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-06",
+  "report_checks": {
+    "local_links_and_source_paths": "pass",
+    "unique_ids_and_anchor_targets": "pass",
+    "34_findings_12_pages_31_evidence_screens": "pass",
+    "priority_filter_P1_count_10": "pass",
+    "expand_visible_P1_count_10": "pass",
+    "search_plakat": "pass",
+    "report_document_overflow_at_390": "none",
+    "viewport_override_restored": true
+  },
+  "application_tests": "not rerun — this turn only adds audit artifacts",
+  "not_measured": [
+    "Lighthouse",
+    "axe",
+    "VoiceOver/TalkBack",
+    "INP",
+    "full resource transfer",
+    "offline",
+    "all six real match states"
+  ]
+}

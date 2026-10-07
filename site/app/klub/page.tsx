@@ -1,73 +1,142 @@
+import { JerseyShowcase } from '../../components/public/home/JerseyShowcase'
 import type { Metadata } from 'next'
-import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
-import { MailIcon } from '../../components/public/shared/PublicIcons'
+import { siteSettings } from '../../lib/site-settings'
+import { Story } from '../../components/public/news/Story'
+import { ArrowLink } from '../../components/public/primitives/ArrowLink'
+import { Band } from '../../components/public/primitives/Band'
+import { BandHead } from '../../components/public/primitives/BandHead'
+import { JerseyStripes } from '../../components/public/primitives/JerseyStripes'
 import { FsmmSupportSection } from '../../components/public/support/FsmmSupportSection'
-import { getSiteMetadataBase } from '../../lib/data'
+import { getNewsPosts, getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
-  title: 'Klub | BeKaPaKa Bobolice',
-  description: 'Historia, misja, wartości oraz informacje o stowarzyszeniu Bobolicki Klub Przyjaciół Koszykówki „Bekapaka”.'
+  alternates: { canonical: '/klub' },
+  title: 'O klubie | BeKaPaKa Bobolice',
+  description: 'Poznaj BeKaPaKa Bobolice: drużynę KALK, stowarzyszenie i organizowane w Bobolicach turnieje. Kontakt, dokumenty i wsparcie klubu.'
 }
 
-export default function ClubPage() {
+export default async function ClubPage() {
+  const reports = (await getNewsPosts(100))
+    .filter((item) => ['3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026', 'ii-turniej-koszykowki-spolecznika-subregionu-d-parafiada-2026'].includes(item.slug))
+    .slice(0, 2)
+  const pillars = [
+    { label: 'Drużyna', title: 'Gramy w KALK', text: 'Trenujemy i rywalizujemy w Koszalińskiej Amatorskiej Lidze Koszykówki. Terminarz, wyniki i statystyki zawodników są na stronie.', href: '/mecze', link: 'Mecze i wyniki' },
+    { label: 'Społeczność', title: 'Łączy nas koszykówka', text: 'Łączymy zawodników, kibiców i mieszkańców Bobolic. Lokalni partnerzy i gmina wspierają nasze działania — dzięki nim możemy organizować wydarzenia.', href: '/sponsorzy', link: 'Partnerzy klubu' },
+    { label: 'Wydarzenia', title: 'Turnieje w Bobolicach', text: 'Organizujemy Turniej Koszykówki o Puchar Burmistrza Bobolic. Angażujemy się w Turniej Koszykówki Społecznika, w tym Parafiadę o Puchar Proboszcza, realizowaną dzięki Programowi „Społecznik”.', href: '/aktualnosci?category=Turniej', link: 'Relacje z turniejów' }
+  ]
+
   return (
-    <EditorialListingTemplate
-      title='O klubie'
-      description='Poznaj historię i działalność Bobolickiego Klubu Przyjaciół Koszykówki „Bekapaka”.'
-      hasItems
-      emptyTitle=''
-      emptyDescription=''
-    >
-      <div className='club-page__stack'>
-        <article className='club-page__card'>
-          <h2>Kim jesteśmy?</h2>
-          <p className='club-page__paragraph club-page__paragraph--spaced'>
-            <strong>Bobolicki Klub Przyjaciół Koszykówki „Bekapaka”</strong> to stowarzyszenie zrzeszające pasjonatów i amatorów koszykówki z Bobolic oraz okolicznych miejscowości. Nasza drużyna regularnie reprezentuje miasto i gminę Bobolice w prestiżowych rozgrywkach <strong>Koszalińskiej Ligi Amatorskiej Koszykówki (KALK)</strong>, rywalizując na parkietach ZOS i KOSiR Koszalin.
-          </p>
-          <p className='club-page__paragraph'>
-            Nie ograniczamy się jednak tylko do samej rywalizacji sportowej. Naszą nadrzędną ideą jest popularyzacja aktywnego trybu życia, integracja lokalnej społeczności oraz budowanie silnego, sportowego charakteru wśród dzieci, młodzieży i dorosłych.
-          </p>
-        </article>
+    <div className="club-page">
+      <section className="club-hero" data-theme="plyta" aria-labelledby="h-club">
+        <div className="container club-hero__grid">
+          <div className="club-hero__text">
+            <p className="kicker">O klubie · BeKaPaKa Bobolice</p>
+            <h1 id="h-club" className="club-hero__title">
+              Koszykówka z Bobolic
+            </h1>
+            <p className="club-hero__lead">
+              Jesteśmy drużyną koszykówki z Bobolic. Gramy w lidze KALK, organizujemy turnieje i łączymy ludzi wokół sportu.
+            </p>
+            <nav className="tabs club-hero__nav" aria-label="Sekcje strony klubu">
+              <a href="#dzialalnosc">Działalność</a>
+              <a href="#stroje">Stroje</a>
+              <a href="#wsparcie">Wsparcie 1,5%</a>
+              <a href="#kontakt">Kontakt</a>
+            </nav>
+          </div>
+          <img className="club-hero__crest" src="/brand/herb2-kolor.svg" width={320} height={308} alt="BeKaPaKa Bobolice — Znak główny 2.0" />
+        </div>
+        <JerseyStripes className="band__stripes" />
+      </section>
 
-        <article className='club-page__card'>
-          <h2>Inicjatywy społeczne i Turnieje</h2>
-          <p className='club-page__paragraph club-page__paragraph--spaced'>
-            Jako stowarzyszenie chętnie angażujemy się w organizację lokalnych wydarzeń i projektów społecznych. Jesteśmy dumni z realizacji turniejów promujących sport w naszym subregionie.
-          </p>
-          <p className='club-page__paragraph'>
-            Flagowym przykładem naszych działań jest współorganizacja <strong>Turnieju Koszykówki Społecznika</strong> (m.in. o Puchar Proboszcza), który odbywa się dzięki dofinansowaniu z Programu „Społecznik”. Wydarzenia te gromadzą rzesze kibiców, zawodników oraz całe rodziny, pokazując, jak wielką siłę ma wspólna pasja do sportu.
-          </p>
-        </article>
+      <Band theme="papier" id="dzialalnosc" labelledBy="h-about">
+        <div className="split split--7-5 club-about">
+          <div className="club-about__text">
+            <p className="kicker">Kim jesteśmy</p>
+            <h2 id="h-about" className="band-head__title">Stowarzyszenie i drużyna</h2>
+            <p className="club-about__lead">
+              <strong>{siteSettings.organizationName}</strong> to stowarzyszenie pasjonatów i amatorów koszykówki z Bobolic oraz okolicznych miejscowości. Nasza
+              drużyna reprezentuje miasto i gminę w Koszalińskiej Amatorskiej Lidze Koszykówki.
+            </p>
+          </div>
+          <dl className="facts facts--large" aria-label="Klub w skrócie">
+            <div>
+              <dt>Miasto</dt>
+              <dd>Bobolice</dd>
+            </div>
+            <div>
+              <dt>Rozgrywki</dt>
+              <dd>KALK · Dywizja II</dd>
+            </div>
+            <div>
+              <dt>Mecze ligowe</dt>
+              <dd>KOSiR Koszalin · wstęp wolny</dd>
+            </div>
+            <div>
+              <dt>Turniej o Puchar Burmistrza</dt>
+              <dd>Hala CESiR, Bobolice</dd>
+            </div>
+          </dl>
+        </div>
+        <ol className="pillars" role="list">
+          {pillars.map((pillar, index) => (
+            <li key={pillar.label} className="pillar">
+              <span className="pillar__number" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <p className="pillar__label">{pillar.label}</p>
+              <h3 className="pillar__title">{pillar.title}</h3>
+              <p className="pillar__text">{pillar.text}</p>
+              <ArrowLink href={pillar.href}>{pillar.link}</ArrowLink>
+            </li>
+          ))}
+        </ol>
+      </Band>
 
-        <article className='club-page__card'>
-          <h2>Nasza misja i wartości</h2>
-          <ul className='club-page__values'>
-            <li><strong>Pasja i zaangażowanie:</strong> Każdy trening i mecz to dla nas okazja do rozwoju i dawania z siebie 100%.</li>
-            <li><strong>Wspólnota i integracja:</strong> Łączymy pokolenia bobolickich koszykarzy i kibiców.</li>
-            <li><strong>Promocja zdrowia:</strong> Zachęcamy młodzież do wyboru aktywnej drogi życia i sportowej rywalizacji w duchu Fair Play.</li>
-            <li><strong>Reprezentowanie regionu:</strong> Z dumą nosimy barwy klubu i promujemy gminę Bobolice na arenie regionalnej.</li>
+      <Band id="stroje" labelledBy="h-stroje">
+        <BandHead kicker="Barwy klubu" title="Stroje meczowe" titleId="h-stroje">
+          Strój A: czerń z czerwonym V. Strój B: granat z pomarańczem — ta sama drużyna w drugim komplecie.
+        </BandHead>
+        <JerseyShowcase />
+      </Band>
+
+      <Band theme="papier" labelledBy="h-reports">
+        <BandHead kicker="Z życia klubu" title="Relacje z wydarzeń" titleId="h-reports" action={<ArrowLink href="/aktualnosci">Wszystkie aktualności</ArrowLink>} />
+        {reports.length ? (
+          <ul className="rule-list club-reports" role="list">
+            {reports.map((item) => (
+              <li key={item.id}>
+                <Story item={item} variant="item" />
+              </li>
+            ))}
           </ul>
-        </article>
+        ) : (
+          <p className="empty-line">Relacje pojawią się po publikacji przez redakcję.</p>
+        )}
+        <div id="wsparcie" className="club-support">
+          <FsmmSupportSection />
+        </div>
+      </Band>
 
-        <FsmmSupportSection variant='page' />
-
-        <article className='club-page__card'>
-          <h2>Kontakt</h2>
-          <p className='club-page__paragraph club-page__paragraph--compact'>
-            Chcesz do nas dołożyć cegiełkę, wesprzeć klub lub nawiązać współpracę sponsorską? Skontaktuj się z nami:
-          </p>
-          <p className='club-contact-line club-page__contact'>
-            <MailIcon size={18} />
-            <span>
-              Email:{' '}
-              <a href='mailto:kontakt@damianmotylinski.pl'>
-                kontakt@damianmotylinski.pl
-              </a>
-            </span>
-          </p>
-        </article>
-      </div>
-    </EditorialListingTemplate>
+      <Band id="kontakt" labelledBy="club-contact-heading" className="club-contact">
+        <div className="split split--7-5">
+          <div>
+            <p className="kicker">Porozmawiajmy</p>
+            <h2 id="club-contact-heading" className="band-head__title">
+              Kontakt z klubem
+            </h2>
+            <p className="club-contact__lead">Chcesz wesprzeć drużynę, zapytać o działalność albo zagrać z nami? Napisz.</p>
+          </div>
+          <div className="club-contact__details">
+            <a className="club-contact__email" href={`mailto:${siteSettings.contactEmail}`}>
+              {siteSettings.contactEmail}
+            </a>
+            <p className="muted">{siteSettings.organizationName}</p>
+            <ArrowLink href="/dokumenty">Dokumenty stowarzyszenia</ArrowLink>
+          </div>
+        </div>
+      </Band>
+    </div>
   )
 }

@@ -1,0 +1,44 @@
+[2026-10-06 20:19:07.531] warn: STRAPI_DISABLE_UPDATE_NOTIFICATION is no longer supported. Instead, set logger.updates.enabled to false in your server configuration.
+[2026-10-06 20:19:07.900] info: [internal migration]: migrating 5.0.0-rename-identifiers-longer-than-max-length
+[2026-10-06 20:19:07.905] info: [internal migration]: migrated 5.0.0-rename-identifiers-longer-than-max-length (0.005s)
+[2026-10-06 20:19:07.905] info: [internal migration]: migrating 5.0.0-02-created-document-id
+[2026-10-06 20:19:07.907] info: [internal migration]: migrated 5.0.0-02-created-document-id (0.002s)
+[2026-10-06 20:19:07.907] info: [internal migration]: migrating 5.0.0-03-created-locale
+[2026-10-06 20:19:07.908] info: [internal migration]: migrated 5.0.0-03-created-locale (0.001s)
+[2026-10-06 20:19:07.908] info: [internal migration]: migrating 5.0.0-04-created-published-at
+[2026-10-06 20:19:07.909] info: [internal migration]: migrated 5.0.0-04-created-published-at (0.001s)
+[2026-10-06 20:19:07.909] info: [internal migration]: migrating 5.0.0-05-drop-slug-fields-index
+[2026-10-06 20:19:07.910] info: [internal migration]: migrated 5.0.0-05-drop-slug-fields-index (0.001s)
+[2026-10-06 20:19:07.910] info: [internal migration]: migrating 5.0.0-06-add-document-id-indexes
+[2026-10-06 20:19:07.911] info: [internal migration]: migrated 5.0.0-06-add-document-id-indexes (0.001s)
+[2026-10-06 20:19:07.911] info: [internal migration]: migrating core::5.0.0-discard-drafts
+[2026-10-06 20:19:07.911] info: [discard-drafts] Migration started
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 1/5 – cloning published entries into draft rows
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 1/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 2/5 – copying relations and components to drafts
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 2/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 3/5 – fixing existing draft relations
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 3/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 4/5 – fixing existing draft component relations
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 4/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 4b/5 – fixing published component relations to published targets
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 4b/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 5/5 – updating foreign key references to draft targets
+[2026-10-06 20:19:07.911] info: [discard-drafts] Stage 5/5 complete
+[2026-10-06 20:19:07.911] info: [discard-drafts] Migration completed successfully
+[2026-10-06 20:19:07.912] info: [internal migration]: migrated core::5.0.0-discard-drafts (0.001s)
+[2026-10-06 20:19:07.912] info: [internal migration]: migrating admin::migrate-prefered-language-dk-to-da
+[2026-10-06 20:19:07.912] info: [internal migration]: migrated admin::migrate-prefered-language-dk-to-da (0.000s)
+[2026-10-06 20:19:07.912] info: [internal migration]: migrating upload::unsign-richtext-and-blocks-urls
+[2026-10-06 20:19:07.912] info: [internal migration]: migrated upload::unsign-richtext-and-blocks-urls (0.000s)
+[2026-10-06 20:19:08.385] info: [MCP] Starting MCP server...
+[2026-10-06 20:19:08.385] info: [MCP] Server available at /mcp
+[2026-10-06 20:19:08.404] http: GET /api/media-records?status=published (8 ms) 200
+[2026-10-06 20:19:08.416] http: GET /api/media-records?status=published (4 ms) 200
+[2026-10-06 20:19:08.420] http: GET /api/media-records?status=published (2 ms) 200
+[2026-10-06 20:19:08.426] http: GET /api/news-posts?status=published (1 ms) 200
+{"isolatedDatabase":true,"draftHidden":true,"publishedMetadata":true,"unpublishHidden":true,"optionalNewsFields":true}
+[2026-10-06 20:19:08.427] info: Shutting down Strapi
+[2026-10-06 20:19:08.427] info: [MCP] Stopping MCP server...
+[2026-10-06 20:19:08.427] info: [MCP] Service stopped
+[2026-10-06 20:19:08.428] info: Strapi has been shut down

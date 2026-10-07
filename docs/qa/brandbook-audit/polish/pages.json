@@ -1,0 +1,38 @@
+[
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/aktualnosci",
+    "width": 390
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/sklad",
+    "width": 390
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/sponsorzy",
+    "width": 390
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/aktualnosci",
+    "width": 1440
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/sklad",
+    "width": 1440
+  },
+  {
+    "h1": 1,
+    "overflow": false,
+    "path": "/sponsorzy",
+    "width": 1440
+  }
+]

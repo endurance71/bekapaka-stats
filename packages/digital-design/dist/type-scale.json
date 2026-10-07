@@ -1,0 +1,114 @@
+{
+ "score": {
+  "desktop": 120,
+  "laptop": 108,
+  "mobile": 80,
+  "lh": 0.9,
+  "tracking": -0.01
+ },
+ "number": {
+  "desktop": 96,
+  "laptop": 86,
+  "mobile": 64,
+  "lh": 0.9,
+  "tracking": -0.01
+ },
+ "display": {
+  "desktop": 96,
+  "laptop": 84,
+  "mobile": 56,
+  "lh": 0.95,
+  "tracking": -0.01
+ },
+ "h1": {
+  "desktop": 64,
+  "laptop": 57,
+  "mobile": 40,
+  "lh": 1.0,
+  "tracking": -0.005
+ },
+ "h2": {
+  "desktop": 44,
+  "laptop": 40,
+  "mobile": 32,
+  "lh": 1.05,
+  "tracking": 0
+ },
+ "h3": {
+  "desktop": 30,
+  "laptop": 28,
+  "mobile": 24,
+  "lh": 1.1,
+  "tracking": 0
+ },
+ "h4": {
+  "desktop": 22,
+  "laptop": 21,
+  "mobile": 20,
+  "lh": 1.2,
+  "tracking": 0
+ },
+ "h5": {
+  "desktop": 18,
+  "laptop": 18,
+  "mobile": 17,
+  "lh": 1.3,
+  "tracking": 0
+ },
+ "h6": {
+  "desktop": 15,
+  "laptop": 15,
+  "mobile": 14,
+  "lh": 1.3,
+  "tracking": 0.08
+ },
+ "lead": {
+  "desktop": 22,
+  "laptop": 21,
+  "mobile": 19,
+  "lh": 1.5,
+  "tracking": 0
+ },
+ "body": {
+  "desktop": 18,
+  "laptop": 18,
+  "mobile": 17,
+  "lh": 1.65,
+  "tracking": 0
+ },
+ "body-sm": {
+  "desktop": 16,
+  "laptop": 16,
+  "mobile": 16,
+  "lh": 1.55,
+  "tracking": 0
+ },
+ "label": {
+  "desktop": 14,
+  "laptop": 14,
+  "mobile": 13,
+  "lh": 1.2,
+  "tracking": 0.12
+ },
+ "meta": {
+  "desktop": 14,
+  "laptop": 14,
+  "mobile": 14,
+  "lh": 1.4,
+  "tracking": 0.02
+ },
+ "button": {
+  "desktop": 16,
+  "laptop": 16,
+  "mobile": 16,
+  "lh": 1.0,
+  "tracking": 0.08
+ },
+ "caption": {
+  "desktop": 14,
+  "laptop": 14,
+  "mobile": 14,
+  "lh": 1.45,
+  "tracking": 0
+ }
+}

@@ -1,0 +1,11 @@
+npm notice run bekapaka-backend@0.1.0 npx
+npm notice run 'vitest' run tests/unit
+
+ RUN  v4.1.11 /Volumes/External-drive-lexar/Dev/Projects/BeKaPaKa - stats/backend
+
+
+ Test Files  17 passed (17)
+      Tests  109 passed (109)
+   Start at  20:28:31
+   Duration  6.55s (transform 1.07s, setup 0ms, import 1.44s, tests 7.29s, environment 1ms)
+

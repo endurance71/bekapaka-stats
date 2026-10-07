@@ -1,6 +1,7 @@
 **/node_modules
 **/.next
 **/dist
+!packages/digital-design/dist
 .git
 .gitignore
 data/

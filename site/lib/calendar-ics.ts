@@ -53,12 +53,12 @@ export function highlightToCalendarPayload(highlight: NearestHighlight): Calenda
     const { game } = highlight
     const startMs = new Date(game.date).getTime()
     if (!Number.isFinite(startMs)) return null
-    const venue = formatVenue(game.data?.venue)
+    const venue = formatVenue(game.venue || game.data?.venue)
     return {
       uid: `bekapaka-kalk-${game.id}@bekapaka.pl`,
       title: `BeKaPaKa vs ${game.opponent}`,
       description: 'Mecz ligowy BeKaPaKa Bobolice (terminarz KALK).',
-      location: venue === '—' ? 'Bobolice' : venue,
+      location: venue === '—' ? 'KOSiR Koszalin' : venue,
       startAt: new Date(startMs).toISOString(),
       endAt: new Date(resolveEndAt(startMs)).toISOString()
     }
@@ -141,6 +141,7 @@ export function buildIcsDocument(payload: CalendarEventPayload): string {
     'PRODID:-//BeKaPaKa Bobolice//PL',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
+    'X-WR-TIMEZONE:Europe/Warsaw',
     'BEGIN:VEVENT',
     `UID:${payload.uid}`,
     `DTSTAMP:${stamp}`,

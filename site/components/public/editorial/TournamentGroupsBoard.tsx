@@ -18,15 +18,15 @@ export function TournamentGroupsBoard({ groups, title }: TournamentGroupsBoardPr
       {title ? <h3 className='tournament-groups__heading'>{title}</h3> : null}
       <div className={`tournament-groups__grid tournament-groups__grid--${Math.min(groups.length, 4)}`}>
         {groups.map((group, gIdx) => (
-          <div key={gIdx} className='tournament-groups__card surface-card'>
-            <header className='tournament-groups__card-header'>
+          <div key={gIdx} className='tournament-groups__card'>
+            <header className='tournament-groups__card-header zebra-head'>
               <div className='tournament-groups__badge-wrap'>
-                <span className='tournament-groups__icon' aria-hidden='true'>🏀</span>
+                <img src="/brand/sygnet2-kolor-ciasny.svg" width={24} height={24} alt="" />
                 <h4 className='tournament-groups__name'>{group.name}</h4>
               </div>
               <span className='tournament-groups__count'>{group.teams.length} drużyn</span>
             </header>
-            <ol className='tournament-groups__team-list'>
+            <ol className='tournament-groups__team-list zebra-list'>
               {group.teams.map((team, tIdx) => {
                 const isBekapaka = /bekapaka/i.test(team)
                 return (

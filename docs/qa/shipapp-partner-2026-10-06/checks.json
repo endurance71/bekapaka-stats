@@ -1,0 +1,32 @@
+[
+  {
+    "count": 15,
+    "page": "/sponsorzy",
+    "shipapp": [
+      {
+        "href": "https://shipapp.pl",
+        "loaded": true,
+        "src": "/images/partners/shipapp.png"
+      }
+    ],
+    "width": 758
+  },
+  {
+    "count": 15,
+    "page": "/",
+    "shipapp": [
+      {
+        "href": "https://shipapp.pl",
+        "loaded": true,
+        "src": "/images/partners/shipapp.png"
+      }
+    ],
+    "width": 758
+  },
+  {
+    "count": 15,
+    "overflow": false,
+    "page": "/",
+    "width": 390
+  }
+]

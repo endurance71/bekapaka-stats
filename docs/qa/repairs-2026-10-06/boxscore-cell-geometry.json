@@ -1,0 +1,92 @@
+[
+  {
+    "overflowCells": [],
+    "total": [
+      {
+        "client": 75,
+        "scroll": 75,
+        "text": "200:00",
+        "width": 75
+      },
+      {
+        "client": 41,
+        "scroll": 41,
+        "text": "86",
+        "width": 41
+      },
+      {
+        "client": 41,
+        "scroll": 41,
+        "text": "42",
+        "width": 41
+      },
+      {
+        "client": 41,
+        "scroll": 41,
+        "text": "26",
+        "width": 41
+      }
+    ],
+    "width": 375
+  },
+  {
+    "overflowCells": [],
+    "total": [
+      {
+        "client": 79,
+        "scroll": 79,
+        "text": "200:00",
+        "width": 79
+      },
+      {
+        "client": 43,
+        "scroll": 43,
+        "text": "86",
+        "width": 43
+      },
+      {
+        "client": 43,
+        "scroll": 43,
+        "text": "42",
+        "width": 43
+      },
+      {
+        "client": 43,
+        "scroll": 43,
+        "text": "26",
+        "width": 43
+      }
+    ],
+    "width": 390
+  },
+  {
+    "overflowCells": [],
+    "total": [
+      {
+        "client": 88,
+        "scroll": 88,
+        "text": "200:00",
+        "width": 88
+      },
+      {
+        "client": 48,
+        "scroll": 48,
+        "text": "86",
+        "width": 48
+      },
+      {
+        "client": 48,
+        "scroll": 48,
+        "text": "42",
+        "width": 48
+      },
+      {
+        "client": 48,
+        "scroll": 48,
+        "text": "26",
+        "width": 48
+      }
+    ],
+    "width": 430
+  }
+]

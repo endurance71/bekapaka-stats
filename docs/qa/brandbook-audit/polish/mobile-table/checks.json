@@ -1,0 +1,141 @@
+[
+  {
+    "mode": "main",
+    "overflow": false,
+    "shellWidth": 343,
+    "tableWidth": 343,
+    "teams": [
+      {
+        "background": "rgb(31, 30, 28)",
+        "full": "BeKaPaKa Bobolice",
+        "short": "BKP",
+        "width": 108
+      },
+      {
+        "background": "rgb(18, 18, 18)",
+        "full": "Młode Wilki",
+        "short": "MW",
+        "width": 108
+      },
+      {
+        "background": "rgb(22, 22, 22)",
+        "full": "Maxbau Okna Dako PSP",
+        "short": "MODP",
+        "width": 108
+      },
+      {
+        "background": "rgb(18, 18, 18)",
+        "full": "Grubik Team",
+        "short": "GT",
+        "width": 108
+      },
+      {
+        "background": "rgb(22, 22, 22)",
+        "full": "GMVT TEAM",
+        "short": "GMVT",
+        "width": 108
+      },
+      {
+        "background": "rgb(18, 18, 18)",
+        "full": "Kosz-All-In",
+        "short": "KAI",
+        "width": 108
+      },
+      {
+        "background": "rgb(22, 22, 22)",
+        "full": "Pantery",
+        "short": "PAN",
+        "width": 108
+      },
+      {
+        "background": "rgb(18, 18, 18)",
+        "full": "Fasolki",
+        "short": "FAS",
+        "width": 108
+      },
+      {
+        "background": "rgb(22, 22, 22)",
+        "full": "Atomówki",
+        "short": "ATO",
+        "width": 108
+      },
+      {
+        "background": "rgb(18, 18, 18)",
+        "full": "BrdCrew",
+        "short": "BRD",
+        "width": 108
+      }
+    ],
+    "width": 390
+  },
+  {
+    "backgrounds": [
+      "rgb(31, 30, 28)",
+      "rgb(18, 18, 18)",
+      "rgb(22, 22, 22)",
+      "rgb(18, 18, 18)",
+      "rgb(22, 22, 22)",
+      "rgb(18, 18, 18)",
+      "rgb(22, 22, 22)",
+      "rgb(18, 18, 18)",
+      "rgb(22, 22, 22)",
+      "rgb(18, 18, 18)"
+    ],
+    "mode": "expanded-scrolled",
+    "overflow": false,
+    "scrollLeft": 322,
+    "shellLeft": 16,
+    "teamLeft": 16,
+    "teamWidth": 108,
+    "width": 390
+  },
+  {
+    "fullClip": "inset(50%)",
+    "mode": "responsive-main",
+    "overflow": false,
+    "shellWidth": 328,
+    "shortDisplay": "inline",
+    "tableWidth": 328,
+    "teamWidth": 108,
+    "width": 375
+  },
+  {
+    "fullClip": "inset(50%)",
+    "mode": "responsive-main",
+    "overflow": false,
+    "shellWidth": 383,
+    "shortDisplay": "inline",
+    "tableWidth": 383,
+    "teamWidth": 108,
+    "width": 430
+  },
+  {
+    "fullClip": "none",
+    "mode": "responsive-main",
+    "overflow": false,
+    "shellWidth": 689,
+    "shortDisplay": "none",
+    "tableWidth": 689,
+    "teamWidth": 244.046875,
+    "width": 768
+  },
+  {
+    "fullClip": "none",
+    "mode": "responsive-main",
+    "overflow": false,
+    "shellWidth": 1280,
+    "shortDisplay": "none",
+    "tableWidth": 1280,
+    "teamWidth": 464.9296875,
+    "width": 1440
+  },
+  {
+    "mode": "home-expanded-scrolled",
+    "overflow": false,
+    "scrollLeft": 337,
+    "shellLeft": 16,
+    "short": "BKP",
+    "teamLeft": 16,
+    "width": 390
+  }
+]

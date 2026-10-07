@@ -4,6 +4,7 @@ import { getSiteMetadataBase } from '../../lib/data'
 
 export const metadata: Metadata = {
   ...getSiteMetadataBase(),
+  alternates: { canonical: '/o-klubie' },
   title: 'Klub | Przekierowanie',
   description: 'Sekcja klubowa zostala przeniesiona na /klub.'
 }

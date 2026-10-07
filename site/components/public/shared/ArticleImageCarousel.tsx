@@ -1,424 +1,182 @@
 'use client'
-
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { createPortal } from 'react-dom'
-import { getStrapiMediaProps } from '../../../lib/data/media'
+import { CloseIcon, ArrowRightIcon } from './PublicIcons'
+import { FallbackImage } from './FallbackImage'
+type ImageInfo = { src: string; alt: string; caption?: string; author?: string; width?: number; height?: number; metadataMissing?: boolean }
+/** Galeria w treści pokazuje najpierw 1 duże + 8 zdjęć; reszta po kliknięciu. Lightbox przegląda wszystkie. */
+const GALLERY_PREVIEW = 9
 
-interface ImageInfo {
-  src: string
-  alt: string
-}
-
-interface ArticleImageCarouselProps {
-  images: ImageInfo[]
-}
-
-const SWIPE_THRESHOLD = 50
-
-function isFilename(text: string): boolean {
-  if (!text) return true
-  if (/\.(png|jpe?g|gif|webp|svg)$/i.test(text)) return true
-  if (/^[a-f0-9-]{12,}$/i.test(text)) return true
-  return /^[a-zA-Z0-9_-]+$/.test(text) && /[-_]/.test(text) && text.length > 10
-}
-
-function ChevronLeftIcon() {
-  return (
-    <svg aria-hidden='true' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round'>
-      <path d='m14 17-5-5 5-5' />
-    </svg>
-  )
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg aria-hidden='true' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round'>
-      <path d='m10 17 5-5-5-5' />
-    </svg>
-  )
-}
-
-function CloseIcon() {
-  return (
-    <svg aria-hidden='true' viewBox='0 0 24 24' width='24' height='24' fill='none' stroke='currentColor' strokeWidth='2' strokeLinecap='round'>
-      <path d='M18 6 6 18M6 6l12 12' />
-    </svg>
-  )
-}
-
-export function ArticleImageCarousel({ images }: ArticleImageCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const trackRef = useRef<HTMLDivElement>(null)
-  const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const lightboxTriggerRef = useRef<HTMLButtonElement | null>(null)
-  const touchStartX = useRef<number | null>(null)
-  const touchEndX = useRef<number | null>(null)
-  const scrollFrame = useRef<number | null>(null)
-  const lightboxThumbsRef = useRef<HTMLDivElement>(null)
-
-  // Guard against scroll-event race conditions during programmatic navigation (arrow/dot clicks)
-  const isProgrammaticScrollRef = useRef(false)
-  const programmaticTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const currentIndexRef = useRef(currentIndex)
-  currentIndexRef.current = currentIndex
-
-  const imageCount = images.length
-  const hasManyImages = imageCount > 10
-
-  const getSlideOffset = useCallback((index: number): number => {
-    const track = trackRef.current
-    if (!track) return 0
-    const slides = track.children
-    if (slides[index] && slides[index] instanceof HTMLElement) {
-      return (slides[index] as HTMLElement).offsetLeft
-    }
-    return track.clientWidth * index
-  }, [])
-
-  const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = 'smooth') => {
-    const track = trackRef.current
-    if (!track) return
-
-    // Lock scroll-event processing so intermediate frames don't bounce the active slide
-    isProgrammaticScrollRef.current = true
-    if (programmaticTimeoutRef.current) {
-      clearTimeout(programmaticTimeoutRef.current)
-    }
-
-    const targetOffset = getSlideOffset(index)
-    track.scrollTo({ left: targetOffset, behavior })
-
-    // Release lock once smooth scrolling has settled
-    programmaticTimeoutRef.current = setTimeout(() => {
-      isProgrammaticScrollRef.current = false
-    }, 450)
-  }, [getSlideOffset])
-
-  const goToIndex = useCallback((index: number, syncTrack = true) => {
-    if (imageCount === 0) return
-    const normalizedIndex = (index + imageCount) % imageCount
-    const isWrap = Math.abs(normalizedIndex - currentIndexRef.current) > 1
-
-    setCurrentIndex(normalizedIndex)
-
-    if (syncTrack) {
-      // Use instant scroll for wrap-around jumps so it doesn't rewind through the whole gallery
-      scrollToIndex(normalizedIndex, isWrap ? 'auto' : 'smooth')
-    }
-  }, [imageCount, scrollToIndex])
-
-  const showPrevious = useCallback(() => {
-    goToIndex(currentIndexRef.current - 1)
-  }, [goToIndex])
-
-  const showNext = useCallback(() => {
-    goToIndex(currentIndexRef.current + 1)
-  }, [goToIndex])
-
-  const closeLightbox = useCallback(() => {
-    setIsLightboxOpen(false)
-    scrollToIndex(currentIndexRef.current, 'auto')
-    window.requestAnimationFrame(() => lightboxTriggerRef.current?.focus())
-  }, [scrollToIndex])
-
-  // Track listener: only updates active index during manual user swipes/gestures
+export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: ImageInfo[]; variant?: 'gallery' | 'cover' }) {
+  const [expanded, setExpanded] = useState(false)
+  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading')
+  const [attempt, setAttempt] = useState(0)
+  const selectImage = (next: number) => { setImageState('loading'); setIndex(next) }
+  const [index, setIndex] = useState<number | null>(null)
+  const modal = useRef<HTMLDivElement>(null)
+  const trigger = useRef<HTMLElement | null>(null)
+  const start = useRef<number | null>(null)
+  const open = index !== null
+  usePageScrollLock(open, { htmlClass: 'is-overlay-open' })
   useEffect(() => {
-    const track = trackRef.current
-    if (!track) return
-
-    const updateCurrentSlide = () => {
-      // Ignore scroll events triggered by programmatic button/dot clicks
-      if (isProgrammaticScrollRef.current) return
-
-      if (scrollFrame.current !== null) {
-        window.cancelAnimationFrame(scrollFrame.current)
+    if (!open) return
+    const shell = document.querySelector<HTMLElement>('.site-shell')
+    const wasInert = shell?.inert || false
+    if (shell) shell.inert = true
+    modal.current?.querySelector<HTMLButtonElement>('button')?.focus()
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setIndex(null)
       }
-
-      scrollFrame.current = window.requestAnimationFrame(() => {
-        if (!track.clientWidth || isProgrammaticScrollRef.current) return
-
-        const currentScroll = track.scrollLeft
-        const slides = track.children
-        let closestIndex = currentIndexRef.current
-        let minDistance = Infinity
-
-        for (let i = 0; i < slides.length; i++) {
-          const slide = slides[i] as HTMLElement
-          const dist = Math.abs(slide.offsetLeft - currentScroll)
-          if (dist < minDistance) {
-            minDistance = dist
-            closestIndex = i
-          }
-        }
-
-        if (closestIndex !== currentIndexRef.current && closestIndex >= 0 && closestIndex < imageCount) {
-          setCurrentIndex(closestIndex)
-        }
-      })
-    }
-
-    const handleScrollEnd = () => {
-      isProgrammaticScrollRef.current = false
-      if (programmaticTimeoutRef.current) {
-        clearTimeout(programmaticTimeoutRef.current)
-      }
-    }
-
-    track.addEventListener('scroll', updateCurrentSlide, { passive: true })
-    track.addEventListener('scrollend', handleScrollEnd)
-
-    return () => {
-      track.removeEventListener('scroll', updateCurrentSlide)
-      track.removeEventListener('scrollend', handleScrollEnd)
-      if (scrollFrame.current !== null) {
-        window.cancelAnimationFrame(scrollFrame.current)
-      }
-      if (programmaticTimeoutRef.current) {
-        clearTimeout(programmaticTimeoutRef.current)
-      }
-    }
-  }, [imageCount])
-
-  // Resize listener: keeps the current slide aligned when container size changes
-  useEffect(() => {
-    const handleResize = () => scrollToIndex(currentIndexRef.current, 'auto')
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [scrollToIndex])
-
-  // Keyboard navigation & focus trap for lightbox
-  useEffect(() => {
-    if (!isLightboxOpen) return
-
-    const previousOverflow = document.body.style.overflow
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closeLightbox()
-      if (event.key === 'ArrowLeft') showPrevious()
-      if (event.key === 'ArrowRight') showNext()
+      if (event.key === 'ArrowRight') { setImageState('loading'); setIndex((value) => ((value || 0) + 1) % images.length) }
+      if (event.key === 'ArrowLeft') { setImageState('loading');
+        setIndex((value) => ((value || 0) - 1 + images.length) % images.length) }
       if (event.key === 'Tab') {
-        const modal = closeButtonRef.current?.closest('[role="dialog"]')
-        const focusable = modal?.querySelectorAll<HTMLElement>('button:not([disabled]):not([tabindex="-1"]), [href], [tabindex]:not([tabindex="-1"])')
-        if (!focusable?.length) return
-        const first = focusable[0]
-        const last = focusable[focusable.length - 1]
+        const buttons = Array.from(
+          modal.current?.querySelectorAll<HTMLElement>('button,a[href]') || []
+        )
+        const first = buttons[0],
+          last = buttons.at(-1)
         if (event.shiftKey && document.activeElement === first) {
           event.preventDefault()
-          last.focus()
+          last?.focus()
         } else if (!event.shiftKey && document.activeElement === last) {
           event.preventDefault()
-          first.focus()
+          first?.focus()
         }
       }
     }
-
-    document.body.style.overflow = 'hidden'
-    document.addEventListener('keydown', handleKeyDown)
-    closeButtonRef.current?.focus()
-
+    document.addEventListener('keydown', keyboard)
     return () => {
-      document.body.style.overflow = previousOverflow
-      document.removeEventListener('keydown', handleKeyDown)
+      if (shell) shell.inert = wasInert
+      document.removeEventListener('keydown', keyboard)
+      trigger.current?.focus()
     }
-  }, [closeLightbox, isLightboxOpen, showNext, showPrevious])
-
-  // Automatically scroll active thumbnail into center view in lightbox
-  useEffect(() => {
-    if (!isLightboxOpen || !lightboxThumbsRef.current) return
-    const track = lightboxThumbsRef.current
-    const activeThumb = track.children[currentIndex] as HTMLElement | undefined
-    if (activeThumb) {
-      activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
-  }, [currentIndex, isLightboxOpen])
-
-  if (imageCount === 0) return null
-
-  const currentImage = images[currentIndex]
-  const caption = currentImage.alt && !isFilename(currentImage.alt) ? currentImage.alt : null
-
-  const handleCarouselKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'ArrowLeft') {
-      event.preventDefault()
-      showPrevious()
-    }
-    if (event.key === 'ArrowRight') {
-      event.preventDefault()
-      showNext()
-    }
-  }
-
-  const openLightbox = (event: React.MouseEvent<HTMLButtonElement>, index: number) => {
-    lightboxTriggerRef.current = event.currentTarget
-    goToIndex(index)
-    setIsLightboxOpen(true)
-  }
-
-  const handleTouchStart = (event: React.TouchEvent) => {
-    touchStartX.current = event.targetTouches[0]?.clientX ?? null
-    touchEndX.current = null
-  }
-
-  const handleTouchMove = (event: React.TouchEvent) => {
-    touchEndX.current = event.targetTouches[0]?.clientX ?? null
-  }
-
-  const handleTouchEnd = () => {
-    if (touchStartX.current === null || touchEndX.current === null) return
-    const distance = touchStartX.current - touchEndX.current
-    if (distance > SWIPE_THRESHOLD) showNext()
-    if (distance < -SWIPE_THRESHOLD) showPrevious()
-    touchStartX.current = null
-    touchEndX.current = null
-  }
-
+  }, [open, images.length])
+  if (!images.length) return null
+  const active = index === null ? null : images[index]
+  const visible = variant === 'cover' || expanded ? images : images.slice(0, GALLERY_PREVIEW)
+  const hidden = images.length - visible.length
   return (
-    <section
-      className='article-gallery'
-      role='region'
-      aria-roledescription='karuzela'
-      aria-label={`Galeria zdjęć, ${imageCount} ${imageCount === 1 ? 'zdjęcie' : 'zdjęć'}`}
-      tabIndex={0}
-      onKeyDown={handleCarouselKeyDown}
-    >
-      <div className='article-gallery__stage'>
-        <div className='article-gallery__track' ref={trackRef}>
-          {images.map((image, index) => {
-            const mediaProps = getStrapiMediaProps(image.src, {
-              sizes: '(max-width: 767px) 100vw, (max-width: 1100px) 90vw, 840px'
-            })
-
-            return (
-              <div
-                className='article-gallery__slide'
-                role='group'
-                aria-roledescription='slajd'
-                aria-label={`${index + 1} z ${imageCount}`}
-                aria-hidden={currentIndex !== index}
-                key={`${image.src}-${index}`}
-              >
-                <button
-                  className='article-gallery__image-button'
-                  type='button'
-                  tabIndex={currentIndex === index ? 0 : -1}
-                  aria-label={`Otwórz zdjęcie ${index + 1} z ${imageCount} na pełnym ekranie`}
-                  onClick={(event) => openLightbox(event, index)}
-                >
-                  <img
-                    {...mediaProps}
-                    alt={image.alt || `Zdjęcie ${index + 1}`}
-                    className='article-gallery__image'
-                    loading='lazy'
-                    fetchPriority='auto'
-                    draggable={false}
-                  />
-                </button>
-              </div>
-            )
-          })}
-        </div>
-
-        {imageCount > 1 && (
-          <>
-            <button className='article-gallery__arrow article-gallery__arrow--prev' type='button' onClick={showPrevious} aria-label='Poprzednie zdjęcie'>
-              <ChevronLeftIcon />
-            </button>
-            <button className='article-gallery__arrow article-gallery__arrow--next' type='button' onClick={showNext} aria-label='Następne zdjęcie'>
-              <ChevronRightIcon />
-            </button>
-          </>
-        )}
-      </div>
-
-      <div className='article-gallery__footer'>
-        {caption && <p className='article-gallery__caption'>{caption}</p>}
-        {imageCount > 1 && (
-          <div className='article-gallery__status'>
-            {hasManyImages ? (
-              <div className='article-gallery__progress' aria-hidden='true'>
-                <span style={{ width: `${((currentIndex + 1) / imageCount) * 100}%` }} />
-              </div>
-            ) : (
-              <div className='article-gallery__dots' aria-label='Wybierz zdjęcie'>
-                {images.map((image, index) => (
-                  <button
-                    className={`article-gallery__dot${currentIndex === index ? ' article-gallery__dot--active' : ''}`}
-                    type='button'
-                    aria-label={`Przejdź do zdjęcia ${index + 1}`}
-                    aria-current={currentIndex === index ? 'true' : undefined}
-                    onClick={() => goToIndex(index)}
-                    key={`${image.src}-dot-${index}`}
-                  />
-                ))}
-              </div>
-            )}
-            <span className='article-gallery__counter' aria-live='polite' aria-atomic='true'>
-              {currentIndex + 1} / {imageCount}
-            </span>
-          </div>
-        )}
-      </div>
-
-      {isLightboxOpen && createPortal(
-        <div className='article-lightbox' role='dialog' aria-modal='true' aria-label={`Podgląd zdjęcia ${currentIndex + 1} z ${imageCount}`}>
-          <button className='article-lightbox__scrim' type='button' tabIndex={-1} aria-hidden='true' onClick={closeLightbox} />
-          <div className='article-lightbox__topbar'>
-            {imageCount > 1 && <span className='article-lightbox__position' aria-live='polite'>{currentIndex + 1} / {imageCount}</span>}
-            <button ref={closeButtonRef} className='article-lightbox__close-btn' type='button' onClick={closeLightbox} aria-label='Zamknij podgląd'>
-              <CloseIcon />
-            </button>
-          </div>
-
-          <div className='article-lightbox__content' onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-            {imageCount > 1 && (
-              <>
-                <button className='article-lightbox__nav-btn article-lightbox__nav-btn--prev' type='button' onClick={showPrevious} aria-label='Poprzednie zdjęcie'>
-                  <ChevronLeftIcon />
-                </button>
-                <button className='article-lightbox__nav-btn article-lightbox__nav-btn--next' type='button' onClick={showNext} aria-label='Następne zdjęcie'>
-                  <ChevronRightIcon />
-                </button>
-              </>
-            )}
-            <img
-              {...getStrapiMediaProps(currentImage.src, { isLightbox: true, sizes: '100vw' })}
-              alt={currentImage.alt || `Zdjęcie ${currentIndex + 1}`}
-              className='article-lightbox__image'
-              draggable={false}
-            />
-          </div>
-
-          {imageCount > 1 && (
-            <div className='article-lightbox__thumbs-bar' role='region' aria-label='Miniatury zdjęć galerii'>
-              <div className='article-lightbox__thumbs-track' ref={lightboxThumbsRef}>
-                {images.map((image, index) => {
-                  const isCurrent = currentIndex === index
-                  const thumbMedia = getStrapiMediaProps(image.src, { sizes: '96px' })
-                  return (
-                    <button
-                      key={`lightbox-thumb-${index}`}
-                      type='button'
-                      className={`article-lightbox__thumb${isCurrent ? ' article-lightbox__thumb--active' : ''}`}
-                      onClick={() => goToIndex(index)}
-                      aria-label={`Przejdź do zdjęcia ${index + 1}`}
-                      aria-current={isCurrent ? 'true' : undefined}
-                    >
-                      <img
-                        src={thumbMedia.src}
-                        alt={image.alt || `Miniatura ${index + 1}`}
-                        className='article-lightbox__thumb-img'
-                        loading='lazy'
-                        draggable={false}
-                      />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-        </div>,
-        document.body
+    <div className={`article-gallery${variant === 'cover' ? ' article-gallery--cover' : ''}`}>
+      {variant !== 'cover' && images.some((image) => image.metadataMissing) && (
+        <p className="article-gallery__notice">Podgląd lokalny: opisy i autorzy zdjęć wymagają uzupełnienia przed publikacją.</p>
       )}
-    </section>
+      <div className="article-gallery__grid">
+        {visible.map((image, i) => (
+          <figure key={`${image.src}-${i}`}>
+            <button
+              className="article-gallery__image-button"
+              type="button"
+              aria-label={variant === 'cover' ? `Powiększ okładkę: ${image.alt}` : `Powiększ zdjęcie: ${image.alt}`}
+              onClick={(event) => {
+                trigger.current = event.currentTarget
+                selectImage(i)
+              }}
+            >
+              <FallbackImage
+                className="article-gallery__image"
+                src={image.src}
+                width={image.width || 800}
+                height={image.height || 600}
+                sizes={variant === 'cover' ? '(max-width: 1023px) calc(100vw - 32px), min(660px, 42vw)' : i === 0 ? '(max-width: 767px) 100vw, min(800px, 50vw)' : '(max-width: 767px) 50vw, min(400px, 25vw)'}
+                alt={image.alt}
+                loading={variant === 'cover' ? 'eager' : 'lazy'}
+                fetchPriority={variant === 'cover' ? 'high' : 'auto'}
+              />
+              {variant === 'cover' && (
+                <span className="article-gallery__zoom" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                    <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" />
+                  </svg>
+                </span>
+              )}
+            </button>
+            {(image.caption || image.author || (variant === 'cover' && image.metadataMissing)) && (
+              <figcaption>
+                {[variant === 'cover' && image.metadataMissing ? 'Podgląd lokalny: opis i autor wymagają uzupełnienia.' : null, image.caption || null, image.author ? `Fot. ${image.author}` : null]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </figcaption>
+            )}
+          </figure>
+        ))}
+      </div>
+      {hidden > 0 && (
+        <button type="button" className="btn btn--secondary article-gallery__more" onClick={() => setExpanded(true)}>
+          Pokaż wszystkie zdjęcia ({images.length})
+        </button>
+      )}
+      {active &&
+        createPortal(
+          <div
+            className="article-lightbox"
+            ref={modal}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Galeria zdjęć"
+            onTouchStart={(event) => {
+              start.current = event.touches[0].clientX
+            }}
+            onTouchEnd={(event) => {
+              if (
+                start.current !== null &&
+                Math.abs(event.changedTouches[0].clientX - start.current) > 50
+              ) {
+                setImageState('loading')
+                setIndex(
+                  (value) =>
+                    ((value || 0) +
+                      (event.changedTouches[0].clientX < start.current! ? 1 : -1) +
+                      images.length) %
+                    images.length
+                )
+              }
+              start.current = null
+            }}
+          >
+            <button
+              className="article-lightbox__close"
+              onClick={() => setIndex(null)}
+              type="button"
+              aria-label="Zamknij galerię"
+            >
+              <CloseIcon size={24} />
+            </button>
+            <button
+              className="article-lightbox__prev"
+              onClick={() => selectImage(((index || 0) - 1 + images.length) % images.length)}
+              type="button"
+              aria-label="Poprzednie zdjęcie"
+            >
+              <ArrowRightIcon size={24} className="icon-back" />
+            </button>
+            <figure className="article-lightbox__figure">
+              <p role="status" className="article-lightbox__status">{imageState === 'loading' ? 'Ładowanie zdjęcia…' : imageState === 'error' ? 'Nie udało się pobrać zdjęcia.' : ''}</p>
+              {imageState === 'error' && <button type="button" className="btn btn--secondary" onClick={() => { setImageState('loading'); setAttempt(attempt + 1) }}>Spróbuj ponownie</button>}
+              <img key={`${active.src}-${attempt}`} src={active.src} alt={active.alt} onLoad={() => setImageState('loaded')} onError={() => setImageState('error')} hidden={imageState === 'error'} />
+              <figcaption>
+                {active.caption ? <span>{active.caption}</span> : null}
+                {active.author ? <span> · Fot. {active.author}</span> : null}
+                {active.caption || active.author ? <span> · </span> : null}
+                <a href={active.src} target="_blank" rel="noopener noreferrer">Otwórz oryginał</a><span className="article-lightbox__counter">
+                  {(index || 0) + 1} z {images.length}
+                </span>
+              </figcaption>
+            </figure>
+            <button
+              className="article-lightbox__next"
+              onClick={() => selectImage(((index || 0) + 1) % images.length)}
+              type="button"
+              aria-label="Następne zdjęcie"
+            >
+              <ArrowRightIcon size={24} />
+            </button>
+          </div>,
+          document.body
+        )}
+    </div>
   )
 }

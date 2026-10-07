@@ -1,10 +1,10 @@
-import { MegaHomeTemplate } from '../components/public/templates/MegaHomeTemplate'
+import { HomeTemplate } from '../components/public/templates/HomeTemplate'
 import { getPublicSiteData } from '../lib/data'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60
 
 export default async function HomePage() {
-  const { news, recentGames, nearestEvent, roster, sponsors, table, states } = await getPublicSiteData()
+  const { news, allGames, recentGames, nearestEvent, roster, sponsors, table, states } = await getPublicSiteData()
   const organizationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SportsTeam',
@@ -19,7 +19,8 @@ export default async function HomePage() {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <MegaHomeTemplate
+      <HomeTemplate
+        allGames={allGames}
         news={news}
         recentGames={recentGames}
         nearestEvent={nearestEvent}
@@ -28,7 +29,6 @@ export default async function HomePage() {
         table={table}
         newsState={states.news}
         tableState={states.table}
-        eventsState={states.events}
       />
     </>
   )

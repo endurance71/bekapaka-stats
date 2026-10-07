@@ -1,0 +1,65 @@
+[
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 375
+  },
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 390
+  },
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 430
+  },
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 768
+  },
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 820
+  },
+  {
+    "cards": 4,
+    "header": 60,
+    "menu": "grid",
+    "overflow": false,
+    "width": 1024
+  },
+  {
+    "cards": 4,
+    "header": 72,
+    "menu": "none",
+    "overflow": false,
+    "width": 1280
+  },
+  {
+    "cards": 4,
+    "header": 72,
+    "menu": "none",
+    "overflow": false,
+    "width": 1440
+  },
+  {
+    "cards": 4,
+    "header": 72,
+    "menu": "none",
+    "overflow": false,
+    "width": 1920
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "dpr": 1,
+    "galleryTop": 152.234375,
+    "hash": "#gallery-1",
+    "images": [
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2Fpolitechnika_a3af645931.png&w=768&q=75",
+        "loading": "eager",
+        "sizes": "(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) calc(41.667vw - 46.667px), min(513.34px, calc(41.667vw - 60px))",
+        "width": 358
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1134_925f20306a.jpeg&w=192&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 32vw, 457px",
+        "width": 173
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1139_a0959fc37c.jpeg&w=192&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 173
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1150_46eaf177ea.jpeg&w=192&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 173
+      }
+    ],
+    "width": 390
+  },
+  {
+    "dpr": 1,
+    "galleryTop": 152.1640625,
+    "hash": "#gallery-1",
+    "images": [
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2Fpolitechnika_a3af645931.png&w=768&q=75",
+        "loading": "eager",
+        "sizes": "(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) calc(41.667vw - 46.667px), min(513.34px, calc(41.667vw - 60px))",
+        "width": 704
+      },
+      {
+        "currentSrc": "",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 32vw, 457px",
+        "width": 321
+      },
+      {
+        "currentSrc": "",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 321
+      },
+      {
+        "currentSrc": "",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 321
+      }
+    ],
+    "width": 768
+  },
+  {
+    "dpr": 1,
+    "galleryTop": 255.875,
+    "hash": "#gallery-1",
+    "images": [
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2Fpolitechnika_a3af645931.png&w=768&q=75",
+        "loading": "eager",
+        "sizes": "(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) calc(41.667vw - 46.667px), min(513.34px, calc(41.667vw - 60px))",
+        "width": 513
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1134_925f20306a.jpeg&w=480&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 32vw, 457px",
+        "width": 457
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1139_a0959fc37c.jpeg&w=256&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 223
+      },
+      {
+        "currentSrc": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FIMG_1150_46eaf177ea.jpeg&w=256&q=75",
+        "loading": "lazy",
+        "sizes": "(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px",
+        "width": 223
+      }
+    ],
+    "width": 1440
+  }
+]

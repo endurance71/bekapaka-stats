@@ -17,8 +17,8 @@ services:
 
   backend:
     build:
-      context: backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     environment:
       # DEV ONLY
       DATABASE_URL: postgres://bekapaka:bekapaka_pass@db:5432/bekapaka_stats

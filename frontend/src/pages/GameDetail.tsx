@@ -1,3 +1,4 @@
+import { MatchPresentationEditor } from '../components/games/MatchPresentationEditor';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
@@ -278,6 +279,7 @@ export default function GameDetail() {
                 </div>
               </div>
 
+              {isAdmin && <MatchPresentationEditor game={game} onSaved={() => void fetchGame()} />}
               <BoxScoreModern
                 playerStats={(activeTab === 'bekapaka' ? bekapaka : opponentTeam)?.players?.map((p: any) => ({
                   name: p.name,

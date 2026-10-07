@@ -1,5 +1,3 @@
-import { strapiCollectionSchema } from './schemas'
-
 export function sanitizeText(value: unknown, fallback = ''): string {
   if (typeof value === 'string') return value.trim()
   if (typeof value === 'number') return String(value)
@@ -16,10 +14,22 @@ export function sanitizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+/** Optional measurements must not acquire a zero when the source is missing or invalid. */
+export function optionalNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (typeof value !== 'string' || !value.trim()) return undefined
+  const parsed = Number(value.trim().replace(',', '.'))
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 /** Parse collection items one-by-one so a single Zod failure does not drop the list. */
 export function parseCollectionItems<T>(
   items: unknown[],
-  schema: { safeParse: (data: unknown) => { success: true; data: T } | { success: false; error: { issues: unknown[] } } },
+  schema: {
+    safeParse: (
+      data: unknown
+    ) => { success: true; data: T } | { success: false; error: { issues: unknown[] } }
+  },
   label: string
 ): T[] {
   const parsed: T[] = []
@@ -35,10 +45,11 @@ export function parseCollectionItems<T>(
 }
 
 export function toNormalizedArray(payload: unknown): Record<string, unknown>[] {
-  const parsed = strapiCollectionSchema.safeParse(payload)
-  if (!parsed.success) return []
-  const data = parsed.data.data
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return []
+  const data = (payload as { data?: unknown }).data
   const entries = Array.isArray(data) ? data : data ? [data] : []
+  if (entries.some((entry) => !entry || typeof entry !== 'object' || Array.isArray(entry)))
+    return []
 
   return entries.map((entry) => {
     if (!entry || typeof entry !== 'object') return {}
@@ -132,11 +143,19 @@ export function isCameraOrUuidFilename(text: string): boolean {
   const longHexRegex = /^[0-9a-f]{10,}\b/i
   const cameraRegex = /^(img|image|dsc|screenshot|photo|c[0-9a-f]{6,}|[0-9a-f]{8,})[_\s-]?\d*/i
   const hasExtension = /\.(png|jpe?g|webp|gif|svg)$/i.test(trimmed)
-  return uuidRegex.test(trimmed) || longHexRegex.test(trimmed) || (hasExtension && (cameraRegex.test(trimmed) || trimmed.length > 24))
+  return (
+    uuidRegex.test(trimmed) ||
+    longHexRegex.test(trimmed) ||
+    (hasExtension && (cameraRegex.test(trimmed) || trimmed.length > 24))
+  )
 }
 
 /** Sanitize image alt text so raw camera filenames are replaced with descriptive context */
-export function resolveImageAlt(rawAlt: string | undefined, contextTitle: string, imageIndex = 0): string {
+export function resolveImageAlt(
+  rawAlt: string | undefined,
+  contextTitle: string,
+  imageIndex = 0
+): string {
   const clean = rawAlt ? rawAlt.trim() : ''
   if (!clean || isCameraOrUuidFilename(clean)) {
     return `${contextTitle} – Zdjęcie ${imageIndex + 1}`
@@ -173,7 +192,7 @@ const POSITION_MAP: Record<string, string> = {
 }
 
 export function getPositionLabel(position?: string): string {
-  if (!position) return 'Zawodnik'
+  if (!position || position.trim().toLowerCase() === 'brak') return 'Zawodnik'
   return POSITION_MAP[position.toUpperCase()] || position
 }
 
@@ -191,12 +210,14 @@ const LOCAL_PHOTOS = new Set([
   'tomasz-kaszubowski'
 ])
 
-export function hasPlayerPhoto(player?: {
-  firstName?: string
-  lastName?: string
-  photo?: string | null
-  photoUrl?: string | null
-} | null): boolean {
+export function hasPlayerPhoto(
+  player?: {
+    firstName?: string
+    lastName?: string
+    photo?: string | null
+    photoUrl?: string | null
+  } | null
+): boolean {
   if (!player) return false
 
   // 1. Database photo
@@ -209,19 +230,28 @@ export function hasPlayerPhoto(player?: {
 
   // 3. Check if local photo exists in our known list
   if (player.firstName && player.lastName) {
-    const norm = normalizePolishChars(player.firstName) + '-' + normalizePolishChars(player.lastName)
-    if (LOCAL_PHOTOS.has(norm)) return true
+    const norm =
+      normalizePolishChars(player.firstName) + '-' + normalizePolishChars(player.lastName)
+    if (
+      LOCAL_PHOTOS.has(norm) ||
+      LOCAL_PHOTOS.has(
+        normalizePolishChars(player.lastName) + '-' + normalizePolishChars(player.firstName)
+      )
+    )
+      return true
   }
 
   return false
 }
 
-export function resolvePlayerPhoto(player?: {
-  firstName?: string
-  lastName?: string
-  photo?: string | null
-  photoUrl?: string | null
-} | null): string {
+export function resolvePlayerPhoto(
+  player?: {
+    firstName?: string
+    lastName?: string
+    photo?: string | null
+    photoUrl?: string | null
+  } | null
+): string {
   if (!player) return '/photos/default.png'
 
   // 1. Custom photo from user data (Base64 or URL)
@@ -233,8 +263,13 @@ export function resolvePlayerPhoto(player?: {
   const hasValid = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg')
   if (hasValid) return remotePhoto
 
+  // Existing real portrait supplied by the player, documented in the brand source.
+  if (normalizePolishChars(`${player.firstName || ''}-${player.lastName || ''}`) === 'damian-motylinski') return '/brand/photography/player-24.webp'
+
   // 3. Fallback to name-based pattern
-  return getPhotoUrl(player.firstName, player.lastName)
+  const reversed =
+    normalizePolishChars(player.lastName || '') + '-' + normalizePolishChars(player.firstName || '')
+  return LOCAL_PHOTOS.has(reversed)
+    ? `/photos/${reversed}.png`
+    : getPhotoUrl(player.firstName, player.lastName)
 }
-
-

@@ -1,3 +1,4 @@
+import { getAllDocuments } from '../../../lib/data/cms'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
@@ -7,7 +8,7 @@ import { formatDate } from '../../../lib/format'
 type Params = { slug: string }
 
 async function getDocumentBySlug(slug: string): Promise<DocumentItem | null> {
-  const items = await getDocuments(250)
+  const items = await getAllDocuments()
   return items.find((item) => item.slug === slug) || null
 }
 
@@ -22,6 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   if (!item) return { title: 'Dokument | BeKaPaKa Bobolice' }
   return {
     ...getSiteMetadataBase(),
+    alternates: { canonical: `/dokumenty/${slug}` },
     title: `${item.title} | BeKaPaKa Bobolice`,
     description: `Dokument klubowy: ${item.title}`
   }
@@ -36,17 +38,17 @@ export default async function DocumentDetailPage({ params }: { params: Promise<P
     <EditorialDetailTemplate
       sectionLabel='Dokumenty'
       title={item.title}
-      meta={`${item.category} | ${formatDate(item.effectiveDate)}`}
+      meta={`${item.category} · ${formatDate(item.effectiveDate)}`}
       parentHref='/dokumenty'
       content={
         item.fileUrl ? (
           <p>
-            <a className='button button--primary' href={item.fileUrl} target='_blank' rel='noreferrer'>
+            <a className='btn btn--primary' href={item.fileUrl} target='_blank' rel='noreferrer'>
               Pobierz dokument
             </a>
           </p>
         ) : (
-          <p>Plik nie jest dostepny.</p>
+          <p>Plik nie jest dostępny.</p>
         )
       }
     />

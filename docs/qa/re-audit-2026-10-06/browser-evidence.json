@@ -1,0 +1,751 @@
+[
+  {
+    "label": "home-desktop",
+    "documentHeight": 5535,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "BeKaPaKa Bobolice — koszykówka"
+    ],
+    "height": 1000,
+    "mainHeight": 4963,
+    "unloadedImages": 17,
+    "url": "http://127.0.0.1:3100/",
+    "width": 1440
+  },
+  {
+    "label": "scheduled-desktop",
+    "documentHeight": 2545,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "BeKaPaKa — GMVT TEAM"
+    ],
+    "height": 1000,
+    "mainHeight": 1973.7109375,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/mecze/kalk-4144",
+    "width": 1440
+  },
+  {
+    "label": "finished-desktop",
+    "documentHeight": 3745,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "BeKaPaKa — Kosz-All-In"
+    ],
+    "height": 1000,
+    "mainHeight": 3173.140625,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/mecze/kalk-4124",
+    "width": 1440
+  },
+  {
+    "label": "finished-mobile",
+    "documentHeight": 4623,
+    "documentWidth": 375,
+    "footerHeight": 1215.4765625,
+    "h1": [
+      "BeKaPaKa — Kosz-All-In"
+    ],
+    "height": 844,
+    "mainHeight": 3280.0078125,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/mecze/kalk-4124",
+    "width": 390
+  },
+  {
+    "label": "poster-mobile",
+    "documentHeight": 4147,
+    "documentWidth": 375,
+    "footerHeight": 1215.515625,
+    "h1": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września"
+    ],
+    "height": 844,
+    "mainHeight": 2804.078125,
+    "unloadedImages": 5,
+    "url": "http://127.0.0.1:3100/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 390
+  },
+  {
+    "label": "poster-fit-and-label",
+    "breadcrumb": [
+      {
+        "height": 19,
+        "text": "Start"
+      },
+      {
+        "height": 19,
+        "text": "Aktualności"
+      }
+    ],
+    "cover": [
+      {
+        "fit": "contain",
+        "height": 192.9375,
+        "naturalHeight": 219,
+        "naturalWidth": 389,
+        "width": 343
+      }
+    ],
+    "enlargeLink": false,
+    "eyebrow": [
+      {
+        "bg": "rgb(217, 20, 47)",
+        "color": "rgb(255, 255, 255)",
+        "font": "600 13px / 15.6px barlow, \"barlow Fallback\", Barlow, system-ui, sans-serif"
+      }
+    ]
+  },
+  {
+    "label": "back-link-focus",
+    "activeClass": "article-detail__back-link visually-hidden-focusable",
+    "activeText": "Wróć do aktualności",
+    "outline": "rgb(11, 11, 11) solid 3px",
+    "rect": {
+      "bottom": 178.4453125,
+      "height": 44.046875,
+      "left": 16,
+      "right": 188.9921875,
+      "top": 134.3984375,
+      "width": 172.9921875,
+      "x": 16,
+      "y": 134.3984375
+    }
+  },
+  {
+    "label": "long-article-desktop",
+    "documentHeight": 11199,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju"
+    ],
+    "height": 1000,
+    "mainHeight": 10626.984375,
+    "unloadedImages": 21,
+    "url": "http://127.0.0.1:3100/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 1440
+  },
+  {
+    "label": "article-gallery-and-anchors",
+    "anchors": [],
+    "coverFit": "contain",
+    "galleryButtons": [
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 1",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 2",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 3",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 4",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 5",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 6",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 7",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 8",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 9",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 10",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 11",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 12",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 13",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 14",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 15",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 16",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 17",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 18",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 19",
+      "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 20"
+    ],
+    "galleryCaptions": [],
+    "sizes": [
+      {
+        "currentSrc": "",
+        "displayWidth": 457.03125,
+        "sizes": "(max-width: 768px) 50vw, 33vw"
+      },
+      {
+        "currentSrc": "",
+        "displayWidth": 222.5234375,
+        "sizes": "(max-width: 768px) 50vw, 33vw"
+      },
+      {
+        "currentSrc": "",
+        "displayWidth": 222.5234375,
+        "sizes": "(max-width: 768px) 50vw, 33vw"
+      }
+    ]
+  },
+  {
+    "label": "lightbox-mobile",
+    "counter": "1 z 20",
+    "icons": [
+      {
+        "name": "Zamknij galerię",
+        "svg": false,
+        "text": "×"
+      },
+      {
+        "name": "Poprzednie zdjęcie",
+        "svg": false,
+        "text": "←"
+      },
+      {
+        "name": "Następne zdjęcie",
+        "svg": false,
+        "text": "→"
+      }
+    ],
+    "image": [
+      {
+        "height": 652,
+        "loaded": false,
+        "width": 366
+      }
+    ]
+  },
+  {
+    "label": "gallery-focus-return",
+    "focused": "Powiększ zdjęcie: Politechnika Koszalińska z Pucharem Burmistrza Bobolic. Za nami III edycja turnieju – Zdjęcie 1"
+  },
+  {
+    "label": "news-categories-mobile",
+    "filters": [
+      {
+        "href": "/aktualnosci",
+        "rect": {
+          "bottom": 326.2890625,
+          "height": 48,
+          "left": 16,
+          "right": 137.4765625,
+          "top": 278.2890625,
+          "width": 121.4765625,
+          "x": 16,
+          "y": 278.2890625
+        },
+        "text": "Wszystkie"
+      },
+      {
+        "href": "/aktualnosci?category=Turniej",
+        "rect": {
+          "bottom": 326.2890625,
+          "height": 48,
+          "left": 145.4765625,
+          "right": 247.6953125,
+          "top": 278.2890625,
+          "width": 102.21875,
+          "x": 145.4765625,
+          "y": 278.2890625
+        },
+        "text": "Turniej"
+      },
+      {
+        "href": "/aktualnosci?category=Dru%C5%BCyna",
+        "rect": {
+          "bottom": 382.2890625,
+          "height": 48,
+          "left": 16,
+          "right": 123.3671875,
+          "top": 334.2890625,
+          "width": 107.3671875,
+          "x": 16,
+          "y": 334.2890625
+        },
+        "text": "Drużyna"
+      },
+      {
+        "href": "/aktualnosci?category=Klub",
+        "rect": {
+          "bottom": 382.2890625,
+          "height": 48,
+          "left": 131.3671875,
+          "right": 210.40625,
+          "top": 334.2890625,
+          "width": 79.0390625,
+          "x": 131.3671875,
+          "y": 334.2890625
+        },
+        "text": "Klub"
+      }
+    ]
+  },
+  {
+    "label": "roster-completeness",
+    "description": [
+      "Drużyna · KALK Koszalin",
+      "Sezon 2026/2027 · II Dywizja KALK · 20 zawodników w kadrze BeKaPaKa Bobolice."
+    ],
+    "players": [
+      {
+        "href": "/sklad/75dd853d-e6d4-4089-883c-9392b05c252f",
+        "photo": false,
+        "text": "2Jędrzej · #2BortnikNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/08a918a8-2643-436d-9812-f6ffe7d90b52",
+        "photo": false,
+        "text": "3Paweł · #3SamusionekRozgrywający"
+      },
+      {
+        "href": "/sklad/428899fd-f115-48da-be46-67e3d401f075",
+        "photo": false,
+        "text": "4Pablo · #4IriarteSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/e25fcddf-07eb-417c-b3d0-9893dbe506d9",
+        "photo": false,
+        "text": "7Patryk · #7SzczęśniakSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/21b5cd72-2f43-41cc-beea-c5dc471f5295",
+        "photo": false,
+        "text": "10Marcin · #10TrawińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/4e1f208b-c0fa-40a0-9f8a-3d5a83cb0c4f",
+        "photo": false,
+        "text": "11Mirosław · #11MalinaSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/6e4b3066-85ba-4448-9d88-1437c68f8b05",
+        "photo": false,
+        "text": "12Tomasz · #12KaszubowskiRzucający obrońca"
+      },
+      {
+        "href": "/sklad/7ecbfdcc-c83e-4e55-800a-ae9a8e654cee",
+        "photo": false,
+        "text": "16Przemysław · #16KlimekSilny skrzydłowy"
+      },
+      {
+        "href": "/sklad/5b93fd48-790e-44ba-bfaa-f4e754b09b0b",
+        "photo": false,
+        "text": "21Robert · #21KulikŚrodkowy"
+      },
+      {
+        "href": "/sklad/1a13d025-0978-4640-8568-2bc4b4c9a2ef",
+        "photo": false,
+        "text": "23Emil · #23KłosŚrodkowy"
+      },
+      {
+        "href": "/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e",
+        "photo": false,
+        "text": "24Damian · #24MotylińskiNiski skrzydłowy"
+      },
+      {
+        "href": "/sklad/bf4c6f9f-92dd-4159-8960-cab60cf935c3",
+        "photo": false,
+        "text": "34Łukasz · #34GośniakRozgrywający"
+      },
+      {
+        "href": "/sklad/32b52081-2a59-4319-90df-6ebc91e8a210",
+        "photo": false,
+        "text": "69Filip · #69KarpińskiŚrodkowy"
+      },
+      {
+        "href": "/sklad/30ed3c7c-f2c6-498b-952f-5b97c409a47a",
+        "photo": false,
+        "text": "77Filip · #77KaweckiŚrodkowy"
+      },
+      {
+        "href": "/sklad/c32599b4-752b-4a3b-bddd-95ea7b2751b7",
+        "photo": false,
+        "text": "1Dawid · #1OlearczykZawodnik"
+      },
+      {
+        "href": "/sklad/aa7d4cc7-8f0a-4d43-ba3d-a04c7ee242c1",
+        "photo": false,
+        "text": "27Alan · #27NiwińskiZawodnik"
+      },
+      {
+        "href": "/sklad/03f5c874-a56e-480c-b3b2-79d8252de411",
+        "photo": false,
+        "text": "29Maciej · #29TymińskiZawodnik"
+      },
+      {
+        "href": "/sklad/8f0d5018-e396-45d3-a8f3-5367d14a504d",
+        "photo": false,
+        "text": "15Jakub · #15GołębiowskiZawodnik"
+      },
+      {
+        "href": "/sklad/7cef7f40-840e-4251-93b7-a6a0284b4322",
+        "photo": false,
+        "text": "13Łukasz · #13MrasZawodnik"
+      },
+      {
+        "href": "/sklad/12fbd4ce-69e2-40d8-bdcf-720982b0b4f4",
+        "photo": false,
+        "text": "8Piotr · #8SosińskiZawodnik"
+      }
+    ]
+  },
+  {
+    "label": "roster-photo-count",
+    "cards": 20,
+    "photos": 11,
+    "placeholders": 9
+  },
+  {
+    "label": "profile-stat-context",
+    "headings": [
+      "Damian Motyliński",
+      "Średnie statystyki sezonu",
+      "Skuteczność rzutowa",
+      "Historia występów"
+    ],
+    "heroAverages": [
+      {
+        "mask": "none",
+        "value": "8.0"
+      },
+      {
+        "mask": "none",
+        "value": "1.0"
+      },
+      {
+        "mask": "none",
+        "value": "1.0"
+      }
+    ],
+    "nameMask": "repeating-linear-gradient(rgb(0, 0, 0) 0px, rgb(0, 0, 0) 29.128px, rgba(0, 0, 0, 0) 29.128px, rgba(0, 0, 0, 0) 30.206px, rgb(0, 0, 0) 30.206px, rgb(0, 0, 0) 44px)",
+    "seasonMentions": [],
+    "shooting": [
+      "Rzuty z gry (FG%)100.0%",
+      "Rzuty za 3 (3P%)0.0%",
+      "Rzuty wolne (FT%)0.0%"
+    ],
+    "summary": "Rozegrane mecze: 1Średni wskaźnik EVAL: 12.0"
+  },
+  {
+    "label": "partners-grid-and-contact",
+    "cards": 15,
+    "columns": "243.195px 243.203px 243.195px 243.203px 243.195px",
+    "contact": [
+      "mailto:kontakt@damianmotylinski.pl?subject=Wsp%C3%B3%C5%82praca%20partnerska%20z%20BeKaPaKa"
+    ],
+    "copy": "Wspieraj rozwój koszykówki w Bobolicach, turnieje młodzieżowe i naszą drużynę w KALK. Oferujemy ekspozycję na strojach, materiałach klubowych i podczas wydarzeń w hali CESiR."
+  },
+  {
+    "label": "club-desktop",
+    "documentHeight": 4405,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "O klubie"
+    ],
+    "height": 1000,
+    "mainHeight": 3833.7109375,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/klub",
+    "width": 1440
+  },
+  {
+    "label": "club-mobile",
+    "documentHeight": 7325,
+    "documentWidth": 375,
+    "footerHeight": 1215.4765625,
+    "h1": [
+      "O klubie"
+    ],
+    "height": 844,
+    "mainHeight": 5982.0703125,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/klub",
+    "width": 390
+  },
+  {
+    "label": "club-contact-anchor",
+    "headerBottom": 60,
+    "targetTop": 76,
+    "url": "http://127.0.0.1:3100/klub#kontakt"
+  },
+  {
+    "label": "donation-mobile-copy-placement",
+    "copy": [
+      {
+        "bottom": 652.5078125,
+        "text": "Kopiuj numer konta",
+        "top": 604.5078125
+      },
+      {
+        "bottom": 716.5078125,
+        "text": "Zamknij",
+        "top": 668.5078125
+      }
+    ],
+    "height": 844,
+    "liveRegions": [],
+    "qr": {
+      "bottom": 990.5078125,
+      "height": 250,
+      "left": 55,
+      "right": 305,
+      "top": 740.5078125,
+      "width": 250,
+      "x": 55,
+      "y": 740.5078125
+    }
+  },
+  {
+    "label": "donation-focus-return",
+    "activeLabel": null,
+    "activeText": "Pokaż kod QR do przelewu"
+  },
+  {
+    "label": "menu-focus-trap",
+    "active": "Zaloguj do Panelu",
+    "inside": true
+  },
+  {
+    "label": "Otwórz menu nawigacji"
+  },
+  {
+    "label": "documents-mobile",
+    "documentHeight": 2127,
+    "documentWidth": 375,
+    "footerHeight": 1215.4765625,
+    "h1": [
+      "Dokumenty klubowe"
+    ],
+    "height": 844,
+    "mainHeight": 784,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/dokumenty",
+    "width": 390
+  },
+  {
+    "label": "documents-desktop",
+    "documentHeight": 1512,
+    "documentWidth": 1425,
+    "footerHeight": 500,
+    "h1": [
+      "Dokumenty klubowe"
+    ],
+    "height": 1000,
+    "mainHeight": 940,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/dokumenty",
+    "width": 1440
+  },
+  {
+    "label": "documents-background-gap",
+    "main": {
+      "bottom": 1012,
+      "height": 940,
+      "left": 0,
+      "right": 1425,
+      "top": 72,
+      "width": 1425,
+      "x": 0,
+      "y": 72
+    },
+    "mainMinHeight": "940px",
+    "section": {
+      "bottom": 652.3828125,
+      "height": 580.3828125,
+      "left": 0,
+      "right": 1425,
+      "top": 72,
+      "width": 1425,
+      "x": 0,
+      "y": 72
+    }
+  },
+  {
+    "label": "standings-context",
+    "description": [
+      "KALK Koszalin · Dywizja II",
+      "Sezon 2026/2027 · Aktualna pozycja zespołów, bilans meczów i punktacja."
+    ],
+    "legend": "M – meczeW – wygraneP – porażki+/− – małe punktyPKT – punkty ligowe (2 za wygraną, 1 za porażkę)",
+    "streaks": [
+      "Seria",
+      "W1",
+      "W1",
+      "W1",
+      "P1",
+      "P1",
+      "P1",
+      "—",
+      "—",
+      "—",
+      "—"
+    ]
+  },
+  {
+    "label": "standings-mobile-expanded",
+    "scrollLeft": 337,
+    "shellWidth": 343,
+    "tableWidth": 680,
+    "teamPosition": "sticky",
+    "teamX": 16
+  },
+  {
+    "label": "home-mobile",
+    "documentHeight": 9099,
+    "documentWidth": 375,
+    "footerHeight": 1215.4765625,
+    "h1": [
+      "BeKaPaKa Bobolice — koszykówka"
+    ],
+    "height": 844,
+    "mainHeight": 7755.3359375,
+    "unloadedImages": 20,
+    "url": "http://127.0.0.1:3100/",
+    "width": 390
+  },
+  {
+    "label": "responsive-matrix",
+    "matrix": [
+      {
+        "docWidth": 753,
+        "h1": "BeKaPaKa Bobolice — koszykówka",
+        "height": 7733,
+        "url": "/",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "Terminarz i wyniki",
+        "height": 1779,
+        "url": "/mecze",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "Tabela ligi",
+        "height": 1779,
+        "url": "/tabela",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "Skład drużyny",
+        "height": 3151,
+        "url": "/sklad",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "O klubie",
+        "height": 4697,
+        "url": "/klub",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "Partnerzy klubu",
+        "height": 2203,
+        "url": "/sponsorzy",
+        "width": 768
+      },
+      {
+        "docWidth": 753,
+        "h1": "Dokumenty klubowe",
+        "height": 1779,
+        "url": "/dokumenty",
+        "width": 768
+      },
+      {
+        "docWidth": 1009,
+        "h1": "BeKaPaKa Bobolice — koszykówka",
+        "height": 5372,
+        "url": "/",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "Terminarz i wyniki",
+        "height": 1529,
+        "url": "/mecze",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "Tabela ligi",
+        "height": 1529,
+        "url": "/tabela",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "Skład drużyny",
+        "height": 2409,
+        "url": "/sklad",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "O klubie",
+        "height": 4570,
+        "url": "/klub",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "Partnerzy klubu",
+        "height": 1685,
+        "url": "/sponsorzy",
+        "width": 1024
+      },
+      {
+        "docWidth": 1009,
+        "h1": "Dokumenty klubowe",
+        "height": 1529,
+        "url": "/dokumenty",
+        "width": 1024
+      }
+    ]
+  },
+  {
+    "label": "production-home",
+    "h1": "BeKaPaKa Bobolice",
+    "height": 1000,
+    "rosterLinks": 21,
+    "url": "https://bekapaka.pl/",
+    "width": 1440
+  },
+  {
+    "label": "poster-desktop-final",
+    "documentHeight": 2708,
+    "documentWidth": 1009,
+    "footerHeight": 529.4375,
+    "h1": [
+      "III Turniej Koszykówki o Puchar Burmistrza Bobolic – kolejna edycja już 26 września"
+    ],
+    "height": 1000,
+    "mainHeight": 2118.7421875,
+    "unloadedImages": 0,
+    "url": "http://127.0.0.1:3100/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026",
+    "width": 1024
+  },
+  {
+    "label": "poster-final-image",
+    "fit": "contain",
+    "loaded": true,
+    "naturalWidth": 430,
+    "src": "http://127.0.0.1:3100/_next/image?url=https%3A%2F%2Fcms.bekapaka.pl%2Fuploads%2FZapowiedz_III_turniej_4X5_814fff7d66.jpg&w=480&q=75"
+  },
+  {
+    "label": "lightbox-final-loaded",
+    "counter": "1 z 20",
+    "image": [
+      {
+        "complete": true,
+        "height": 652,
+        "naturalHeight": 3024,
+        "naturalWidth": 4032,
+        "width": 366
+      }
+    ],
+    "viewport": 390
+  },
+  {
+    "label": "match-back-results",
+    "heading": "Terminarz i wyniki",
+    "url": "http://127.0.0.1:3100/mecze?widok=wyniki"
+  },
+  {
+    "label": "club-support-anchor",
+    "headerBottom": 60,
+    "targetTop": 160.1796875,
+    "url": "http://127.0.0.1:3100/klub#wsparcie"
+  }
+]

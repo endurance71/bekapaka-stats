@@ -54,21 +54,20 @@ describe('StandingsBoard 11-column component', () => {
 
     expect(html).toContain('col-pos">#</th>')
     expect(html).toContain('col-team">Drużyna</th>')
-    expect(html).toContain('col-matches">M</th>')
-    expect(html).toContain('col-wins">W</th>')
-    expect(html).toContain('col-losses">P</th>')
-    expect(html).toContain('col-for">+</th>')
-    expect(html).toContain('col-against">-</th>')
-    expect(html).toContain('col-diff">+/-</th>')
-    expect(html).toContain('col-pts">PKT</th>')
-    expect(html).toContain('col-form">Forma</th>')
-    expect(html).toContain('col-streak">Seria</th>')
+    expect(html).toContain('<abbr title="Mecze">M</abbr>')
+    expect(html).toContain('<abbr title="Wygrane">W</abbr>')
+    expect(html).toContain('<abbr title="Porażki">P</abbr>')
+    expect(html).toContain('<abbr title="Punkty zdobyte">+</abbr>')
+    expect(html).toContain('<abbr title="Punkty stracone">−</abbr>')
+    expect(html).toContain('<abbr title="Bilans punktów">+/−</abbr>')
+    expect(html).toContain('<abbr title="Punkty ligowe">Pkt</abbr>')
+    expect(html).toContain('col-form col-mid">Forma</th>')
+    expect(html).toContain('col-streak col-wide">Seria</th>')
 
-    // Mobile tabs switcher presence
-    expect(html).toContain('standings-mobile-tabs')
-    expect(html).toContain('Główne')
-    expect(html).toContain('Forma i seria')
-    expect(html).toContain('Wszystkie (11)')
+    // No column toggle: key columns are always visible, extras are revealed by width (col-mid / col-wide)
+    expect(html).not.toContain('Więcej kolumn')
+    expect(html).toContain('col-for col-wide')
+    expect(html).toContain('col-form col-mid')
   })
 
   it('renders stats, differential with + sign, and badges properly', () => {
@@ -99,7 +98,7 @@ describe('StandingsBoard 11-column component', () => {
 
     expect(html).toContain('is-bkp')
     expect(html).toContain('standings-team-logo--bkp')
-    expect(html).toContain('src="/logo.png"')
+    expect(html).toContain('src="/brand/sygnet2-kolor-ciasny.svg"')
   })
 
   it('renders fallback shield icon for teams with placeholder logo', () => {
@@ -110,10 +109,10 @@ describe('StandingsBoard 11-column component', () => {
     expect(html).toContain('shield-initial">B</span>')
   })
 
-  it('renders mobile navigation tabs with main tab selected by default', () => {
+  it('keeps league points visible as an emphasised column without horizontal scrolling', () => {
     const html = renderToStaticMarkup(<StandingsBoard table={testStandings} />)
 
-    expect(html).toContain('standings-table--tab-main')
-    expect(html).toContain('aria-selected="true" class="standings-tab-btn is-active">Główne</button>')
+    expect(html).toContain('class="col-stat col-pts"')
+    expect(html).not.toContain('standings__scroll')
   })
 })

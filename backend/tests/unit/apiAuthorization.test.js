@@ -62,6 +62,12 @@ describe('API authorization', () => {
     expect((await request('/api/games', 'POST', token('admin-1', 'ADMIN'))).status).toBe(201);
   });
 
+  it('requires admin authentication for presentation writes', async () => {
+    const path='/api/admin/matches/kalk/season/match/presentation';
+    expect((await request(path, 'PATCH')).status).toBe(401);
+    expect((await request(path, 'PATCH', token('p', 'PLAYER'))).status).toBe(403);
+  });
+
   it('removes account secrets from the public roster', async () => {
     const response = await request('/api/roster');
     expect(response.status).toBe(200);

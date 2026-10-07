@@ -1,9 +1,11 @@
+import { isLocalMediaPreview } from '../../../../lib/data/media-review'
 import { NextResponse } from 'next/server'
 
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
+  if (isLocalMediaPreview()) return NextResponse.json({ ok: true, localPreview: true })
   try {
     const { slug } = await params
     const trimmedSlug = (slug || '').trim()

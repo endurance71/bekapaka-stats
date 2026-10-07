@@ -58,7 +58,10 @@ describe('CMS revalidation', () => {
       headers: { 'x-revalidate-secret': 'revalidate-test-secret' },
     })
     expect((await revalidatePost(request)).status).toBe(200)
-    expect(revalidateTag).toHaveBeenCalledTimes(5)
+    expect(revalidateTag).toHaveBeenCalledWith('cms-media', { expire: 0 })
+    expect(revalidateTag).toHaveBeenCalledWith('backend-games', { expire: 0 })
+    expect(revalidatePath).toHaveBeenCalledWith('/aktualnosci/[slug]', 'page')
+    expect(revalidatePath).toHaveBeenCalledWith('/sitemap.xml')
     expect(revalidatePath).toHaveBeenCalledWith('/')
   })
 })

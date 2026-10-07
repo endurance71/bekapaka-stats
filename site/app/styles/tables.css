@@ -1,0 +1,364 @@
+/* BeKaPaKa Website 2.3 — jeden system tabel.
+   Pas nagłówka · zebra co 2. wiersz · pas stopki · wiersz BeKaPaKa · przyklejony nagłówek i pierwsza kolumna.
+   Klasa bazowa .table; modyfikatory: .standings-table (liga), .boxscore-table, .linescore, .data-table--compact.
+   Listy-tabele (akcja po akcji, harmonogram, grupy, liderzy, indeks składu): .zebra-list. */
+
+@layer tables {
+  /* ---------- Baza ---------- */
+  .table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--fs-table);
+    font-variant-numeric: tabular-nums;
+  }
+  .table abbr {
+    text-decoration: none;
+  }
+  .table th,
+  .table td {
+    height: var(--row-h);
+    padding: var(--space-2) var(--space-3);
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    font-weight: 400;
+    transition: background-color var(--dur-fast) var(--ease-out);
+  }
+
+  /* Nagłówek: pas w kolorze kontrastowym, przyklejony pod nagłówkiem strony */
+  .table thead th {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 3;
+    height: 48px;
+    padding-block: var(--space-2);
+    background: var(--table-head-bg);
+    color: var(--table-head-text);
+    font: 600 var(--fs-micro) / 1.2 var(--font-text);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .table thead .col-key {
+    box-shadow: inset 0 -3px 0 var(--c-red-500);
+  }
+
+  /* Zebra: tło na komórkach, żeby przyklejona pierwsza kolumna miała to samo tło co wiersz */
+  .table tbody tr > * {
+    background: var(--bg);
+  }
+  .table tbody tr:nth-child(even) > * {
+    background: var(--table-stripe);
+  }
+  .table tbody tr:hover > * {
+    background: var(--table-hover);
+  }
+
+  /* Wiersz BeKaPaKa: kolor marki ma pierwszeństwo przed zebrą */
+  .table tbody tr.is-own > *,
+  .table tbody tr.is-bkp > * {
+    background: var(--table-own-bg);
+    font-weight: 600;
+    color: var(--text);
+  }
+  .table tbody tr.is-own > :first-child,
+  .table tbody tr.is-bkp > :first-child {
+    box-shadow: inset 4px 0 0 var(--brand);
+  }
+
+  /* Stopka: pas z linią 2 px — sumy i średnie */
+  .table tfoot th,
+  .table tfoot td {
+    background: var(--table-foot-bg);
+    border-top: 2px solid var(--table-foot-line);
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Kolumny */
+  .table tbody th,
+  .table tfoot th,
+  .table .col-team,
+  .table .boxscore-col-player {
+    text-align: left;
+  }
+  .table .col-key,
+  .table .stat-key {
+    font-weight: 700;
+    color: var(--text);
+  }
+  .table td.col-key,
+  .table td.col-pts {
+    font: 800 calc(var(--fs-table) * 1.3) / 1 var(--font-display);
+  }
+  .table .col-group {
+    border-left: 1px solid var(--line-strong);
+  }
+  .table .is-positive {
+    color: var(--success);
+  }
+  .table .is-negative {
+    color: var(--danger);
+  }
+  .table .is-zero {
+    color: var(--text-muted);
+  }
+
+  /* Przewijanie w bok tylko poniżej 1280 px; wyżej tabela mieści się, a nagłówek może się przykleić */
+  .table-scroll {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+  @media (min-width: 1280px) {
+    .table-scroll {
+      overflow: visible;
+    }
+  }
+  .boxscore-col-player {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    box-shadow: 1px 0 0 var(--line-strong);
+  }
+  .table thead .boxscore-col-player {
+    z-index: 4;
+  }
+
+  @media (max-width: 767px) {
+    .table th,
+    .table td {
+      padding-inline: 6px;
+    }
+    .table .boxscore-col-player,
+    .table .col-pos {
+      padding-left: var(--space-2);
+    }
+  }
+
+  /* ---------- Tabela ligi ---------- */
+  .standings {
+    display: grid;
+    gap: var(--space-4);
+  }
+  .standings-table .col-pos {
+    width: 3rem;
+    text-align: left;
+    color: var(--text-secondary);
+  }
+  .standings-table thead .col-pos {
+    color: var(--table-head-text);
+  }
+  .standings-table .col-stat {
+    width: 3.25rem;
+  }
+  .standings-table .col-pts {
+    width: 4.5rem;
+  }
+  .standings-table .col-form {
+    width: 10.5rem;
+  }
+  .standings-team {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+  }
+  .standings-team__name {
+    min-width: 0;
+    font-weight: 600;
+    line-height: 1.25;
+    white-space: normal;
+    text-wrap: balance;
+  }
+  .standings-logo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: none;
+    color: var(--text-muted);
+  }
+  .standings-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .shield-initial {
+    position: absolute;
+    font: 800 13px / 1 var(--font-display);
+    color: var(--text-secondary);
+  }
+  .standings-form {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .standings-badge {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--line-strong);
+    font: 600 var(--fs-micro) / 1 var(--font-text);
+    color: var(--text-muted);
+  }
+  .standings-badge.standings-badge--win {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+  .standings-badge.standings-badge--loss {
+    border-color: var(--text-secondary);
+    color: var(--text);
+  }
+  .standings-streak {
+    font-weight: 600;
+  }
+  .standings-streak.standings-badge--neutral {
+    color: var(--text-muted);
+  }
+  .standings__note {
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+  }
+  .glossary-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+  }
+  .glossary-inline div {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .glossary-inline dt {
+    font-weight: 600;
+    color: var(--text);
+  }
+  /* Legenda pod tabelą: oddzielona linią, zawsze widoczna */
+  .glossary-inline--table {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--line);
+  }
+  /* Wariant skrócony (strona główna, /mecze): węższe kolumny liczb, mniejszy padding — mieści się w kolumnie 5/12 */
+  .standings--compact .table th,
+  .standings--compact .table td {
+    padding-inline: var(--space-2);
+  }
+  .standings--compact .standings-table .col-stat {
+    width: 2.5rem;
+  }
+  .standings--compact .standings-table .col-pts {
+    width: 3.5rem;
+  }
+  .standings--compact .standings-table .col-pos {
+    width: 2.25rem;
+  }
+  /* Telefon: # · drużyna · M · W · P · Pkt. Tablet: + bilans i forma. Desktop: wszystko. */
+  @media (max-width: 767px) {
+    .standings :is(.col-mid, .col-wide) {
+      display: none;
+    }
+    .standings-table .col-stat {
+      width: 2.25rem;
+    }
+    .standings-table .col-pos {
+      width: 2.25rem;
+    }
+    .standings-logo {
+      width: 24px;
+      height: 24px;
+    }
+  }
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .standings .col-wide {
+      display: none;
+    }
+  }
+  @media (min-width: 1024px) {
+    .standings--full .standings-logo {
+      width: 32px;
+      height: 32px;
+    }
+    .standings--full .standings-table .col-stat {
+      width: 5rem;
+    }
+    .standings--full .standings-table .col-pts {
+      width: 5.5rem;
+    }
+    .standings--full .standings-table .col-pos {
+      width: 3.5rem;
+    }
+  }
+
+  /* ---------- Box score, wynik w kwartach, historia występów ---------- */
+  .data-table--compact {
+    width: auto;
+    min-width: min(100%, 56rem);
+  }
+  .table .shot span {
+    display: block;
+  }
+  .table .shot small {
+    display: block;
+    font-size: var(--fs-micro);
+    color: var(--text-secondary);
+  }
+  .boxscore-player-cell {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+  .boxscore-player-name {
+    font-weight: 600;
+  }
+  .boxscore-player-number {
+    font-size: var(--fs-micro);
+    color: var(--text-secondary);
+  }
+  .boxscore-starter-star {
+    color: var(--brand-text);
+  }
+  .player-game-date {
+    display: block;
+    font-size: var(--fs-micro);
+    color: var(--text-secondary);
+  }
+  .linescore .boxscore-col-player {
+    width: 30%;
+    font-weight: 600;
+  }
+  .linescore td {
+    font: 800 calc(var(--fs-table) * 1.3) / 1 var(--font-display);
+  }
+  @media (max-width: 767px) {
+    /* Widok podstawowy box score: zawodnik · MIN · PKT · ZB · AS */
+    .boxscore-table[data-view='basic'] :is(th, td):nth-child(n + 4):not(:nth-child(10)):not(:nth-child(11)) {
+      display: none;
+    }
+  }
+
+  /* ---------- Listy w rytmie tabeli ---------- */
+  .zebra-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .zebra-list > * {
+    background: var(--bg);
+  }
+  .zebra-list > :nth-child(even) {
+    background: var(--table-stripe);
+  }
+  .zebra-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--table-head-bg);
+    color: var(--table-head-text);
+  }
+}

@@ -1,0 +1,104 @@
+[
+  {
+    "page": "home",
+    "viewport": 390,
+    "width": 390,
+    "height": 7224,
+    "footer": 874.48
+  },
+  {
+    "footer": 500,
+    "height": 4110,
+    "page": "home",
+    "viewport": 1440,
+    "width": 1440
+  },
+  {
+    "page": "mecze/kalk-4124",
+    "viewport": 390,
+    "axe": {
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 28,
+      "violations": []
+    }
+  },
+  {
+    "columns": [
+      "Zawodnik",
+      "MIN",
+      "PKT",
+      "ZB",
+      "AS"
+    ],
+    "doc": 375,
+    "page": "mecze/kalk-4124",
+    "rowHeaders": 11,
+    "table": 343,
+    "viewport": 375
+  },
+  {
+    "columns": [
+      "Zawodnik",
+      "MIN",
+      "PKT",
+      "ZB",
+      "AS"
+    ],
+    "doc": 390,
+    "page": "mecze/kalk-4124",
+    "rowHeaders": 11,
+    "table": 358,
+    "viewport": 390
+  },
+  {
+    "columns": [
+      "Zawodnik",
+      "MIN",
+      "PKT",
+      "ZB",
+      "AS"
+    ],
+    "doc": 430,
+    "page": "mecze/kalk-4124",
+    "rowHeaders": 11,
+    "table": 398,
+    "viewport": 430
+  },
+  {
+    "page": "mecze/kalk-4144",
+    "comparison": false,
+    "tables": 0
+  },
+  {
+    "page": "article-report",
+    "toc": true,
+    "anchor": {
+      "hash": "#section-2-3",
+      "targetTop": 152.015625
+    }
+  },
+  {
+    "page": "gallery",
+    "viewport": 390,
+    "imageWidth": 358,
+    "focusRestored": true,
+    "scrollLock": true,
+    "counter": "2 z 20"
+  },
+  {
+    "page": "menu",
+    "viewport": "390x500",
+    "trapBothDirections": true,
+    "escapeFocusRestored": true,
+    "scrollUnlocked": true,
+    "organization": true
+  },
+  {
+    "page": "lightbox-error",
+    "errorVisible": true,
+    "retryWorks": true,
+    "blockedRequestsRestored": true
+  }
+]

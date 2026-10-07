@@ -1,3 +1,6 @@
+import { normalizePlayerIdentity, resolvePlayerJerseyNumber } from './player-identity'
+import { resolveLocalPlayerPortrait } from './local-player-portraits'
+import { getMediaRecords, approvedMedia, isLocalMediaPreview } from './media-review'
 import { backendPath, fetchJson, fetchJsonState } from './client'
 import { allowFakeData, resolveFallbackState } from './fallback'
 import { mapApiGameToSummary, mapApiGameToSummarySafe } from './map-game'
@@ -9,7 +12,7 @@ import {
   type RosterPlayer,
   type TeamStanding
 } from './schemas'
-import { parseCollectionItems, sanitizeNumber, sanitizeText } from './utils'
+import { parseCollectionItems, optionalNumber, sanitizeNumber, sanitizeText, hasPlayerPhoto, resolvePlayerPhoto } from './utils'
 
 export async function getLeagueTable(): Promise<TeamStanding[]> {
   const state = await getLeagueTableState()
@@ -304,7 +307,7 @@ const fallbackGames: GameSummary[] = [
 
 export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> {
   try {
-    const response = await fetchJsonState<Array<Record<string, unknown>>>(backendPath('/api/league/table'), {
+    const response = await fetchJsonState<Array<Record<string, unknown>> | { data: Array<Record<string, unknown>>; meta?: DataState<TeamStanding[]>['meta'] }>(backendPath('/api/league/table?includeMeta=1'), {
       // Synchronizacja KALK zapisuje tabelę niezależnie od procesu Next.js.
       // Krótki TTL zapobiega utrzymaniu pustej tabeli po imporcie sezonu.
       revalidate: 60,
@@ -314,7 +317,9 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
       return resolveFallbackState('error', fallbackStandings, [], response.message)
     }
 
-    const rows = response.payload
+    const payload = Array.isArray(response.payload) ? response.payload : response.payload.data
+    const meta = Array.isArray(response.payload) ? undefined : response.payload.meta
+    const rows = payload
       .map((row) => {
         const wins = sanitizeNumber(row.wins, 0)
         const losses = sanitizeNumber(row.losses, 0)
@@ -383,7 +388,7 @@ export async function getLeagueTableState(): Promise<DataState<TeamStanding[]>> 
       return resolveFallbackState('empty', fallbackStandings, [], 'Brak danych tabeli z API.')
     }
 
-    return stateFromArray(items)
+    return { ...stateFromArray(items), meta }
   } catch {
     return resolveFallbackState('error', fallbackStandings, [], 'Nie udało się pobrać tabeli z backendu.')
   }
@@ -417,13 +422,13 @@ function findFallbackGameById(id: string): GameSummary | null {
   return fallbackGames.find((g) => g.id === id) ?? null
 }
 
-export async function getGameByIdState(id: string): Promise<DataState<GameSummary | null>> {
+export async function getGameByIdState(id: string, fresh = false): Promise<DataState<GameSummary | null>> {
   const fallbackMatch = findFallbackGameById(id)
   const allowFake = allowFakeData() && Boolean(fallbackMatch)
 
   try {
     const game = await fetchJson<Record<string, unknown>>(backendPath(`/api/games/${encodeURIComponent(id)}`), {
-      revalidate: 120,
+      revalidate: fresh ? 0 : 60,
       tags: ['backend', 'backend-games']
     })
     if (!game) {
@@ -485,31 +490,56 @@ export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
       return resolveFallbackState('error', fallbackRoster, [], response.message)
     }
 
-    const mapped = response.payload.map((player, index) => ({
-      id: sanitizeText(player.id, String(index)),
-      firstName: sanitizeText(player.firstName, ''),
-      lastName: sanitizeText(player.lastName, ''),
-      position: sanitizeText(player.position, 'Brak'),
-      number: sanitizeText(player.number, '-'),
-      photo: player.photo ? String(player.photo) : null,
-      photoUrl: player.photo_url || player.photoUrl ? String(player.photo_url || player.photoUrl) : null,
-      ppg: player.ppg !== undefined ? sanitizeNumber(player.ppg, 0) : undefined,
-      rpg: player.rpg !== undefined ? sanitizeNumber(player.rpg, 0) : undefined,
-      apg: player.apg !== undefined ? sanitizeNumber(player.apg, 0) : undefined,
-      eval: player.eval !== undefined && player.eval !== null ? sanitizeNumber(player.eval, 0) : null,
-      fgPercentage: player.fgPercentage !== undefined ? sanitizeNumber(player.fgPercentage, 0) : undefined,
-      threePercentage: player.threePercentage !== undefined ? sanitizeNumber(player.threePercentage, 0) : undefined,
-      ftPercentage: player.ftPercentage !== undefined ? sanitizeNumber(player.ftPercentage, 0) : undefined,
-      tsPercentage: player.tsPercentage !== undefined && player.tsPercentage !== null ? sanitizeNumber(player.tsPercentage, 0) : null,
-      eFgPercentage: player.eFgPercentage !== undefined && player.eFgPercentage !== null ? sanitizeNumber(player.eFgPercentage, 0) : null,
-      plusMinus: player.plusMinus !== undefined && player.plusMinus !== null ? sanitizeNumber(player.plusMinus, 0) : null,
-      gamesPlayed: player.gamesPlayed !== undefined ? sanitizeNumber(player.gamesPlayed, 0) : undefined,
-      birthDate: player.birthDate ? String(player.birthDate) : null,
-      heightCm: player.heightCm !== undefined && player.heightCm !== null ? sanitizeNumber(player.heightCm, 0) : null,
-      aiDevelopmentSummary: player.aiDevelopmentSummary ? String(player.aiDevelopmentSummary) : null,
-      games: Array.isArray(player.games) ? player.games : undefined
-    }))
-    const items = parseCollectionItems(mapped, rosterPlayerSchema, 'roster-player')
+    const mapped = response.payload.map((player, index) => {
+      const normalized = normalizePlayerIdentity({
+        kalkPlayer: player.kalkPlayer,
+        id: sanitizeText(player.id, String(index)),
+        firstName: sanitizeText(player.firstName, ''),
+        lastName: sanitizeText(player.lastName, ''),
+        position: sanitizeText(player.position, 'Brak'),
+        number: sanitizeText(player.number, '-'),
+        photo: player.photo ? String(player.photo) : null,
+        photoUrl: player.photo_url || player.photoUrl ? String(player.photo_url || player.photoUrl) : null,
+        ppg: optionalNumber(player.ppg),
+        rpg: optionalNumber(player.rpg),
+        apg: optionalNumber(player.apg),
+        eval: optionalNumber(player.eval) ?? null,
+        fgPercentage: optionalNumber(player.fgPercentage),
+        threePercentage: optionalNumber(player.threePercentage),
+        ftPercentage: optionalNumber(player.ftPercentage),
+        tsPercentage: optionalNumber(player.tsPercentage) ?? null,
+        eFgPercentage: optionalNumber(player.eFgPercentage) ?? null,
+        plusMinus: optionalNumber(player.plusMinus) ?? null,
+        seasonId: typeof player.seasonId === 'string' ? player.seasonId : undefined,
+        seasonLabel: typeof player.seasonLabel === 'string' ? player.seasonLabel : undefined,
+        numberSource: sanitizeText(player.number).trim() && sanitizeText(player.number).trim() !== '-' ? 'source' as const : 'unknown' as const,
+        ...Object.fromEntries(['fgm', 'fga', 'threePm', 'threePa', 'ftm', 'fta'].map(key => [key, optionalNumber(player[key])])),
+        gamesPlayed: optionalNumber(player.gamesPlayed),
+        birthDate: player.birthDate ? String(player.birthDate) : null,
+        heightCm: optionalNumber(player.heightCm) ?? null,
+        aiDevelopmentSummary: player.aiDevelopmentSummary ? String(player.aiDevelopmentSummary) : null,
+        games: Array.isArray(player.games) ? player.games : undefined
+      })
+      const resolvedNumber = resolvePlayerJerseyNumber(normalized)
+      return {
+        ...normalized,
+        number: resolvedNumber ?? normalized.number,
+        numberSource: normalized.numberSource === 'source' ? 'source' as const : resolvedNumber ? 'brand-fallback' as const : 'unknown' as const
+      }
+    })
+    const records = await getMediaRecords()
+    const localPreview = isLocalMediaPreview()
+    const items = parseCollectionItems(mapped, rosterPlayerSchema, 'roster-player').map(player => {
+      const review = approvedMedia(records, hasPlayerPhoto(player) ? resolvePlayerPhoto(player) : undefined)
+      // Local portrait mockup; retain the original photograph outside the local preview.
+      const photo = resolveLocalPlayerPortrait(player, localPreview) ?? player.photo
+      return {
+        ...player,
+        photo,
+        photoApproved: !!review || (localPreview && hasPlayerPhoto(player)),
+        photoAlt: review?.alt
+      }
+    })
 
     if (items.length === 0) {
       return resolveFallbackState('empty', fallbackRoster, [], 'Brak składu w API.')
