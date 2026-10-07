@@ -3,6 +3,7 @@ import { getAllEvents } from '../../../lib/data/cms'
 import { getLeagueTableState } from '../../../lib/data/backend'
 import { getGameByIdState } from '../../../lib/data/backend'
 import { LiveMatchCard } from '../../../components/public/shared/LiveMatchCard'
+import { resolvePresentation } from '../../../../packages/match-presentation'
 import { MatchDrawerContent } from '../MatchDrawerContent'
 import { NearestEventCalendarActions } from '../../../components/public/home/NearestEventCalendarActions'
 import { Breadcrumbs } from '../../../components/public/primitives/PageHeader'
@@ -69,6 +70,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
     const table = (await getLeagueTableState()).data
     game.opponentLogoUrl ||= table.find(row => row.name.toLocaleLowerCase() === game.opponent.toLocaleLowerCase())?.logoUrl || undefined
     const isFinal = game.status === 'FINAL' || (!game.status && !!game.result)
+    // Mecz przed rozpoczęciem (z uwzględnieniem statusu ustawionego w panelu).
+    const upcoming = resolvePresentation(game).status === 'SCHEDULED'
     const parentHref = isFinal ? '/mecze?widok=wyniki' : '/mecze'
     return (
       <div className="match-page" data-theme="plyta">
@@ -99,7 +102,11 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
           <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Mecze', href: parentHref }, { label: `BeKaPaKa — ${game.opponent}` }]} />
         </div>
         <LiveMatchCard
-          game={game}
+          game={
+            upcoming && !resolvePresentation(game).statusMessage
+              ? { ...game, statusMessage: 'Statystyki i przebieg meczu pojawią się po końcowej syrenie.' }
+              : game
+          }
           heading="h1"
           priority
           actions={
@@ -109,11 +116,14 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
             </>
           }
         />
-        <section className="match-detail" aria-label="Statystyki meczu">
-          <div className="container">
-            <MatchDrawerContent game={game} hideScoreHeader />
-          </div>
-        </section>
+        {/* Przed meczem nie ma czego pokazać — informacja jest w hero, bez pustej sekcji między paskami. */}
+        {!upcoming && (
+          <section className="match-detail" aria-label="Statystyki meczu">
+            <div className="container">
+              <MatchDrawerContent game={game} hideScoreHeader />
+            </div>
+          </section>
+        )}
       </div>
     )
   }

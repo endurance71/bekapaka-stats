@@ -107,7 +107,7 @@ export function JerseyShowcase() {
                   width={jersey.imageWidth}
                   height={jersey.imageHeight}
                   className="jersey-card__image"
-                  sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+                  sizes="(min-width: 1600px) 780px, (min-width: 768px) 50vw, 100vw"
                   loading="lazy"
                 />
               </button>

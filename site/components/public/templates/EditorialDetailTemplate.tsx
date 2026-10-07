@@ -48,7 +48,7 @@ export function EditorialDetailTemplate({
   more?: React.ReactNode
 }) {
   const rail = Boolean(toc && toc.length >= 3)
-  const bodyClass = ['art-body', sidebar ? 'art-body--aside' : '', rail ? 'art-body--rail' : ''].filter(Boolean).join(' ')
+  const bodyClass = ['art-body', sidebar ? 'art-body--aside' : '', rail ? 'art-body--rail' : '', more ? 'art-body--more' : ''].filter(Boolean).join(' ')
 
   return (
     <article className={`article-detail${theme === 'plyta' ? ' article-detail--sport' : ''}${cover ? '' : ' article-detail--no-cover'}`} data-theme={theme}>

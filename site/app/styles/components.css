@@ -437,9 +437,11 @@
     text-decoration: none;
     flex: none;
   }
+  /* Sygnet ma proporcje 912 × 981 — szerokość wynika z wysokości, bez spłaszczania. */
   .club-logo__mark {
-    width: 36px;
+    width: auto;
     height: 36px;
+    aspect-ratio: 912 / 981;
   }
   .club-logo__word {
     width: 128px;
@@ -454,7 +456,6 @@
   }
   @media (min-width: 1100px) {
     .club-logo__mark {
-      width: 40px;
       height: 40px;
     }
     .club-logo__word {
@@ -683,6 +684,16 @@
   }
   .site-footer__col ul {
     display: grid;
+  }
+  /* Telefon: linki stopki w dwóch kolumnach i ciaśniejsze odstępy — stopka nie zajmuje półtora ekranu. */
+  @media (max-width: 767px) {
+    .site-footer__grid {
+      row-gap: var(--space-8);
+    }
+    .site-footer__col ul {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--gutter);
+    }
   }
   .site-footer__col li a,
   .site-footer__col address a {
@@ -1012,15 +1023,36 @@
     text-transform: uppercase;
     font-size: calc(var(--t-display-xl) * 0.7);
   }
-  /* Telefon i tablet: przy wyniku (koniec, LIVE, przerwa) liczby idą przed parą drużyn. */
+  /* Telefon i tablet przy wyniku (koniec, LIVE, przerwa): tablica „herb · drużyna · liczba” zamiast dużych nazw
+     i osobnych liczb — pierwszy ekran mówi, kto z kim i jak. Nazwy (nagłówek) zostają dla czytników ekranu. */
+  .match-hero__scoreline {
+    display: none;
+  }
   @media (max-width: 1023px) {
-    .match-hero__grid:has(.match-hero__result) .match-hero__panel {
-      order: -1;
-      padding-top: 0;
-      padding-bottom: var(--space-8);
-      border-top: 0;
-      border-bottom: 1px solid var(--line);
+    .match-hero__scoreline {
+      display: block;
     }
+    .match-hero__grid:has(.match-hero__scoreline) :is(.match-hero__result) {
+      display: none;
+    }
+    .match-hero__grid:has(.match-hero__scoreline) .match-hero__teams {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .match-hero__grid:has(.match-hero__scoreline) {
+      padding-top: var(--space-6);
+    }
+    .match-hero__grid:has(.match-hero__scoreline) .match-hero__panel {
+      padding-top: 0;
+      border-top: 0;
+    }
+  }
+  .nowrap {
+    white-space: nowrap;
   }
   .live-error {
     padding-block: var(--space-3);
@@ -1094,7 +1126,7 @@
   .scoreboard__name {
     font: 800 var(--fs-h2) / 1 var(--font-display);
     text-transform: uppercase;
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .scoreboard__row:not(.scoreboard__row--own) .scoreboard__name {
     color: var(--text-secondary);
@@ -1531,6 +1563,12 @@
     gap: var(--space-5);
     text-decoration: none;
     color: var(--text);
+  }
+  /* Telefon: niższy kadr lidera (twarz i numer), żeby lista liderów była bliżej. */
+  @media (max-width: 767px) {
+    .leaders__featured .portrait {
+      aspect-ratio: 1 / 1;
+    }
   }
   .leaders__featured .portrait {
     clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%);

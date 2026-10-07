@@ -289,6 +289,9 @@
     align-self: end;
   }
   .cooperation__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-h-sm);
     font-size: var(--t-small);
     color: var(--text-muted);
   }
@@ -328,12 +331,13 @@
   .club-hero__nav {
     margin-top: var(--space-4);
   }
+  /* Telefon: trzy zakładki mieszczą się w jednym rzędzie (mniejszy odstęp), w razie braku miejsca zawijają się —
+     bez wygaszonej krawędzi, która wyglądała jak nieaktywna zakładka. */
   @media (max-width: 767px) {
-    /* Zakładki przewijane w bok: wygaszona prawa krawędź sygnalizuje dalszą treść. */
     .club-hero__nav {
-      -webkit-mask-image: linear-gradient(90deg, #000 80%, transparent);
-      mask-image: linear-gradient(90deg, #000 80%, transparent);
-      padding-right: var(--space-8);
+      flex-wrap: wrap;
+      column-gap: var(--space-5);
+      overflow: visible;
     }
   }
   .club-hero__crest {
@@ -424,6 +428,9 @@
     justify-items: start;
   }
   .club-contact__email {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-h-sm);
     font: 600 clamp(1.25rem, 1rem + 1vw, 1.75rem) / 1.2 var(--font-text);
     overflow-wrap: anywhere;
     text-decoration-color: var(--brand);
