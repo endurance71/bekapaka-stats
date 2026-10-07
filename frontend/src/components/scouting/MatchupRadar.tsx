@@ -2,6 +2,12 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { Crosshair } from 'lucide-react';
 import { MatchupStatCards } from './MatchupStatCards';
+import {
+  chartColors,
+  chartTooltipItemStyle,
+  chartTooltipLabelStyle,
+  chartTooltipStyle
+} from '../../shared/lib/chartTheme';
 
 interface Stats {
   ppg: number;
@@ -85,62 +91,56 @@ export function MatchupRadar({ opponent, bekapaka }: Props) {
     <BkpkCard
       title="Porównanie drużyn"
       icon={<Crosshair className="h-5 w-5 text-bkpk-primary" />}
-      variant="glass"
+      variant="flat"
       overflowVisible
     >
       {showChart ? (
         <div className="w-full" style={{ height: CHART_HEIGHT }}>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
             <RadarChart cx="50%" cy="50%" outerRadius="72%" data={data}>
-              <PolarGrid stroke="var(--bkpk-border-subtle)" strokeDasharray="3 3" />
+              <PolarGrid stroke={chartColors.grid} strokeDasharray="2 4" />
               <PolarAngleAxis
                 dataKey="subject"
-                tick={{ fill: 'var(--bkpk-text-secondary)', fontSize: 12, fontWeight: 700 }}
+                tick={{ fill: chartColors.axis, fontSize: 12, fontWeight: 600 }}
               />
               <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
               <Radar
                 name={bekapaka.name}
                 dataKey="A"
-                stroke="var(--bkpk-color-primary)"
+                stroke={chartColors.team}
                 strokeWidth={2.5}
-                fill="var(--bkpk-color-primary)"
-                fillOpacity={0.35}
+                fill={chartColors.team}
+                fillOpacity={0.2}
               />
               <Radar
                 name={opponent.name}
                 dataKey="B"
-                stroke="var(--bkpk-color-danger)"
-                strokeWidth={2.5}
-                fill="var(--bkpk-color-danger)"
-                fillOpacity={0.35}
+                stroke={chartColors.opponent}
+                strokeWidth={2}
+                strokeDasharray="5 4"
+                fill={chartColors.opponent}
+                fillOpacity={0.08}
               />
-              <Legend wrapperStyle={{ fontSize: '11px', fontWeight: 'bold' }} iconSize={8} />
+              <Legend
+                wrapperStyle={{ fontSize: '12px', fontWeight: 600, fontFamily: 'var(--font-text)', textTransform: 'uppercase', letterSpacing: '0.08em' }}
+                iconType="square"
+                iconSize={10}
+              />
               <Tooltip
-                contentStyle={{
-                  background: 'var(--bkpk-color-surface-elevated)',
-                  border: '1px solid var(--bkpk-border-strong)',
-                  borderRadius: 12,
-                  color: 'var(--bkpk-text-primary)',
-                  fontSize: '12px'
-                }}
-                itemStyle={{ color: 'var(--bkpk-text-primary)', fontSize: '12px', fontWeight: 'bold' }}
-                labelStyle={{
-                  color: 'var(--bkpk-text-muted)',
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em'
-                }}
+                contentStyle={chartTooltipStyle}
+                itemStyle={chartTooltipItemStyle}
+                labelStyle={chartTooltipLabelStyle}
               />
             </RadarChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="rounded-lg border border-dashed border-bkpk-border-strong bg-bkpk-surface-tint-2 px-3 py-2 text-center text-sm text-bkpk-text-muted">
+        <p className="border border-dashed border-bkpk-border-strong px-3 py-2 text-center text-sm text-bkpk-text-muted">
           Brak wystarczających danych do wykresu — poniżej porównanie liczbowe.
         </p>
       )}
 
-      <div className={showChart ? 'mt-4 border-t border-bkpk-border-strong pt-4' : 'mt-3'}>
+      <div className={showChart ? 'mt-4 border-t border-bkpk-border-subtle pt-4' : 'mt-3'}>
         <MatchupStatCards opponent={opponent} bekapaka={bekapaka} compact />
       </div>
     </BkpkCard>

@@ -1,16 +1,16 @@
 /**
  * BeKaPaKa Stats Hub — Progressive Web App Service Worker
- * Version: bkpk-stats-v1
+ * Version: bkpk-stats-v2 (Digital 2.0)
  */
 
-const CACHE_NAME = 'bkpk-stats-v1';
+const CACHE_NAME = 'bkpk-stats-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.webmanifest',
   '/favicon.ico',
   '/favicon.png',
-  '/logo.png',
+  '/icon-192.png',
 ];
 
 // 1. Install: Precache shell assets

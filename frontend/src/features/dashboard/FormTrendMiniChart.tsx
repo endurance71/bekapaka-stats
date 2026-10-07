@@ -12,39 +12,40 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
         <BkpkCard variant="glass" className="w-full">
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
-                    <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Aktualna Forma</span>
-                    <span className="text-bkpk-text-muted text-xs uppercase font-medium">
+                    <span className="kicker text-bkpk-text-primary">Aktualna Forma</span>
+                    <span className="label-caps text-bkpk-text-muted text-xs">
                         {matches.length > 0 ? `Ostatnie ${matches.length} meczów` : 'Brak meczów'}
                     </span>
                 </div>
 
-                <div className="flex items-center gap-3 overflow-x-auto pb-2 no-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
                     {matches.map((match, idx) => (
                         <motion.div
                             key={match.id}
                             initial={{ opacity: 0, scale: 0.8, x: -10 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{ delay: idx * 0.05, duration: 0.3 }}
-                            className="flex flex-col items-center gap-2 group cursor-pointer"
+                            className="flex flex-col items-center gap-1.5 group cursor-pointer min-w-[44px]"
                         >
                             <div
                                 className={clsx(
-                                    "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all group-hover:scale-110",
+                                    // Jak .standings-badge na bekapaka.pl: wygrana wypełniona, porażka obrysowana
+                                    "w-7 h-7 inline-grid place-items-center border-[1.5px] font-text font-semibold text-xs leading-none transition-colors",
                                     match.result === 'W'
-                                        ? "bg-bkpk-success/20 text-bkpk-success border border-bkpk-success/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                                        : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/30 shadow-[0_0_15px_rgba(244,63,94,0.2)]"
+                                        ? "bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg"
+                                        : "bg-transparent border-bkpk-text-secondary text-bkpk-text-primary group-hover:border-bkpk-text-primary"
                                 )}
                             >
                                 {match.result === 'W' ? 'Z' : 'P'}
                             </div>
-                            <span className="text-xs text-bkpk-text-muted font-medium group-hover:text-bkpk-text-secondary transition-colors">
+                            <span className="text-xs text-bkpk-text-muted font-medium tabular-nums group-hover:text-bkpk-text-secondary transition-colors">
                                 {match.score}
                             </span>
                         </motion.div>
                     ))}
 
                     {matches.length === 0 && !loading && (
-                        <div className="py-2 text-bkpk-text-muted text-xs font-bold uppercase tracking-wider">
+                        <div className="py-2 label-caps text-bkpk-text-muted text-xs">
                             Forma zespołu pojawi się po rozegraniu pierwszych meczów w sezonie.
                         </div>
                     )}

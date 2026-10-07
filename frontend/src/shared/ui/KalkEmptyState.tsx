@@ -20,19 +20,19 @@ export default function KalkEmptyState({
         <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className={`flex flex-col items-center justify-center p-12 bg-bkpk-surface-tint-2 border-2 border-dashed border-bkpk-border-strong rounded-3xl text-center gap-6 ${className}`}
+            className={`flex flex-col items-start justify-center p-8 sm:p-12 bg-bkpk-surface border border-bkpk-border-subtle border-l-4 border-l-bkpk-warning gap-6 ${className}`}
         >
             <div className="relative">
-                <div className="w-16 h-16 bg-bkpk-primary/10 rounded-full flex items-center justify-center">
-                    <Database className="w-8 h-8 text-bkpk-primary" />
+                <div className="w-14 h-14 border border-bkpk-border-strong flex items-center justify-center">
+                    <Database className="w-7 h-7 text-bkpk-text-primary" />
                 </div>
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-bkpk-warning rounded-full flex items-center justify-center shadow-bkpk-glow">
-                    <AlertCircle className="w-4 h-4 text-white" />
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-bkpk-warning flex items-center justify-center">
+                    <AlertCircle className="w-4 h-4 text-bkpk-bg" />
                 </div>
             </div>
 
             <div className="max-w-md space-y-2">
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit uppercase tracking-tight">
+                <h3 className="text-2xl text-bkpk-text-primary">
                     {title}
                 </h3>
                 <p className="text-bkpk-text-muted text-sm leading-relaxed">
@@ -42,7 +42,7 @@ export default function KalkEmptyState({
 
             <BkpkButton
                 variant="primary"
-                onClick={() => navigate('/administration')}
+                onClick={() => navigate('/admin')}
                 className="group"
             >
                 <RefreshCw className="w-4 h-4 mr-2 group-hover:animate-spin-slow" />

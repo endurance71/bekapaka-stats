@@ -5,6 +5,12 @@ import {
   validatePresentation,
   type Presentation
 } from '../../../../packages/match-presentation'
+
+/** Pola formularza — Digital 2.0: płaskie pole, linia 1 px, fokus globalny */
+const fieldLabel = 'grid gap-1.5 label-caps text-xs text-bkpk-text-secondary'
+const fieldControl =
+  'w-full min-h-[44px] px-3 bg-bkpk-bg border border-bkpk-border-strong text-bkpk-text-primary font-text normal-case tracking-normal font-normal placeholder:text-bkpk-text-muted hover:border-bkpk-text-secondary transition-colors'
+
 export function MatchPresentationEditor({
   game,
   onSaved
@@ -42,20 +48,21 @@ export function MatchPresentationEditor({
     }
   }
   if (game.dataSource === 'league') return null
-  if (!game.seasonId) return <p>Mecz nie ma sezonu. Przypisz sezon przed edycją prezentacji WWW.</p>
+  if (!game.seasonId) return <p className="text-sm text-bkpk-text-secondary border-l-2 border-bkpk-border-strong pl-3">Mecz nie ma sezonu. Przypisz sezon przed edycją prezentacji WWW.</p>
   return (
-    <details className="p-4 border border-bkpk-border rounded-xl">
-      <summary className="cursor-pointer">Prezentacja meczu na WWW</summary>
+    <details className="group bg-bkpk-surface border border-bkpk-border-subtle">
+      <summary className="cursor-pointer min-h-[44px] flex items-center px-4 label-caps text-xs text-bkpk-text-primary hover:bg-bkpk-surface-elevated transition-colors">Prezentacja meczu na WWW</summary>
       <form
-        className="grid gap-3 mt-4"
+        className="grid gap-4 sm:grid-cols-2 p-4 border-t border-bkpk-border-subtle"
         onSubmit={(event) => {
           event.preventDefault()
           void save(draft)
         }}
       >
-        <label>
+        <label className={fieldLabel}>
           Status{' '}
           <select
+            className={fieldControl}
             value={draft.status || ''}
             onChange={(event) =>
               setDraft({
@@ -72,7 +79,7 @@ export function MatchPresentationEditor({
         </label>
         {(['competition', 'round', 'venue', 'kit', 'quarter', 'statusMessage'] as const).map(
           (key) => (
-            <label key={key}>
+            <label key={key} className={fieldLabel}>
               {
                 {
                   competition: 'Rozgrywki',
@@ -84,6 +91,7 @@ export function MatchPresentationEditor({
                 }[key]
               }{' '}
               <input
+                className={fieldControl}
                 maxLength={500}
                 value={draft[key] || ''}
                 onChange={(event) => setDraft({ ...draft, [key]: event.target.value })}
@@ -92,9 +100,10 @@ export function MatchPresentationEditor({
           )
         )}
         {(['scoreUs', 'scoreThem'] as const).map((key) => (
-          <label key={key}>
+          <label key={key} className={fieldLabel}>
             {key === 'scoreUs' ? 'Punkty BeKaPaKa' : 'Punkty rywala'}{' '}
             <input
+              className={`${fieldControl} tabular-nums`}
               type="number"
               min={0}
               max={999}
@@ -109,22 +118,23 @@ export function MatchPresentationEditor({
           </label>
         ))}
         {(['previousDate', 'newDate'] as const).map((key) => (
-          <label key={key}>
+          <label key={key} className={fieldLabel}>
             {key === 'newDate' ? 'Nowy termin (ISO z godziną i strefą)' : 'Poprzedni termin (ISO)'}{' '}
             <input
+              className={`${fieldControl} tabular-nums`}
               placeholder="RRRR-MM-DDTGG:MM:SS+02:00"
               value={draft[key] || ''}
               onChange={(event) => setDraft({ ...draft, [key]: event.target.value || null })}
             />
           </label>
         ))}
-        <button disabled={saving} type="submit">
+        <button className="btn" disabled={saving} type="submit">
           Zapisz prezentację
         </button>
-        <button disabled={saving} type="button" onClick={() => void save(null)}>
+        <button className="btn btn-secondary" disabled={saving} type="button" onClick={() => void save(null)}>
           Przywróć dane źródłowe
         </button>
-        <p role="status">{message}</p>
+        <p role="status" className="sm:col-span-2 text-sm text-bkpk-text-secondary">{message}</p>
       </form>
     </details>
   )

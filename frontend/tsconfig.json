@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "Bundler",
@@ -13,9 +17,29 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@bekapaka/safari-overlay": ["../packages/safari-overlay/index.ts"],
-      "@bekapaka/safari-overlay/*": ["../packages/safari-overlay/*"]
-    }
+      "@bekapaka/safari-overlay": [
+        "../packages/safari-overlay/index.ts"
+      ],
+      "@bekapaka/safari-overlay/*": [
+        "../packages/safari-overlay/*"
+      ],
+      "react": [
+        "./node_modules/@types/react"
+      ],
+      "react/*": [
+        "./node_modules/@types/react/*"
+      ]
+    },
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ]
   },
-  "include": ["src", "../packages/safari-overlay"]
+  "include": [
+    "src",
+    "../packages/safari-overlay"
+  ],
+  "exclude": [
+    "../packages/safari-overlay/**/*.test.ts"
+  ]
 }

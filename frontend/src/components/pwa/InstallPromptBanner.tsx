@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { usePWAInstall } from '../../lib/pwa';
 import { Download, X, Share, PlusSquare, Smartphone } from 'lucide-react';
+import herbMiniUrl from '../../assets/brand/herb2-mini-kolor-ciasny.svg';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from '../Modal';
 
@@ -67,16 +68,16 @@ export function InstallPromptBanner() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
-          className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-tint-2 border border-bkpk-primary/40 rounded-2xl p-3 sm:p-4 shadow-2xl backdrop-blur-xl"
+          className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-3 sm:p-4 shadow-2xl"
           role="dialog"
           aria-label="Zainstaluj aplikację BeKaPaKa"
         >
           <div className="flex items-start gap-2.5 sm:gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-bkpk-bg border border-bkpk-border-strong overflow-hidden flex items-center justify-center shrink-0 p-1">
-              <img src="/logo.png" alt="" className="w-full h-full object-contain" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center shrink-0">
+              <img src={herbMiniUrl} alt="" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-outfit font-black text-xs sm:text-sm text-bkpk-text-primary flex items-center gap-1.5">
+              <h4 className="font-display uppercase text-lg leading-none text-bkpk-text-primary flex items-center gap-1.5">
                 <span>Zainstaluj BeKaPaKa</span>
                 <Smartphone className="w-3.5 h-3.5 text-bkpk-primary" />
               </h4>
@@ -87,7 +88,7 @@ export function InstallPromptBanner() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="text-bkpk-text-muted hover:text-bkpk-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors touch-manipulation"
+              className="text-bkpk-text-muted hover:text-bkpk-text-primary min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors touch-manipulation"
               aria-label="Nie teraz"
             >
               <X className="w-4 h-4" />
@@ -98,14 +99,14 @@ export function InstallPromptBanner() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="flex-1 py-1.5 sm:py-2 text-xs font-bold text-bkpk-text-muted hover:text-bkpk-text-primary rounded-xl transition-colors min-h-[44px] touch-manipulation"
+              className="flex-1 py-1.5 sm:py-2 label-caps text-xs text-bkpk-text-muted hover:text-bkpk-text-primary border border-bkpk-border-strong transition-colors min-h-[44px] touch-manipulation"
             >
               Nie teraz
             </button>
             <button
               type="button"
               onClick={handleAction}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 sm:px-4 bg-bkpk-primary hover:bg-bkpk-primary-hover text-bkpk-on-primary rounded-xl text-[11px] sm:text-xs font-black uppercase tracking-wider transition-colors shadow-bkpk-glow min-h-[44px] touch-manipulation"
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 sm:px-4 bkpk-btn-primary text-bkpk-on-primary label-caps text-xs transition-colors min-h-[44px] touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               {isIosDevice ? 'Jak dodać' : 'Zainstaluj'}
@@ -126,9 +127,9 @@ function IosInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
         <p>
           Aby dodać <strong>BeKaPaKa Stats</strong> do ekranu początkowego w Safari:
         </p>
-        <ol className="space-y-3 font-medium bg-bkpk-surface-tint-1 p-4 rounded-xl border border-bkpk-border-subtle">
+        <ol className="space-y-3 font-medium bg-bkpk-bg p-4 border border-bkpk-border-subtle">
           <li className="flex items-start gap-2.5">
-            <span className="w-6 h-6 rounded-full bg-bkpk-primary/20 text-bkpk-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+            <span className="w-6 h-6 bg-bkpk-primary text-bkpk-on-primary font-display text-sm flex items-center justify-center shrink-0 mt-0.5">
               1
             </span>
             <span>
@@ -136,7 +137,7 @@ function IosInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             </span>
           </li>
           <li className="flex items-start gap-2.5">
-            <span className="w-6 h-6 rounded-full bg-bkpk-primary/20 text-bkpk-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+            <span className="w-6 h-6 bg-bkpk-primary text-bkpk-on-primary font-display text-sm flex items-center justify-center shrink-0 mt-0.5">
               2
             </span>
             <span>
@@ -144,7 +145,7 @@ function IosInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
             </span>
           </li>
           <li className="flex items-start gap-2.5">
-            <span className="w-6 h-6 rounded-full bg-bkpk-primary/20 text-bkpk-primary font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+            <span className="w-6 h-6 bg-bkpk-primary text-bkpk-on-primary font-display text-sm flex items-center justify-center shrink-0 mt-0.5">
               3
             </span>
             <span>
@@ -156,7 +157,7 @@ function IosInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-bkpk-primary text-bkpk-on-primary rounded-xl text-xs font-black uppercase tracking-wider"
+            className="px-4 min-h-[44px] bkpk-btn-primary text-bkpk-on-primary label-caps text-xs"
           >
             Rozumiem
           </button>

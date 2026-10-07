@@ -18,30 +18,27 @@ export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) 
         <BkpkCard hoverEffect className="relative h-full">
             <div className="flex flex-col h-full justify-between">
                 <div>
-                    <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Bilans Sezonu</span>
-                    <div className="flex items-baseline gap-2 mt-1">
-                        <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
+                    <span className="kicker text-bkpk-text-primary">Bilans Sezonu</span>
+                    <div className="flex items-baseline gap-2 mt-3">
+                        <h2 className="text-5xl lg:text-6xl leading-none font-display tabular-nums text-bkpk-text-primary">
                             {isNaN(winPercentage) || winPercentage <= 0 ? 0 : Math.round(winPercentage)}%
                         </h2>
-                        <span className="text-bkpk-text-secondary text-sm font-bold uppercase tracking-tighter">Zwycięstw</span>
+                        <span className="label-caps text-bkpk-text-secondary text-xs">Zwycięstw</span>
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-end justify-between">
-                    <div className="flex flex-col">
-                        <span className="text-bkpk-text-secondary text-sm uppercase font-bold">Wygrane</span>
-                        <span className="text-2xl font-bold text-bkpk-success">{wins}</span>
+                <div className="mt-6 pt-4 border-t border-bkpk-border-subtle flex items-end justify-between">
+                    <div className="flex flex-col gap-1">
+                        <span className="label-caps text-bkpk-text-secondary text-xs">Wygrane</span>
+                        <span className="font-display text-3xl leading-none tabular-nums text-bkpk-text-primary">{wins}</span>
                     </div>
-                    <div className="h-8 w-px bg-bkpk-surface-tint-4 mx-4" />
-                    <div className="flex flex-col text-right">
-                        <span className="text-bkpk-text-secondary text-sm uppercase font-bold">Mecze</span>
-                        <span className="text-2xl font-bold text-bkpk-text-primary">{wins + losses}</span>
+                    <div className="h-10 w-px bg-bkpk-border-subtle mx-4" aria-hidden="true" />
+                    <div className="flex flex-col gap-1 text-right">
+                        <span className="label-caps text-bkpk-text-secondary text-xs">Mecze</span>
+                        <span className="font-display text-3xl leading-none tabular-nums text-bkpk-text-primary">{wins + losses}</span>
                     </div>
                 </div>
             </div>
-
-            {/* Decorative background element */}
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-32 h-32 bg-bkpk-primary/5 rounded-full blur-3xl pointer-events-none" />
         </BkpkCard>
     );
 }
@@ -59,25 +56,25 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
             <div className="flex flex-col h-full justify-between">
                 <div>
                     <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Siła Ofensywna</span>
+                        <span className="kicker text-bkpk-text-primary">Siła Ofensywna</span>
                         <BkpkTooltip content="Średnia liczba punktów na mecz. Określa potencjał punktowy - im wyższa, tym łatwiej o zwycięstwo przy stabilnej obronie." />
                     </div>
-                    <div className="flex items-baseline gap-2 mt-1">
-                        <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
+                    <div className="flex items-baseline gap-2 mt-3">
+                        <h2 className="text-5xl lg:text-6xl leading-none font-display tabular-nums text-bkpk-text-primary">
                             {formatStatFixed(ppg)}
                         </h2>
-                        <span className="text-bkpk-text-secondary text-sm font-medium uppercase tracking-tighter">PKT/Mecz</span>
+                        <span className="label-caps text-bkpk-text-secondary text-xs">PKT/Mecz</span>
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-center gap-2">
+                <div className="mt-6 pt-4 border-t border-bkpk-border-subtle flex items-center gap-3">
                     <div className={clsx(
-                        "px-2 py-1 rounded-md flex items-center gap-1 text-xs font-bold",
-                        isPositive ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
+                        "status-flag gap-1 tabular-nums",
+                        isPositive ? "text-bkpk-success" : "text-bkpk-text-danger-subtle"
                     )}>
                         {isPositive ? "↑" : "↓"} {Math.abs(trend)}%
                     </div>
-                    <span className="text-bkpk-text-secondary text-xs font-bold uppercase tracking-tighter italic">vs ostatnie 3 mecze</span>
+                    <span className="label-caps text-bkpk-text-secondary text-xs">vs ostatnie 3 mecze</span>
                 </div>
             </div>
         </BkpkCard>
@@ -165,40 +162,40 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col">
                         <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">{getLabel()}</span>
+                            <span className="kicker text-bkpk-text-primary">{getLabel()}</span>
                             <BkpkTooltip content={
                                 mode === 'OFF' ? "Punkty na 100 posiadań. Porównanie ze średnią dywizji z box score'ów KALK." :
                                     mode === 'DEF' ? "Punkty stracone na 100 posiadań. Im niższy od średniej ligi, tym lepsza obrona." :
                                         "Różnica ORtg − DefRtg. Dodatnia wartość powyżej średniej ligi oznacza przewagę nad rywalami."
                             } />
                         </div>
-                        <div className="flex items-baseline gap-2 mt-1">
+                        <div className="flex items-baseline gap-2 mt-3">
                             <AnimatePresence mode="wait">
                                 <motion.h2
                                     key={mode}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary"
+                                    className="text-5xl lg:text-6xl leading-none font-display tabular-nums text-bkpk-text-primary"
                                 >
                                     {mode === 'NET' && value > 0 ? `+${formatStatFixed(value)}` : formatStatFixed(value)}
                                 </motion.h2>
                             </AnimatePresence>
                             {leagueValue != null && (
-                                <span className="text-xs font-bold text-bkpk-text-muted uppercase tracking-tighter">
+                                <span className="label-caps text-xs text-bkpk-text-muted tabular-nums">
                                     Liga {mode === 'NET' && leagueValue > 0 ? `+${formatStatFixed(leagueValue)}` : formatStatFixed(leagueValue)}
                                 </span>
                             )}
                         </div>
                     </div>
 
-                    <div className="flex bg-bkpk-surface-tint-2 p-1 rounded-lg border border-bkpk-border-strong">
+                    <div className="flex border border-bkpk-border-strong">
                         {(['OFF', 'DEF', 'NET'] as const).map((m) => (
                             <button
                                 key={m}
                                 onClick={() => setMode(m)}
                                 className={clsx(
-                                    "px-2 py-1 text-xs font-bold rounded-md transition-all",
+                                    "px-2.5 min-h-[44px] min-w-[44px] label-caps text-xs transition-colors",
                                     mode === m
                                         ? bkpkActivePillClass
                                         : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
@@ -211,17 +208,17 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                 </div>
 
                 <div className="mt-6">
-                    <div className="relative w-full h-1.5 bg-bkpk-surface-tint-2 rounded-full overflow-hidden">
+                    <div className="relative w-full h-1.5 bg-bkpk-surface-tint-2 overflow-hidden">
                         {leagueDelta != null && (
                             <div
-                                className="absolute top-0 bottom-0 w-0.5 bg-bkpk-text-muted/50 z-10"
+                                className="absolute top-0 bottom-0 w-0.5 bg-bkpk-text-secondary z-10"
                                 style={{ left: '50%' }}
                                 aria-hidden
                             />
                         )}
                         <motion.div
                             className={clsx(
-                                "h-full rounded-full",
+                                "h-full",
                                 barPositive ? "bg-bkpk-success" : "bg-bkpk-danger"
                             )}
                             initial={{ width: 0 }}
@@ -229,7 +226,7 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                             transition={{ type: "spring", stiffness: 100, damping: 20 }}
                         />
                     </div>
-                    <div className="flex justify-between mt-2 text-xs font-bold uppercase tracking-[0.1em]">
+                    <div className="flex justify-between mt-2 label-caps text-xs">
                         {(['weak', 'average', 'elite'] as const).map((tierKey) => (
                             <div
                                 key={tierKey}
@@ -252,7 +249,7 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                         ))}
                     </div>
                     {leagueDelta != null && tier && (
-                        <p className="mt-2 text-[10px] font-bold text-bkpk-text-muted uppercase tracking-widest text-center">
+                        <p className="mt-2 label-caps text-[11px] text-bkpk-text-muted text-center tabular-nums">
                             {leagueDelta >= 0 ? '+' : ''}{formatStatFixed(leagueDelta)} vs średnia ligi
                         </p>
                     )}

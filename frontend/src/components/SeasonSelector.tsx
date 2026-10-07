@@ -39,7 +39,7 @@ export default function SeasonSelector({
         className
       )}
     >
-      <span className="inline-flex items-center gap-1.5 font-bold text-[10px] uppercase tracking-widest text-bkpk-text-muted shrink-0">
+      <span className="inline-flex items-center gap-1.5 label-caps text-[11px] text-bkpk-text-muted shrink-0">
         <Calendar className="w-4 h-4 text-bkpk-primary" aria-hidden />
         Sezon
       </span>
@@ -47,8 +47,8 @@ export default function SeasonSelector({
         value={seasonId ?? ''}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'rounded-xl border border-bkpk-border-strong bg-bkpk-surface px-3 py-2.5 text-bkpk-text-primary font-medium',
-          'focus:outline-none focus:ring-2 focus:ring-bkpk-primary/40',
+          'border border-bkpk-border-strong bg-bkpk-bg px-3 py-2.5 text-bkpk-text-primary font-semibold',
+          'hover:border-bkpk-text-primary transition-colors',
           isBlock ? 'w-full min-h-[44px]' : 'min-w-[10rem]'
         )}
         aria-label="Wybierz sezon"

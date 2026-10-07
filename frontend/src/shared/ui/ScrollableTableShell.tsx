@@ -18,14 +18,14 @@ export default function ScrollableTableShell({
     return (
         <div
             className={cn(
-                'overflow-hidden rounded-xl border border-bkpk-border-strong bg-bkpk-surface',
+                'overflow-hidden border border-bkpk-border-subtle bg-bkpk-surface',
                 className
             )}
         >
             <ScrollableTableHint message={hint} />
             <div
                 className={cn(
-                    'overflow-x-auto overscroll-x-contain',
+                    'bkpk-table-shell overflow-x-auto overscroll-x-contain',
                     compact && '[&_table]:text-xs [&_th]:px-2 [&_th]:py-2 [&_td]:px-2 [&_td]:py-2'
                 )}
             >

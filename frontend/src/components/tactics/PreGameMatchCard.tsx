@@ -39,7 +39,7 @@ export interface PreGameData {
 interface PreGameMatchCardProps {
   briefing: PreGameData | null;
   opponent: string | null;
-  seasonId: string;
+  seasonId: string | null;
   onRefresh: () => void;
   canGenerate?: boolean;
 }
@@ -99,7 +99,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
     return (
       <KalkEmptyState
         title="Brak Nadchodzącego Rywala w Terminarzu"
-        description="Odprawa przedmeczowa będzie dostępna, gdy w terminarzu sezonu pojawi się zaplanowany mecz BeKaPaKa."
+        message="Odprawa przedmeczowa będzie dostępna, gdy w terminarzu sezonu pojawi się zaplanowany mecz BeKaPaKa."
       />
     );
   }
@@ -109,15 +109,15 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
       {/* Pasek Akcji */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-bkpk-text-primary uppercase tracking-wider">
+          <h3 className="text-[24px] sm:text-[28px] leading-tight text-bkpk-text-primary">
             Odprawa Meczowa: vs {opponent || briefing?.opponentName}
           </h3>
-          <p className="text-xs text-bkpk-text-muted">
+          <p className="text-[14px] text-bkpk-text-muted">
             1-stronicowy panel taktyczny dla zespołu (gotowy na Messenger/WhatsApp oraz do druku)
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {briefing && (
             <>
               <BkpkButton variant="outline" size="sm" onClick={handleCopyText}>
@@ -145,11 +145,11 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
       {/* Karta Główna Odprawy (Print & Screen ready) */}
       {!briefing ? (
         <BkpkCard variant="glass" className="text-center py-16">
-          <Shield className="w-12 h-12 text-bkpk-primary/40 mx-auto mb-3" />
-          <h4 className="text-sm font-bold text-bkpk-text-primary uppercase tracking-wider mb-2">
+          <Shield className="w-12 h-12 text-bkpk-text-muted mx-auto mb-3" />
+          <h4 className="font-display uppercase text-[20px] leading-tight text-bkpk-text-primary mb-2">
             Odprawa na mecz z {opponent} nie została jeszcze wygenerowana
           </h4>
-          <p className="text-xs text-bkpk-text-muted max-w-md mx-auto mb-6">
+          <p className="text-[14px] text-bkpk-text-muted max-w-md mx-auto mb-6">
             Kliknij poniższy przycisk, aby Gemini AI przygotowało 3 kluczowe założenia, wyjściową piątkę i krycie indywidualne na podstawie scoutingu.
           </p>
           {canGenerate && (
@@ -167,25 +167,25 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
         >
           <BkpkCard
             variant="glass"
-            className="p-6 sm:p-8 border-2 border-bkpk-primary/40 relative overflow-hidden shadow-2xl bg-gradient-to-b from-[#141416] to-[#0d0d0f]"
+            className="p-6 sm:p-8 border-t-[3px] border-t-bkpk-primary relative overflow-hidden"
           >
             {/* Nagłówek Wizualny */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-bkpk-border-strong">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-bkpk-primary bg-bkpk-primary/10 px-3 py-1 rounded-full border border-bkpk-primary/20 inline-block mb-2">
+                <span className="kicker mb-3">
                   KALK Dywizja II • Matchday Briefing
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-outfit uppercase">
+                <h2 className="text-[32px] sm:text-[44px] leading-[0.95] text-bkpk-text-primary">
                   BEKAPAKA <span className="text-bkpk-primary">vs</span> {briefing.opponentName}
                 </h2>
               </div>
 
               {/* Informacje Logistyczne */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs w-full sm:w-auto bg-bkpk-surface-tint-1 p-3 rounded-2xl border border-bkpk-border-subtle">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[14px] w-full sm:w-auto bg-bkpk-surface-tint-1 p-3 border border-bkpk-border-subtle">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-bkpk-primary shrink-0" />
+                  <Calendar className="w-4 h-4 text-bkpk-text-muted shrink-0" />
                   <div>
-                    <span className="text-[10px] text-bkpk-text-muted block font-medium">Data</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-muted block">Data</span>
                     <span className="font-bold text-bkpk-text-primary">
                       {briefing.matchDate ? new Date(briefing.matchDate).toLocaleDateString('pl-PL') : 'Najbliższa'}
                     </span>
@@ -193,27 +193,27 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <Clock className="w-4 h-4 text-bkpk-text-muted shrink-0" />
                   <div>
-                    <span className="text-[10px] text-bkpk-text-muted block font-medium">Zbiórka / Mecz</span>
-                    <span className="font-bold text-bkpk-text-primary">
+                    <span className="label-caps text-[11px] text-bkpk-text-muted block">Zbiórka / Mecz</span>
+                    <span className="font-bold text-bkpk-text-primary tabular-nums">
                       {briefing.gatheringTime || '17:45'} / {briefing.tipoffTime || '18:30'}
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Shirt className="w-4 h-4 text-bkpk-success shrink-0" />
+                  <Shirt className="w-4 h-4 text-bkpk-text-muted shrink-0" />
                   <div>
-                    <span className="text-[10px] text-bkpk-text-muted block font-medium">Stroje</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-muted block">Stroje</span>
                     <span className="font-bold text-bkpk-text-primary">{briefing.jerseyColor}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-rose-400 shrink-0" />
+                  <MapPin className="w-4 h-4 text-bkpk-text-muted shrink-0" />
                   <div>
-                    <span className="text-[10px] text-bkpk-text-muted block font-medium">Hala</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-muted block">Hala</span>
                     <span className="font-bold text-bkpk-text-primary truncate max-w-[120px]">
                       {briefing.venue}
                     </span>
@@ -224,8 +224,8 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
 
             {/* 3 Kluczowe Założenia Taktyczne */}
             <div className="my-8">
-              <h3 className="text-xs font-black uppercase tracking-widest text-bkpk-primary mb-4 flex items-center gap-2">
-                <Target className="w-4 h-4" />
+              <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary mb-4 flex items-center gap-2">
+                <Target className="w-4 h-4 text-bkpk-primary shrink-0" />
                 3 Kluczowe Założenia Meczowe (Game Directives)
               </h3>
 
@@ -238,34 +238,34 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                     <div
                       key={key.number}
                       className={cn(
-                        "p-4 rounded-2xl border relative overflow-hidden flex flex-col justify-between",
+                        "p-4 border border-bkpk-border-subtle border-t-[3px] bg-bkpk-surface-tint-1 relative overflow-hidden flex flex-col justify-between",
                         isDefense
-                          ? "bg-rose-950/20 border-rose-500/30"
+                          ? "border-t-brand-stone-200"
                           : isOffense
-                            ? "bg-amber-950/20 border-amber-500/30"
-                            : "bg-emerald-950/20 border-emerald-500/30"
+                            ? "border-t-brand-red-500"
+                            : "border-t-brand-green-400"
                       )}
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className="w-6 h-6 rounded-full bg-bkpk-primary text-black font-black text-xs flex items-center justify-center font-outfit">
+                          <span className="w-8 h-8 bg-bkpk-primary text-brand-white text-[18px] flex items-center justify-center font-display tabular-nums">
                             {key.number}
                           </span>
                           <span
                             className={cn(
-                              "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border",
+                              "status-flag",
                               isDefense
-                                ? "bg-rose-500/20 text-rose-300 border-rose-500/30"
+                                ? "text-brand-stone-200"
                                 : isOffense
-                                  ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
-                                  : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
+                                  ? "text-brand-red-300"
+                                  : "text-brand-green-400"
                             )}
                           >
                             {key.focus || 'Taktyka'}
                           </span>
                         </div>
-                        <h4 className="text-sm font-bold text-bkpk-text-primary mb-1.5">{key.title}</h4>
-                        <p className="text-xs text-bkpk-text-secondary leading-relaxed">{key.description}</p>
+                        <h4 className="font-display uppercase text-[18px] leading-tight text-bkpk-text-primary mb-1.5">{key.title}</h4>
+                        <p className="text-[13px] text-bkpk-text-secondary leading-relaxed">{key.description}</p>
                       </div>
                     </div>
                   );
@@ -275,8 +275,8 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
 
             {/* Wyjściowa Piątka & Krycie Indywidualne */}
             <div className="my-8">
-              <h3 className="text-xs font-black uppercase tracking-widest text-bkpk-primary mb-4 flex items-center gap-2">
-                <Shield className="w-4 h-4" />
+              <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary mb-4 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-bkpk-primary shrink-0" />
                 Wyjściowa Piątka &amp; Zadania Indywidualne (Matchup Assignments)
               </h3>
 
@@ -284,29 +284,29 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                 {briefing.startingFive?.map((player) => (
                   <div
                     key={player.position}
-                    className="p-3.5 rounded-2xl bg-bkpk-surface-tint-1 border border-bkpk-border-strong flex flex-col justify-between"
+                    className="p-3.5 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-black text-bkpk-primary font-outfit px-2 py-0.5 rounded-md bg-bkpk-primary/10 border border-bkpk-primary/20">
+                        <span className="status-flag text-bkpk-primary">
                           {player.position}
                         </span>
                         {player.number != null && (
-                          <span className="text-xs font-black text-bkpk-text-muted font-outfit">
+                          <span className="text-[16px] text-bkpk-text-muted font-display tabular-nums">
                             #{player.number}
                           </span>
                         )}
                       </div>
-                      <span className="text-xs font-bold text-bkpk-text-primary block truncate mb-2">
+                      <span className="text-[14px] font-semibold text-bkpk-text-primary block truncate mb-2">
                         {player.name}
                       </span>
                     </div>
 
                     <div className="pt-2 border-t border-bkpk-border-subtle">
-                      <span className="text-[10px] text-bkpk-text-muted uppercase block font-medium mb-0.5">
+                      <span className="label-caps text-[11px] text-bkpk-text-muted block mb-0.5">
                         Zadanie / Krycie:
                       </span>
-                      <p className="text-[11px] text-bkpk-text-secondary leading-snug">
+                      <p className="text-[13px] text-bkpk-text-secondary leading-snug">
                         {player.assignment}
                       </p>
                     </div>
@@ -318,24 +318,24 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
             {/* Zadania dla Ławki i Hasło Motywacyjne */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-bkpk-border-strong">
               {briefing.benchKeys && (
-                <div className="p-4 rounded-2xl bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block mb-1">
+                <div className="p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
+                  <span className="label-caps text-[11px] text-bkpk-text-muted block mb-1">
                     ⚡ Rola Ławki Rezerwowych
                   </span>
-                  <p className="text-xs text-bkpk-text-secondary leading-relaxed">
+                  <p className="text-[13px] text-bkpk-text-secondary leading-relaxed">
                     {briefing.benchKeys}
                   </p>
                 </div>
               )}
 
               {briefing.motivationalMotto && (
-                <div className="p-4 rounded-2xl bg-bkpk-primary/10 border border-bkpk-primary/20 flex items-center gap-3">
+                <div className="p-4 border border-bkpk-border-subtle border-l-[3px] border-l-bkpk-primary flex items-center gap-3">
                   <Zap className="w-5 h-5 text-bkpk-primary shrink-0" />
                   <div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-bkpk-primary block mb-0.5">
+                    <span className="label-caps text-[11px] text-bkpk-primary block mb-0.5">
                       Motto Meczowe
                     </span>
-                    <p className="text-xs font-bold text-bkpk-text-primary italic">
+                    <p className="text-[15px] font-semibold text-bkpk-text-primary italic">
                       "{briefing.motivationalMotto}"
                     </p>
                   </div>

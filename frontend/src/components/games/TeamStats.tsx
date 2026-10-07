@@ -25,7 +25,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
             <BkpkCard variant="glass" className="h-48 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
                     <div className="w-8 h-8 border-2 border-bkpk-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-bkpk-text-muted text-xs uppercase tracking-widest font-bold">Ładowanie statystyk...</p>
+                    <p className="label-caps text-bkpk-text-muted text-xs">Ładowanie statystyk...</p>
                 </div>
             </BkpkCard>
         );
@@ -34,7 +34,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
     if (!teamStats) {
         return (
             <BkpkCard variant="glass" className="p-8 text-center">
-                <p className="text-bkpk-text-muted text-sm italic">Brak statystyk zespołowych dla tego meczu</p>
+                <p className="text-bkpk-text-muted text-sm">Brak statystyk zespołowych dla tego meczu</p>
             </BkpkCard>
         );
     }
@@ -46,21 +46,21 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
         value !== undefined && value !== null ? value.toFixed(decimals) : '-';
 
     const StatItem = ({ label, value, desc, valueClass }: { label: string, value: string | number, desc: string, valueClass?: string }) => (
-        <div className="flex flex-col p-4 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong hover:border-bkpk-primary/40 transition-colors">
-            <span className="text-xs font-bold text-bkpk-text-muted uppercase tracking-widest mb-1">{label}</span>
-            <span className={cn("text-2xl font-black font-outfit text-bkpk-text-primary", valueClass)}>{value}</span>
-            <span className="text-xs text-bkpk-text-muted truncate">{desc}</span>
+        <div className="flex flex-col p-3 sm:p-4 bg-bkpk-bg border border-bkpk-border-subtle hover:border-bkpk-border-strong transition-colors">
+            <span className="label-caps text-[11px] text-bkpk-text-secondary mb-1.5">{label}</span>
+            <span className={cn("text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary", valueClass)}>{value}</span>
+            <span className="text-xs text-bkpk-text-muted truncate mt-1.5">{desc}</span>
         </div>
     );
 
     return (
         <BkpkCard variant="glass" className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
-                <span className="w-2 h-8 rounded-full bg-bkpk-primary" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Statystyki Zespołowe</h3>
+            <div className="flex items-center gap-3 border-b border-bkpk-border-subtle pb-4">
+                <span className="w-6 h-[3px] bg-bkpk-primary shrink-0" aria-hidden="true" />
+                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki Zespołowe</h3>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2">
                 <StatItem
                     label="EFG%"
                     value={formatPercent(teamStats.efg)}
@@ -75,7 +75,6 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
                     label="OffRtg"
                     value={formatNumber(teamStats.offRtg)}
                     desc="Pkt / 100 posiadań"
-                    valueClass="text-bkpk-primary"
                 />
                 <StatItem
                     label="DefRtg"
@@ -92,14 +91,13 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
                     label="Pace"
                     value={formatNumber(teamStats.pace)}
                     desc="Tempo (pos/40min)"
-                    valueClass="text-bkpk-warning"
                 />
             </div>
 
-            <div className="flex items-start gap-3 p-4 bg-bkpk-primary/5 rounded-xl border border-bkpk-primary/10">
-                <Info className="w-5 h-5 text-bkpk-primary flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3 p-4 border-l-2 border-bkpk-primary bg-bkpk-bg">
+                <Info className="w-5 h-5 text-bkpk-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-bkpk-primary uppercase tracking-widest">Advanced Stats</h4>
+                    <h4 className="label-caps text-xs text-bkpk-text-primary">Advanced Stats</h4>
                     <p className="text-xs text-bkpk-text-secondary leading-relaxed">
                         <strong>OffRtg/DefRtg</strong> mierzą efektywność na 100 posiadań.
                         <strong> NetRtg</strong> to różnica (plus = dobrze).

@@ -12,7 +12,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { cn } from '../../shared/lib/utils';
-import BkpkButton from '../../shared/ui/BkpkButton';
+import BkpkButton, { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import ZoneDefenseGuideModal from './ZoneDefenseGuideModal';
 import {
@@ -25,6 +25,66 @@ import {
   RenderedPlayerState,
   RenderedBallState
 } from './TacticalEngine';
+
+// Paleta Digital 2.0 — rysowanie boiska na canvas (wartości zgodne z tokens.css, --c-*).
+// Parkiet = czerń/ink, linie = biel #F7F6F2 z alfą, atak BeKaPaKa = czerwień (pełny token),
+// obrona/rywal = stone (ciemny token z obrysem + etykieta „D”), piłka/wyróżnienie = złoto, wynik = zieleń.
+const COURT_PALETTE = {
+  floorTop: '#161616', // ink-800
+  floorMid: '#121212', // ink-900
+  floorBottom: '#0B0B0B', // black
+  plank: 'rgba(247, 246, 242, 0.03)',
+  line: 'rgba(247, 246, 242, 0.32)',
+  lineKey: 'rgba(247, 246, 242, 0.5)',
+  lineFreeThrow: 'rgba(247, 246, 242, 0.62)',
+  lineCircle: 'rgba(247, 246, 242, 0.42)',
+  lineThree: 'rgba(247, 246, 242, 0.72)',
+  paint: '#1F1E1C', // ink-700
+  backboard: '#F7F6F2',
+  rimMount: 'rgba(247, 246, 242, 0.6)',
+  net: 'rgba(247, 246, 242, 0.15)',
+  rim: '#EF1734', // red-500
+  zoneFillActive: 'rgba(244, 168, 22, 0.14)', // gold-500
+  zoneStrokeActive: '#F4A816',
+  zoneAnchor: 'rgba(247, 246, 242, 0.3)',
+  badgeBg: 'rgba(11, 11, 11, 0.94)',
+  badgeText: '#D8D4CC',
+  badgeTextActive: '#F4A816',
+  screen: '#F7F6F2',
+  screenPulseRgb: '247, 246, 242',
+  tokenShadow: 'rgba(11, 11, 11, 0.7)',
+  heading: '#F7F6F2',
+  offenseFill: '#EF1734', // red-500
+  offenseStroke: '#0B0B0B',
+  offenseStrokeBall: '#F7F6F2',
+  offenseText: '#F7F6F2',
+  ballHolderRing: '#F4A816', // gold-500
+  defenseFill: '#1F1E1C', // ink-700
+  defenseStroke: '#D8D4CC', // stone-200
+  defenseText: '#D8D4CC',
+  roleTagStroke: 'rgba(156, 151, 143, 0.7)', // stone-400
+  roleTagStrokeActive: '#F4A816',
+  roleTagText: '#D8D4CC',
+  roleTagTextActive: '#F7F6F2',
+  ballShadowRgb: '11, 11, 11',
+  ballLight: '#F4A816', // gold-500
+  ballDark: '#9A6400', // gold-700
+  ballSeam: 'rgba(11, 11, 11, 0.6)',
+  outcomeBg: 'rgba(11, 11, 11, 0.94)',
+  outcome: '#3DBA6F', // green-400
+} as const;
+
+/** Strefy obrony: kolor wg kolejności strefy z palety marki (bez złota — złoto = strefa z piłką).
+ *  Barwy zapisane w danych (`zone.color`, presety / AI) są pomijane, bo bywają spoza marki. */
+const ZONE_PALETTE = [
+  { fill: 'rgba(239, 23, 52, 0.14)', stroke: 'rgba(239, 23, 52, 0.75)' }, // red-500
+  { fill: 'rgba(216, 212, 204, 0.10)', stroke: 'rgba(216, 212, 204, 0.7)' }, // stone-200
+  { fill: 'rgba(61, 186, 111, 0.12)', stroke: 'rgba(61, 186, 111, 0.7)' }, // green-400
+  { fill: 'rgba(255, 90, 110, 0.12)', stroke: 'rgba(255, 90, 110, 0.7)' }, // red-300
+  { fill: 'rgba(156, 151, 143, 0.12)', stroke: 'rgba(156, 151, 143, 0.75)' }, // stone-400
+] as const;
+
+const COURT_FONT = '"Barlow Condensed", "Barlow", sans-serif';
 
 interface BasketballCourtCanvasProps {
   initialData?: any;
@@ -232,7 +292,7 @@ export default function BasketballCourtCanvas({
   const showZonesRef = useRef<boolean>(true);
   const durationRef = useRef<number>(duration);
   const lastTimeUpdateUiRef = useRef<number>(0);
-  const prevPlayNameRef = useRef<string | null>(null);
+  const prevPlayNameRef = useRef<string | null | undefined>(null);
 
   speedRef.current = speed;
   isLoopRef.current = isLoop;
@@ -354,16 +414,17 @@ export default function BasketballCourtCanvas({
       const px = (xPct: number) => (xPct / 100) * width;
       const py = (yPct: number) => (yPct / 100) * height;
 
-      // 1. TŁO PARKIETU (Obsidian Black Dark Hardwood)
+      // 1. TŁO PARKIETU (czerń / ink — paleta Digital 2.0)
+      const C = COURT_PALETTE;
       const grad = ctx.createLinearGradient(0, 0, 0, height);
-      grad.addColorStop(0, '#15151a');
-      grad.addColorStop(0.5, '#101014');
-      grad.addColorStop(1, '#09090b');
+      grad.addColorStop(0, C.floorTop);
+      grad.addColorStop(0.5, C.floorMid);
+      grad.addColorStop(1, C.floorBottom);
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
 
       // Subtelny wzór desek
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.025)';
+      ctx.strokeStyle = C.plank;
       ctx.lineWidth = 1;
       const plankStep = width / 18;
       for (let i = 1; i < 18; i++) {
@@ -373,9 +434,8 @@ export default function BasketballCourtCanvas({
         ctx.stroke();
       }
 
-      // 2. WEKTOROWE LINIE BOISKA FIBA (Złoto i Biel)
-      const gold = '#ECA72C';
-      const lineWhite = 'rgba(255, 255, 255, 0.28)';
+      // 2. WEKTOROWE LINIE BOISKA FIBA (biel z alfą)
+      const lineWhite = C.line;
 
       // Obramowanie boiska (Baseline top y=4, Sidelines x=4..96, Midcourt y=96)
       ctx.strokeStyle = lineWhite;
@@ -383,9 +443,9 @@ export default function BasketballCourtCanvas({
       ctx.strokeRect(px(4), py(4), px(92), py(92));
 
       // Trumna (Key / Paint) od y=4% do y=42%, x=33% do x=67%
-      ctx.fillStyle = 'rgba(236, 167, 44, 0.04)';
+      ctx.fillStyle = C.paint;
       ctx.fillRect(px(33), py(4), px(34), py(38));
-      ctx.strokeStyle = 'rgba(236, 167, 44, 0.45)';
+      ctx.strokeStyle = C.lineKey;
       ctx.lineWidth = 1.5;
       ctx.strokeRect(px(33), py(4), px(34), py(38));
 
@@ -393,7 +453,7 @@ export default function BasketballCourtCanvas({
       ctx.beginPath();
       ctx.moveTo(px(33), py(42));
       ctx.lineTo(px(67), py(42));
-      ctx.strokeStyle = 'rgba(236, 167, 44, 0.6)';
+      ctx.strokeStyle = C.lineFreeThrow;
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -401,7 +461,7 @@ export default function BasketballCourtCanvas({
       // Dolne półkole (w stronę połowy) - linia ciągła
       ctx.beginPath();
       ctx.arc(px(50), py(42), px(12), 0, Math.PI, false);
-      ctx.strokeStyle = 'rgba(236, 167, 44, 0.4)';
+      ctx.strokeStyle = C.lineCircle;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
@@ -414,7 +474,7 @@ export default function BasketballCourtCanvas({
       ctx.restore();
 
       // Tablica (y=8%, x: 44% do 56%)
-      ctx.strokeStyle = '#FFFFFF';
+      ctx.strokeStyle = C.backboard;
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(px(44), py(8));
@@ -422,7 +482,7 @@ export default function BasketballCourtCanvas({
       ctx.stroke();
 
       // Mocowanie kosza (od tablicy y=8% do obręczy y=10.5%)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.strokeStyle = C.rimMount;
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(px(50), py(8));
@@ -437,7 +497,7 @@ export default function BasketballCourtCanvas({
       ctx.stroke();
 
       // Siatka kosza
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.fillStyle = C.net;
       ctx.beginPath();
       ctx.moveTo(px(48), py(12.5));
       ctx.lineTo(px(52), py(12.5));
@@ -446,8 +506,8 @@ export default function BasketballCourtCanvas({
       ctx.closePath();
       ctx.fill();
 
-      // Pomarańczowa stalowa obręcz kosza (środek 50, 12.5)
-      ctx.strokeStyle = '#FF5722';
+      // Obręcz kosza (środek 50, 12.5) — czerwień marki
+      ctx.strokeStyle = C.rim;
       ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(px(50), py(12.5), px(2.2), 0, Math.PI * 2);
@@ -477,7 +537,7 @@ export default function BasketballCourtCanvas({
       // 3. Prawy róg pionowo w górę do linii końcowej
       ctx.lineTo(cornerRightX, baselineY);
 
-      ctx.strokeStyle = 'rgba(236, 167, 44, 0.8)';
+      ctx.strokeStyle = C.lineThree;
       ctx.lineWidth = 2;
       ctx.stroke();
 
@@ -498,7 +558,8 @@ export default function BasketballCourtCanvas({
 
       // 2.5 WYRAZISTA WIZUALIZACJA STREF DEFENSYWNYCH (ZONE OVERLAYS)
       if (showZonesRef.current && timelineData.zoneAreas && timelineData.zoneAreas.length > 0) {
-        for (const zone of timelineData.zoneAreas) {
+        for (const [zoneIndex, zone] of timelineData.zoneAreas.entries()) {
+          const zoneColors = ZONE_PALETTE[zoneIndex % ZONE_PALETTE.length];
           if (!zone.polygon || zone.polygon.length < 3) continue;
 
           // Wyliczenie środka ciężkości (centroid)
@@ -523,27 +584,21 @@ export default function BasketballCourtCanvas({
           }
           ctx.closePath();
 
-          // Wyraziste wypełnienie strefy
-          const baseColor = zone.color || 'rgba(244, 63, 94, 0.16)';
-          ctx.fillStyle = isBallInZone ? 'rgba(244, 63, 94, 0.28)' : baseColor;
+          // Wypełnienie strefy — paleta marki wg kolejności + etykieta; strefa z piłką = złote wyróżnienie
+          ctx.fillStyle = isBallInZone ? C.zoneFillActive : zoneColors.fill;
           ctx.fill();
 
-          // Wyrazista granica strefy
-          ctx.strokeStyle = isBallInZone ? '#F43F5E' : 'rgba(244, 63, 94, 0.7)';
+          // Granica strefy (bez poświaty)
+          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : zoneColors.stroke;
           ctx.lineWidth = isBallInZone ? 2.5 : 1.8;
           ctx.setLineDash(isBallInZone ? [] : [6, 4]);
-          if (isBallInZone) {
-            ctx.shadowColor = 'rgba(244, 63, 94, 0.7)';
-            ctx.shadowBlur = 10;
-          }
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.shadowBlur = 0;
 
           // Subtelna linia kotwicy łącząca obrońcę z centrum jego strefy
           if (assignedPlayer) {
             ctx.save();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.strokeStyle = C.zoneAnchor;
             ctx.lineWidth = 1;
             ctx.setLineDash([3, 3]);
             ctx.beginPath();
@@ -554,7 +609,7 @@ export default function BasketballCourtCanvas({
           }
 
           // Wyrazisty Badge Strefy
-          ctx.font = '900 10.5px Outfit, sans-serif';
+          ctx.font = `800 11px ${COURT_FONT}`;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
 
@@ -562,16 +617,16 @@ export default function BasketballCourtCanvas({
           const badgeW = textMetrics.width + 18;
           const badgeH = 20;
 
-          ctx.fillStyle = 'rgba(10, 14, 23, 0.94)';
+          ctx.fillStyle = C.badgeBg;
           ctx.beginPath();
           ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 6);
           ctx.fill();
 
-          ctx.strokeStyle = isBallInZone ? '#F43F5E' : 'rgba(244, 63, 94, 0.85)';
+          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : zoneColors.stroke;
           ctx.lineWidth = isBallInZone ? 1.8 : 1.2;
           ctx.stroke();
 
-          ctx.fillStyle = isBallInZone ? '#FECDD3' : '#FDA4AF';
+          ctx.fillStyle = isBallInZone ? C.badgeTextActive : C.badgeText;
           ctx.fillText(zone.label, centX, centY);
           ctx.restore();
         }
@@ -590,7 +645,7 @@ export default function BasketballCourtCanvas({
           ctx.rotate(barAngleRad);
 
           // Belka blokująca T-Bar
-          ctx.strokeStyle = '#F59E0B';
+          ctx.strokeStyle = C.screen;
           ctx.lineWidth = 3.5;
           ctx.lineCap = 'round';
           ctx.beginPath();
@@ -607,7 +662,7 @@ export default function BasketballCourtCanvas({
 
           // Pulsujący ring zasłony
           const pulse = (Math.sin(now * 0.008) + 1) * 0.5;
-          ctx.strokeStyle = `rgba(245, 158, 11, ${0.3 + pulse * 0.4})`;
+          ctx.strokeStyle = `rgba(${C.screenPulseRgb}, ${0.3 + pulse * 0.4})`;
           ctx.lineWidth = 1.5;
           ctx.beginPath();
           ctx.arc(0, 0, px(2.8 + pulse * 0.6), 0, Math.PI * 2);
@@ -627,7 +682,7 @@ export default function BasketballCourtCanvas({
         const hasBall = renderedBall.holderId === player.id;
 
         // Cień pod tokenem
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+        ctx.fillStyle = C.tokenShadow;
         ctx.beginPath();
         ctx.ellipse(cx, cy + tokenRadius * 0.5, tokenRadius * 0.8, tokenRadius * 0.4, 0, 0, Math.PI * 2);
         ctx.fill();
@@ -637,7 +692,7 @@ export default function BasketballCourtCanvas({
         const hx = cx + Math.sin(headingRad) * (tokenRadius + 2.5);
         const hy = cy - Math.cos(headingRad) * (tokenRadius + 2.5);
 
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = C.heading;
         ctx.beginPath();
         ctx.arc(hx, hy, 2, 0, Math.PI * 2);
         ctx.fill();
@@ -647,41 +702,34 @@ export default function BasketballCourtCanvas({
         ctx.arc(cx, cy, tokenRadius, 0, Math.PI * 2);
 
         if (isOffense) {
-          // Złoty gradient dla ataku
-          const tGrad = ctx.createLinearGradient(cx, cy - tokenRadius, cx, cy + tokenRadius);
-          tGrad.addColorStop(0, '#FDE047');
-          tGrad.addColorStop(0.5, '#ECA72C');
-          tGrad.addColorStop(1, '#B45309');
-          ctx.fillStyle = tGrad;
+          // Atak BeKaPaKa: pełny czerwony token
+          ctx.fillStyle = C.offenseFill;
           ctx.fill();
 
-          ctx.strokeStyle = hasBall ? '#FFFFFF' : '#000000';
+          ctx.strokeStyle = hasBall ? C.offenseStrokeBall : C.offenseStroke;
           ctx.lineWidth = hasBall ? 2.5 : 1.8;
           ctx.stroke();
 
           if (hasBall) {
-            ctx.strokeStyle = 'rgba(253, 224, 71, 0.9)';
+            ctx.strokeStyle = C.ballHolderRing;
             ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.arc(cx, cy, tokenRadius + 3.5, 0, Math.PI * 2);
             ctx.stroke();
           }
         } else {
-          // Karmazynowy gradient dla obrony
-          const dGrad = ctx.createLinearGradient(cx, cy - tokenRadius, cx, cy + tokenRadius);
-          dGrad.addColorStop(0, '#F43F5E');
-          dGrad.addColorStop(1, '#9F1239');
-          ctx.fillStyle = dGrad;
+          // Obrona / rywal: ciemny token z jasnym obrysem (różni się wypełnieniem i etykietą „D”)
+          ctx.fillStyle = C.defenseFill;
           ctx.fill();
 
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
-          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = C.defenseStroke;
+          ctx.lineWidth = 2;
           ctx.stroke();
         }
 
         // TYLKO NUMER POZYCJI (1, 2, 3, 4, 5 dla ataku / D1, D2, D3, D4, D5 dla obrony)
-        ctx.fillStyle = isOffense ? '#000000' : '#FFFFFF';
-        ctx.font = `900 ${Math.round(tokenRadius * (isOffense ? 1.15 : 0.9))}px Outfit, sans-serif`;
+        ctx.fillStyle = isOffense ? C.offenseText : C.defenseText;
+        ctx.font = `800 ${Math.round(tokenRadius * (isOffense ? 1.15 : 0.9))}px ${COURT_FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -724,7 +772,7 @@ export default function BasketballCourtCanvas({
 
           if (roleTag) {
             ctx.save();
-            ctx.font = '800 8.5px Outfit, sans-serif';
+            ctx.font = `800 9.5px ${COURT_FONT}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -733,16 +781,16 @@ export default function BasketballCourtCanvas({
             const tagH = 14;
             const tagY = cy - tokenRadius - 9;
 
-            ctx.fillStyle = 'rgba(10, 14, 23, 0.92)';
+            ctx.fillStyle = C.badgeBg;
             ctx.beginPath();
             ctx.roundRect(cx - tagW / 2, tagY - tagH / 2, tagW, tagH, 4);
             ctx.fill();
 
-            ctx.strokeStyle = distToBall < 15 ? '#F43F5E' : 'rgba(244, 63, 94, 0.6)';
+            ctx.strokeStyle = distToBall < 15 ? C.roleTagStrokeActive : C.roleTagStroke;
             ctx.lineWidth = distToBall < 15 ? 1.2 : 0.8;
             ctx.stroke();
 
-            ctx.fillStyle = distToBall < 15 ? '#FDA4AF' : '#FECDD3';
+            ctx.fillStyle = distToBall < 15 ? C.roleTagTextActive : C.roleTagText;
             ctx.fillText(roleTag, cx, tagY);
             ctx.restore();
           }
@@ -756,7 +804,7 @@ export default function BasketballCourtCanvas({
       const ballRadius = Math.max(7.5, px(1.2)) * (1.0 + renderedBall.z * 0.4);
 
       // Cień piłki
-      ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.2, 0.7 - renderedBall.z * 0.4)})`;
+      ctx.fillStyle = `rgba(${C.ballShadowRgb}, ${Math.max(0.2, 0.7 - renderedBall.z * 0.4)})`;
       ctx.beginPath();
       ctx.ellipse(
         bx,
@@ -778,16 +826,16 @@ export default function BasketballCourtCanvas({
         airBy,
         ballRadius
       );
-      ballGrad.addColorStop(0, '#FB923C');
-      ballGrad.addColorStop(0.6, '#EA580C');
-      ballGrad.addColorStop(1, '#7C2D12');
+      ballGrad.addColorStop(0, C.ballLight);
+      ballGrad.addColorStop(0.6, C.ballLight);
+      ballGrad.addColorStop(1, C.ballDark);
 
       ctx.fillStyle = ballGrad;
       ctx.beginPath();
       ctx.arc(bx, airBy, ballRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+      ctx.strokeStyle = C.ballSeam;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(bx - ballRadius, airBy);
@@ -814,7 +862,7 @@ export default function BasketballCourtCanvas({
 
         // Pasek informacyjny z wynikiem na górze parkietu
         ctx.save();
-        ctx.font = '900 12px Outfit, sans-serif';
+        ctx.font = `800 13px ${COURT_FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -825,21 +873,18 @@ export default function BasketballCourtCanvas({
         const badgeY = py(6) - badgeH / 2;
 
         // Tło kapsułki
-        ctx.fillStyle = 'rgba(10, 14, 23, 0.92)';
+        ctx.fillStyle = C.outcomeBg;
         ctx.beginPath();
         ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 13);
         ctx.fill();
 
-        // Obramowanie ze szmaragdowym blaskiem
-        ctx.strokeStyle = '#10B981';
+        // Obramowanie (pozytywny wynik, bez poświaty)
+        ctx.strokeStyle = C.outcome;
         ctx.lineWidth = 1.5;
-        ctx.shadowColor = 'rgba(16, 185, 129, 0.5)';
-        ctx.shadowBlur = 10;
         ctx.stroke();
 
         // Tekst
-        ctx.fillStyle = '#34D399';
-        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = C.outcome;
         ctx.fillText(outcomeLabel, px(50), py(6));
         ctx.restore();
       }
@@ -866,24 +911,24 @@ export default function BasketballCourtCanvas({
   return (
     <div className="space-y-4">
       {/* Pasek Nagłówkowy */}
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-bkpk-glass border border-bkpk-border-strong rounded-2xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-bkpk-surface border border-bkpk-border-subtle">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-bkpk-primary/20 border border-bkpk-primary/40 flex items-center justify-center text-bkpk-primary shadow-bkpk-glow">
+          <div className="w-10 h-10 border border-bkpk-border-strong flex items-center justify-center text-bkpk-primary shrink-0">
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-black text-bkpk-text-primary uppercase tracking-wider font-outfit">
+            <h3 className="text-[18px] sm:text-[20px] leading-tight text-bkpk-text-primary">
               {playName || 'Profesjonalny Schemat Taktyczny'}
             </h3>
-            <div className="flex items-center gap-2 text-xs text-bkpk-text-muted">
+            <div className="flex items-center gap-2 text-[13px] text-bkpk-text-muted">
               {targetDefense && (
-                <span className="flex items-center gap-1 text-amber-400 font-bold">
+                <span className="flex items-center gap-1 text-bkpk-text-secondary font-semibold">
                   <Shield className="w-3.5 h-3.5" />
                   vs {targetDefense}
                 </span>
               )}
               <span>•</span>
-              <span className="font-bold text-bkpk-primary font-outfit">
+              <span className="text-bkpk-primary font-display tabular-nums text-[15px]">
                 {activeUiTime.toFixed(1)}s / {duration.toFixed(1)}s
               </span>
             </div>
@@ -894,7 +939,7 @@ export default function BasketballCourtCanvas({
           {/* Przycisk Podręcznika Zasad Strefy */}
           <button
             onClick={() => setIsGuideOpen(true)}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-1 text-bkpk-primary border border-bkpk-primary/40 shadow-sm"
+            className="px-3 py-1.5 label-caps text-[12px] transition-colors flex items-center gap-1.5 min-h-[44px] bg-transparent text-bkpk-text-primary border border-bkpk-border-strong hover:border-bkpk-text-primary"
             title="Otwórz Podręcznik Taktyczny: Jak poruszać się po strefie"
           >
             <BookOpen className="w-3.5 h-3.5" />
@@ -906,22 +951,22 @@ export default function BasketballCourtCanvas({
             <button
               onClick={() => setShowZones(!showZones)}
               className={cn(
-                "px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 min-h-[32px] border",
+                "px-3 py-1.5 label-caps text-[12px] transition-colors flex items-center gap-1.5 min-h-[44px] border",
                 showZones
-                  ? "bg-rose-500/20 text-rose-300 border-rose-500/50 shadow-sm"
-                  : "bg-bkpk-surface-tint-2 text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-subtle"
+                  ? bkpkActivePillClass
+                  : "bg-transparent text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-strong"
               )}
               title="Przełącz widoczność wyznaczonych stref defensywnych"
             >
               <Shield className="w-3.5 h-3.5" />
-              <span>Strefy: <strong className={showZones ? "text-rose-400" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
+              <span>Strefy: <strong className={showZones ? "text-inherit" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
             </button>
           )}
         </div>
 
         {/* Fazy Akcji */}
         {timelineData.phaseDirectives && timelineData.phaseDirectives.length > 0 && (
-          <div className="flex items-center gap-1.5 bg-bkpk-surface-tint-2 p-1 rounded-xl border border-bkpk-border-subtle overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 p-1 border border-bkpk-border-subtle overflow-x-auto no-scrollbar">
             {timelineData.phaseDirectives.map((ph, idx) => {
               const isActive = activeUiTime >= ph.startTime && activeUiTime <= ph.endTime;
               return (
@@ -934,10 +979,10 @@ export default function BasketballCourtCanvas({
                     setIsPlaying(true);
                   }}
                   className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all shrink-0 min-h-[30px]",
+                    "px-3 py-1 label-caps text-[12px] transition-colors shrink-0 min-h-[44px] border",
                     isActive
-                      ? "bg-bkpk-primary text-black shadow-bkpk-glow"
-                      : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
+                      ? bkpkActivePillClass
+                      : "border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
                   )}
                 >
                   Faza {idx + 1}
@@ -949,7 +994,7 @@ export default function BasketballCourtCanvas({
       </div>
 
       {/* Kontener Canvas 2D (Perfekcyjna Wektorowa Geometria FIBA) */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-[850px] mx-auto border-2 border-bkpk-primary/40 rounded-3xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-[850px] mx-auto border border-bkpk-border-strong overflow-hidden">
         <canvas
           ref={canvasRef}
           className="w-full h-full block cursor-pointer"
@@ -958,43 +1003,43 @@ export default function BasketballCourtCanvas({
       </div>
 
       {/* Czysta Legenda Pozycji Koszykarskich */}
-      <div className="flex flex-wrap items-center justify-center gap-4 py-2 px-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl text-[11px] font-bold text-bkpk-text-secondary">
+      <div className="flex flex-wrap items-center justify-center gap-4 py-2 px-3 border-y border-bkpk-border-subtle text-[12px] font-semibold text-bkpk-text-secondary">
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-bkpk-primary text-black text-[10px] font-black flex items-center justify-center">
+          <span className="h-5 min-w-5 px-1 rounded-full bg-bkpk-primary text-brand-white text-[11px] font-display flex items-center justify-center">
             1-5
           </span>
           <span>Pozycje Ataku (1: PG, 2: SG, 3: SF, 4: PF, 5: C)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center">
+          <span className="h-5 min-w-5 px-1 rounded-full bg-ink-700 border-2 border-brand-stone-200 text-brand-stone-200 text-[11px] font-display flex items-center justify-center">
             D1-5
           </span>
           <span>Obrońcy</span>
         </div>
         {timelineData.zoneAreas && timelineData.zoneAreas.length > 0 && (
-          <div className="flex items-center gap-1.5 text-rose-400">
-            <span className="w-3.5 h-3.5 rounded border border-dashed border-rose-400 bg-rose-500/20 flex items-center justify-center text-[9px] font-mono">
+          <div className="flex items-center gap-1.5 text-bkpk-text-secondary">
+            <span className="w-3.5 h-3.5 border border-dashed border-brand-stone-200 bg-brand-stone-200/10 flex items-center justify-center text-[9px] font-mono">
               ▨
             </span>
             <span>Strefy Odpowiedzialności</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-amber-400">
+        <div className="flex items-center gap-1.5 text-bkpk-text-primary">
           <span className="font-black text-sm">⊥</span>
           <span>Zasłona (T-Bar)</span>
         </div>
-        <div className="flex items-center gap-1.5 text-bkpk-primary">
+        <div className="flex items-center gap-1.5 text-brand-gold-500">
           <span className="font-black text-xs">🏀</span>
           <span>Piłka &amp; Rzut</span>
         </div>
       </div>
 
       {/* Pasek Sterowania i Suwak Czasu */}
-      <div className="p-4 bg-bkpk-surface border border-bkpk-border-strong rounded-2xl shadow-xl space-y-3">
+      <div className="p-4 bg-bkpk-surface border border-bkpk-border-subtle space-y-3">
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-bkpk-text-muted">
+          <div className="flex items-center justify-between label-caps text-[11px] text-bkpk-text-muted">
             <span>Ustawienie (0.0s)</span>
-            <span className="text-bkpk-primary font-outfit text-xs">{activeUiTime.toFixed(2)}s</span>
+            <span className="text-bkpk-primary font-display tabular-nums text-[15px] tracking-normal">{activeUiTime.toFixed(2)}s</span>
             <span>Koniec ({duration.toFixed(1)}s)</span>
           </div>
           <input
@@ -1004,7 +1049,7 @@ export default function BasketballCourtCanvas({
             step="0.05"
             value={activeUiTime}
             onChange={handleSeek}
-            className="w-full h-2 bg-bkpk-surface-tint-2 rounded-lg appearance-none cursor-pointer accent-bkpk-primary"
+            className="w-full h-2 bg-bkpk-surface-tint-2 appearance-none cursor-pointer accent-bkpk-primary"
           />
         </div>
 
@@ -1030,21 +1075,21 @@ export default function BasketballCourtCanvas({
 
             <button
               onClick={() => handleStepDelta(-0.5)}
-              className="p-2 rounded-xl text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-border-strong transition-colors"
               title="Cofnij 0.5s"
             >
               <SkipBack className="w-4 h-4" />
             </button>
             <button
               onClick={() => handleStepDelta(0.5)}
-              className="p-2 rounded-xl text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-border-strong transition-colors"
               title="Przewiń 0.5s"
             >
               <SkipForward className="w-4 h-4" />
             </button>
             <button
               onClick={handleReset}
-              className="p-2 rounded-xl text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-surface-tint-2 transition-colors"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-transparent text-bkpk-text-muted hover:text-bkpk-primary hover:border-bkpk-border-strong transition-colors"
               title="Resetuj do początku"
             >
               <RotateCcw className="w-4 h-4" />
@@ -1053,8 +1098,8 @@ export default function BasketballCourtCanvas({
             <button
               onClick={handleLoopToggle}
               className={cn(
-                "p-2 rounded-xl transition-colors",
-                isLoop ? "text-bkpk-primary bg-bkpk-primary/10" : "text-bkpk-text-muted hover:text-bkpk-text-primary"
+                "min-h-[44px] min-w-[44px] flex items-center justify-center border transition-colors",
+                isLoop ? "text-bkpk-primary border-bkpk-primary" : "border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary"
               )}
               title="Pętla"
             >
@@ -1063,19 +1108,19 @@ export default function BasketballCourtCanvas({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-bold text-bkpk-text-muted uppercase tracking-wider hidden sm:inline">
+            <span className="label-caps text-[11px] text-bkpk-text-muted hidden sm:inline">
               Tempo:
             </span>
-            <div className="flex items-center gap-1 bg-bkpk-surface-tint-1 p-1 rounded-xl border border-bkpk-border-subtle">
+            <div className="flex items-center gap-1 p-1 border border-bkpk-border-subtle">
               {[0.25, 0.5, 1.0, 1.5].map((spd) => (
                 <button
                   key={spd}
                   onClick={() => handleSpeedChange(spd)}
                   className={cn(
-                    "px-2.5 py-1 rounded-lg text-xs font-bold transition-all",
+                    "px-2.5 py-1 min-h-[44px] min-w-[44px] font-display tabular-nums text-[15px] transition-colors border",
                     speed === spd
-                      ? "bg-bkpk-primary text-black shadow-bkpk-glow"
-                      : "text-bkpk-text-muted hover:text-bkpk-text-primary"
+                      ? bkpkActivePillClass
+                      : "border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary"
                   )}
                 >
                   {spd}x
@@ -1088,21 +1133,21 @@ export default function BasketballCourtCanvas({
 
       {/* Synchronizowany Panel Trenerski */}
       {currentPhase && (
-        <BkpkCard variant="glass" className="p-5 border-bkpk-primary/30 shadow-lg">
+        <BkpkCard variant="glass" className="p-5 border-l-[3px] border-l-bkpk-primary">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-bkpk-primary/10 border border-bkpk-primary/30 flex items-center justify-center text-bkpk-primary shrink-0 mt-0.5">
+            <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center text-bkpk-primary shrink-0 mt-0.5">
               <Sparkles className="w-4 h-4" />
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-xs font-black uppercase tracking-wider text-bkpk-primary font-outfit">
+                <span className="text-[16px] uppercase text-bkpk-text-primary font-display">
                   {currentPhase.title}
                 </span>
-                <span className="text-[10px] text-bkpk-text-muted font-bold">
+                <span className="text-[11px] text-bkpk-text-muted font-semibold tabular-nums">
                   {currentPhase.startTime.toFixed(1)}s – {currentPhase.endTime.toFixed(1)}s
                 </span>
               </div>
-              <p className="text-xs text-bkpk-text-secondary leading-relaxed mb-3">
+              <p className="text-[14px] text-bkpk-text-secondary leading-relaxed mb-3">
                 {currentPhase.description}
               </p>
 
@@ -1111,7 +1156,7 @@ export default function BasketballCourtCanvas({
                   {currentPhase.coachingCues.map((cue, cIdx) => (
                     <span
                       key={cIdx}
-                      className="text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-full"
+                      className="text-[12px] font-semibold text-bkpk-text-primary border border-bkpk-border-strong px-2.5 py-0.5"
                     >
                       ⚡ {cue}
                     </span>

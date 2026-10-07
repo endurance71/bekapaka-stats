@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Bot, ChevronRight, ExternalLink, Loader2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Bot, ChevronRight, ExternalLink, Loader2 } from 'lucide-react';
 import { postJSON } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { useAiCatalog, type AiCatalogItem } from '../../hooks/useAiCatalog';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
+import PageHeader from '../../shared/ui/PageHeader';
+import PageLoader from '../../shared/ui/PageLoader';
 import {
   AI_CATEGORIES,
   categoryLabelFromSlug,
@@ -71,19 +73,19 @@ function AiCatalogItemRow({
   return (
     <li>
       <BkpkCard
-        variant="glass"
+        variant="flat"
         padding="none"
-        className="border-bkpk-border-strong/80 hover:border-bkpk-primary/25 transition-colors"
+        className="hover:border-bkpk-border-strong transition-colors"
       >
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
-            <p className="font-outfit text-sm font-black text-bkpk-text-primary sm:text-base">
+            <p className="font-display text-lg uppercase leading-tight text-bkpk-text-primary sm:text-xl">
               {item.title}
             </p>
             {item.subtitle ? (
-              <p className="mt-0.5 text-xs text-bkpk-text-muted truncate">{item.subtitle}</p>
+              <p className="mt-1 text-sm text-bkpk-text-muted truncate">{item.subtitle}</p>
             ) : null}
-            <p className="mt-1.5 text-xs font-medium text-bkpk-text-secondary">
+            <p className="mt-2 text-xs font-medium text-bkpk-text-secondary tabular-nums">
               Data wygenerowania:{' '}
               <span className={item.hasContent ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted'}>
                 {formatGeneratedAt(item.generatedAt)}
@@ -91,12 +93,12 @@ function AiCatalogItemRow({
               {item.model ? ` · ${item.model}` : ''}
             </p>
             {item.stale && item.hasContent ? (
-              <p className="mt-1 text-[11px] font-semibold text-bkpk-warning">
+              <p className="mt-1.5 text-xs font-semibold text-bkpk-text-danger">
                 Raport może być nieaktualny — rozważ ponowną generację.
               </p>
             ) : null}
             {!item.canGenerate && isAdmin && item.type === 'match' ? (
-              <p className="mt-1 text-[11px] text-bkpk-text-muted">
+              <p className="mt-1.5 text-xs text-bkpk-text-muted">
                 Brak box score — najpierw synchronizuj KALK.
               </p>
             ) : null}
@@ -108,7 +110,7 @@ function AiCatalogItemRow({
                 variant="primary"
                 size="sm"
                 onClick={() => onView(item)}
-                className="min-h-9 !py-2 text-xs font-black uppercase tracking-widest"
+                className="text-[13px]"
               >
                 Zobacz analizę
                 <ChevronRight className="ml-1 h-4 w-4" aria-hidden />
@@ -118,7 +120,7 @@ function AiCatalogItemRow({
                 variant="ghost"
                 size="sm"
                 onClick={() => onView(item)}
-                className="min-h-9 !py-2 text-xs"
+                className="text-[13px]"
               >
                 Przejdź
                 <ExternalLink className="ml-1 h-3.5 w-3.5" aria-hidden />
@@ -131,7 +133,7 @@ function AiCatalogItemRow({
                 size="sm"
                 disabled={isGenerating || !configured}
                 onClick={() => onGenerate(item, false)}
-                className="min-h-9 !py-2 text-xs"
+                className="text-[13px]"
               >
                 {isGenerating ? (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden />
@@ -147,7 +149,7 @@ function AiCatalogItemRow({
                 type="button"
                 disabled={isGenerating || !configured}
                 onClick={() => onGenerate(item, true)}
-                className="text-[10px] font-bold uppercase tracking-wider text-bkpk-text-muted hover:text-bkpk-primary px-2 py-1 disabled:opacity-50"
+                className="label-caps min-h-[44px] px-3 text-[12px] text-bkpk-text-muted underline-offset-4 hover:text-bkpk-text-primary hover:underline disabled:opacity-50"
               >
                 Wymuś
               </button>
@@ -212,66 +214,59 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
   };
 
   if (loading && !catalog) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-4 py-16">
-        <Loader2 className="h-10 w-10 animate-spin text-bkpk-primary" aria-hidden />
-        <p className="text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">
-          Ładowanie katalogu AI…
-        </p>
-      </div>
-    );
+    return <PageLoader label="Ładowanie katalogu AI…" />;
   }
 
   const categoryMeta = categorySlug ? getCategoryMeta(categorySlug) : null;
 
   return (
     <div className="space-y-8">
-      <header className="space-y-2">
+      <div className="space-y-4">
         {categorySlug ? (
           <Link
             to="/ai"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted hover:text-bkpk-primary transition-colors mb-2"
+            className="inline-flex min-h-[44px] items-center gap-2 label-caps text-[12px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors"
           >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+            <ArrowLeft className="h-4 w-4" aria-hidden />
             Wszystkie kategorie
           </Link>
-        ) : (
-          <div className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-[10px] sm:text-xs">
-            <Sparkles className="h-4 w-4" aria-hidden />
-            <span>Centrum analiz</span>
-          </div>
-        )}
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight">
-          {categoryMeta ? (
+        ) : null}
+        <PageHeader
+          kicker={categorySlug ? undefined : 'Centrum analiz'}
+          title={
+            categoryMeta ? (
+              <>
+                {categoryMeta.label}{' '}
+                <span className="text-bkpk-primary">AI</span>
+              </>
+            ) : (
+              <>
+                Analizy <span className="text-bkpk-primary">AI</span>
+              </>
+            )
+          }
+          description={
             <>
-              {categoryMeta.label}{' '}
-              <span className="text-bkpk-primary">AI</span>
+              {categoryMeta
+                ? categoryMeta.description
+                : 'Wybierz kategorię — briefing, mecze, plany zawodników lub scouting.'}
+              {!categorySlug && isAdmin ? ' Jako administrator możesz generować i odświeżać raporty.' : ''}
             </>
-          ) : (
-            <>
-              Analizy <span className="text-bkpk-primary">AI</span>
-            </>
-          )}
-        </h1>
-        <p className="text-bkpk-text-muted text-sm sm:text-lg max-w-2xl">
-          {categoryMeta
-            ? categoryMeta.description
-            : 'Wybierz kategorię — briefing, mecze, plany zawodników lub scouting.'}
-          {!categorySlug && isAdmin ? ' Jako administrator możesz generować i odświeżać raporty.' : ''}
-        </p>
-      </header>
+          }
+        />
+      </div>
 
-      <BkpkCard variant="glass" className="border-bkpk-primary/20">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <BkpkCard variant="flat">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            <div className="shrink-0 rounded-xl border border-bkpk-primary/20 bg-bkpk-primary/10 p-2.5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-bkpk-border-strong">
               <Bot className="h-5 w-5 text-bkpk-primary" aria-hidden />
             </div>
             <div>
-              <p className="text-sm font-bold text-bkpk-text-primary">
-                {stats.withContent} / {stats.total} raportów wygenerowanych
+              <p className="text-base font-semibold text-bkpk-text-primary">
+                <span className="font-display text-2xl leading-none tabular-nums">{stats.withContent} / {stats.total}</span> raportów wygenerowanych
               </p>
-              <p className="mt-0.5 text-xs text-bkpk-text-muted">
+              <p className="mt-1 text-xs text-bkpk-text-muted">
                 Model: {catalog?.model ?? '—'}
                 {catalog?.configured === false ? ' · Gemini nie skonfigurowane' : ''}
               </p>
@@ -285,7 +280,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
       </BkpkCard>
 
       {error ? (
-        <p className="rounded-xl border border-bkpk-danger/30 bg-bkpk-danger/10 px-4 py-3 text-sm text-bkpk-text-danger">
+        <p className="border border-bkpk-text-danger border-l-4 bg-bkpk-surface px-4 py-3 text-sm text-bkpk-text-danger">
           {error}
         </p>
       ) : null}
@@ -300,20 +295,20 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
               <Link
                 key={slug}
                 to={`/ai/${slug}`}
-                className="group block rounded-2xl border border-bkpk-border-strong bg-bkpk-surface-tint-1 p-5 transition-colors hover:border-bkpk-primary/30 hover:bg-bkpk-surface-tint-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                className="group flex h-full flex-col border border-bkpk-border-subtle border-t-2 border-t-bkpk-border-strong bg-bkpk-surface p-5 transition-colors hover:border-bkpk-border-strong hover:border-t-bkpk-primary hover:bg-bkpk-surface-elevated"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <h2 className="font-outfit text-lg font-black text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
+                  <div className="min-w-0 space-y-3">
+                    <span className="kicker tabular-nums">
+                      {catStat.withContent} / {catStat.total} gotowych
+                    </span>
+                    <h2 className="text-[24px] sm:text-[28px] leading-none text-bkpk-text-primary">
                       {cat.label}
                     </h2>
-                    <p className="mt-1 text-sm text-bkpk-text-muted">{cat.description}</p>
-                    <p className="mt-3 text-xs font-bold text-bkpk-text-secondary">
-                      {catStat.withContent} / {catStat.total} gotowych
-                    </p>
+                    <p className="text-sm text-bkpk-text-secondary">{cat.description}</p>
                   </div>
                   <ChevronRight
-                    className="h-5 w-5 shrink-0 text-bkpk-text-muted group-hover:text-bkpk-primary transition-colors"
+                    className="h-5 w-5 shrink-0 text-bkpk-text-muted group-hover:text-bkpk-text-primary group-hover:translate-x-0.5 transition-[color,transform]"
                     aria-hidden
                   />
                 </div>
@@ -326,7 +321,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
           <h2 id="ai-category-items" className="sr-only">
             {categoryMeta?.label}
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {categoryItems.map((item) => (
               <AiCatalogItemRow
                 key={item.id}

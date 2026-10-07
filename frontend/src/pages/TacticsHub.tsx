@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
-import BasketballCourtCanvas, { DiagramData } from '../components/tactics/BasketballCourtCanvas';
+import BasketballCourtCanvas from '../components/tactics/BasketballCourtCanvas';
 import PlaybookList, { PlayItem } from '../components/tactics/PlaybookList';
 import AiPlayGeneratorModal from '../components/tactics/AiPlayGeneratorModal';
 import SynergyMatrix, { DuoRecord } from '../components/tactics/SynergyMatrix';
@@ -21,6 +21,14 @@ import { fetchJSON } from '../lib/api';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
+
+// Zakładki — jak `.tabs` na bekapaka.pl: wersaliki, 3 px czerwone podkreślenie aktywnej
+const TAB_BASE = cn(
+  "relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-[13px] sm:text-sm transition-colors duration-200",
+  "after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200"
+);
 
 export default function TacticsHub() {
   const [activeTab, setActiveTab] = useState<'playbook' | 'synergy' | 'pregame'>('playbook');
@@ -99,59 +107,53 @@ export default function TacticsHub() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-2 sm:px-4 py-4">
+    <PageContainer className="max-w-[1280px]">
       {/* Header Huba Taktycznego */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-widest text-bkpk-primary block mb-1">
-            Smart Coaching &amp; Strategy
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-outfit uppercase">
-            Centrum Taktyczne <span className="text-bkpk-primary">BeKaPaKa</span>
-          </h1>
-        </div>
+      <PageHeader
+        kicker={<>Smart Coaching &amp; Strategy</>}
+        title={<>Centrum Taktyczne <span className="text-bkpk-primary">BeKaPaKa</span></>}
+      />
 
-        {/* Zakładki Nawigacyjne (Pill Tabs) */}
-        <div className="flex items-center gap-1.5 p-1 bg-bkpk-surface-tint-1 rounded-2xl border border-bkpk-border-strong self-start md:self-auto overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveTab('playbook')}
-            className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
-              activeTab === 'playbook'
-                ? "bg-bkpk-primary text-black shadow-bkpk-glow"
-                : "text-bkpk-text-muted hover:text-bkpk-text-primary"
-            )}
-          >
-            <Film className="w-4 h-4" />
-            Animowane Zagrywki
-          </button>
+      {/* Zakładki Nawigacyjne — jak `.tabs` na bekapaka.pl */}
+      <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle">
+        <button
+          onClick={() => setActiveTab('playbook')}
+          className={cn(
+            TAB_BASE,
+            activeTab === 'playbook'
+              ? "text-bkpk-text-primary after:scale-x-100"
+              : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
+          )}
+        >
+          <Film className="w-4 h-4 shrink-0" />
+          Animowane Zagrywki
+        </button>
 
-          <button
-            onClick={() => setActiveTab('synergy')}
-            className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
-              activeTab === 'synergy'
-                ? "bg-bkpk-primary text-black shadow-bkpk-glow"
-                : "text-bkpk-text-muted hover:text-bkpk-text-primary"
-            )}
-          >
-            <Users className="w-4 h-4" />
-            Synergia Duetów
-          </button>
+        <button
+          onClick={() => setActiveTab('synergy')}
+          className={cn(
+            TAB_BASE,
+            activeTab === 'synergy'
+              ? "text-bkpk-text-primary after:scale-x-100"
+              : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
+          )}
+        >
+          <Users className="w-4 h-4 shrink-0" />
+          Synergia Duetów
+        </button>
 
-          <button
-            onClick={() => setActiveTab('pregame')}
-            className={cn(
-              "px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 min-h-[40px] shrink-0",
-              activeTab === 'pregame'
-                ? "bg-bkpk-primary text-black shadow-bkpk-glow"
-                : "text-bkpk-text-muted hover:text-bkpk-text-primary"
-            )}
-          >
-            <Shield className="w-4 h-4" />
-            Odprawa Przedmeczowa
-          </button>
-        </div>
+        <button
+          onClick={() => setActiveTab('pregame')}
+          className={cn(
+            TAB_BASE,
+            activeTab === 'pregame'
+              ? "text-bkpk-text-primary after:scale-x-100"
+              : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
+          )}
+        >
+          <Shield className="w-4 h-4 shrink-0" />
+          Odprawa Przedmeczowa
+        </button>
       </div>
 
       {/* Zawartość Zakładek */}
@@ -175,11 +177,11 @@ export default function TacticsHub() {
                 />
               ) : (
                 <BkpkCard variant="glass" className="text-center py-16">
-                  <Film className="w-12 h-12 text-bkpk-primary/40 mx-auto mb-3" />
-                  <h3 className="text-sm font-bold text-bkpk-text-primary uppercase tracking-wider mb-2">
+                  <Film className="w-12 h-12 text-bkpk-text-muted mx-auto mb-3" />
+                  <h3 className="text-[20px] text-bkpk-text-primary mb-2">
                     Wybierz zagrywkę z katalogu poniżej
                   </h3>
-                  <p className="text-xs text-bkpk-text-muted max-w-md mx-auto">
+                  <p className="text-[14px] text-bkpk-text-muted max-w-md mx-auto">
                     Kliknij dowolny preset, aby uruchomić interaktywną animację ruchu zawodników na boisku.
                   </p>
                 </BkpkCard>
@@ -187,13 +189,13 @@ export default function TacticsHub() {
             </div>
 
             {/* Sekcja 2: Pasek Akcji i Katalog Gotowych Presetów */}
-            <div className="space-y-4 pt-4 border-t border-bkpk-border-strong">
+            <div className="space-y-4 pt-6 border-t border-bkpk-border-subtle">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-base font-black text-bkpk-text-primary uppercase tracking-wider">
-                    Biblioteka Gotowych Presetów ({plays.length})
+                  <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary">
+                    Biblioteka Gotowych Presetów (<span className="font-display tabular-nums">{plays.length}</span>)
                   </h3>
-                  <p className="text-xs text-bkpk-text-muted">
+                  <p className="text-[14px] text-bkpk-text-muted">
                     Wybierz zagrywkę taktyczną lub wygeneruj nowy wariant z pomocą AI
                   </p>
                 </div>
@@ -268,6 +270,6 @@ export default function TacticsHub() {
           handleSelectPlay(generatedPlay);
         }}
       />}
-    </div>
+    </PageContainer>
   );
 }

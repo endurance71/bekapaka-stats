@@ -5,6 +5,13 @@ import BkpkTooltip from '../../shared/ui/BkpkTooltip';
 import { Activity, Target, Crosshair, HelpCircle } from 'lucide-react';
 import useIsMobile from '../../hooks/useIsMobile';
 import { formatStatFixed } from '../../shared/lib/formatStat';
+import SectionHeading from '../../shared/ui/SectionHeading';
+import {
+    chartCategorical,
+    chartTooltipItemStyle,
+    chartTooltipLabelStyle,
+    chartTooltipStyle,
+} from '../../shared/lib/chartTheme';
 
 interface DNAProps {
     data: {
@@ -28,23 +35,23 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
 
     // Pace Logic
     const paceLabel = pace > 84 ? 'SZYBKIE TEMPO' : (pace < 78 ? 'WOLNE TEMPO' : 'NORMALNE TEMPO');
-    const paceColor = pace > 84 ? 'text-bkpk-text-danger' : (pace < 78 ? 'text-bkpk-primary' : 'text-bkpk-success');
+    const paceColor = pace > 84 ? 'text-bkpk-text-danger' : (pace < 78 ? 'text-bkpk-text-secondary' : 'text-bkpk-success');
 
     // Shot Profile Data for Chart
     const pieData = [
-        { name: '2pkt', value: shotProfile.two, color: 'var(--bkpk-color-info)' },
-        { name: '3pkt', value: shotProfile.three, color: 'var(--bkpk-color-success)' },
-        { name: 'Wolne', value: shotProfile.ft, color: 'var(--bkpk-color-warning)' },
+        { name: '2pkt', value: shotProfile.two, color: chartCategorical[0] },
+        { name: '3pkt', value: shotProfile.three, color: chartCategorical[1] },
+        { name: 'Wolne', value: shotProfile.ft, color: chartCategorical[2] },
     ];
 
     // Four Factors Evaluation (Simple Logic)
     const getFactorColor = (val: number, type: 'efg' | 'tov' | 'orb' | 'ftr') => {
-        // Good thresholds (returning Tailwind colors)
-        if (type === 'efg') return val > 50 ? 'bg-bkpk-success' : (val < 40 ? 'bg-bkpk-danger' : 'bg-bkpk-warning');
-        if (type === 'tov') return val < 15 ? 'bg-bkpk-success' : (val > 20 ? 'bg-bkpk-danger' : 'bg-bkpk-warning');
-        if (type === 'orb') return val > 25 ? 'bg-bkpk-success' : (val < 15 ? 'bg-bkpk-danger' : 'bg-bkpk-warning');
-        if (type === 'ftr') return val > 20 ? 'bg-bkpk-success' : (val < 10 ? 'bg-bkpk-danger' : 'bg-bkpk-warning');
-        return 'bg-bkpk-surface-tint-6';
+        // Good thresholds (returning Tailwind colors) — Digital 2.0: dobry / słaby / neutralny (kamień zamiast złota)
+        if (type === 'efg') return val > 50 ? 'bg-bkpk-success' : (val < 40 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
+        if (type === 'tov') return val < 15 ? 'bg-bkpk-success' : (val > 20 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
+        if (type === 'orb') return val > 25 ? 'bg-bkpk-success' : (val < 15 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
+        if (type === 'ftr') return val > 20 ? 'bg-bkpk-success' : (val < 10 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
+        return 'bg-ink-500';
     };
 
     const getWidth = (val: number) => Math.min(Math.max(val, 0), 100) + '%';
@@ -74,10 +81,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
 
     return (
         <div className="space-y-6 mb-8">
-            <div className="flex items-center gap-2 mb-4">
-                <div className="h-8 w-1 bg-bkpk-primary rounded-full" />
-                <h2 className="text-2xl font-black text-bkpk-text-primary font-outfit uppercase tracking-wider">DNA Zespołu</h2>
-            </div>
+            <SectionHeading title="DNA Zespołu" className="mb-4" />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -90,19 +94,19 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                         </div>
                     }
                     icon={<Activity className="w-5 h-5 text-bkpk-primary" />}
-                    variant="glass"
+                    variant="flat"
                     className="h-full"
                     overflowVisible={true}
                 >
                     <div className="flex flex-col items-center justify-center py-6">
-                        <div className="text-display font-black text-bkpk-text-primary font-outfit mb-2 tracking-tighter">{formatStatFixed(pace)}</div>
-                        <div className={`text-caption-bold uppercase tracking-[0.2em] mb-6 px-3 py-1 bg-bkpk-surface-tint-2 rounded-full border border-bkpk-border-strong ${paceColor}`}>{paceLabel}</div>
+                        <div className="text-[64px] leading-none text-bkpk-text-primary font-display tabular-nums mb-3">{formatStatFixed(pace)}</div>
+                        <div className={`status-flag mb-6 ${paceColor}`}>{paceLabel}</div>
 
-                        <div className="bg-bkpk-surface-tint-1 rounded-2xl p-4 border border-bkpk-border-strong w-full shadow-inner">
+                        <div className="bg-bkpk-bg p-4 border border-bkpk-border-subtle border-l-2 border-l-bkpk-primary w-full">
                             <div className="text-sm text-bkpk-text-secondary leading-relaxed font-medium">
-                                <div className="flex items-center gap-1.5 mb-2 text-bkpk-primary">
-                                    <Target className="w-4 h-4" />
-                                    <strong className="uppercase text-[10px] tracking-[0.2em]">Rekomendacja Taktyczna</strong>
+                                <div className="flex items-center gap-2 mb-2 text-bkpk-text-primary">
+                                    <Target className="w-4 h-4 text-bkpk-primary" />
+                                    <strong className="label-caps text-[11px]">Rekomendacja Taktyczna</strong>
                                 </div>
                                 {getPaceAdvice()}
                             </div>
@@ -118,8 +122,8 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <BkpkTooltip content="Pokazuje, skąd drużyna czerpie najwięcej punktów. Pozwala zidentyfikować, czy rywal polega na rzutach z dystansu, czy na penetracji pod kosz." />
                         </div>
                     }
-                    icon={<Target className="w-5 h-5 text-bkpk-success" />}
-                    variant="glass"
+                    icon={<Target className="w-5 h-5 text-bkpk-primary" />}
+                    variant="flat"
                     className="h-full"
                     overflowVisible={true}
                 >
@@ -132,9 +136,10 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                     cy="50%"
                                     innerRadius={isMobile ? 40 : 50}
                                     outerRadius={isMobile ? 55 : 70}
-                                    paddingAngle={5}
+                                    paddingAngle={2}
                                     dataKey="value"
-                                    stroke="none"
+                                    stroke="var(--c-ink-800)"
+                                    strokeWidth={2}
                                 >
                                     {pieData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -142,30 +147,31 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 </Pie>
                                 <Tooltip
                                     trigger={isMobile ? 'click' : 'hover'}
-                                    contentStyle={{ background: 'var(--bkpk-color-surface-elevated)', border: '1px solid var(--bkpk-border-strong)', borderRadius: 12, color: 'var(--bkpk-text-primary)', fontSize: '12px' }}
-                                    itemStyle={{ color: 'var(--bkpk-text-primary)' }}
+                                    contentStyle={chartTooltipStyle}
+                                    itemStyle={chartTooltipItemStyle}
+                                    labelStyle={chartTooltipLabelStyle}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-xs font-black text-bkpk-text-muted uppercase tracking-widest">Wykres</span>
+                            <span className="label-caps text-[11px] text-bkpk-text-muted">Wykres</span>
                         </div>
                     </div>
 
-                    <div className="flex justify-center gap-4 mb-6">
+                    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-6">
                         {pieData.map(p => (
-                            <div key={p.name} className="flex items-center gap-1.5 bg-bkpk-surface-tint-2 px-2 py-1 rounded-lg border border-bkpk-border-strong">
-                                <div className="w-2 h-2 rounded-full" style={{ background: p.color }}></div>
-                                <span className="text-caption font-black text-bkpk-text-secondary uppercase">{p.name} <span className="text-bkpk-text-primary ml-1">{p.value}%</span></span>
+                            <div key={p.name} className="flex items-center gap-2">
+                                <div className="w-2.5 h-2.5 shrink-0" style={{ background: p.color }}></div>
+                                <span className="label-caps text-[11px] text-bkpk-text-secondary">{p.name} <span className="font-display text-sm text-bkpk-text-primary tabular-nums ml-1">{p.value}%</span></span>
                             </div>
                         ))}
                     </div>
 
-                    <div className="bg-bkpk-surface-tint-1 rounded-2xl p-4 border border-bkpk-border-strong w-full shadow-inner">
+                    <div className="bg-bkpk-bg p-4 border border-bkpk-border-subtle border-l-2 border-l-bkpk-primary w-full">
                         <div className="text-sm text-bkpk-text-secondary leading-relaxed font-medium">
-                            <div className="flex items-center gap-1.5 mb-2 text-bkpk-success">
-                                <Crosshair className="w-4 h-4" />
-                                <strong className="uppercase text-caption-bold tracking-[0.2em]">Rekomendacja Taktyczna</strong>
+                            <div className="flex items-center gap-2 mb-2 text-bkpk-text-primary">
+                                <Crosshair className="w-4 h-4 text-bkpk-primary" />
+                                <strong className="label-caps text-[11px]">Rekomendacja Taktyczna</strong>
                             </div>
                             {getShotProfileAdvice()}
                         </div>
@@ -180,8 +186,8 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <BkpkTooltip content="Najważniejsze statystyki w nowoczesnej koszykówce. eFG% (skuteczność), TOV% (straty), ORB% (zbiórki ataku) i FTR (częstotliwość fauli)." />
                         </div>
                     }
-                    icon={<Crosshair className="w-5 h-5 text-bkpk-warning" />}
-                    variant="glass"
+                    icon={<Crosshair className="w-5 h-5 text-bkpk-primary" />}
+                    variant="flat"
                     className="h-full"
                     overflowVisible={true}
                 >
@@ -191,60 +197,60 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">eFG% (Efektywność)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">eFG% (Efektywność)</span>
                                         <BkpkTooltip content="Efektywny Procent Rzutów z Pola. Uwzględnia wyższą wartość rzutów za 3 punkty." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.efg)}%</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.efg)}%</span>
                                 </div>
-                                <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
-                                    <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.efg, 'efg')}`} style={{ width: getWidth(fourFactors.efg) }} />
+                                <div className="h-2 w-full bg-bkpk-bg overflow-hidden border border-bkpk-border-subtle">
+                                    <div className={`h-full transition-all duration-1000 ${getFactorColor(fourFactors.efg, 'efg')}`} style={{ width: getWidth(fourFactors.efg) }} />
                                 </div>
-                                <div className="text-[11px] text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('efg', fourFactors.efg)}</div>
+                                <div className="text-xs text-bkpk-text-secondary mt-1.5 leading-snug">{getFactorAdvice('efg', fourFactors.efg)}</div>
                             </div>
 
                             {/* TOV% */}
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">TOV% (Straty)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">TOV% (Straty)</span>
                                         <BkpkTooltip content="Procent posiadań kończących się stratą. Im niższy, tym lepiej zespół szanuje piłkę." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.tov)}%</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.tov)}%</span>
                                 </div>
-                                <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
-                                    <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.tov, 'tov')}`} style={{ width: getTovWidth(fourFactors.tov) }} />
+                                <div className="h-2 w-full bg-bkpk-bg overflow-hidden border border-bkpk-border-subtle">
+                                    <div className={`h-full transition-all duration-1000 ${getFactorColor(fourFactors.tov, 'tov')}`} style={{ width: getTovWidth(fourFactors.tov) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('tov', fourFactors.tov)}</div>
+                                <div className="text-xs text-bkpk-text-secondary mt-1.5 leading-snug">{getFactorAdvice('tov', fourFactors.tov)}</div>
                             </div>
 
                             {/* ORB% */}
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">ORB% (Zbiórki Ataku)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">ORB% (Zbiórki Ataku)</span>
                                         <BkpkTooltip content="Procent dostępnych zbiórek ofensywnych zebranych przez zespół. Klucz do punktów drugiej szansy." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.orb)}%</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.orb)}%</span>
                                 </div>
-                                <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
-                                    <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.orb, 'orb')}`} style={{ width: getWidth(fourFactors.orb * 2) }} />
+                                <div className="h-2 w-full bg-bkpk-bg overflow-hidden border border-bkpk-border-subtle">
+                                    <div className={`h-full transition-all duration-1000 ${getFactorColor(fourFactors.orb, 'orb')}`} style={{ width: getWidth(fourFactors.orb * 2) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('orb', fourFactors.orb)}</div>
+                                <div className="text-xs text-bkpk-text-secondary mt-1.5 leading-snug">{getFactorAdvice('orb', fourFactors.orb)}</div>
                             </div>
 
                             {/* FTR */}
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="text-caption-bold text-bkpk-text-secondary uppercase tracking-wider group-hover:text-bkpk-primary transition-colors">FTR (Rzuty Wolne)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">FTR (Rzuty Wolne)</span>
                                         <BkpkTooltip content="Współczynnik rzutów wolnych do rzutów z pola. Pokazuje, jak agresywnie zespół wymusza faule." />
                                     </div>
-                                    <span className="text-sm font-black text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 2)}</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 2)}</span>
                                 </div>
-                                <div className="h-2 w-full bg-bkpk-surface-tint-2 rounded-full overflow-hidden shadow-inner border border-bkpk-border-strong/30">
-                                    <div className={`h-full rounded-full transition-all duration-1000 ${getFactorColor(fourFactors.ftr, 'ftr')}`} style={{ width: getWidth(fourFactors.ftr * 2) }} />
+                                <div className="h-2 w-full bg-bkpk-bg overflow-hidden border border-bkpk-border-subtle">
+                                    <div className={`h-full transition-all duration-1000 ${getFactorColor(fourFactors.ftr, 'ftr')}`} style={{ width: getWidth(fourFactors.ftr * 2) }} />
                                 </div>
-                                <div className="text-caption text-bkpk-text-secondary mt-1.5 leading-tight font-medium italic">{getFactorAdvice('ftr', fourFactors.ftr)}</div>
+                                <div className="text-xs text-bkpk-text-secondary mt-1.5 leading-snug">{getFactorAdvice('ftr', fourFactors.ftr)}</div>
                             </div>
                         </div>
                     </div>

@@ -6,7 +6,9 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
+import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
 
 interface Team {
     name: string;
@@ -16,6 +18,9 @@ interface Team {
     losses: number;
     pointsFor: number;
     pointsAgainst: number;
+    /** Ostatnie wyniki z KALK, np. ['W','L','W'] */
+    form?: string[];
+    streak?: string | null;
 }
 
 type TablePhase = 'regular' | 'playout';
@@ -53,37 +58,35 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
     if (loading) {
         return (
             <div className="space-y-4">
-                <div className="h-10 bg-bkpk-surface-tint-2 animate-pulse rounded-xl w-64" />
+                <div className="h-10 bg-bkpk-surface-tint-2 animate-pulse w-64" />
                 {[1, 2, 3, 4, 5].map(i => (
-                    <div key={i} className="h-12 bg-bkpk-surface-tint-2 animate-pulse rounded-xl" />
+                    <div key={i} className="h-12 bg-bkpk-surface-tint-2 animate-pulse" />
                 ))}
             </div>
         );
     }
 
+    const phaseButtonClass = (active: boolean) =>
+        cn(
+            "flex-1 sm:flex-none min-h-[44px] px-4 sm:px-5 label-caps text-[12px] sm:text-[13px] transition-colors text-center",
+            active
+                ? bkpkActivePillClass
+                : "border border-bkpk-border-strong text-bkpk-text-secondary hover:text-bkpk-text-primary hover:border-bkpk-text-secondary"
+        );
+
     return (
         <div className="space-y-6">
-            {/* Phase Selector */}
-            <div className="flex gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-full sm:w-fit">
+            {/* Phase Selector — segment jak `.segmented` na bekapaka.pl */}
+            <div className="flex gap-2 w-full sm:w-fit">
                 <button
                     onClick={() => setPhase('regular')}
-                    className={cn(
-                        "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all text-center",
-                        phase === 'regular'
-                            ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
-                    )}
+                    className={phaseButtonClass(phase === 'regular')}
                 >
                     Runda Zasadnicza
                 </button>
                 <button
                     onClick={() => setPhase('playout')}
-                    className={cn(
-                        "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all text-center",
-                        phase === 'playout'
-                            ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                            : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
-                    )}
+                    className={phaseButtonClass(phase === 'playout')}
                 >
                     Tabela Play-out
                 </button>
@@ -92,7 +95,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
             {table.length === 0 ? (
                 <KalkEmptyState title="Tabela Ligowa jest pusta" />
             ) : (
-                <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
+                <BkpkCard variant="flat" padding="none" className="overflow-hidden bg-bkpk-bg">
             {showCards ? (
             <MobileDataList>
                 {table.map((team, index) => {
@@ -106,11 +109,11 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             accent={isBkpk}
                             statsColumns={3}
                             highlight={
-                                <div className="flex flex-col items-center justify-center min-w-[3.25rem] px-2.5 py-1.5 rounded-xl bg-bkpk-surface border border-bkpk-border-strong">
-                                    <div className="text-lg font-black font-outfit text-bkpk-text-primary tabular-nums leading-none">
+                                <div className="flex flex-col items-center justify-center min-w-[3.25rem] px-2.5 py-1.5 bg-bkpk-bg border border-bkpk-border-strong border-b-2 border-b-bkpk-primary">
+                                    <div className="text-xl font-display text-bkpk-text-primary tabular-nums leading-none">
                                         {team.points}
                                     </div>
-                                    <div className="text-[9px] font-bold text-bkpk-text-muted uppercase tracking-wider mt-0.5">
+                                    <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">
                                         pkt
                                     </div>
                                 </div>
@@ -128,29 +131,44 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     tone: diff > 0 ? 'success' : diff < 0 ? 'danger' : 'muted',
                                 }
                             ]}
+                            footer={team.form && team.form.length > 0 ? (
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="label-caps text-[11px] text-bkpk-text-muted">Forma</span>
+                                    <span className="flex items-center gap-2">
+                                        <FormBadges form={team.form} />
+                                        <StreakBadge streak={team.streak} />
+                                    </span>
+                                </div>
+                            ) : undefined}
                         />
                     );
                 })}
             </MobileDataList>
             ) : (
-            <ScrollableTableShell compact={isNarrow} className="border-0 rounded-none">
-                <table className="w-full text-sm text-left border-collapse min-w-[560px]">
+            <ScrollableTableShell compact={isNarrow} className="border-0 bg-bkpk-bg">
+                {/* Tabela jak StandingsBoard na bekapaka.pl: nagłówek pasmem, zebra, wiersz BeKaPaKa, Pkt Condensed */}
+                <table className="bkpk-table text-[15px] text-left min-w-[760px]">
                     <thead>
-                        <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-10 sm:w-12 text-center">#</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface border-r border-bkpk-border-strong">Drużyna</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">PKT</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-success">Z</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center text-bkpk-text-danger">P</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">RZ</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">ST</th>
-                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">+/-</th>
+                        <tr>
+                            <th scope="col" className="h-12 px-3 sm:px-5 w-10 sm:w-12 text-center">#</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-left sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)]">Drużyna</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center">M</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">PKT</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center">Z</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center">P</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">RZ</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">ST</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">+/-</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-left whitespace-nowrap">Forma</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">Seria</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-bkpk-border-subtle">
+                    <tbody>
                         {table.map((team, index) => {
                             const isBkpk = team.name.toLowerCase().includes('bekapaka');
+                            const diff = team.pointsFor - team.pointsAgainst;
+                            // Nieparzyste wiersze: nieprzezroczyste tło, żeby przyklejona kolumna nie prześwitywała
+                            const isOddRow = index % 2 === 0;
                             return (
                                 <motion.tr
                                     key={team.name}
@@ -158,35 +176,35 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.03 }}
                                     className={cn(
-                                        "group transition-all hover:bg-bkpk-surface-tint-2",
-                                        isBkpk && "bg-bkpk-primary/5 hover:bg-bkpk-primary/10"
+                                        "transition-colors",
+                                        isBkpk
+                                            ? "bkpk-row-highlight"
+                                            : isOddRow && "[&>*]:bg-bkpk-bg hover:[&>*]:bg-ink-700"
                                     )}
                                 >
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold text-bkpk-text-muted group-hover:text-bkpk-text-secondary transition-colors">
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">
                                         {index + 1}
                                     </td>
-                                    <td className={cn(
-                                        "px-3 py-2.5 sm:px-6 sm:py-4 font-bold transition-colors sticky left-0 z-10 border-r border-bkpk-border-strong",
-                                        isBkpk
-                                            ? "text-bkpk-primary bkpk-row-highlight"
-                                            : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
-                                    )}>
-                                        <div className="flex items-center gap-2 sm:gap-3">
-                                            {isBkpk && <div className="w-1.5 h-1.5 rounded-full bg-bkpk-primary shadow-bkpk-glow animate-pulse" />}
-                                            {team.name}
-                                        </div>
+                                    <td className="h-12 px-3 sm:px-5 font-semibold sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)] text-bkpk-text-primary">
+                                        {team.name}
                                     </td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary tabular-nums">{team.matches}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg">{team.points}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-success/80 font-bold tabular-nums">{team.wins}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-danger font-bold tabular-nums">{team.losses}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsFor}</td>
-                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-muted tabular-nums">{team.pointsAgainst}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">{team.matches}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center font-display text-[19px] leading-none text-bkpk-text-primary tabular-nums">{team.points}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-primary tabular-nums">{team.wins}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-primary tabular-nums">{team.losses}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">{team.pointsFor}</td>
+                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">{team.pointsAgainst}</td>
                                     <td className={cn(
-                                        'px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold tabular-nums',
-                                        (team.pointsFor - team.pointsAgainst) > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"
+                                        'h-12 px-3 sm:px-5 text-center font-semibold tabular-nums',
+                                        diff > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"
                                     )}>
-                                        {(team.pointsFor - team.pointsAgainst) > 0 ? `+${team.pointsFor - team.pointsAgainst}` : team.pointsFor - team.pointsAgainst}
+                                        {diff > 0 ? `+${diff}` : diff}
+                                    </td>
+                                    <td className="h-12 px-3 sm:px-5 whitespace-nowrap">
+                                        <FormBadges form={team.form} />
+                                    </td>
+                                    <td className="h-12 px-3 sm:px-5 text-center">
+                                        <StreakBadge streak={team.streak} />
                                     </td>
                                 </motion.tr>
                             );

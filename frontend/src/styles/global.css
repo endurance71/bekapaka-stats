@@ -1,7 +1,36 @@
-@import "../../../packages/design-tokens/bkp-tokens.css";
+/* Panel BeKaPaKa — Digital 2.0.
+   Warstwy: paleta marki (packages/digital-design/dist/tokens.css, generowana z Brandbooka 2.0)
+   → role semantyczne (wspólne nazwy z site/app/styles/foundation.css) → aliasy --bkpk-* (klasy Tailwind panelu)
+   → komponenty. Komponenty nie znają wartości hex. */
+@import "../../../packages/digital-design/dist/tokens.css";
 @import "tailwindcss";
 @source "../../**/*.{html,js,ts,jsx,tsx}";
 @plugin "@tailwindcss/typography";
+
+/* ---------- Fonty marki (SIL OFL, podzbiór PL + Latin Extended) ---------- */
+@font-face {
+  font-family: "Barlow";
+  src: url("../assets/fonts/Barlow-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("../assets/fonts/Barlow-SemiBold.woff2") format("woff2");
+  font-weight: 500 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../assets/fonts/BarlowCondensed-ExtraBold.woff2") format("woff2");
+  font-weight: 700 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 :root {
   --overlay-vh: 100dvh;
@@ -17,13 +46,13 @@
 
 html.is-overlay-open,
 html.is-overlay-open body {
-  background-color: var(--bkpk-color-bg, #0b0b0c);
+  background-color: var(--c-black, #0b0b0b);
 }
 
 html {
   height: 100%;
   height: -webkit-fill-available;
-  background-color: var(--bkpk-color-bg, #0b0b0c);
+  background-color: var(--c-black, #0b0b0b);
 }
 
 body {
@@ -31,7 +60,7 @@ body {
   min-height: 100dvh;
   min-height: 100svh;
   min-height: -webkit-fill-available;
-  background-color: var(--bkpk-color-bg, #0b0b0c);
+  background-color: var(--c-black, #0b0b0b);
   overscroll-behavior-y: none;
 }
 
@@ -61,7 +90,7 @@ html.is-scroll-locked {
   overflow: hidden;
 }
 
-/* Mobile Safari: scroll całej strony (nie fixed shell) — blur pod paskiem adresu */
+/* Mobile Safari: scroll całej strony (nie fixed shell) */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 1023px) {
     html,
@@ -83,78 +112,160 @@ html.is-scroll-locked {
   }
 }
 
+/* ---------- Role semantyczne: płyta (jak bekapaka.pl) ---------- */
+:root,
+[data-theme='plyta'] {
+  --bg: var(--c-black);
+  --bg-muted: var(--c-ink-900);
+  --surface: var(--c-ink-800);
+  --surface-elevated: var(--c-ink-700);
+  --text: var(--c-white);
+  --text-secondary: var(--c-stone-200);
+  /* tokens.css: --text-muted = stone-400 */
+  --line: var(--c-ink-600);
+  --line-strong: var(--c-ink-500);
+  --brand: var(--c-red-500);
+  --brand-deep: var(--c-red-700);
+  --brand-text: var(--c-red-300);
+  --brand-gold: var(--c-gold-500);
+  /* tokens.css: --action, --action-hover, --action-text, --success, --warning, --focus */
+  --danger: var(--c-red-300);
+  --media-bg: var(--c-ink-900);
+  --table-head-bg: var(--c-ink-600);
+  --table-head-text: var(--c-pure);
+  --table-stripe: var(--c-ink-800);
+  --table-hover: var(--c-ink-700);
+  --table-foot-bg: var(--c-ink-700);
+  --table-own-bg: rgb(239 23 52 / 0.14);
+  --chamfer: 12px;
+  --chamfer-sm: 8px;
+  --row-h: 48px;
+  --fs-table: 15px;
+}
+
+/* ---------- Aliasy panelu (--bkpk-*) → role 2.0 ----------
+   Klasy Tailwind `*-bkpk-*` (~2000 użyć) czytają te zmienne. Primary = czerwień akcji;
+   złoto tylko dla wyróżnień (medale, rekord, lider) i fokusu — Brandbook 2.0. */
+:root {
+  --bkpk-color-primary: var(--c-red-500);
+  --bkpk-color-primary-hover: var(--c-red-300);
+  --bkpk-color-primary-active: var(--c-red-700);
+  --bkpk-color-primary-fill: var(--c-red-600);
+  --bkpk-color-primary-fill-hover: var(--c-red-700);
+  --bkpk-color-primary-fill-active: var(--c-red-700);
+
+  --bkpk-color-success: var(--c-green-400);
+  --bkpk-color-success-fill: var(--c-green-600);
+  --bkpk-color-success-fill-hover: #18663a;
+  --bkpk-color-success-fill-active: #145530;
+
+  --bkpk-color-danger: var(--c-red-300);
+  --bkpk-color-danger-fill: var(--c-red-600);
+  --bkpk-color-danger-fill-hover: var(--c-red-700);
+  --bkpk-color-danger-fill-active: var(--c-red-700);
+
+  --bkpk-color-warning: var(--c-gold-500);
+  --bkpk-color-warning-fill: var(--c-gold-700);
+  --bkpk-color-warning-fill-hover: #835500;
+  --bkpk-color-warning-fill-active: #6e4700;
+
+  --bkpk-color-info: var(--c-stone-200);
+
+  --bkpk-color-bg: var(--c-black);
+  --bkpk-color-surface: var(--c-ink-800);
+  --bkpk-color-surface-elevated: var(--c-ink-700);
+  --bkpk-color-secondary: var(--c-ink-700);
+
+  --bkpk-text-primary: var(--c-white);
+  --bkpk-text-secondary: var(--c-stone-200);
+  --bkpk-text-muted: var(--c-stone-400);
+  --bkpk-text-soft: var(--c-stone-400);
+  --bkpk-text-danger: var(--c-red-300);
+  --bkpk-text-danger-subtle: var(--c-red-300);
+  --bkpk-text-disabled: var(--c-stone-600);
+  --bkpk-border-strong: var(--c-ink-500);
+  --bkpk-border-subtle: var(--c-ink-600);
+
+  /* Tinty — płaskie kroki ink zamiast przezroczystej bieli */
+  --bkpk-surface-tint-1: rgb(247 246 242 / 0.03);
+  --bkpk-surface-tint-2: rgb(247 246 242 / 0.05);
+  --bkpk-surface-tint-3: rgb(247 246 242 / 0.08);
+  --bkpk-surface-tint-4: rgb(247 246 242 / 0.1);
+  --bkpk-surface-tint-5: rgb(247 246 242 / 0.12);
+  --bkpk-surface-tint-6: rgb(247 246 242 / 0.2);
+
+  --bkpk-overlay-weak: rgb(11 11 11 / 0.4);
+  --bkpk-overlay-medium: rgb(11 11 11 / 0.7);
+  --bkpk-overlay-strong: rgb(11 11 11 / 0.94);
+
+  /* „Glass” 1.0 → płaska powierzchnia z linią (bez blur i poświaty) */
+  --bkpk-glass-bg: var(--c-ink-800);
+  --bkpk-glass-border: var(--c-ink-600);
+  --bkpk-on-primary: var(--c-pure);
+
+  --bkpk-medal-gold: var(--c-gold-500);
+  --bkpk-medal-silver: var(--c-stone-200);
+  --bkpk-medal-bronze: #c27a3a;
+}
+
 @theme {
-  /* Brand — gold palette (aligned with bekapaka.pl) */
-  --bkpk-color-primary: var(--bkp-gold);
-  --bkpk-color-primary-hover: var(--bkp-gold-strong);
-  --bkpk-color-primary-active: var(--bkp-copper);
-  --bkpk-color-primary-fill: #C9921F;
-  --bkpk-color-primary-fill-hover: #D4A024;
-  --bkpk-color-primary-fill-active: #B8860B;
+  /* Fonty: wyłącznie Barlow Condensed 800 + Barlow 400/600 */
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-text: "Barlow", system-ui, sans-serif;
 
-  --bkpk-color-success: var(--bkp-success);
-  --bkpk-color-success-fill: #0F7A56;
-  --bkpk-color-success-fill-hover: #0B5F44;
-  --bkpk-color-success-fill-active: #084B36;
+  /* Brak zaokrągleń (ścięty róg zamiast promienia). `rounded-full` zostaje dla awatarów i kropek. */
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --radius-bkpk-md: 0px;
+  --radius-bkpk-lg: 0px;
 
-  --bkpk-color-danger: var(--bkp-crimson);
-  --bkpk-color-danger-fill: #B91C3B;
-  --bkpk-color-danger-fill-hover: #991B1B;
-  --bkpk-color-danger-fill-active: #7F1D1D;
-
-  --bkpk-color-warning: var(--bkp-warning);
-  --bkpk-color-warning-fill: #B45309;
-  --bkpk-color-warning-fill-hover: #92400E;
-  --bkpk-color-warning-fill-active: #78350F;
-
-  --bkpk-color-info: var(--bkp-info);
-
-  --bkpk-color-bg: var(--bkp-bg-app);
-  --bkpk-color-surface: var(--bkp-bg-surface);
-  --bkpk-color-surface-elevated: var(--bkp-bg-elevated);
-
-  --bkpk-text-primary: var(--bkp-panel-text-primary);
-  --bkpk-text-secondary: var(--bkp-text-secondary);
-  --bkpk-text-muted: var(--bkp-text-muted);
-  --bkpk-text-soft: var(--bkp-text-soft);
-  --bkpk-text-danger: var(--bkp-text-danger);
-  --bkpk-text-danger-subtle: var(--bkp-text-danger-subtle);
-  --bkpk-text-disabled: var(--bkp-text-disabled);
-  --bkpk-border-strong: var(--bkp-border-strong);
-  --bkpk-border-subtle: var(--bkp-border);
-
-  --bkpk-surface-tint-1: rgba(255, 255, 255, 0.03);
-  --bkpk-surface-tint-2: rgba(255, 255, 255, 0.05);
-  --bkpk-surface-tint-3: rgba(255, 255, 255, 0.08);
-  --bkpk-surface-tint-4: rgba(255, 255, 255, 0.10);
-  --bkpk-surface-tint-5: rgba(255, 255, 255, 0.12);
-  --bkpk-surface-tint-6: rgba(255, 255, 255, 0.20);
-
-  --bkpk-overlay-weak: var(--bkp-panel-overlay-weak);
-  --bkpk-overlay-medium: rgba(0, 0, 0, 0.55);
-  --bkpk-overlay-strong: var(--bkp-overlay-scrim);
-
-  --bkpk-glass-bg: var(--bkp-glass-bg);
-  --bkpk-glass-border: var(--bkp-glass-border);
-  --bkpk-glass-blur: 16px;
-
-  --bkpk-radius-md: 12px;
-  --bkpk-radius-lg: 24px;
-
-  --bkpk-shadow-glow: var(--bkp-glow-card);
-  --bkpk-shadow-primary: var(--bkp-shadow-primary);
-
-  --bkpk-medal-gold: var(--bkp-medal-gold);
-  --bkpk-medal-silver: var(--bkp-medal-silver);
-  --bkpk-medal-bronze: var(--bkp-medal-bronze);
-  --bkpk-on-primary: var(--bkp-on-primary);
+  /* Rozmiary tekstu panelu (wcześniej tylko w martwym tailwind.config.ts) */
+  --text-display: 48px;
+  --text-display--line-height: 0.95;
+  --text-h1: 32px;
+  --text-h1--line-height: 1;
+  --text-h2: 26px;
+  --text-h2--line-height: 1.05;
+  --text-h3: 21px;
+  --text-h3--line-height: 1.1;
+  --text-body: 15px;
+  --text-body--line-height: 1.55;
+  --text-caption: 13px;
+  --text-caption--line-height: 1.35;
+  --text-2xs: 11px;
+  --text-2xs--line-height: 1.2;
+  --text-tiny: 11px;
+  --text-tiny--line-height: 1.2;
 
   --color-bkpk-primary: var(--bkpk-color-primary);
   --color-bkpk-primary-hover: var(--bkpk-color-primary-hover);
   --color-bkpk-primary-active: var(--bkpk-color-primary-active);
+  --color-bkpk-primary-fill: var(--bkpk-color-primary-fill);
+  --color-bkpk-primary-fill-hover: var(--bkpk-color-primary-fill-hover);
+  --color-bkpk-primary-fill-active: var(--bkpk-color-primary-fill-active);
+  --color-bkpk-secondary: var(--bkpk-color-secondary);
   --color-bkpk-success: var(--bkpk-color-success);
+  --color-bkpk-success-fill: var(--bkpk-color-success-fill);
+  --color-bkpk-success-fill-hover: var(--bkpk-color-success-fill-hover);
+  --color-bkpk-success-fill-active: var(--bkpk-color-success-fill-active);
   --color-bkpk-danger: var(--bkpk-color-danger);
+  --color-bkpk-danger-fill: var(--bkpk-color-danger-fill);
+  --color-bkpk-danger-fill-hover: var(--bkpk-color-danger-fill-hover);
+  --color-bkpk-danger-fill-active: var(--bkpk-color-danger-fill-active);
   --color-bkpk-warning: var(--bkpk-color-warning);
+  --color-bkpk-warning-fill: var(--bkpk-color-warning-fill);
+  --color-bkpk-warning-fill-hover: var(--bkpk-color-warning-fill-hover);
+  --color-bkpk-warning-fill-active: var(--bkpk-color-warning-fill-active);
+  --color-bkpk-info: var(--bkpk-color-info);
+  --color-bkpk-bg: var(--bkpk-color-bg);
+  --color-bkpk-surface: var(--bkpk-color-surface);
+  --color-bkpk-surface-elevated: var(--bkpk-color-surface-elevated);
   --color-bkpk-text-primary: var(--bkpk-text-primary);
   --color-bkpk-text-secondary: var(--bkpk-text-secondary);
   --color-bkpk-text-muted: var(--bkpk-text-muted);
@@ -162,38 +273,67 @@ html.is-scroll-locked {
   --color-bkpk-text-danger: var(--bkpk-text-danger);
   --color-bkpk-text-danger-subtle: var(--bkpk-text-danger-subtle);
   --color-bkpk-text-disabled: var(--bkpk-text-disabled);
+  --color-bkpk-on-primary: var(--bkpk-on-primary);
+  --color-bkpk-border: var(--bkpk-border-subtle);
+  --color-bkpk-border-subtle: var(--bkpk-border-subtle);
+  --color-bkpk-border-strong: var(--bkpk-border-strong);
+  --color-bkpk-surface-tint-1: var(--bkpk-surface-tint-1);
+  --color-bkpk-surface-tint-2: var(--bkpk-surface-tint-2);
+  --color-bkpk-surface-tint-3: var(--bkpk-surface-tint-3);
+  --color-bkpk-surface-tint-4: var(--bkpk-surface-tint-4);
+  --color-bkpk-surface-tint-5: var(--bkpk-surface-tint-5);
+  --color-bkpk-surface-tint-6: var(--bkpk-surface-tint-6);
+  --color-bkpk-overlay-weak: var(--bkpk-overlay-weak);
+  --color-bkpk-overlay-medium: var(--bkpk-overlay-medium);
+  --color-bkpk-overlay-strong: var(--bkpk-overlay-strong);
+  --color-bkpk-glass: var(--bkpk-glass-bg);
+  --color-bkpk-glass-border: var(--bkpk-glass-border);
+  --color-bkpk-navy-light: var(--c-ink-600);
   --color-bkpk-medal-gold: var(--bkpk-medal-gold);
   --color-bkpk-medal-silver: var(--bkpk-medal-silver);
   --color-bkpk-medal-bronze: var(--bkpk-medal-bronze);
-  --color-bkpk-bg: var(--bkpk-color-bg);
-  --color-bkpk-surface: var(--bkpk-color-surface);
-  --color-bkpk-surface-elevated: var(--bkpk-color-surface-elevated);
-  --color-bkpk-glass: var(--bkpk-glass-bg);
-  --color-bkpk-glass-border: var(--bkp-glass-border);
-  --blur-bkpk-glass: var(--bkpk-glass-blur);
-  --radius-bkpk-md: var(--bkpk-radius-md);
-  --radius-bkpk-lg: var(--bkpk-radius-lg);
-  --shadow-bkpk-glow: var(--bkpk-shadow-glow);
-  --shadow-bkpk-primary: var(--bkpk-shadow-primary);
 
-  --font-outfit: 'Outfit', sans-serif;
-  --font-inter: 'Inter', sans-serif;
-  --font-montserrat: 'Montserrat', sans-serif;
-  --font-bebas: 'Bebas Neue', sans-serif;
+  /* Pełna paleta marki jako klasy (bg-brand-red-500, text-stone-400 itd.) */
+  --color-ink-900: var(--c-ink-900);
+  --color-ink-800: var(--c-ink-800);
+  --color-ink-700: var(--c-ink-700);
+  --color-ink-600: var(--c-ink-600);
+  --color-ink-500: var(--c-ink-500);
+  --color-paper: var(--c-paper);
+  --color-brand-black: var(--c-black);
+  --color-brand-white: var(--c-white);
+  --color-brand-red-300: var(--c-red-300);
+  --color-brand-red-500: var(--c-red-500);
+  --color-brand-red-600: var(--c-red-600);
+  --color-brand-red-700: var(--c-red-700);
+  --color-brand-gold-500: var(--c-gold-500);
+  --color-brand-gold-700: var(--c-gold-700);
+  --color-brand-green-400: var(--c-green-400);
+  --color-brand-green-600: var(--c-green-600);
+  --color-brand-stone-200: var(--c-stone-200);
+  --color-brand-stone-400: var(--c-stone-400);
+  --color-brand-stone-600: var(--c-stone-600);
+
+  /* Bez blur i poświat (Digital 2.0: płaskie płaszczyzny, linie 1 px) */
+  --blur-bkpk-glass: 0px;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: 0 24px 64px -16px rgb(0 0 0 / 0.6);
+  --shadow-2xl: 0 24px 64px -16px rgb(0 0 0 / 0.6);
+  --shadow-bkpk-glow: none;
+  --shadow-bkpk-primary: none;
+  --shadow-bkpk-card-hover: none;
+
+  --animate-spin-slow: spin 3s linear infinite;
 }
 
-:root {
-  --text-primary: var(--bkpk-text-primary);
-  --text-secondary: var(--bkpk-text-secondary);
-  --text-muted: var(--bkpk-text-muted);
-  --text: var(--bkpk-text-primary);
-  --surface: var(--bkpk-color-surface);
-  --surface-2: var(--bkpk-color-surface-elevated);
-  --bg: var(--bkpk-color-bg);
-  --border-color: var(--bkpk-border-subtle);
-  --danger: var(--bkpk-color-danger);
-  --accent: var(--bkpk-color-primary);
-  --accent-2: var(--bkpk-color-primary);
+/* Czerwień jako TEKST = --brand-text (#FF5A6E, 6:1 na płycie); wypełnienia i linie zostają #EF1734 (jak bekapaka.pl) */
+@layer utilities {
+  .text-bkpk-primary {
+    color: var(--c-red-300);
+  }
 }
 
 @layer base {
@@ -208,66 +348,90 @@ html.is-scroll-locked {
   }
 
   ::selection {
-    background-color: var(--bkp-primary-muted);
-    color: white;
+    background-color: var(--c-red-600);
+    color: var(--c-pure);
   }
 
   body {
-    background-color: var(--bkpk-color-bg);
-    color: var(--bkpk-text-primary);
-    font-family: var(--font-montserrat), var(--font-inter), sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    font-feature-settings: "tnum" 0;
     @apply antialiased overflow-x-hidden;
-    background-image:
-      radial-gradient(circle at 0% 0%, rgba(236, 167, 44, 0.03) 0%, transparent 50%),
-      radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.02) 0%, transparent 50%);
-    background-attachment: fixed;
   }
 
   h1,
   h2,
-  h3,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
   h4,
   h5,
   h6 {
-    font-family: var(--font-outfit), var(--font-bebas), sans-serif;
-    @apply font-black tracking-tight;
+    font-family: var(--font-text);
+    font-weight: 600;
+  }
+
+  /* Fokus 3 px złoty na płycie (jak bekapaka.pl) */
+  :focus-visible {
+    outline: var(--bw-focus, 3px) solid var(--focus);
+    outline-offset: 2px;
   }
 
   button:focus-visible,
   a:focus-visible,
   [role="button"]:focus-visible {
-    @apply outline-none ring-2 ring-bkpk-primary ring-offset-2 ring-offset-bkpk-bg;
+    outline: var(--bw-focus, 3px) solid var(--focus);
+    outline-offset: 2px;
+    box-shadow: none;
   }
 }
 
 @layer components {
+  /* Powierzchnia: płaskie pole + linia 1 px (dawny „glass”) */
   .bkpk-glass {
-    background-color: var(--color-bkpk-glass);
-    backdrop-filter: blur(var(--blur-bkpk-glass));
-    border: 1px solid var(--bkp-glass-border);
-    box-shadow: var(--shadow-bkpk-glow);
+    background-color: var(--surface);
+    border: 1px solid var(--line);
   }
 
+  /* Przyciski — jak .btn na bekapaka.pl */
   .btn {
-    background: var(--bkp-gold-gradient);
-    color: #000000;
-    border: 1px solid transparent;
-    border-radius: 12px;
-    padding: 10px 16px;
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 1.2;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--control-h-md);
+    padding: 0 var(--space-6);
+    border: var(--bw-strong) solid transparent;
+    font: 600 var(--fs-button) / 1.1 var(--font-text);
+    letter-spacing: var(--tr-button);
+    text-transform: uppercase;
+    background: var(--action);
+    color: var(--action-text);
+    clip-path: polygon(0 0, calc(100% - var(--chamfer-sm)) 0, 100% var(--chamfer-sm), 100% 100%, 0 100%);
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      transform var(--dur-instant) var(--ease-out);
     cursor: pointer;
   }
 
   .btn:hover {
-    box-shadow: var(--bkp-glow-gold);
-    color: #000000;
+    background: var(--action-hover);
   }
 
   .btn:active {
-    filter: brightness(0.95);
+    transform: translateY(1px);
+  }
+
+  .btn:focus-visible {
+    clip-path: none;
   }
 
   .btn:disabled {
@@ -277,49 +441,205 @@ html.is-scroll-locked {
 
   .btn-secondary {
     background: transparent;
-    color: var(--bkpk-text-secondary);
-    border: 1px solid var(--bkpk-border-strong);
+    color: var(--text);
+    border-color: currentColor;
+    clip-path: none;
   }
 
   .btn-secondary:hover {
-    background: var(--bkpk-surface-tint-2);
-    color: var(--bkpk-text-primary);
-    box-shadow: none;
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
   }
 
   .bkpk-btn-primary {
-    background: var(--bkp-gold-gradient);
-    color: var(--bkp-on-primary, #000000);
-    box-shadow: var(--bkpk-shadow-primary);
+    background: var(--action);
+    color: var(--action-text);
+    clip-path: polygon(0 0, calc(100% - var(--chamfer-sm)) 0, 100% var(--chamfer-sm), 100% 100%, 0 100%);
   }
 
-  .bkpk-btn-primary:hover {
-    box-shadow: var(--bkp-glow-gold);
-    color: var(--bkp-on-primary, #000000);
+  .bkpk-btn-primary:hover:not(:disabled) {
+    background: var(--action-hover);
   }
 
-  .bkpk-btn-primary:active {
-    filter: brightness(0.95);
+  .bkpk-btn-primary:focus-visible {
+    clip-path: none;
   }
 
-  .bkpk-row-highlight {
-    background-color: rgba(236, 167, 44, 0.06);
+  /* Ścięty róg (karty 12 px, przyciski 8 px) */
+  .chamfer {
+    clip-path: polygon(0 0, calc(100% - var(--chamfer)) 0, 100% var(--chamfer), 100% 100%, 0 100%);
   }
 
-  .bkpk-row-highlight:hover {
-    background-color: rgba(236, 167, 44, 0.1);
+  .chamfer-sm {
+    clip-path: polygon(0 0, calc(100% - var(--chamfer-sm)) 0, 100% var(--chamfer-sm), 100% 100%, 0 100%);
+  }
+
+  /* Kicker: 24×3 px czerwona belka + etykieta wersalikami */
+  .kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    font: 600 var(--fs-label) / var(--lh-label) var(--font-text);
+    letter-spacing: var(--tr-label);
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .kicker::before {
+    content: '';
+    width: 24px;
+    height: 3px;
+    background: var(--brand);
+    flex: none;
+  }
+
+  .kicker--live::before {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    animation: live-pulse 1.6s var(--ease-in-out) infinite;
+  }
+
+  @keyframes live-pulse {
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .label-caps {
+    font-family: var(--font-text);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .status-flag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px var(--space-2);
+    border: 1.5px solid currentColor;
+    font: 600 12px / 1.4 var(--font-text);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Paski stroju: 4 linie wygaszane ku górze */
+  .jersey-stripes {
+    display: grid;
+    gap: 5px;
+    width: 100%;
+  }
+
+  .jersey-stripes > i {
+    display: block;
+    height: 3px;
+    background: var(--brand);
+  }
+
+  .jersey-stripes > i:nth-child(1) {
+    opacity: 0.2;
+  }
+
+  .jersey-stripes > i:nth-child(2) {
+    opacity: 0.4;
+  }
+
+  .jersey-stripes > i:nth-child(3) {
+    opacity: 0.7;
+  }
+
+  /* Cięcie BKPK — tylko wynik, numery, krótkie nagłówki */
+  .cut {
+    display: inline-block;
+    transform: skewX(var(--cut-skew));
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 var(--cut-top),
+      transparent var(--cut-top),
+      transparent var(--cut-bottom),
+      #000 var(--cut-bottom)
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      #000 0,
+      #000 var(--cut-top),
+      transparent var(--cut-top),
+      transparent var(--cut-bottom),
+      #000 var(--cut-bottom)
+    );
+  }
+
+  /* Kontur (przegrany wynik, numer w tle) — kolor obrysu z `text-*` */
+  .outline-text {
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1.5px currentColor;
+  }
+
+  /* Tabele danych — port site/app/styles/tables.css */
+  .bkpk-table {
+    width: 100%;
+    background-color: var(--bg);
+    border-collapse: separate;
+    border-spacing: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bkpk-table thead th {
+    background: var(--table-head-bg);
+    color: var(--table-head-text);
+    font: 600 13px / 1.2 var(--font-text);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .bkpk-table tbody tr > * {
+    background-color: var(--bg);
+  }
+
+  .bkpk-table tbody tr:nth-child(even) > * {
+    background-color: var(--table-stripe);
+  }
+
+  .bkpk-table tbody tr:hover > * {
+    background-color: var(--table-hover);
+  }
+
+  /* Nieprzezroczyste (czerwień 14% na płycie) — przyklejone kolumny nie prześwitują */
+  .bkpk-row-highlight > *,
+  .bkpk-table tbody tr.bkpk-row-highlight > * {
+    background: linear-gradient(var(--table-own-bg), var(--table-own-bg)), var(--bg);
+    font-weight: 600;
+  }
+
+  .bkpk-row-highlight > *:first-child {
+    box-shadow: inset 4px 0 0 var(--brand);
+  }
+
+  .bkpk-row-highlight:hover > * {
+    background: linear-gradient(rgb(239 23 52 / 0.2), rgb(239 23 52 / 0.2)), var(--bg);
+  }
+
+  /* Tabele w ScrollableTableShell — rytm jak tables.css na bekapaka.pl */
+  .bkpk-table-shell table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bkpk-table-shell thead th {
+    letter-spacing: 0.05em;
   }
 
   .bkpk-status-badge--danger {
-    background-color: rgba(211, 47, 47, 0.15);
-    color: var(--bkp-text-danger-subtle);
-    border: 1px solid rgba(211, 47, 47, 0.25);
+    background-color: transparent;
+    color: var(--danger);
+    border: 1.5px solid currentColor;
   }
 
   .bkpk-status-badge--success {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: var(--bkp-success);
-    border: 1px solid rgba(16, 185, 129, 0.25);
+    background-color: transparent;
+    color: var(--success);
+    border: 1.5px solid currentColor;
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -337,7 +657,7 @@ html.is-scroll-locked {
 
   .mobile-header-safe-top {
     padding-top: max(0.375rem, env(safe-area-inset-top, 0px));
-    background-color: var(--bkpk-color-bg, #0b0b0c);
+    background-color: var(--c-black, #0b0b0b);
   }
 
   .safe-area-bottom {
@@ -355,6 +675,18 @@ html.is-scroll-locked {
     min-height: var(--overlay-vh);
     max-height: var(--overlay-vh);
   }
+
+  /* Treść AI (typography) — Barlow, nagłówki Condensed, czerwone akcenty */
+  .prose :where(h1, h2, h3):not(:where([class~='not-prose'] *)) {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .prose :where(a):not(:where([class~='not-prose'] *)) {
+    text-decoration-color: var(--brand);
+    text-underline-offset: 4px;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -366,12 +698,11 @@ html.is-scroll-locked {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--bkpk-surface-tint-4);
-  border-radius: 10px;
+  background: var(--c-ink-500);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--c-stone-600);
 }
 
 * {

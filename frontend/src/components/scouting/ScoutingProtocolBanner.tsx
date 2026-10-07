@@ -28,10 +28,10 @@ export function ScoutingProtocolBanner({
 
   return (
     <div
-      className="flex items-start gap-2 rounded-lg border border-bkpk-border-subtle/80 bg-bkpk-surface-tint-1/40 px-3 py-2 text-xs leading-relaxed text-bkpk-text-muted"
+      className="flex items-start gap-3 border border-bkpk-border-subtle border-l-2 border-l-bkpk-text-muted bg-bkpk-surface px-4 py-3 text-sm leading-relaxed text-bkpk-text-secondary"
       role="status"
     >
-      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 opacity-70" aria-hidden />
+      <Info className="mt-0.5 h-4 w-4 shrink-0 text-bkpk-text-muted" aria-hidden />
       <p>{message}</p>
     </div>
   );

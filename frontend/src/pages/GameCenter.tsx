@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { fetchJSON } from '../lib/api';
 import GamesList from '../features/games/GamesList';
-import { motion } from 'framer-motion';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 export default function GameCenter() {
@@ -27,32 +28,19 @@ export default function GameCenter() {
   }, [fetchGames]);
 
   return (
-    <div className="bg-bkpk-bg p-4 md:p-8 lg:p-10">
-      <div className="max-w-[1200px] mx-auto space-y-12">
-        {/* Header Section */}
-        <header className="flex flex-col gap-2">
-          <motion.h1
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-bkpk-text-primary font-outfit"
-          >
-            Mecze
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="text-bkpk-text-muted text-lg"
-          >
-            Analiza meczów i box score z oficjalnej strony KALK
-          </motion.p>
-        </header>
+    <div className="bg-bkpk-bg">
+      <PageContainer width="narrow" className="max-w-[1200px]">
+        <PageHeader
+          kicker="Sezon"
+          title="Mecze"
+          description="Analiza meczów i box score z oficjalnej strony KALK"
+        />
 
         {/* Content Section */}
         <section>
           <GamesList games={games} loading={loading} />
         </section>
-      </div>
+      </PageContainer>
     </div>
   );
 }

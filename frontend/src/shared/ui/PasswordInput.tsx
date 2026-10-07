@@ -32,7 +32,7 @@ export function PasswordInput({
 
   return (
     <div className={cn('space-y-1', className)}>
-      <label htmlFor={inputId} className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+      <label htmlFor={inputId} className="label-caps text-xs text-bkpk-text-secondary flex items-center gap-1">
         {label}
       </label>
       <div className="relative">
@@ -40,7 +40,7 @@ export function PasswordInput({
           id={inputId}
           type={showPassword ? 'text' : 'password'}
           required={required}
-          className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-4 py-2.5 pr-12 text-base sm:text-sm text-bkpk-text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
+          className="w-full bg-bkpk-bg border border-bkpk-border-strong px-4 py-2.5 pr-12 min-h-[48px] text-base sm:text-sm text-bkpk-text-primary hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors touch-manipulation"
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
@@ -50,7 +50,7 @@ export function PasswordInput({
         <button
           type="button"
           onClick={onToggleShow}
-          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-bkpk-text-muted hover:text-bkpk-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary rounded-lg min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-3 text-bkpk-text-muted hover:text-bkpk-text-primary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
           aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
         >
           {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

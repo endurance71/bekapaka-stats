@@ -1173,35 +1173,35 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt Lewy',
-          color: 'rgba(59, 130, 246, 0.16)',
+          color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Szczyt Prawy',
-          color: 'rgba(14, 165, 233, 0.16)',
+          color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewy Róg & Skrzydło',
-          color: 'rgba(244, 63, 94, 0.16)',
+          color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
         },
         {
           id: 'Z_D4',
           playerId: 'D4',
           label: 'D4: Prawy Róg & Skrzydło',
-          color: 'rgba(236, 72, 153, 0.16)',
+          color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
         },
         {
           id: 'Z_D5',
           playerId: 'D5',
           label: 'D5: Pomalowane & Deska',
-          color: 'rgba(168, 85, 247, 0.20)',
+          color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
         }
       ],
@@ -1409,35 +1409,35 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt 3PT',
-          color: 'rgba(59, 130, 246, 0.18)',
+          color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Prawe Skrzydło 3PT',
-          color: 'rgba(14, 165, 233, 0.18)',
+          color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewe Skrzydło 3PT',
-          color: 'rgba(16, 185, 129, 0.18)',
+          color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
         },
         {
           id: 'D4',
           playerId: 'D4',
           label: 'D4: Prawy Dół & Róg',
-          color: 'rgba(245, 158, 11, 0.18)',
+          color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
         },
         {
           id: 'D5',
           playerId: 'D5',
           label: 'D5: Lewy Dół & Róg',
-          color: 'rgba(239, 68, 68, 0.18)',
+          color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
         }
       ],
@@ -1640,35 +1640,35 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt Lewy',
-          color: 'rgba(59, 130, 246, 0.16)',
+          color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Szczyt Prawy',
-          color: 'rgba(14, 165, 233, 0.16)',
+          color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewy Róg & Skrzydło',
-          color: 'rgba(244, 63, 94, 0.16)',
+          color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
         },
         {
           id: 'Z_D4',
           playerId: 'D4',
           label: 'D4: Prawy Róg & Skrzydło',
-          color: 'rgba(236, 72, 153, 0.16)',
+          color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
         },
         {
           id: 'Z_D5',
           playerId: 'D5',
           label: 'D5: Pomalowane & Deska',
-          color: 'rgba(168, 85, 247, 0.20)',
+          color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
         }
       ],
@@ -1876,35 +1876,35 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
           id: 'Z_D1',
           playerId: 'D1',
           label: 'D1: Szczyt 3PT',
-          color: 'rgba(59, 130, 246, 0.18)',
+          color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
           label: 'D2: Prawe Skrzydło 3PT',
-          color: 'rgba(14, 165, 233, 0.18)',
+          color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
           label: 'D3: Lewe Skrzydło 3PT',
-          color: 'rgba(16, 185, 129, 0.18)',
+          color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
         },
         {
           id: 'D4',
           playerId: 'D4',
           label: 'D4: Prawy Dół & Róg',
-          color: 'rgba(245, 158, 11, 0.18)',
+          color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
         },
         {
           id: 'D5',
           playerId: 'D5',
           label: 'D5: Lewy Dół & Róg',
-          color: 'rgba(239, 68, 68, 0.18)',
+          color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
         }
       ],

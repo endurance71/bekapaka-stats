@@ -53,20 +53,20 @@ function StatCell({ stat }: { stat: MobileStatItem }) {
     return (
         <div
             className={cn(
-                'text-center py-2 px-1 rounded-lg bg-bkpk-surface border border-bkpk-border-subtle min-w-0',
-                stat.emphasize && 'ring-1 ring-bkpk-primary/25 bg-bkpk-surface-tint-2'
+                'text-center py-2 px-1 bg-bkpk-bg border border-bkpk-border-subtle min-w-0',
+                stat.emphasize && 'border-b-2 border-b-bkpk-primary'
             )}
         >
-            <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-wide leading-tight">
+            <div className="label-caps text-[10px] text-bkpk-text-muted leading-tight">
                 {stat.label}
             </div>
             <div
                 className={cn(
-                    'text-sm font-bold tabular-nums mt-0.5',
-                    stat.emphasize && !stat.tone && 'text-bkpk-primary text-base',
-                    stat.emphasize && stat.tone === 'success' && 'text-bkpk-success text-base',
-                    stat.emphasize && stat.tone === 'danger' && 'text-bkpk-danger text-base',
-                    stat.emphasize && stat.tone === 'muted' && 'text-bkpk-text-muted text-base',
+                    'font-display text-lg leading-none tabular-nums mt-1',
+                    stat.emphasize && !stat.tone && 'text-bkpk-text-primary text-xl',
+                    stat.emphasize && stat.tone === 'success' && 'text-bkpk-success text-xl',
+                    stat.emphasize && stat.tone === 'danger' && 'text-bkpk-danger text-xl',
+                    stat.emphasize && stat.tone === 'muted' && 'text-bkpk-text-muted text-xl',
                     !stat.emphasize && stat.tone === 'success' && 'text-bkpk-success',
                     !stat.emphasize && stat.tone === 'danger' && 'text-bkpk-danger',
                     !stat.emphasize && stat.tone === 'muted' && 'text-bkpk-text-muted',
@@ -98,25 +98,25 @@ export function MobileDataCard({
     return (
         <div
             className={cn(
-                'rounded-xl border border-bkpk-border-strong bg-bkpk-surface-tint-1 p-4',
-                accent && 'border-bkpk-primary/30 bg-bkpk-primary/5',
+                'border border-bkpk-border-subtle bg-bkpk-surface p-4',
+                accent && 'bg-[var(--table-own-bg)] shadow-[inset_4px_0_0_var(--brand)]',
                 className
             )}
         >
             <div className="flex items-center justify-between gap-3 mb-3">
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     {rank != null && (
-                        <span className="shrink-0 w-9 h-9 rounded-lg bg-bkpk-surface border border-bkpk-border-subtle flex items-center justify-center text-xs font-black text-bkpk-text-muted tabular-nums">
+                        <span className="shrink-0 w-9 h-9 border border-bkpk-border-strong flex items-center justify-center font-display text-lg text-bkpk-text-primary tabular-nums">
                             {rank}
                         </span>
                     )}
                     {leading}
                     <div className="min-w-0 flex-1">
-                        <div className="font-bold text-bkpk-text-primary text-sm leading-snug break-words uppercase tracking-tight">
+                        <div className="font-display text-lg leading-none text-bkpk-text-primary break-words uppercase">
                             {title}
                         </div>
                         {subtitle ? (
-                            <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-wider mt-1 break-words">
+                            <div className="label-caps text-[10px] text-bkpk-text-muted mt-1 break-words">
                                 {subtitle}
                             </div>
                         ) : null}

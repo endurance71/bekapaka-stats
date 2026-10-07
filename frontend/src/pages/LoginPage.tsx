@@ -3,10 +3,13 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { AppFooter } from '../components/AppFooter';
+import { BrandMark } from '../shared/ui/BrandMark';
+import { JerseyStripes } from '../shared/ui/JerseyStripes';
+import herbUrl from '../assets/brand/herb2-kolor.svg';
+import arenaUrl from '../assets/brand/arena.webp';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -36,64 +39,67 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-[100dvh] flex items-center justify-center bg-bkpk-bg px-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
-            <div className="w-full max-w-sm mx-auto">
-                <BkpkCard className="p-8 space-y-8 relative overflow-hidden">
-                    <div className="absolute -top-24 -right-24 w-48 h-48 bg-bkpk-primary/10 blur-3xl rounded-full" />
+        <div className="min-h-[100dvh] grid lg:grid-cols-[minmax(0,7fr)_minmax(420px,5fr)] bg-bkpk-bg">
+            {/* Płyta z herbem — tożsamość klubu (jak hero bekapaka.pl) */}
+            <section className="relative hidden lg:flex flex-col justify-between overflow-hidden border-r border-bkpk-border-subtle p-12 xl:p-16">
+                <img src={arenaUrl} alt="" className="absolute inset-0 w-full h-full object-cover opacity-40" aria-hidden />
+                <div className="absolute inset-0 bg-gradient-to-t from-bkpk-bg via-bkpk-bg/80 to-bkpk-bg/40" aria-hidden />
+                <div className="relative">
+                    <BrandMark label="Panel klubu" />
+                </div>
+                <div className="relative flex items-end gap-10">
+                    <img src={herbUrl} alt="" className="w-40 xl:w-48 h-auto shrink-0" aria-hidden />
+                    <div className="space-y-4 min-w-0">
+                        <span className="kicker">Statystyki · Scouting · Taktyka</span>
+                        <p className="font-display uppercase text-[72px] xl:text-[96px] leading-[0.9] text-bkpk-text-primary">
+                            Centrum<br />drużyny
+                        </p>
+                    </div>
+                </div>
+                <JerseyStripes className="relative max-w-[320px]" />
+            </section>
 
-                    <div className="text-center space-y-4 relative z-10">
-                        <div className="flex flex-col items-center gap-6">
-                            <div className="w-32 h-32 rounded-3xl bg-bkpk-surface flex items-center justify-center shadow-2xl border border-bkpk-border-strong overflow-hidden p-4 relative group">
-                                <div className="absolute inset-0 bg-bkpk-primary/5 group-hover:bg-bkpk-primary/10 transition-colors" />
-                                <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain relative z-10" />
-                            </div>
-                            <div className="space-y-2">
-                                <h1 className="text-3xl font-black font-outfit tracking-tighter text-bkpk-text-primary">
-                                    BeKaPaKa <span className="text-bkpk-primary">STATS</span>
-                                </h1>
-                                <p className="text-sm text-bkpk-text-secondary">
-                                    Panel statystyk dla członków BeKaPaKa Bobolice
-                                </p>
-                                <p className="text-xs text-bkpk-text-muted">
-                                    Dostęp tylko dla zaproszonych użytkowników klubu
-                                </p>
-                            </div>
+            {/* Formularz */}
+            <section className="flex items-center justify-center px-4 sm:px-8 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+                <div className="w-full max-w-sm mx-auto space-y-8">
+                    <div className="space-y-5">
+                        <img src={herbUrl} alt="" className="lg:hidden w-24 h-auto" aria-hidden />
+                        <span className="kicker">Panel klubu</span>
+                        <h1 className="text-[48px] leading-[0.95] text-bkpk-text-primary">
+                            BeKaPaKa <span className="text-bkpk-primary">Stats</span>
+                        </h1>
+                        <div className="space-y-1">
+                            <p className="text-base text-bkpk-text-secondary">
+                                Panel statystyk dla członków BeKaPaKa Bobolice
+                            </p>
+                            <p className="text-sm text-bkpk-text-muted">
+                                Dostęp tylko dla zaproszonych użytkowników klubu
+                            </p>
                         </div>
                     </div>
 
-                    <p className="text-center text-sm relative z-10">
-                        <a
-                            href="https://bekapaka.pl"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-bkpk-primary hover:underline font-semibold"
-                        >
-                            Oficjalna strona klubu: bekapaka.pl
-                        </a>
-                    </p>
-
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                         {error && (
                             <motion.div
                                 role="alert"
                                 initial={{ opacity: 0, y: -8 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-3 bg-bkpk-danger/10 border border-bkpk-danger text-bkpk-text-danger rounded-md text-sm text-center font-bold"
+                                className="p-3 pl-4 bg-bkpk-surface border-l-4 border-bkpk-danger text-bkpk-text-danger text-sm font-semibold"
                             >
                                 {error}
                             </motion.div>
                         )}
 
-                        <div className="space-y-1">
-                            <label htmlFor="login-username" className="text-xs font-bold text-bkpk-text-secondary uppercase">Nazwisko (Login)</label>
+                        <div className="space-y-2">
+                            <label htmlFor="login-username" className="label-caps text-xs text-bkpk-text-secondary">Nazwisko (Login)</label>
                             <div className="relative">
-                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bkpk-text-muted pointer-events-none" />
+                                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-bkpk-text-muted pointer-events-none" />
                                 <input
                                     id="login-username"
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-subtle rounded-bkpk-md py-2.5 pl-10 pr-4 text-base text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary transition-colors touch-manipulation"
+                                    className="w-full bg-bkpk-bg border border-bkpk-border-strong py-3 pl-11 text-base text-bkpk-text-primary placeholder:text-bkpk-text-disabled hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors touch-manipulation min-h-[48px] pr-4"
                                     placeholder="np. kowalski"
                                     required
                                     autoComplete="username"
@@ -103,16 +109,16 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <label htmlFor="login-password" className="text-xs font-bold text-bkpk-text-secondary uppercase">Hasło</label>
+                        <div className="space-y-2">
+                            <label htmlFor="login-password" className="label-caps text-xs text-bkpk-text-secondary">Hasło</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-bkpk-text-muted pointer-events-none" />
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-bkpk-text-muted pointer-events-none" />
                                 <input
                                     id="login-password"
                                     type={showPassword ? 'text' : 'password'}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-subtle rounded-bkpk-md py-2.5 pl-10 pr-12 text-base text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary transition-colors touch-manipulation"
+                                    className="w-full bg-bkpk-bg border border-bkpk-border-strong py-3 pl-11 text-base text-bkpk-text-primary placeholder:text-bkpk-text-disabled hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors touch-manipulation min-h-[48px] pr-12"
                                     placeholder="••••••••"
                                     required
                                     autoComplete="current-password"
@@ -121,7 +127,7 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(v => !v)}
-                                    className="absolute right-1 top-1/2 -translate-y-1/2 text-bkpk-text-muted hover:text-bkpk-primary transition-colors flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] touch-manipulation"
+                                    className="absolute right-0.5 top-1/2 -translate-y-1/2 text-bkpk-text-muted hover:text-bkpk-text-primary transition-colors flex items-center justify-center w-11 h-11 min-w-[44px] min-h-[44px] touch-manipulation"
                                     tabIndex={-1}
                                     aria-label={showPassword ? 'Ukryj hasło' : 'Pokaż hasło'}
                                 >
@@ -133,7 +139,7 @@ export default function LoginPage() {
                         <BkpkButton
                             type="submit"
                             disabled={loading}
-                            className="w-full h-12 text-lg mt-6 touch-manipulation"
+                            className="w-full mt-2 touch-manipulation"
                             variant="primary"
                             size="lg"
                         >
@@ -148,12 +154,21 @@ export default function LoginPage() {
                         </BkpkButton>
                     </form>
 
-                    <div className="text-center text-xs text-bkpk-text-muted">
-                        <p>Nie masz dostępu? Skontaktuj się z administratorem.</p>
+                    <div className="space-y-3 border-t border-bkpk-border-subtle pt-6 text-sm">
+                        <p className="text-bkpk-text-muted">Nie masz dostępu? Skontaktuj się z administratorem.</p>
+                        <a
+                            href="https://bekapaka.pl"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex min-h-[44px] items-center label-caps text-xs text-bkpk-text-primary underline decoration-bkpk-primary decoration-2 underline-offset-[6px] hover:decoration-current"
+                        >
+                            Oficjalna strona klubu: bekapaka.pl
+                        </a>
                     </div>
-                </BkpkCard>
-                <AppFooter className="mt-6" />
-            </div>
+
+                    <AppFooter className="pt-2" />
+                </div>
+            </section>
         </div>
     );
 }

@@ -1,5 +1,3 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { getPhotoUrl as buildPhotoUrl, getPositionLabel } from '../lib/playerUtils';
 
@@ -17,6 +15,7 @@ export interface PlayerCardProps {
     onClick?: (id: string) => void;
 }
 
+/** Karta zawodnika wg bekapaka.pl: portret 4:5, numer konturem za sylwetką, nazwisko Condensed, pasek średnich. */
 export default function PlayerCard({
     id,
     firstName,
@@ -30,139 +29,77 @@ export default function PlayerCard({
     isStarter,
     onClick
 }: PlayerCardProps) {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const [hovered, setHovered] = useState(false);
-    const [canHover, setCanHover] = useState(false);
-
-    useEffect(() => {
-        const media = window.matchMedia('(hover: hover)');
-        setCanHover(media.matches);
-        const listener = (e: MediaQueryListEvent) => setCanHover(e.matches);
-        media.addEventListener('change', listener);
-        return () => media.removeEventListener('change', listener);
-    }, []);
-
-    // Mouse tilt values
-    const x = useMotionValue(0);
-    const y = useMotionValue(0);
-
-    const mouseXSpring = useSpring(x);
-    const mouseYSpring = useSpring(y);
-
-    const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
-    const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
-
-    const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!cardRef.current) return;
-        const rect = cardRef.current.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-
-        const xPct = mouseX / width - 0.5;
-        const yPct = mouseY / height - 0.5;
-
-        x.set(xPct);
-        y.set(yPct);
-    };
-
-    const handleMouseLeave = () => {
-        setHovered(false);
-        x.set(0);
-        y.set(0);
-    };
-
     const resolvedPhotoUrl = (() => {
         const hasValidRemotePhoto = Boolean(photoUrl) && !photoUrl!.toLowerCase().includes('empty.jpg');
         return hasValidRemotePhoto ? photoUrl! : buildPhotoUrl(firstName, lastName);
     })();
 
+    const stats = [
+        { label: 'PPG', value: ppg },
+        { label: 'RPG', value: rpg },
+        { label: 'APG', value: apg },
+    ];
+
     return (
-        <motion.div
-            ref={cardRef}
-            onMouseMove={handleMouseMove}
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={handleMouseLeave}
+        <div
             onClick={() => onClick?.(id)}
-            style={{
-                rotateX: canHover ? rotateX : 0,
-                rotateY: canHover ? rotateY : 0,
-                transformStyle: canHover ? "preserve-3d" : "flat",
+            onKeyDown={(e) => {
+                if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault();
+                    onClick(id);
+                }
             }}
-            className="relative w-full aspect-[3/4] cursor-pointer group select-none"
+            role={onClick ? 'button' : undefined}
+            tabIndex={onClick ? 0 : undefined}
+            aria-label={`${firstName} ${lastName}, numer ${number}`}
+            className="group relative w-full cursor-pointer select-none"
         >
-            {/* 3D Container */}
-            <div
-                style={{ transform: "translateZ(50px)" }}
-                className="w-full h-full rounded-bkpk-lg overflow-hidden border border-bkpk-border-strong bg-bkpk-glass backdrop-blur-3xl shadow-2xl transition-all duration-300 group-hover:border-bkpk-primary/50 group-hover:shadow-bkpk-glow"
-            >
-                {/* Holographic Glare */}
-                <motion.div
-                    className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none z-50 transition-opacity opacity-0 group-hover:opacity-100"
-                    style={{
-                        background: useTransform(
-                            [mouseXSpring, mouseYSpring],
-                            ([mx, my]: any[]) => `radial-gradient(circle at ${(mx + 0.5) * 100}% ${(my + 0.5) * 100}%, rgba(255,255,255,0.1) 0%, transparent 80%)`
-                        )
-                    }}
+            {/* Portret */}
+            <div className="relative aspect-[4/5] overflow-hidden chamfer bg-[radial-gradient(120%_80%_at_50%_20%,var(--c-ink-700),var(--c-ink-900)_60%,var(--c-black))] [container-type:inline-size]">
+                <span
+                    className="absolute left-1/2 top-[6%] -translate-x-1/2 font-display leading-none outline-text text-bkpk-primary text-[72cqw] tabular-nums pointer-events-none"
+                    aria-hidden
+                >
+                    {number}
+                </span>
+                <img
+                    src={resolvedPhotoUrl}
+                    onError={(e) => (e.currentTarget.src = '/photos/default.png')}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="absolute inset-0 w-full h-full object-cover object-top transition-transform duration-[400ms] ease-out group-hover:scale-[1.03]"
                 />
+                <div className="absolute inset-x-0 bottom-0 h-[45%] bg-gradient-to-t from-bkpk-bg to-transparent" aria-hidden />
 
-                {/* Player Image & Backdrop */}
-                <div className="absolute inset-0 z-0">
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bkpk-bg/20 to-bkpk-bg z-10" />
-                    <motion.img
-                        src={resolvedPhotoUrl}
-                        onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                        className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
-                        style={{ transform: "translateZ(-20px) scale(1.1)" }}
-                    />
-                </div>
-
-                {/* Number Badge */}
-                <div className="absolute top-4 left-4 z-20 flex flex-col items-center">
-                    <span className="text-4xl font-black font-outfit text-bkpk-text-muted tabular-nums group-hover:text-bkpk-primary transition-colors">
-                        {number}
+                {isStarter && (
+                    <span className="absolute top-3 left-3 inline-flex items-center gap-1 status-flag text-bkpk-medal-gold bg-bkpk-bg/80">
+                        <Star className="w-3 h-3 fill-current" aria-hidden />
+                        <span className="sr-only sm:not-sr-only">Pierwsza piątka</span>
                     </span>
-                    {isStarter && (
-                        <div className="p-1 bg-bkpk-warning-fill rounded-full shadow-lg">
-                            <Star className="w-2.5 h-2.5 text-white fill-current" />
-                        </div>
-                    )}
-                </div>
+                )}
 
-                {/* Info Overlay */}
-                <div className="absolute inset-x-0 bottom-0 p-3 sm:p-6 z-20 space-y-2 sm:space-y-4">
-                    <div className="space-y-0.5">
-                        <h3 className="text-lg sm:text-2xl font-black font-outfit text-bkpk-text-primary leading-none">
-                            <span className="block text-xs sm:text-sm text-bkpk-primary mb-0.5 sm:mb-1">{firstName}</span>
-                            {lastName}
-                        </h3>
-                        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-bkpk-text-muted">
-                            {getPositionLabel(position)}
-                        </span>
-                    </div>
-
-                    {/* Quick Stats Grid */}
-                    <div className="grid grid-cols-3 gap-1 py-1.5 sm:gap-2 sm:py-3 border-t border-bkpk-border-strong bg-bkpk-overlay-weak -mx-3 px-3 sm:-mx-6 sm:px-6">
-                        <div className="text-center">
-                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">PPG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(ppg ?? 0).toFixed(1)}</div>
-                        </div>
-                        <div className="text-center border-x border-bkpk-border-strong">
-                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">RPG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(rpg ?? 0).toFixed(1)}</div>
-                        </div>
-                        <div className="text-center">
-                            <div className="text-[9px] sm:text-xs font-bold text-bkpk-text-muted uppercase">APG</div>
-                            <div className="text-xs sm:text-sm font-bold text-bkpk-text-primary">{(apg ?? 0).toFixed(1)}</div>
-                        </div>
-                    </div>
+                <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+                    <span className="label-caps text-[11px] text-bkpk-primary">{getPositionLabel(position)}</span>
+                    <h3 className="mt-1 text-[22px] sm:text-[28px] leading-[0.95] text-bkpk-text-primary">
+                        <span className="block text-sm sm:text-base text-bkpk-text-secondary font-text font-semibold normal-case">{firstName}</span>
+                        {lastName}
+                    </h3>
                 </div>
             </div>
 
-            {/* Background Shadow/Glow */}
-            <div className="absolute inset-4 -z-10 bg-bkpk-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
-        </motion.div>
+            {/* Średnie */}
+            <dl className="grid grid-cols-3 border-x border-b border-bkpk-border-subtle bg-bkpk-surface">
+                {stats.map((s, i) => (
+                    <div key={s.label} className={i > 0 ? 'border-l border-bkpk-border-subtle py-2 text-center' : 'py-2 text-center'}>
+                        <dt className="label-caps text-[10px] sm:text-[11px] text-bkpk-text-muted">{s.label}</dt>
+                        <dd className="font-display text-lg sm:text-xl leading-none text-bkpk-text-primary tabular-nums mt-1">
+                            {(s.value ?? 0).toFixed(1)}
+                        </dd>
+                    </div>
+                ))}
+            </dl>
+            <span className="absolute inset-x-0 bottom-0 h-[3px] bg-bkpk-primary scale-x-0 origin-left transition-transform duration-200 group-hover:scale-x-100" aria-hidden />
+        </div>
     );
 }

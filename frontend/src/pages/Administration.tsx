@@ -3,11 +3,13 @@ import Modal from '../components/Modal';
 import { fetchJSON, postJSON, putJSON, deleteJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Database, Terminal, RefreshCw, Users, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot, Layers } from 'lucide-react';
+import { ShieldCheck, Terminal, RefreshCw, Search, Filter, ChevronLeft, ChevronRight, UserPlus, Edit2, Trash2, Key, Lock, Bot } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
+import SectionHeading from '../shared/ui/SectionHeading';
 import { cn } from '../shared/lib/utils';
-import { motion } from 'framer-motion';
 import { compressImage } from '../shared/lib/imageCompression';
 import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import { PasswordInput } from '../shared/ui/PasswordInput';
@@ -21,6 +23,18 @@ import {
     activityRecencyClass
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
+
+// Digital 2.0 — wspólne klasy pól formularzy (płasko, linia ink-500; fokus 3 px złoty daje global.css).
+const fieldClass =
+    'w-full bg-bkpk-bg border border-bkpk-border-strong min-h-[48px] px-4 text-base sm:text-sm text-bkpk-text-primary placeholder:text-bkpk-text-muted hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors touch-manipulation';
+const fieldCompactClass =
+    'w-full bg-bkpk-bg border border-bkpk-border-strong min-h-[48px] px-3 text-base sm:text-sm text-bkpk-text-primary placeholder:text-bkpk-text-muted hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors touch-manipulation';
+const fieldLabelClass = 'label-caps text-xs text-bkpk-text-secondary flex items-center gap-2';
+const checkboxClass = 'w-5 h-5 shrink-0 accent-bkpk-primary cursor-pointer';
+const errorNoticeClass =
+    'p-3 text-sm bg-bkpk-bg border border-bkpk-border-subtle border-l-4 border-l-bkpk-danger text-bkpk-text-danger';
+const ghostActionClass =
+    'inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border-2 border-bkpk-border-strong text-bkpk-text-primary font-text font-semibold uppercase tracking-[0.08em] text-[13px] leading-none hover:border-bkpk-text-primary hover:bg-bkpk-surface-tint-1 transition-colors select-none touch-manipulation';
 
 type ScraperStatus = {
     running: boolean;
@@ -66,19 +80,19 @@ function ScraperProgressBar({ current, total, percentage, className }: ScraperPr
 
     return (
         <div className={cn('space-y-2', className)} aria-live="polite" aria-label={`Postęp pobierania: ${percentage} procent`}>
-            <div className="flex justify-between text-xs font-bold text-bkpk-text-muted uppercase">
-                <span>Postęp pobierania stron</span>
-                <span className="text-bkpk-primary">{percentage}% ({current} / {total})</span>
+            <div className="flex items-baseline justify-between gap-3">
+                <span className="label-caps text-xs text-bkpk-text-muted">Postęp pobierania stron</span>
+                <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{percentage}% ({current} / {total})</span>
             </div>
             <div
-                className="w-full bg-bkpk-surface-tint-2 rounded-full h-2.5 border border-bkpk-border-subtle overflow-hidden"
+                className="w-full bg-ink-700 h-2 overflow-hidden"
                 role="progressbar"
                 aria-valuenow={percentage}
                 aria-valuemin={0}
                 aria-valuemax={100}
             >
                 <div
-                    className="bg-bkpk-primary h-full rounded-full transition-all duration-300 shadow-bkpk-glow"
+                    className="bg-bkpk-primary h-full transition-[width] duration-300"
                     style={{ width: `${percentage}%` }}
                 />
             </div>
@@ -138,70 +152,49 @@ export default function Administration() {
     const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
 
     return (
-        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1000px] mx-auto space-y-6 sm:space-y-12">
-                <header className="space-y-2">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-[10px] sm:text-xs"
-                    >
-                        <ShieldCheck className="w-4 h-4" />
-                        <span>Panel Kontrolny</span>
-                    </motion.div>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-2xl sm:text-3xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
-                    >
-                        Administracja <span className="text-bkpk-primary">Systemu</span>
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-bkpk-text-muted text-sm sm:text-lg"
-                    >
-                        Narzędzia do zarządzania danymi i aktualizacji systemowych.
-                    </motion.p>
-                </header>
+        <div className="bg-bkpk-bg">
+            <PageContainer width="narrow">
+                <PageHeader
+                    kicker="Panel Kontrolny"
+                    title={<>Administracja <span className="text-bkpk-primary">Systemu</span></>}
+                    description="Narzędzia do zarządzania danymi i aktualizacji systemowych."
+                />
 
-                <BkpkCard
-                    title="Centrum analiz AI"
-                    icon={<Bot className="w-5 h-5 text-bkpk-primary" />}
-                    className="space-y-3"
-                >
+                <section className="space-y-4">
+                <SectionHeading kicker="Analizy" title="Centrum analiz AI" />
+                <BkpkCard variant="flat" className="space-y-4">
                     <p className="text-bkpk-text-secondary text-sm">
                         Generowanie i przegląd raportów Gemini przeniesiono do osobnego ekranu — krótszy panel administracyjny, czytelniejsze kategorie.
                     </p>
                     <Link
                         to="/ai"
-                        className="inline-flex items-center gap-2 text-sm font-bold text-bkpk-primary hover:underline"
+                        className={ghostActionClass}
                     >
+                        <Bot className="w-4 h-4" />
                         Otwórz centrum analiz AI
                         <ChevronRight className="w-4 h-4" />
                     </Link>
                 </BkpkCard>
 
-                <BkpkCard
-                    title="Sezony i Rozgrywki"
-                    icon={<Layers className="w-5 h-5 text-bkpk-primary" />}
-                    className="space-y-6"
-                >
+                </section>
+
+                <section className="space-y-4">
+                <SectionHeading kicker="Sezony" title="Sezony i Rozgrywki" />
+                <BkpkCard variant="flat" className="space-y-6">
                     <SeasonManagement onSeasonChanged={refreshStatus} />
                 </BkpkCard>
 
-                <BkpkCard
-                    title="Liga KALK Scraper"
-                    icon={<Database className="w-5 h-5 text-bkpk-primary" />}
-                    className="space-y-6"
-                >
-                    <div className="flex items-center gap-3 p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
+                </section>
+
+                <section className="space-y-4">
+                <SectionHeading kicker="Dane KALK" title="Liga KALK Scraper" />
+                <BkpkCard variant="flat" className="space-y-6">
+                    <div className="flex items-center gap-3 p-4 bg-bkpk-bg border border-bkpk-border-subtle">
                         <div className={cn(
-                            "w-2.5 h-2.5 rounded-full",
-                            scraperStatus.running ? "bg-bkpk-warning shadow-bkpk-glow animate-pulse" : "bg-bkpk-success"
+                            "w-2.5 h-2.5 rounded-full shrink-0",
+                            scraperStatus.running ? "bg-bkpk-primary animate-pulse" : "bg-bkpk-success"
                         )} />
-                        <span className="text-sm font-bold text-bkpk-text-primary">
+                        <span className="text-sm font-semibold text-bkpk-text-primary">
                             {scraperStatus.running ? 'Pobieranie danych w toku...' : `Status: Gotowy (Ostatnia aktualizacja: ${scraperStatus.lastFinishedAt ? new Date(scraperStatus.lastFinishedAt).toLocaleDateString() : 'Brak'})`}
                         </span>
                     </div>
@@ -213,7 +206,7 @@ export default function Administration() {
 
                     {kalkSummary ? (
                         <div className="space-y-3">
-                            <ul className="text-xs text-bkpk-text-muted space-y-1 font-mono">
+                            <ul className="text-xs text-bkpk-text-secondary space-y-1.5 font-mono tabular-nums">
                                 <li>
                                     BeKaPaKa: {kalkSummary.bekapakaWithBoxScore ?? '—'} / {kalkSummary.bekapakaScheduleFinished ?? '—'} z box score
                                 </li>
@@ -231,11 +224,11 @@ export default function Administration() {
                                 ) : null}
                             </ul>
                             {(kalkSummary.bekapakaMissingBoxScore?.length ?? 0) > 0 ? (
-                                <div className="p-3 rounded-xl bg-bkpk-warning/10 border border-bkpk-warning/30 text-xs space-y-1">
-                                    <p className="font-bold text-bkpk-warning uppercase tracking-wider">
+                                <div className="p-3 bg-bkpk-bg border border-bkpk-border-subtle border-l-4 border-l-bkpk-warning text-xs space-y-2">
+                                    <p className="label-caps text-xs text-bkpk-text-primary">
                                         Brak box score ({kalkSummary.bekapakaMissingBoxScore?.length})
                                     </p>
-                                    <ul className="text-bkpk-text-secondary font-mono space-y-0.5 max-h-32 overflow-y-auto">
+                                    <ul className="text-bkpk-text-secondary font-mono tabular-nums space-y-0.5 max-h-32 overflow-y-auto">
                                         {kalkSummary.bekapakaMissingBoxScore?.map((m) => (
                                             <li key={m.leagueMatchId}>
                                                 {m.date} vs {m.opponent} ({m.score})
@@ -247,14 +240,14 @@ export default function Administration() {
                         </div>
                     ) : null}
 
-                    <div className="flex flex-wrap gap-4 pt-4 border-t border-bkpk-border-strong">
+                    <div className="flex flex-wrap gap-3 sm:gap-4 pt-4 border-t border-bkpk-border-subtle">
                         <BkpkButton
                             variant="primary"
                             onClick={triggerScraper}
                             disabled={scraperStatus.running}
                             className="flex-1"
                         >
-                            <RefreshCw className={cn("w-4 h-4 mr-2", scraperStatus.running && "animate-spin")} />
+                            <RefreshCw className={cn("w-4 h-4", scraperStatus.running && "animate-spin")} />
                             {scraperStatus.running ? 'Otwórz podgląd LIVE' : 'Uruchom pełny import danych'}
                         </BkpkButton>
                         <BkpkButton
@@ -263,7 +256,7 @@ export default function Administration() {
                             disabled={!scraperStatus.lastLog}
                             className="flex-1"
                         >
-                            <Terminal className="w-4 h-4 mr-2" />
+                            <Terminal className="w-4 h-4" />
                             Pokaż ostatnie logi
                         </BkpkButton>
                     </div>
@@ -278,32 +271,32 @@ export default function Administration() {
                     ) : null}
 
                     {scraperStatus.running && (
-                        <div className="mt-8 p-6 bg-bkpk-overlay-medium rounded-2xl border border-bkpk-border-strong space-y-2 font-mono text-xs">
+                        <div className="mt-6 p-4 sm:p-5 bg-bkpk-bg border border-bkpk-border-subtle space-y-2 font-mono text-xs">
                             <div className="flex items-center gap-2">
-                                <span className="text-bkpk-primary font-bold">Krok:</span>
+                                <span className="label-caps text-bkpk-text-muted">Krok:</span>
                                 <span className="text-bkpk-text-primary">{scraperStatus.step}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className="text-bkpk-primary font-bold">Komunikat:</span>
+                                <span className="label-caps text-bkpk-text-muted">Komunikat:</span>
                                 <span className="text-bkpk-text-secondary">{scraperStatus.message}</span>
                             </div>
                         </div>
                     )}
                 </BkpkCard>
 
-                <BkpkCard
-                    title="Zarządzanie Zawodnikami i Użytkownikami"
-                    icon={<Users className="w-5 h-5 text-bkpk-primary" />}
-                    className="space-y-6"
-                >
+                </section>
+
+                <section className="space-y-4">
+                <SectionHeading kicker="Użytkownicy" title="Zarządzanie Zawodnikami i Użytkownikami" />
+                <BkpkCard variant="flat" className="space-y-6">
                     <UserManagement />
                 </BkpkCard>
 
-                <BkpkCard
-                    title="Strefa Niebezpieczna"
-                    icon={<Terminal className="w-5 h-5 text-bkpk-text-danger" />}
-                    className="space-y-6 border-bkpk-danger/30"
-                >
+                </section>
+
+                <section className="space-y-4">
+                <SectionHeading kicker="Uwaga" title="Strefa Niebezpieczna" />
+                <BkpkCard variant="flat" className="space-y-6 border-l-4 border-l-bkpk-danger">
                     <p className="text-bkpk-text-secondary text-sm">
                         Operacje w tej sekcji są nieodwracalne. Zachowaj szczególną ostrożność.
                     </p>
@@ -326,7 +319,8 @@ export default function Administration() {
                         Usuń wszystkie dane (Reset Bazy)
                     </BkpkButton>
                 </BkpkCard>
-            </div>
+                </section>
+            </PageContainer>
 
             {/* Live Scraper Modal */}
             <Modal
@@ -335,7 +329,7 @@ export default function Administration() {
                 title={scraperStatus.running ? "🚀 Pobieranie danych w toku..." : "✅ Logi Scrapera"}
             >
                 <div className="flex flex-col gap-6">
-                    <div className="flex items-center gap-3 text-lg font-bold text-bkpk-text-primary">
+                    <div className="flex items-center gap-3 text-lg font-semibold text-bkpk-text-primary">
                         {scraperStatus.running && <RefreshCw className="w-5 h-5 animate-spin text-bkpk-primary" />}
                         <span>{scraperStatus.message}</span>
                     </div>
@@ -345,13 +339,13 @@ export default function Administration() {
                             <ScraperProgressBar current={current} total={total} percentage={percentage} />
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-xs text-bkpk-text-secondary">
                                 <span>
-                                    <span className="text-bkpk-primary font-bold">Krok:</span> {scraperStatus.step}
+                                    <span className="label-caps text-bkpk-text-muted">Krok:</span> {scraperStatus.step}
                                 </span>
                             </div>
                         </>
                     ) : null}
 
-                    <div className="bg-bkpk-overlay-strong p-6 rounded-2xl border border-bkpk-border-strong font-mono text-sm text-bkpk-success h-[400px] overflow-y-auto whitespace-pre-wrap scrollbar-thin scrollbar-thumb-white/10">
+                    <div className="bg-bkpk-bg p-4 sm:p-6 border border-bkpk-border-subtle font-mono text-sm text-bkpk-success h-[400px] overflow-y-auto whitespace-pre-wrap">
                         {scraperStatus.lastLog || "Oczekiwanie na logi..."}
                     </div>
 
@@ -462,8 +456,8 @@ function LoginLogs() {
         <div className="space-y-6">
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 items-end">
-                <div className="flex-1 space-y-2">
-                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                <div className="flex-1 w-full space-y-2">
+                    <label className={fieldLabelClass}>
                         <Search className="w-3 h-3" />
                         Szukaj użytkownika
                     </label>
@@ -474,18 +468,18 @@ function LoginLogs() {
                         autoCorrect="off"
                         autoCapitalize="none"
                         placeholder="Wpisz login..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
+                        className={fieldClass}
                         value={usernameFilter}
                         onChange={(e) => setUsernameFilter(e.target.value)}
                     />
                 </div>
                 <div className="w-full md:w-48 space-y-2">
-                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                    <label className={fieldLabelClass}>
                         <Filter className="w-3 h-3" />
                         Status
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className={fieldClass}
                         value={statusFilter}
                         onChange={(e) => {
                             setStatusFilter(e.target.value);
@@ -500,9 +494,9 @@ function LoginLogs() {
             </div>
 
             {/* Table */}
-            <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
+            <div className="border border-bkpk-border-subtle bg-bkpk-surface overflow-hidden">
                 {error && (
-                    <div className="p-3 m-4 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
+                    <div className={cn(errorNoticeClass, 'm-4')}>
                         Błąd pobierania logów: {error}
                     </div>
                 )}
@@ -516,10 +510,8 @@ function LoginLogs() {
                             highlight={
                                 <span
                                     className={cn(
-                                        'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
-                                        log.success
-                                            ? 'bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20'
-                                            : 'bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/20'
+                                        'status-flag',
+                                        log.success ? 'text-bkpk-success' : 'text-bkpk-text-danger'
                                     )}
                                 >
                                     {log.success ? 'Udane' : 'Błąd'}
@@ -536,8 +528,8 @@ function LoginLogs() {
                 </MobileDataList>
                 ) : (
                 <ScrollableTableShell compact className="border-0 rounded-none">
-                <table className="w-full text-sm text-left min-w-[480px]">
-                    <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
+                <table className="bkpk-table w-full text-sm text-left min-w-[480px]">
+                    <thead className="border-b border-bkpk-border-subtle">
                         <tr>
                             <th className="py-2 px-4">Kto</th>
                             <th className="py-2 px-4">Kiedy</th>
@@ -547,18 +539,18 @@ function LoginLogs() {
                     </thead>
                     <tbody className="divide-y divide-bkpk-border-subtle">
                         {logs.map((log) => (
-                            <tr key={log.id} className="hover:bg-bkpk-surface-tint-2 transition-colors">
-                                <td className="py-2.5 px-4 font-bold text-bkpk-text-primary">{log.username}</td>
-                                <td className="py-2.5 px-4 text-bkpk-text-muted">{new Date(log.timestamp).toLocaleString()}</td>
+                            <tr key={log.id} className="transition-colors">
+                                <td className="py-2.5 px-4 font-semibold text-bkpk-text-primary">{log.username}</td>
+                                <td className="py-2.5 px-4 text-bkpk-text-secondary tabular-nums">{new Date(log.timestamp).toLocaleString()}</td>
                                 <td className="py-2.5 px-4">
                                     <span className={cn(
-                                        "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
-                                        log.success ? "bg-bkpk-success/10 text-bkpk-success border border-bkpk-success/20" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle border border-bkpk-danger/20"
+                                        "status-flag",
+                                        log.success ? "text-bkpk-success" : "text-bkpk-text-danger"
                                     )}>
                                         {log.success ? 'Udane' : 'Błąd'}
                                     </span>
                                 </td>
-                                <td className="py-2.5 px-4 text-bkpk-text-muted font-mono text-xs">{log.ipAddress}</td>
+                                <td className="py-2.5 px-4 text-bkpk-text-muted font-mono text-xs tabular-nums">{log.ipAddress}</td>
                             </tr>
                         ))}
                         {logs.length === 0 && (
@@ -575,29 +567,29 @@ function LoginLogs() {
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
                 <div className="text-xs text-bkpk-text-muted">
-                    Razem: <span className="text-bkpk-text-primary font-bold">{pagination.total}</span> logów
+                    Razem: <span className="font-display text-base tabular-nums text-bkpk-text-primary">{pagination.total}</span> logów
                 </div>
                 <div className="flex items-center gap-3">
                     <BkpkButton
                         variant="ghost"
                         disabled={page === 1}
                         onClick={() => setPage(p => p - 1)}
-                        className="h-8 px-3 text-xs"
+                        size="sm"
                     >
-                        <ChevronLeft className="w-3 h-3 mr-1" />
+                        <ChevronLeft className="w-4 h-4" />
                         Poprzednia
                     </BkpkButton>
-                    <span className="text-xs text-bkpk-text-muted">
-                        Strona <span className="text-bkpk-text-primary font-bold">{page}</span> z <span className="text-bkpk-text-primary font-bold">{pagination.totalPages || 1}</span>
+                    <span className="text-xs text-bkpk-text-muted whitespace-nowrap">
+                        Strona <span className="font-display text-base tabular-nums text-bkpk-text-primary">{page}</span> z <span className="font-display text-base tabular-nums text-bkpk-text-primary">{pagination.totalPages || 1}</span>
                     </span>
                     <BkpkButton
                         variant="ghost"
                         disabled={page >= pagination.totalPages}
                         onClick={() => setPage(p => p + 1)}
-                        className="h-8 px-3 text-xs"
+                        size="sm"
                     >
                         Następna
-                        <ChevronRight className="w-3 h-3 ml-1" />
+                        <ChevronRight className="w-4 h-4" />
                     </BkpkButton>
                 </div>
             </div>
@@ -835,7 +827,7 @@ function UserManagement() {
                         setAddError(null);
                         setIsAddModalOpen(true);
                     }}
-                    className="sm:self-start flex items-center gap-2 text-sm"
+                    className="sm:self-start shrink-0"
                 >
                     <UserPlus className="w-4 h-4" />
                     Dodaj nowego
@@ -844,8 +836,8 @@ function UserManagement() {
 
             {/* Filters */}
             <div className="flex flex-col md:flex-row gap-4 items-end">
-                <div className="flex-1 space-y-2 w-full">
-                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                <div className="flex-1 w-full space-y-2">
+                    <label className={fieldLabelClass}>
                         <Search className="w-3 h-3" />
                         Szukaj (imię, nazwisko, login)
                     </label>
@@ -856,18 +848,18 @@ function UserManagement() {
                         autoCorrect="off"
                         autoCapitalize="none"
                         placeholder="Szukaj..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
+                        className={fieldClass}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <div className="w-full md:w-64 space-y-2">
-                    <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-2">
+                    <label className={fieldLabelClass}>
                         <Filter className="w-3 h-3" />
                         Typ konta / Rola
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className={fieldClass}
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                     >
@@ -877,15 +869,15 @@ function UserManagement() {
                         <option value="no-login">Bez konta logowania (tylko zawodnik)</option>
                     </select>
                 </div>
-                <div className="w-full md:w-auto flex items-end pb-0.5">
-                    <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-bkpk-text-secondary">
+                <div className="w-full md:w-auto flex items-end">
+                    <label className="flex items-center gap-3 min-h-[48px] cursor-pointer select-none text-sm text-bkpk-text-secondary">
                         <input
                             type="checkbox"
-                            className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface-tint-1"
+                            className={checkboxClass}
                             checked={inactiveOnly}
                             onChange={(e) => setInactiveOnly(e.target.checked)}
                         />
-                        <span className="text-xs font-bold uppercase text-bkpk-text-muted whitespace-nowrap">
+                        <span className="label-caps text-xs text-bkpk-text-secondary whitespace-nowrap">
                             Nieaktywni &gt; 30 dni
                         </span>
                     </label>
@@ -893,9 +885,9 @@ function UserManagement() {
             </div>
 
             {/* User List Table */}
-            <div className="rounded-2xl border border-bkpk-border-subtle overflow-hidden">
+            <div className="border border-bkpk-border-subtle bg-bkpk-surface overflow-hidden">
                 {error && (
-                    <div className="p-3 m-4 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
+                    <div className={cn(errorNoticeClass, 'm-4')}>
                         Błąd pobierania użytkowników: {error}
                     </div>
                 )}
@@ -915,7 +907,7 @@ function UserManagement() {
                                 title={`${user.firstName} ${user.lastName}`}
                                 subtitle={user.username ? `@${user.username}` : 'Brak konta logowania'}
                                 leading={
-                                    <div className="w-10 h-10 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
+                                    <div className="w-10 h-10 overflow-hidden bg-bkpk-bg border border-bkpk-border-strong shrink-0">
                                         <img
                                             src={resolvePlayerPhoto(user)}
                                             onError={(e) => (e.currentTarget.src = '/photos/default.png')}
@@ -930,10 +922,8 @@ function UserManagement() {
                                     user.username ? (
                                         <span
                                             className={cn(
-                                                'px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider',
-                                                user.role === 'ADMIN'
-                                                    ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/20'
-                                                    : 'bg-bkpk-secondary/10 text-bkpk-text-secondary border border-bkpk-border-subtle'
+                                                'status-flag',
+                                                user.role === 'ADMIN' ? 'text-bkpk-primary' : 'text-bkpk-text-secondary'
                                             )}
                                         >
                                             {user.role}
@@ -957,7 +947,7 @@ function UserManagement() {
                                         <button
                                             type="button"
                                             onClick={() => handleOpenEdit(user)}
-                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-primary bg-bkpk-surface-tint-2 rounded-lg border border-bkpk-border-strong"
+                                            className={ghostActionClass}
                                         >
                                             <Edit2 className="w-4 h-4" />
                                             Edytuj
@@ -966,7 +956,7 @@ function UserManagement() {
                                             type="button"
                                             onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                             disabled={currentUser?.id === user.id}
-                                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-bkpk-text-danger bg-bkpk-danger/10 rounded-lg border border-bkpk-danger/20 disabled:opacity-50 disabled:text-bkpk-text-muted"
+                                            className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 border-2 border-bkpk-danger text-bkpk-text-danger font-text font-semibold uppercase tracking-[0.08em] text-[13px] leading-none hover:bg-bkpk-surface-tint-1 transition-colors touch-manipulation disabled:opacity-50 disabled:text-bkpk-text-muted disabled:border-bkpk-border-strong"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             Usuń
@@ -983,8 +973,8 @@ function UserManagement() {
                     </MobileDataList>
                     ) : (
                     <ScrollableTableShell compact className="border-0 rounded-none">
-                    <table className="w-full text-sm text-left min-w-[720px]">
-                        <thead className="text-bkpk-text-secondary font-bold uppercase text-xs border-b border-bkpk-border-subtle bg-bkpk-surface-tint-1">
+                    <table className="bkpk-table w-full text-sm text-left min-w-[720px]">
+                        <thead className="border-b border-bkpk-border-subtle">
                             <tr>
                                 <th className="py-3 px-4">Zawodnik</th>
                                 <th className="py-3 px-4">Numer i Poz.</th>
@@ -994,7 +984,7 @@ function UserManagement() {
                                     <button
                                         type="button"
                                         onClick={handleActivitySortToggle}
-                                        className="inline-flex items-center gap-1 hover:text-bkpk-primary transition-colors"
+                                        className="inline-flex items-center gap-1 uppercase hover:text-bkpk-text-primary hover:underline underline-offset-4 transition-colors"
                                         title="Sortuj po ostatniej aktywności"
                                     >
                                         Ostatnia aktywność
@@ -1006,9 +996,10 @@ function UserManagement() {
                         </thead>
                         <tbody className="divide-y divide-bkpk-border-subtle">
                             {displayUsers.map((user) => (
-                                <tr key={user.id} className="hover:bg-bkpk-surface-tint-2 transition-colors">
-                                    <td className="py-3 px-4 font-bold text-bkpk-text-primary flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-subtle shrink-0">
+                                <tr key={user.id} className="transition-colors">
+                                    <td className="py-3 px-4 font-semibold text-bkpk-text-primary">
+                                        <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 overflow-hidden bg-bkpk-bg border border-bkpk-border-strong shrink-0">
                                             <img
                                                 src={resolvePlayerPhoto(user)}
                                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
@@ -1017,8 +1008,9 @@ function UserManagement() {
                                             />
                                         </div>
                                         <span>{user.firstName} {user.lastName}</span>
+                                        </div>
                                     </td>
-                                    <td className="py-3 px-4 text-bkpk-text-secondary">
+                                    <td className="py-3 px-4 text-bkpk-text-secondary tabular-nums">
                                         {user.number !== null ? `#${user.number}` : '-'} | {user.position || '-'}
                                     </td>
                                     <td className="py-3 px-4 font-mono text-xs text-bkpk-text-muted">
@@ -1027,8 +1019,8 @@ function UserManagement() {
                                     <td className="py-3 px-4">
                                         {user.username ? (
                                             <span className={cn(
-                                                "px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider",
-                                                user.role === 'ADMIN' ? "bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/20" : "bg-bkpk-secondary/10 text-bkpk-text-secondary border border-bkpk-border-subtle"
+                                                "status-flag",
+                                                user.role === 'ADMIN' ? "text-bkpk-primary" : "text-bkpk-text-secondary"
                                             )}>
                                                 {user.role}
                                             </span>
@@ -1038,11 +1030,11 @@ function UserManagement() {
                                         <LastActivityDisplay user={user} />
                                     </td>
                                     <td className="py-3 px-4 text-right">
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-1">
                                             <button
                                                 type="button"
                                                 onClick={() => handleOpenEdit(user)}
-                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-surface-tint-2 rounded-lg transition-all"
+                                                className="w-11 h-11 inline-flex items-center justify-center border border-transparent text-bkpk-text-secondary hover:text-bkpk-text-primary hover:border-bkpk-border-strong transition-colors"
                                                 title="Edytuj profil / Zmień hasło"
                                             >
                                                 <Edit2 className="w-4 h-4" />
@@ -1051,7 +1043,7 @@ function UserManagement() {
                                                 type="button"
                                                 onClick={() => handleDeleteUser(user.id, `${user.firstName} ${user.lastName}`)}
                                                 disabled={currentUser?.id === user.id}
-                                                className="p-1.5 text-bkpk-text-muted hover:text-bkpk-text-danger hover:bg-bkpk-danger/10 rounded-lg transition-colors disabled:opacity-50 disabled:text-bkpk-text-muted disabled:hover:bg-transparent"
+                                                className="w-11 h-11 inline-flex items-center justify-center border border-transparent text-bkpk-text-secondary hover:text-bkpk-text-danger hover:border-bkpk-danger transition-colors disabled:opacity-50 disabled:text-bkpk-text-muted disabled:hover:border-transparent"
                                                 title={currentUser?.id === user.id ? "Nie możesz usunąć samego siebie" : "Usuń zawodnika"}
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -1073,11 +1065,11 @@ function UserManagement() {
                 )}
             </div>
 
-            <div className="pt-2 border-t border-bkpk-border-subtle">
+            <div className="pt-3 border-t border-bkpk-border-subtle">
                 <button
                     type="button"
                     onClick={() => setIsLoginAuditOpen(true)}
-                    className="text-xs font-bold text-bkpk-text-muted hover:text-bkpk-primary transition-colors flex items-center gap-1.5"
+                    className="inline-flex items-center gap-2 min-h-[44px] label-caps text-xs text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors"
                 >
                     <ShieldCheck className="w-3.5 h-3.5" />
                     Pokaż historię logowań (audyt bezpieczeństwa)
@@ -1102,28 +1094,28 @@ function UserManagement() {
             >
                 <form onSubmit={handleAddUser} className="space-y-4">
                     {addError && (
-                        <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
+                        <div className={errorNoticeClass}>
                             {addError}
                         </div>
                     )}
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Imię *</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Imię *</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={addFirstName}
                                 onChange={(e) => setAddFirstName(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Nazwisko *</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Nazwisko *</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={addLastName}
                                 onChange={(e) => setAddLastName(e.target.value)}
                             />
@@ -1131,19 +1123,19 @@ function UserManagement() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Numer koszulki</label>
                             <input
                                 type="number"
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={addNumber}
                                 onChange={(e) => setAddNumber(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Pozycja</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={addPosition}
                                 onChange={(e) => setAddPosition(e.target.value)}
                             >
@@ -1157,10 +1149,10 @@ function UserManagement() {
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Zdjęcie Zawodnika</label>
-                        <div className="flex items-center gap-4 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle">
-                            <div className="w-16 h-16 rounded-full border border-bkpk-border-strong bg-bkpk-bg overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="space-y-2">
+                        <label className={fieldLabelClass}>Zdjęcie Zawodnika</label>
+                        <div className="flex items-center gap-4 p-3 bg-bkpk-bg border border-bkpk-border-subtle">
+                            <div className="w-16 h-16 border border-bkpk-border-strong bg-bkpk-surface overflow-hidden flex items-center justify-center shrink-0">
                                 {addPhoto ? (
                                     <img src={addPhoto} className="w-full h-full object-cover" alt="Preview" />
                                 ) : (
@@ -1168,7 +1160,7 @@ function UserManagement() {
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="cursor-pointer bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong text-bkpk-text-primary px-3 py-1.5 rounded-lg text-xs font-bold text-center select-none transition-colors">
+                                <label className={cn(ghostActionClass, 'cursor-pointer text-center')}>
                                     Wgraj zdjęcie
                                     <input
                                         type="file"
@@ -1191,7 +1183,7 @@ function UserManagement() {
                                     <button
                                         type="button"
                                         onClick={() => setAddPhoto(null)}
-                                        className="text-xs font-bold text-bkpk-text-danger hover:underline text-left animate-in fade-in"
+                                        className="min-h-[44px] text-left label-caps text-xs text-bkpk-text-danger hover:underline underline-offset-4 animate-in fade-in"
                                     >
                                         Usuń zdjęcie
                                     </button>
@@ -1201,27 +1193,27 @@ function UserManagement() {
                     </div>
 
                     <div className="pt-2 border-t border-bkpk-border-subtle">
-                        <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
+                        <label className="flex items-center gap-3 min-h-[48px] cursor-pointer select-none">
                             <input
                                 type="checkbox"
-                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                className={checkboxClass}
                                 checked={addEnableLogin}
                                 onChange={(e) => setAddEnableLogin(e.target.checked)}
                             />
-                            <span className="text-sm font-bold text-bkpk-text-primary">Stwórz konto logowania</span>
+                            <span className="text-sm font-semibold text-bkpk-text-primary">Stwórz konto logowania</span>
                         </label>
                     </div>
 
                     {addEnableLogin && (
-                        <div className="space-y-3 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                        <div className="space-y-3 p-3 sm:p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
+                            <div className="space-y-2">
+                                <label className={fieldLabelClass}>
                                     <Lock className="w-3 h-3 text-bkpk-primary" /> Login *
                                 </label>
                                 <input
                                     type="text"
                                     required={addEnableLogin}
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    className={fieldCompactClass}
                                     value={addUsername}
                                     onChange={(e) => setAddUsername(e.target.value)}
                                 />
@@ -1235,16 +1227,16 @@ function UserManagement() {
                                 autoComplete="new-password"
                                 showPassword={showAddPassword}
                                 onToggleShow={() => setShowAddPassword((v) => !v)}
-                                className="[&_input]:px-3 [&_input]:py-2"
+                                className="[&_input]:px-3"
                             />
                         </div>
                     )}
 
                     {addEnableLogin && (
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Rola *</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={addRole}
                                 onChange={(e) => setAddRole(e.target.value as 'USER' | 'ADMIN')}
                             >
@@ -1254,7 +1246,7 @@ function UserManagement() {
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-3 border-t border-bkpk-border-subtle">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-bkpk-border-subtle">
                         <BkpkButton variant="ghost" type="button" onClick={() => setIsAddModalOpen(false)}>
                             Anuluj
                         </BkpkButton>
@@ -1277,28 +1269,28 @@ function UserManagement() {
             >
                 <form onSubmit={handleEditUser} className="space-y-4">
                     {editError && (
-                        <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
+                        <div className={errorNoticeClass}>
                             {editError}
                         </div>
                     )}
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Imię *</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Imię *</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={editFirstName}
                                 onChange={(e) => setEditFirstName(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Nazwisko *</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Nazwisko *</label>
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={editLastName}
                                 onChange={(e) => setEditLastName(e.target.value)}
                             />
@@ -1306,19 +1298,19 @@ function UserManagement() {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Numer koszulki</label>
                             <input
                                 type="number"
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={editNumber}
                                 onChange={(e) => setEditNumber(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
+                        <div className="space-y-2">
+                            <label className={fieldLabelClass}>Pozycja</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className={fieldCompactClass}
                                 value={editPosition}
                                 onChange={(e) => setEditPosition(e.target.value)}
                             >
@@ -1332,10 +1324,10 @@ function UserManagement() {
                         </div>
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Zdjęcie Zawodnika</label>
-                        <div className="flex items-center gap-4 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle">
-                            <div className="w-16 h-16 rounded-full border border-bkpk-border-strong bg-bkpk-bg overflow-hidden flex items-center justify-center shrink-0">
+                    <div className="space-y-2">
+                        <label className={fieldLabelClass}>Zdjęcie Zawodnika</label>
+                        <div className="flex items-center gap-4 p-3 bg-bkpk-bg border border-bkpk-border-subtle">
+                            <div className="w-16 h-16 border border-bkpk-border-strong bg-bkpk-surface overflow-hidden flex items-center justify-center shrink-0">
                                 {editPhoto ? (
                                     <img src={editPhoto} className="w-full h-full object-cover" alt="Preview" />
                                 ) : (
@@ -1343,7 +1335,7 @@ function UserManagement() {
                                 )}
                             </div>
                             <div className="flex flex-col gap-2">
-                                <label className="cursor-pointer bg-bkpk-surface-tint-2 hover:bg-bkpk-surface-tint-4 border border-bkpk-border-strong text-bkpk-text-primary px-3 py-1.5 rounded-lg text-xs font-bold text-center select-none transition-colors">
+                                <label className={cn(ghostActionClass, 'cursor-pointer text-center')}>
                                     Wgraj zdjęcie
                                     <input
                                         type="file"
@@ -1366,7 +1358,7 @@ function UserManagement() {
                                     <button
                                         type="button"
                                         onClick={() => setEditPhoto(null)}
-                                        className="text-xs font-bold text-bkpk-text-danger hover:underline text-left animate-in fade-in"
+                                        className="min-h-[44px] text-left label-caps text-xs text-bkpk-text-danger hover:underline underline-offset-4 animate-in fade-in"
                                     >
                                         Usuń zdjęcie
                                     </button>
@@ -1375,10 +1367,10 @@ function UserManagement() {
                         </div>
                     </div>
 
-                    <div className="space-y-1">
-                        <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
+                    <div className="space-y-2">
+                        <label className={fieldLabelClass}>Rola *</label>
                         <select
-                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                            className={fieldCompactClass}
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value as 'USER' | 'ADMIN')}
                         >
@@ -1388,27 +1380,27 @@ function UserManagement() {
                     </div>
 
                     <div className="pt-2 border-t border-bkpk-border-subtle">
-                        <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
+                        <label className="flex items-center gap-3 min-h-[48px] cursor-pointer select-none">
                             <input
                                 type="checkbox"
-                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                className={checkboxClass}
                                 checked={editEnableLogin}
                                 onChange={(e) => setEditEnableLogin(e.target.checked)}
                             />
-                            <span className="text-sm font-bold text-bkpk-text-primary">Zezwól na logowanie do systemu</span>
+                            <span className="text-sm font-semibold text-bkpk-text-primary">Zezwól na logowanie do systemu</span>
                         </label>
                     </div>
 
                     {editEnableLogin && (
-                        <div className="space-y-3 p-3 bg-bkpk-surface-tint-1 rounded-xl border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-bkpk-text-muted uppercase flex items-center gap-1">
+                        <div className="space-y-3 p-3 sm:p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle animate-in slide-in-from-top-2 duration-200">
+                            <div className="space-y-2">
+                                <label className={fieldLabelClass}>
                                     <Lock className="w-3 h-3 text-bkpk-primary" /> Login *
                                 </label>
                                 <input
                                     type="text"
                                     required={editEnableLogin}
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    className={fieldCompactClass}
                                     value={editUsername}
                                     onChange={(e) => setEditUsername(e.target.value)}
                                 />
@@ -1421,12 +1413,12 @@ function UserManagement() {
                                 autoComplete="new-password"
                                 showPassword={showEditPassword}
                                 onToggleShow={() => setShowEditPassword((v) => !v)}
-                                className="[&_input]:px-3 [&_input]:py-2"
+                                className="[&_input]:px-3"
                             />
                         </div>
                     )}
 
-                    <div className="flex justify-end gap-3 pt-3 border-t border-bkpk-border-subtle">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-bkpk-border-subtle">
                         <BkpkButton
                             variant="ghost"
                             type="button"

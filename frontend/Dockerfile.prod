@@ -1,7 +1,7 @@
-# Step 1: Build (repo root context — shared design tokens in packages/)
+# Step 1: Build (repo root context — Digital 2.0 tokens in packages/digital-design)
 FROM node:22-alpine AS build
 WORKDIR /app/frontend
-COPY packages/design-tokens /app/packages/design-tokens
+COPY packages/digital-design /app/packages/digital-design
 COPY packages/match-presentation /app/packages/match-presentation
 COPY packages/safari-overlay /app/packages/safari-overlay
 RUN cd /app/packages/safari-overlay && npm ci

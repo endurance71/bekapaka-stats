@@ -1,7 +1,6 @@
-import { motion } from 'framer-motion';
 import { cn } from '../lib/utils';
 import BkpkCard from './BkpkCard';
-import { Calendar, MapPin, ChevronRight, Trophy } from 'lucide-react';
+import { MapPin, ArrowRight, Trophy } from 'lucide-react';
 
 export interface MatchCardProps {
     id: string;
@@ -16,6 +15,7 @@ export interface MatchCardProps {
     onClick?: (id: string) => void;
 }
 
+/** Wiersz meczu wg FixtureRow z bekapaka.pl: data · para · wynik. BeKaPaKa zawsze po lewej (Brandbook 2.0). */
 export default function MatchCard({
     id,
     opponent,
@@ -23,104 +23,89 @@ export default function MatchCard({
     result,
     scoreUs,
     scoreThem,
-    homeAway,
     mvp,
     league,
     onClick
 }: MatchCardProps) {
     const isPlayed = result !== undefined && result !== null;
     const isWin = result === 'W';
-    const isHome = homeAway === 'home';
-    const leftScore = isHome ? scoreUs : scoreThem;
-    const rightScore = isHome ? scoreThem : scoreUs;
-    const ourScoreClass = cn(
-        isWin && 'text-bkpk-success',
-        !isWin && isPlayed && 'text-bkpk-danger',
-    );
-    const theirScoreClass = 'text-bkpk-text-muted';
+    const parsed = new Date(date);
+    const validDate = !Number.isNaN(parsed.getTime());
+    const day = validDate ? parsed.toLocaleDateString('pl-PL', { day: '2-digit' }) : '--';
+    const month = validDate ? parsed.toLocaleDateString('pl-PL', { month: 'short' }).replace('.', '') : '';
+    const weekday = validDate ? parsed.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '') : '';
 
     return (
         <BkpkCard
             onClick={() => onClick?.(id)}
-            className="group relative cursor-pointer border-bkpk-border-strong"
+            className="group relative cursor-pointer"
+            padding="none"
             hoverEffect
         >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                {/* Match Info */}
-                <div className="flex-1 space-y-3">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold uppercase tracking-widest text-bkpk-primary px-2 py-0.5 bg-bkpk-primary/10 rounded-full">
-                            {league || 'Mecz Sezonowy'}
-                        </span>
-                        {isPlayed && (
-                            <span className={cn(
-                                "text-xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                                isWin ? "bg-bkpk-success/20 text-bkpk-success" : "bg-bkpk-danger/15 text-bkpk-text-danger-subtle"
-                            )}>
-                                {isWin ? 'Wygrana' : 'Porażka'}
-                            </span>
-                        )}
-                    </div>
-
-                    <div>
-                        <h3 className="text-xl font-bold font-outfit text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
-                            {homeAway === 'home' ? 'BeKaPaKa' : opponent} vs {homeAway === 'home' ? opponent : 'BeKaPaKa'}
-                        </h3>
-                        <div className="flex items-center gap-4 mt-1 text-bkpk-text-muted text-xs">
-                            <div className="flex items-center gap-1.5">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {new Date(date).toLocaleDateString()}
-                            </div>
-                             <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5" />
-                                KOSiR Koszalin
-                            </div>
-                        </div>
-                    </div>
+            <div className="flex items-stretch">
+                {/* Data */}
+                <div className="flex flex-col items-center justify-center w-16 sm:w-20 shrink-0 border-r border-bkpk-border-subtle py-4">
+                    <span className="font-display text-[34px] sm:text-[40px] leading-none text-bkpk-text-primary tabular-nums">{day}</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-muted mt-1">{month}</span>
+                    <span className="text-[11px] text-bkpk-text-muted">{weekday}</span>
                 </div>
 
-                {/* Score / Status */}
-                <div className="flex items-center gap-6 justify-between w-full md:w-auto md:justify-start">
-                    {isPlayed ? (
-                        <div className="flex items-center gap-4">
-                            <div className="flex flex-col items-center">
-                                <div className="text-2xl md:text-3xl font-black font-outfit flex items-center gap-1.5">
-                                    <span className={cn(isHome ? ourScoreClass : theirScoreClass)}>
-                                        {leftScore}
+                <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 p-4 sm:p-5">
+                    {/* Para i meta */}
+                    <div className="min-w-0 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className="kicker text-[12px]">{league || 'Mecz Sezonowy'}</span>
+                            {isPlayed && (
+                                <span className={cn(
+                                    'status-flag',
+                                    isWin ? 'bg-bkpk-text-primary text-bkpk-bg border-bkpk-text-primary' : 'text-bkpk-text-secondary'
+                                )}>
+                                    {isWin ? 'Wygrana' : 'Porażka'}
+                                </span>
+                            )}
+                        </div>
+                        <h3 className="text-[22px] sm:text-[26px] leading-none text-bkpk-text-primary truncate">
+                            BeKaPaKa <span className="text-bkpk-text-muted">–</span> {opponent}
+                        </h3>
+                        <div className="flex items-center gap-1.5 text-bkpk-text-muted text-xs">
+                            <MapPin className="w-3.5 h-3.5" aria-hidden />
+                            KOSiR Koszalin
+                        </div>
+                    </div>
+
+                    {/* Wynik / status */}
+                    <div className="flex items-center gap-4 sm:gap-6 justify-between md:justify-end shrink-0">
+                        {isPlayed ? (
+                            <div className="flex flex-col items-start md:items-end">
+                                <div
+                                    className="font-display text-[36px] sm:text-[44px] leading-none tabular-nums flex items-center gap-2"
+                                    aria-label={`BeKaPaKa ${scoreUs ?? '-'}, ${opponent} ${scoreThem ?? '-'}`}
+                                >
+                                    <span className={cn('text-bkpk-text-primary', !isWin && 'outline-text text-bkpk-text-secondary')}>
+                                        {scoreUs}
                                     </span>
-                                    <span className="text-bkpk-text-muted font-bold">:</span>
-                                    <span className={cn(isHome ? theirScoreClass : ourScoreClass)}>
-                                        {rightScore}
+                                    <span className="text-bkpk-text-muted text-2xl" aria-hidden>:</span>
+                                    <span className={cn('text-bkpk-text-primary', isWin && 'outline-text text-bkpk-text-secondary')}>
+                                        {scoreThem}
                                     </span>
                                 </div>
                                 {mvp && (
-                                    <div className="flex items-center gap-1 mt-1 text-xs text-bkpk-warning font-bold uppercase">
-                                        <Trophy className="w-3 h-3" />
+                                    <div className="flex items-center gap-1 mt-1.5 label-caps text-[11px] text-bkpk-medal-gold">
+                                        <Trophy className="w-3 h-3" aria-hidden />
                                         <span>MVP: {mvp}</span>
                                     </div>
                                 )}
                             </div>
-                        </div>
-                    ) : (
-                        <div className="px-4 py-2 bg-bkpk-surface-tint-2 rounded-lg border border-bkpk-border-strong text-bkpk-text-muted text-xs font-bold uppercase tracking-wider">
-                            Nadchodzący
-                        </div>
-                    )}
+                        ) : (
+                            <span className="status-flag text-bkpk-primary">Nadchodzący</span>
+                        )}
 
-                    <motion.div
-                        className="w-10 h-10 rounded-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong flex items-center justify-center group-hover:bg-bkpk-primary group-hover:border-bkpk-primary transition-all"
-                        whileHover={{ x: 5 }}
-                    >
-                        <ChevronRight className="w-5 h-5 text-bkpk-text-primary" />
-                    </motion.div>
+                        <span className="flex items-center justify-center w-11 h-11 border border-bkpk-border-strong text-bkpk-text-primary group-hover:bg-bkpk-primary group-hover:border-bkpk-primary transition-colors">
+                            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                        </span>
+                    </div>
                 </div>
             </div>
-
-            {/* Background Glow */}
-            <div className={cn(
-                "absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity blur-2xl rounded-bkpk-lg -z-10",
-                isPlayed ? (isWin ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
-            )} />
         </BkpkCard>
     );
 }

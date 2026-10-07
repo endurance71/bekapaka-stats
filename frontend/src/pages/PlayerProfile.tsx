@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { formatStatFixed } from '../shared/lib/formatStat';
 import { useParams, Link } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
@@ -11,6 +12,17 @@ import {
 import { ChevronLeft, Star, TrendingUp, BarChart2, Calendar, Target } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
+import PageContainer from '../shared/ui/PageContainer';
+import PageLoader from '../shared/ui/PageLoader';
+import JerseyStripes from '../shared/ui/JerseyStripes';
+import {
+    chartAxisProps,
+    chartColors,
+    chartGridProps,
+    chartTooltipItemStyle,
+    chartTooltipLabelStyle,
+    chartTooltipStyle,
+} from '../shared/lib/chartTheme';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
@@ -147,106 +159,111 @@ export default function PlayerProfile() {
     }, [data]);
 
     if (loading) {
-        return (
-            <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-bkpk-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-bkpk-text-muted font-bold uppercase tracking-widest text-xs">Analizowanie Profilu...</p>
-                </div>
-            </div>
-        );
+        return <PageLoader fullScreen label="Analizowanie Profilu..." />;
     }
 
-    if (!data) return <div className="p-20 text-center text-bkpk-text-muted italic">Player not found.</div>;
+    if (!data) return <div className="p-20 text-center label-caps text-sm text-bkpk-text-muted">Player not found.</div>;
 
     const { player, averages, gameLog } = data;
     const playerPhoto = resolvePlayerPhoto(player);
 
     return (
-        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1400px] mx-auto space-y-6 sm:space-y-12">
+        <div className="bg-bkpk-bg">
+            <PageContainer>
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                    <Link to="/roster" className="group flex items-center gap-2 text-bkpk-text-muted hover:text-bkpk-text-primary transition-colors">
-                        <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
-                            <ChevronLeft className="w-4 h-4" />
+                    <Link to="/roster" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
+                        <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center group-hover:border-bkpk-text-primary transition-colors">
+                            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                         </div>
-                        <span className="font-bold uppercase tracking-wider text-xs">Powrót do Składu</span>
+                        <span className="label-caps text-xs">Powrót do Składu</span>
                     </Link>
 
                     {selectedSeason && !selectedSeason.isActive ? (
-                        <span className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-3 py-1.5 rounded-full border border-bkpk-warning/30 bg-bkpk-warning/10">
+                        <span className="status-flag text-bkpk-text-secondary">
                             Archiwum sezonu
                         </span>
                     ) : null}
                 </div>
 
-                {/* Immersive Profile Hero */}
-                <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-5 sm:p-8 md:p-12">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
-                        {/* Player Number & Photo Avatar */}
-                        <div className="relative">
-                            <div className="hidden sm:block text-8xl md:text-9xl font-black font-outfit text-white/5 absolute -top-8 -left-8 pointer-events-none">
-                                {player.number}
-                            </div>
-                            <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-tr from-bkpk-primary/20 to-transparent p-1 border border-bkpk-border-strong relative">
+                {/* Profile Hero — jak profil zawodnika na bekapaka.pl: numer konturem, nazwisko Condensed, średnie pod linią */}
+                <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle p-5 sm:p-8 md:p-12 pb-10 sm:pb-12 md:pb-16">
+                    {/* Numer konturem w tle */}
+                    <div
+                        className="hidden sm:block absolute -top-4 right-4 md:right-10 font-display font-extrabold leading-none tabular-nums text-[160px] md:text-[240px] outline-text text-bkpk-primary opacity-60 pointer-events-none select-none"
+                        aria-hidden="true"
+                    >
+                        {player.number}
+                    </div>
+
+                    <div className="relative z-10 flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-12">
+                        {/* Player Photo */}
+                        <div className="relative shrink-0">
+                            <div className="w-32 h-40 md:w-48 md:h-60 bg-bkpk-bg border border-bkpk-border-strong relative overflow-hidden">
                                 <img
                                     src={playerPhoto}
                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                    className="w-full h-full object-cover rounded-full grayscale hover:grayscale-0 transition-all duration-300"
+                                    className="w-full h-full object-cover object-top grayscale hover:grayscale-0 transition-all duration-300"
                                     loading="lazy"
                                     decoding="async"
                                     alt=""
                                 />
-                                <div className="absolute -bottom-1 -right-1 w-9 h-9 md:w-12 md:h-12 bg-bkpk-bg border border-bkpk-border-strong rounded-xl md:rounded-2xl flex items-center justify-center shadow-2xl">
-                                    <span className="text-sm md:text-xl font-black font-outfit text-bkpk-primary">#{player.number}</span>
+                                <div className="absolute bottom-0 right-0 min-w-9 h-9 md:min-w-12 md:h-12 px-1.5 bg-bkpk-primary flex items-center justify-center">
+                                    <span className="text-lg md:text-2xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">#{player.number}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Player Meta */}
-                        <div className="flex-1 text-center md:text-left space-y-4 w-full">
+                        <div className="flex-1 text-center md:text-left space-y-5 w-full min-w-0">
                             <div>
-                                <h1 className="text-2xl sm:text-4xl md:text-6xl font-black font-outfit text-bkpk-text-primary tracking-tight uppercase">
-                                    <span className="text-bkpk-primary block text-base sm:text-xl mb-0.5 sm:mb-1">{player.firstName}</span>
-                                    {player.lastName}
+                                <span className="kicker text-bkpk-text-primary mb-3">
+                                    {getPositionLabel(player.position)}
+                                </span>
+                                <h1 className="grid gap-1 text-bkpk-text-primary">
+                                    <span className="font-text font-semibold normal-case tracking-normal text-lg sm:text-2xl text-bkpk-text-secondary">{player.firstName}</span>
+                                    <span className="text-[44px] sm:text-[64px] md:text-[88px] leading-[0.92] break-words">{player.lastName}</span>
                                 </h1>
-                                <p className="text-bkpk-text-muted text-xs sm:text-sm font-medium flex flex-wrap items-center justify-center md:justify-start gap-y-1.5 gap-x-3 md:gap-4 mt-2">
-                                    <span className="flex items-center gap-1.5"><Target className="w-3.5 h-3.5" /> {getPositionLabel(player.position)}</span>
-                                    <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
+                                <p className="label-caps text-xs text-bkpk-text-secondary flex flex-wrap items-center justify-center md:justify-start gap-y-1.5 gap-x-3 md:gap-4 mt-4">
                                     <span className="flex items-center gap-1.5">
-                                        <Calendar className="w-3.5 h-3.5" />
+                                        <Calendar className="w-3.5 h-3.5" aria-hidden="true" />
                                         {selectedSeason?.label ?? 'Sezon'}
                                     </span>
-                                    <span className="hidden md:inline-block w-1 h-1 bg-bkpk-surface-tint-6 rounded-full" />
-                                    <span className="flex items-center gap-1.5 text-bkpk-success">
-                                        <Star className="w-3.5 h-3.5" /> {averages.gamesPlayed} meczy
-                                        <span className="opacity-60">•</span>
+                                    <span className="hidden md:inline-block w-1 h-1 bg-bkpk-border-strong" aria-hidden="true" />
+                                    <span className="flex items-center gap-1.5 text-bkpk-text-primary tabular-nums">
+                                        <Star className="w-3.5 h-3.5" aria-hidden="true" /> {averages.gamesPlayed} meczy
+                                        <span className="text-bkpk-text-muted">•</span>
                                         {(averages.minutesPlayed ?? 0)} min
                                     </span>
                                 </p>
                             </div>
 
                             {/* Key Stats Bar */}
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 max-w-2xl w-full">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 max-w-2xl w-full border-t-2 border-bkpk-text-primary">
                                 {[
-                                    { label: 'PPG', value: averages.ppg.toFixed(1), color: 'text-bkpk-primary' },
-                                    { label: 'RPG', value: averages.rpg.toFixed(1), color: 'text-bkpk-text-primary' },
-                                    { label: 'APG', value: averages.apg.toFixed(1), color: 'text-bkpk-text-primary' },
-                                    { label: 'EVAL', value: (averages.efg * 100).toFixed(0), color: 'text-bkpk-warning' },
+                                    { label: 'PPG', value: formatStatFixed(averages.ppg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'RPG', value: formatStatFixed(averages.rpg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'APG', value: formatStatFixed(averages.apg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'EVAL', value: formatStatFixed((averages.efg ?? 0) * 100, 0), color: 'text-bkpk-text-primary' },
                                 ].map((s, idx) => (
-                                    <div key={idx} className="bg-bkpk-surface-tint-2 border border-bkpk-border-strong p-2.5 sm:p-4 rounded-xl sm:rounded-2xl text-center">
-                                        <div className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">{s.label}</div>
-                                        <div className={cn("text-lg sm:text-2xl font-black font-outfit mt-0.5 sm:mt-1", s.color)}>{s.value}</div>
+                                    <div
+                                        key={idx}
+                                        className={cn(
+                                            "pt-4 pb-1 px-3 text-left",
+                                            idx % 2 === 1 && "border-l border-bkpk-border-subtle",
+                                            idx >= 2 && "mt-3 lg:mt-0 border-t lg:border-t-0 lg:border-l border-bkpk-border-subtle"
+                                        )}
+                                    >
+                                        <div className="label-caps text-[11px] text-bkpk-text-muted">{s.label}</div>
+                                        <div className={cn("text-4xl sm:text-5xl leading-[0.9] font-display font-extrabold tabular-nums mt-2", s.color)}>{s.value}</div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </div>
 
-                    {/* Decorative Background */}
-                    <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-bkpk-primary/5 to-transparent pointer-events-none" />
+                    <JerseyStripes className="absolute inset-x-0 bottom-0" />
                 </section>
 
                 {(isAdmin || user?.id === id) && (
@@ -267,11 +284,13 @@ export default function PlayerProfile() {
                     <div className="lg:col-span-8 space-y-8">
                         <BkpkCard variant="glass" className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-bkpk-primary" />
-                                    <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Trend Formy</h3>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
+                                        <TrendingUp className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
+                                    </div>
+                                    <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Trend Formy</h3>
                                 </div>
-                                <div className="px-3 py-1 bg-bkpk-primary/10 border border-bkpk-primary/20 rounded-lg text-xs font-bold text-bkpk-primary uppercase">
+                                <div className="status-flag text-bkpk-text-secondary">
                                     Punkty na Mecz
                                 </div>
                             </div>
@@ -292,48 +311,32 @@ export default function PlayerProfile() {
                                 <div className="w-full" style={{ height: isMobile ? '200px' : '300px' }}>
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={trendData}>
-                                            <defs>
-                                                <linearGradient id="colorPts" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="var(--color-bkpk-primary)" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="var(--color-bkpk-primary)" stopOpacity={0} />
-                                                </linearGradient>
-                                            </defs>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-2)" />
+                                        <CartesianGrid {...chartGridProps} />
                                         <XAxis
                                             dataKey="formattedDate"
-                                            stroke="var(--bkpk-text-muted)"
-                                            fontSize={9}
-                                            tickLine={false}
-                                            axisLine={false}
+                                            {...chartAxisProps}
                                             dy={10}
                                             interval={isMobile ? Math.ceil(trendData.length / 4) : 0}
                                         />
                                         <YAxis
-                                            stroke="var(--bkpk-text-muted)"
-                                            fontSize={9}
-                                            tickLine={false}
-                                            axisLine={false}
+                                            {...chartAxisProps}
                                             dx={-10}
                                             width={isMobile ? 20 : 35}
                                         />
                                             <Tooltip
                                                 trigger={isMobile ? 'click' : 'hover'}
-                                                contentStyle={{
-                                                    backgroundColor: 'var(--bkpk-color-surface-elevated)',
-                                                    border: '1px solid var(--bkpk-border-strong)',
-                                                    borderRadius: '12px',
-                                                    backdropFilter: 'blur(10px)',
-                                                    fontSize: '12px'
-                                                }}
-                                                itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
+                                                contentStyle={chartTooltipStyle}
+                                                itemStyle={chartTooltipItemStyle}
+                                                labelStyle={chartTooltipLabelStyle}
+                                                cursor={{ stroke: chartColors.axis, strokeDasharray: '2 4' }}
                                             />
                                             <Area
                                                 type="monotone"
                                                 dataKey="pts"
-                                                stroke="var(--color-bkpk-primary)"
+                                                stroke={chartColors.team}
                                                 strokeWidth={3}
-                                                fillOpacity={1}
-                                                fill="url(#colorPts)"
+                                                fill={chartColors.team}
+                                                fillOpacity={0.14}
                                             />
                                         </AreaChart>
                                     </ResponsiveContainer>
@@ -370,25 +373,25 @@ export default function PlayerProfile() {
                     {/* Sidebar / Detailed Averages */}
                     <div className="lg:col-span-4 space-y-8">
                         <BkpkCard variant="glass" className="space-y-6">
-                            <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Efektywność Sezonowa</h3>
+                            <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Efektywność Sezonowa</h3>
                             <div className="space-y-6">
                                 {[
-                                    { label: 'eFG%', value: (averages.efg * 100).toFixed(1) + '%', progress: averages.efg * 100 },
-                                    { label: 'TS%', value: (averages.ts * 100).toFixed(1) + '%', progress: averages.ts * 100 },
-                                    { label: 'Plus/Minus Avg', value: averages.plusMinusAvg > 0 ? `+${averages.plusMinusAvg.toFixed(1)}` : averages.plusMinusAvg.toFixed(1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 },
+                                    { label: 'eFG%', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
+                                    { label: 'TS%', value: formatStatFixed((averages.ts ?? 0) * 100, 1) + '%', progress: (averages.ts ?? 0) * 100 },
+                                    { label: 'Plus/Minus Avg', value: (averages.plusMinusAvg ?? 0) > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, (averages.plusMinusAvg ?? 0) + 10) * 5 },
                                 ].map((stat, i) => (
                                     <div key={i} className="space-y-2">
                                         <div className="flex justify-between items-end">
-                                            <span className="text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">{stat.label}</span>
-                                            <span className="text-sm font-bold text-bkpk-text-primary">{stat.value}</span>
+                                            <span className="label-caps text-xs text-bkpk-text-secondary">{stat.label}</span>
+                                            <span className="font-display font-extrabold text-2xl leading-none tabular-nums text-bkpk-text-primary">{stat.value}</span>
                                         </div>
-                                        <div className="h-1.5 bg-bkpk-surface-tint-2 rounded-full overflow-hidden">
+                                        <div className="h-1.5 bg-bkpk-surface-tint-2 overflow-hidden">
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${Math.min(100, stat.progress)}%` }}
                                                 transition={{ duration: 0.3, delay: 0.2 + (i * 0.05) }}
                                                 className={cn(
-                                                    "h-full rounded-full",
+                                                    "h-full",
                                                     stat.label.includes('Plus') ? (averages.plusMinusAvg >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
                                                 )}
                                             />
@@ -399,19 +402,21 @@ export default function PlayerProfile() {
                         </BkpkCard>
 
                         {/* Recent Achievements / Milestones */}
-                        <BkpkCard variant="glass" className="border-bkpk-warning/20">
-                            <div className="flex items-center gap-2 mb-4 text-bkpk-warning">
-                                <Star className="w-5 h-5 fill-current" />
-                                <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Najlepsze Występy</h3>
+                        <BkpkCard variant="glass" className="border-t-2 border-t-bkpk-medal-gold">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="flex items-center justify-center w-9 h-9 border border-bkpk-medal-gold shrink-0">
+                                    <Star className="w-5 h-5 fill-current text-bkpk-medal-gold" aria-hidden="true" />
+                                </div>
+                                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Najlepsze Występy</h3>
                             </div>
-                            <div className="space-y-4">
+                            <div className="border-t border-bkpk-border-subtle">
                                 {[...gameLog].sort((a, b) => b.pts - a.pts).slice(0, 3).map((g, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong">
-                                        <div>
-                                            <div className="text-xs font-bold text-bkpk-text-primary">{g.opponent}</div>
-                                            <div className="text-xs text-bkpk-text-muted">{new Date(g.date).toLocaleDateString()}</div>
+                                    <div key={idx} className="flex items-center justify-between gap-3 px-1 py-3 border-b border-bkpk-border-subtle">
+                                        <div className="min-w-0">
+                                            <div className="text-sm font-semibold text-bkpk-text-primary truncate">{g.opponent}</div>
+                                            <div className="text-xs text-bkpk-text-muted tabular-nums">{new Date(g.date).toLocaleDateString()}</div>
                                         </div>
-                                        <div className="text-lg font-black font-outfit text-bkpk-warning">
+                                        <div className="shrink-0 text-2xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">
                                             {g.pts} PTS
                                         </div>
                                     </div>
@@ -420,7 +425,7 @@ export default function PlayerProfile() {
                         </BkpkCard>
                     </div>
                 </div>
-            </div>
-        </div >
+            </PageContainer>
+        </div>
     );
 }

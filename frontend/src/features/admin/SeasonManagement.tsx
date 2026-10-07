@@ -4,7 +4,16 @@ import Modal from '../../components/Modal';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
+import SectionHeading from '../../shared/ui/SectionHeading';
 import { Calendar, Plus, CheckCircle2, Archive, RefreshCw, Edit3, ArrowRight, ShieldAlert, Users, Layers } from 'lucide-react';
+
+/** Digital 2.0: pole formularza — płaskie, linia ink-500, fokus 3 px złoty z global.css. */
+const fieldClass =
+  'w-full bg-bkpk-bg border border-bkpk-border-strong min-h-[48px] px-4 text-sm text-bkpk-text-primary placeholder:text-bkpk-text-muted hover:border-bkpk-text-muted focus:border-bkpk-text-primary transition-colors';
+const fieldLabelClass = 'block label-caps text-xs text-bkpk-text-secondary mb-2';
+const checkboxRowClass =
+  'flex items-center gap-3 min-h-[48px] p-3 bg-bkpk-bg border border-bkpk-border-strong hover:border-bkpk-text-muted cursor-pointer transition-colors';
+const checkboxClass = 'w-5 h-5 shrink-0 accent-bkpk-primary';
 
 export interface SeasonWithStats {
   id: string;
@@ -226,13 +235,13 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-        <div>
-          <h3 className="text-base sm:text-lg font-bold text-bkpk-text-primary flex items-center gap-2">
-            <Layers className="w-5 h-5 text-bkpk-primary" />
-            Zarządzanie Sezonami i Archiwizacja
-          </h3>
-          <p className="text-xs sm:text-sm text-bkpk-text-muted mt-1">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
+        <div className="min-w-0">
+          <SectionHeading
+            as="h3"
+            title="Zarządzanie Sezonami i Archiwizacja"
+          />
+          <p className="text-sm text-bkpk-text-secondary mt-2 max-w-2xl">
             Konfiguracja aktywnego sezonu, zamykanie zakończonych rozgrywek oraz tworzenie nowego sezonu z transferem kadry.
           </p>
         </div>
@@ -243,14 +252,14 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
       </div>
 
       {error && (
-        <div className="p-4 bg-bkpk-danger/10 border border-bkpk-danger/30 rounded-xl text-bkpk-danger text-sm">
+        <div className="p-4 bg-bkpk-surface border border-bkpk-border-subtle border-l-4 border-l-bkpk-danger text-bkpk-text-danger text-sm">
           {error}
         </div>
       )}
 
       {loading ? (
         <div className="py-8 text-center text-bkpk-text-muted text-sm flex items-center justify-center gap-2">
-          <RefreshCw className="w-4 h-4 animate-spin text-bkpk-primary" />
+          <RefreshCw className="w-4 h-4 animate-spin text-bkpk-text-primary" />
           Ładowanie sezonów...
         </div>
       ) : (
@@ -259,70 +268,70 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
             <div
               key={season.id}
               className={cn(
-                'p-5 rounded-2xl border transition-all space-y-4',
+                'p-5 border space-y-4 transition-colors',
                 season.isActive
-                  ? 'bg-bkpk-surface border-bkpk-primary/50 shadow-bkpk-glow'
-                  : 'bg-bkpk-surface-tint-2 border-bkpk-border-subtle opacity-90'
+                  ? 'bg-bkpk-surface border-bkpk-border-strong border-l-4 border-l-bkpk-primary'
+                  : 'bg-bkpk-surface border-bkpk-border-subtle'
               )}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="text-lg font-bold text-bkpk-text-primary">{season.label}</h4>
+                    <h4 className="font-display text-[22px] leading-none uppercase text-bkpk-text-primary">{season.label}</h4>
                     {season.isActive ? (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-bkpk-primary/20 text-bkpk-primary border border-bkpk-primary/30 flex items-center gap-1">
+                      <span className="status-flag gap-1 bg-bkpk-text-primary text-bkpk-bg border-bkpk-text-primary">
                         <CheckCircle2 className="w-3 h-3" />
                         Bieżący (Aktywny)
                       </span>
                     ) : (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-bkpk-text-muted/20 text-bkpk-text-muted border border-bkpk-border-subtle flex items-center gap-1">
+                      <span className="status-flag gap-1 text-bkpk-text-muted">
                         <Archive className="w-3 h-3" />
                         Archiwum
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-bkpk-text-muted font-mono mt-1">ID: {season.id} · Slug: {season.slug}</p>
+                  <p className="text-xs text-bkpk-text-muted font-mono mt-2 break-all">ID: {season.id} · Slug: {season.slug}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => openEditModal(season)}
-                  className="p-2 text-bkpk-text-muted hover:text-bkpk-text-primary rounded-lg hover:bg-bkpk-surface transition-colors"
+                  className="w-11 h-11 shrink-0 inline-flex items-center justify-center border border-bkpk-border-strong text-bkpk-text-secondary hover:text-bkpk-text-primary hover:border-bkpk-text-primary transition-colors"
                   title="Edytuj dane sezonu"
                 >
                   <Edit3 className="w-4 h-4" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 p-3 bg-bkpk-overlay-medium rounded-xl border border-bkpk-border-subtle text-center text-xs">
-                <div>
-                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze BeKaPaKa</span>
-                  <span className="text-sm font-black text-bkpk-primary">{season.bekapakaMatchesCount ?? season.gamesCount}</span>
+              <div className="grid grid-cols-3 border-y border-bkpk-border-subtle divide-x divide-bkpk-border-subtle text-center">
+                <div className="py-3 px-1.5">
+                  <span className="block label-caps text-[11px] text-bkpk-text-muted mb-1">Mecze BeKaPaKa</span>
+                  <span className="font-display text-2xl leading-none tabular-nums text-bkpk-text-primary">{season.bekapakaMatchesCount ?? season.gamesCount}</span>
                 </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Mecze w lidze</span>
-                  <span className="text-sm font-black text-bkpk-text-primary">{season.finishedMatchesCount} / {season.leagueMatchesCount}</span>
+                <div className="py-3 px-1.5">
+                  <span className="block label-caps text-[11px] text-bkpk-text-muted mb-1">Mecze w lidze</span>
+                  <span className="font-display text-2xl leading-none tabular-nums text-bkpk-text-primary">{season.finishedMatchesCount} / {season.leagueMatchesCount}</span>
                 </div>
-                <div>
-                  <span className="block text-[10px] uppercase font-bold text-bkpk-text-muted">Zawodnicy</span>
-                  <span className="text-sm font-black text-bkpk-text-primary">{season.kalkPlayersCount}</span>
+                <div className="py-3 px-1.5">
+                  <span className="block label-caps text-[11px] text-bkpk-text-muted mb-1">Zawodnicy</span>
+                  <span className="font-display text-2xl leading-none tabular-nums text-bkpk-text-primary">{season.kalkPlayersCount}</span>
                 </div>
               </div>
 
-              <div className="text-xs text-bkpk-text-secondary space-y-1">
+              <div className="text-sm text-bkpk-text-secondary space-y-1">
                 <p>
-                  <span className="text-bkpk-text-muted">Dywizja KALK:</span> <code className="font-mono bg-bkpk-surface px-1.5 py-0.5 rounded text-bkpk-primary">{season.divisionPath}</code>
+                  <span className="label-caps text-xs text-bkpk-text-muted">Dywizja KALK:</span> <code className="font-mono text-xs bg-bkpk-bg border border-bkpk-border-subtle px-1.5 py-0.5 text-bkpk-text-primary break-all">{season.divisionPath}</code>
                 </p>
                 <p>
-                  <span className="text-bkpk-text-muted">Zakres dat:</span> {season.startsAt ? new Date(season.startsAt).toLocaleDateString() : '—'} do {season.endsAt ? new Date(season.endsAt).toLocaleDateString() : '—'}
+                  <span className="label-caps text-xs text-bkpk-text-muted">Zakres dat:</span> {season.startsAt ? new Date(season.startsAt).toLocaleDateString() : '—'} do {season.endsAt ? new Date(season.endsAt).toLocaleDateString() : '—'}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 border-t border-bkpk-border-subtle">
+              <div className="flex items-center gap-2 pt-4 border-t border-bkpk-border-subtle">
                 {!season.isActive ? (
                   <BkpkButton
                     variant="outline"
                     onClick={() => handleActivateSeason(season)}
-                    className="w-full text-xs"
+                    className="w-full"
                   >
                     Ustaw jako aktywny sezon
                   </BkpkButton>
@@ -330,7 +339,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   <BkpkButton
                     variant="ghost"
                     onClick={() => setArchivingSeason(season)}
-                    className="w-full text-xs text-bkpk-warning hover:bg-bkpk-warning/10"
+                    className="w-full"
                   >
                     <Archive className="w-3.5 h-3.5 mr-1.5" />
                     Zakończ i zarchiwizuj sezon
@@ -351,20 +360,20 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
       >
         <div className="space-y-6">
           {/* Kroki */}
-          <div className="flex items-center justify-between border-b border-bkpk-border-strong pb-4">
-            <div className="flex items-center gap-2">
-              <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-black', wizardStep === 1 ? 'bg-bkpk-primary text-black' : 'bg-bkpk-surface-tint-2 text-bkpk-text-muted')}>1</span>
-              <span className={cn('text-xs font-bold', wizardStep === 1 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Konfiguracja</span>
+          <div className="flex items-center justify-between gap-1 border-b border-bkpk-border-strong pb-4">
+            <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 text-center">
+              <span className={cn('w-8 h-8 shrink-0 flex items-center justify-center font-display text-base tabular-nums border', wizardStep === 1 ? 'bg-bkpk-text-primary text-bkpk-bg border-bkpk-text-primary' : 'border-bkpk-border-strong text-bkpk-text-muted')}>1</span>
+              <span className={cn('label-caps text-[11px] sm:text-xs', wizardStep === 1 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Konfiguracja</span>
             </div>
-            <div className="w-8 h-px bg-bkpk-border-strong" />
-            <div className="flex items-center gap-2">
-              <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-black', wizardStep === 2 ? 'bg-bkpk-primary text-black' : 'bg-bkpk-surface-tint-2 text-bkpk-text-muted')}>2</span>
-              <span className={cn('text-xs font-bold', wizardStep === 2 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Kadra drużyny</span>
+            <div className="flex-1 min-w-3 mx-1 sm:mx-2 h-px bg-bkpk-border-strong" />
+            <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 text-center">
+              <span className={cn('w-8 h-8 shrink-0 flex items-center justify-center font-display text-base tabular-nums border', wizardStep === 2 ? 'bg-bkpk-text-primary text-bkpk-bg border-bkpk-text-primary' : 'border-bkpk-border-strong text-bkpk-text-muted')}>2</span>
+              <span className={cn('label-caps text-[11px] sm:text-xs', wizardStep === 2 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Kadra drużyny</span>
             </div>
-            <div className="w-8 h-px bg-bkpk-border-strong" />
-            <div className="flex items-center gap-2">
-              <span className={cn('w-6 h-6 rounded-full flex items-center justify-center text-xs font-black', wizardStep === 3 ? 'bg-bkpk-primary text-black' : 'bg-bkpk-surface-tint-2 text-bkpk-text-muted')}>3</span>
-              <span className={cn('text-xs font-bold', wizardStep === 3 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Podsumowanie</span>
+            <div className="flex-1 min-w-3 mx-1 sm:mx-2 h-px bg-bkpk-border-strong" />
+            <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 text-center">
+              <span className={cn('w-8 h-8 shrink-0 flex items-center justify-center font-display text-base tabular-nums border', wizardStep === 3 ? 'bg-bkpk-text-primary text-bkpk-bg border-bkpk-text-primary' : 'border-bkpk-border-strong text-bkpk-text-muted')}>3</span>
+              <span className={cn('label-caps text-[11px] sm:text-xs', wizardStep === 3 ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted')}>Podsumowanie</span>
             </div>
           </div>
 
@@ -372,7 +381,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
           {wizardStep === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                <label className={fieldLabelClass}>
                   Nazwa Sezonu (etykieta)
                 </label>
                 <input
@@ -380,14 +389,14 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   placeholder="np. Sezon 2026/2027"
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className={fieldClass}
                   required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                  <label className={fieldLabelClass}>
                     Identyfikator (slug)
                   </label>
                   <input
@@ -395,12 +404,12 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     value={newSlug}
                     onChange={(e) => setNewSlug(e.target.value)}
                     placeholder="np. 2026-2027"
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className={fieldClass}
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                  <label className={fieldLabelClass}>
                     Ścieżka Dywizji KALK
                   </label>
                   <input
@@ -408,7 +417,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     value={newDivisionPath}
                     onChange={(e) => setNewDivisionPath(e.target.value)}
                     placeholder="dzial,dywizja-2,4.html"
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className={fieldClass}
                     required
                   />
                 </div>
@@ -416,37 +425,37 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                  <label className={fieldLabelClass}>
                     Data Rozpoczęcia
                   </label>
                   <input
                     type="date"
                     value={newStartsAt}
                     onChange={(e) => setNewStartsAt(e.target.value)}
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className={fieldClass}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                  <label className={fieldLabelClass}>
                     Data Zakończenia
                   </label>
                   <input
                     type="date"
                     value={newEndsAt}
                     onChange={(e) => setNewEndsAt(e.target.value)}
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className={fieldClass}
                   />
                 </div>
               </div>
 
-              <label className="flex items-center gap-3 p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong cursor-pointer">
+              <label className={checkboxRowClass}>
                 <input
                   type="checkbox"
                   checked={activateNow}
                   onChange={(e) => setActivateNow(e.target.checked)}
-                  className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                  className={checkboxClass}
                 />
-                <span className="text-xs text-bkpk-text-primary font-medium">
+                <span className="text-sm text-bkpk-text-primary">
                   Ustaw ten sezon natychmiast jako bieżący aktywny sezon
                 </span>
               </label>
@@ -473,12 +482,12 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
           {/* Krok 2 */}
           {wizardStep === 2 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold text-bkpk-text-primary">Wybierz zawodników na nowy sezon</p>
-                  <p className="text-xs text-bkpk-text-muted">Konta logowania i hasła wszystkich zawodników pozostają aktywne.</p>
+                  <p className="label-caps text-sm text-bkpk-text-primary">Wybierz zawodników na nowy sezon</p>
+                  <p className="text-xs text-bkpk-text-secondary mt-1">Konta logowania i hasła wszystkich zawodników pozostają aktywne.</p>
                 </div>
-                <BkpkButton variant="ghost" onClick={toggleSelectAllPlayers} className="text-xs">
+                <BkpkButton variant="ghost" size="sm" onClick={toggleSelectAllPlayers} className="shrink-0">
                   {selectedPlayerIds.length === availablePlayers.length ? 'Odznacz wszystkich' : 'Zaznacz wszystkich'}
                 </BkpkButton>
               </div>
@@ -488,10 +497,10 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   <label
                     key={player.id}
                     className={cn(
-                      'flex items-center justify-between p-3 rounded-xl border transition-colors cursor-pointer',
+                      'flex items-center justify-between min-h-[48px] p-3 border transition-colors cursor-pointer',
                       selectedPlayerIds.includes(player.id)
-                        ? 'bg-bkpk-primary/10 border-bkpk-primary/40'
-                        : 'bg-bkpk-surface-tint-2 border-bkpk-border-subtle opacity-70'
+                        ? 'bg-bkpk-bg border-bkpk-border-strong border-l-4 border-l-bkpk-primary'
+                        : 'bg-bkpk-bg border-bkpk-border-subtle opacity-70 hover:border-bkpk-border-strong'
                     )}
                   >
                     <div className="flex items-center gap-3">
@@ -499,14 +508,14 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                         type="checkbox"
                         checked={selectedPlayerIds.includes(player.id)}
                         onChange={() => togglePlayerSelection(player.id)}
-                        className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                        className={checkboxClass}
                       />
-                      <span className="text-xs font-bold text-bkpk-text-primary">
+                      <span className="text-sm font-semibold text-bkpk-text-primary tabular-nums">
                         #{player.number ?? '—'} {player.firstName} {player.lastName}
                       </span>
                     </div>
                     {player.position && (
-                      <span className="text-[10px] font-mono font-bold bg-bkpk-surface px-2 py-0.5 rounded text-bkpk-text-muted">
+                      <span className="status-flag text-bkpk-text-muted">
                         {player.position}
                       </span>
                     )}
@@ -514,14 +523,14 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                 ))}
               </div>
 
-              <label className="flex items-center gap-3 p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong cursor-pointer">
+              <label className={checkboxRowClass}>
                 <input
                   type="checkbox"
                   checked={resetGoals}
                   onChange={(e) => setResetGoals(e.target.checked)}
-                  className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                  className={checkboxClass}
                 />
-                <span className="text-xs text-bkpk-text-primary font-medium">
+                <span className="text-sm text-bkpk-text-primary">
                   Zresetuj cele osobiste zawodników na nowy sezon (rekomendowane)
                 </span>
               </label>
@@ -539,30 +548,30 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
           {/* Krok 3 */}
           {wizardStep === 3 && (
             <div className="space-y-4">
-              <div className="p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong space-y-3 text-xs">
-                <div className="flex justify-between py-1 border-b border-bkpk-border-subtle">
-                  <span className="text-bkpk-text-muted">Nazwa sezonu:</span>
-                  <span className="font-bold text-bkpk-text-primary">{newLabel}</span>
+              <div className="p-4 bg-bkpk-bg border border-bkpk-border-strong text-sm">
+                <div className="flex justify-between gap-4 py-2.5 border-b border-bkpk-border-subtle">
+                  <span className="label-caps text-xs text-bkpk-text-muted">Nazwa sezonu:</span>
+                  <span className="font-semibold text-right tabular-nums text-bkpk-text-primary">{newLabel}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-bkpk-border-subtle">
-                  <span className="text-bkpk-text-muted">Identyfikator (ID):</span>
-                  <span className="font-mono text-bkpk-text-primary">season_{newSlug}</span>
+                <div className="flex justify-between gap-4 py-2.5 border-b border-bkpk-border-subtle">
+                  <span className="label-caps text-xs text-bkpk-text-muted">Identyfikator (ID):</span>
+                  <span className="font-mono text-right break-all text-bkpk-text-primary">season_{newSlug}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-bkpk-border-subtle">
-                  <span className="text-bkpk-text-muted">Ścieżka KALK:</span>
-                  <span className="font-mono text-bkpk-primary">{newDivisionPath}</span>
+                <div className="flex justify-between gap-4 py-2.5 border-b border-bkpk-border-subtle">
+                  <span className="label-caps text-xs text-bkpk-text-muted">Ścieżka KALK:</span>
+                  <span className="font-mono text-right break-all text-bkpk-text-primary">{newDivisionPath}</span>
                 </div>
-                <div className="flex justify-between py-1 border-b border-bkpk-border-subtle">
-                  <span className="text-bkpk-text-muted">Kadra zawodników:</span>
-                  <span className="font-bold text-bkpk-text-primary">{selectedPlayerIds.length} z {availablePlayers.length} graczy</span>
+                <div className="flex justify-between gap-4 py-2.5 border-b border-bkpk-border-subtle">
+                  <span className="label-caps text-xs text-bkpk-text-muted">Kadra zawodników:</span>
+                  <span className="font-semibold text-right tabular-nums text-bkpk-text-primary">{selectedPlayerIds.length} z {availablePlayers.length} graczy</span>
                 </div>
-                <div className="flex justify-between py-1">
-                  <span className="text-bkpk-text-muted">Status po utworzeniu:</span>
-                  <span className="font-bold text-bkpk-success">{activateNow ? 'Natychmiast aktywny' : 'Archiwalny'}</span>
+                <div className="flex justify-between gap-4 py-2.5">
+                  <span className="label-caps text-xs text-bkpk-text-muted">Status po utworzeniu:</span>
+                  <span className="font-semibold text-right text-bkpk-success">{activateNow ? 'Natychmiast aktywny' : 'Archiwalny'}</span>
                 </div>
               </div>
 
-              <p className="text-xs text-bkpk-text-secondary leading-relaxed">
+              <p className="text-sm text-bkpk-text-secondary leading-relaxed">
                 Po zatwierdzeniu system utworzy nowy sezon, przeniesie kadrę i ustawi nowy sezon jako domyślny. Następnie będzie można uruchomić pierwszy scraping KALK, aby pobrać nowy terminarz i tabelę.
               </p>
 
@@ -589,52 +598,52 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
         >
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+              <label className={fieldLabelClass}>
                 Nazwa Sezonu
               </label>
               <input
                 type="text"
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
-                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                className={fieldClass}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+              <label className={fieldLabelClass}>
                 Ścieżka Dywizji KALK
               </label>
               <input
                 type="text"
                 value={editDivisionPath}
                 onChange={(e) => setEditDivisionPath(e.target.value)}
-                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                className={fieldClass}
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                <label className={fieldLabelClass}>
                   Data Rozpoczęcia
                 </label>
                 <input
                   type="date"
                   value={editStartsAt}
                   onChange={(e) => setEditStartsAt(e.target.value)}
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className={fieldClass}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-bkpk-text-muted mb-1.5">
+                <label className={fieldLabelClass}>
                   Data Zakończenia
                 </label>
                 <input
                   type="date"
                   value={editEndsAt}
                   onChange={(e) => setEditEndsAt(e.target.value)}
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className={fieldClass}
                 />
               </div>
             </div>
@@ -660,10 +669,10 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
           maxWidth="max-w-lg"
         >
           <div className="space-y-4">
-            <div className="p-4 bg-bkpk-warning/10 border border-bkpk-warning/30 rounded-xl text-bkpk-warning flex items-start gap-3">
+            <div className="p-4 bg-bkpk-bg border border-bkpk-border-subtle border-l-4 border-l-bkpk-danger text-bkpk-text-danger flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 shrink-0 mt-0.5" />
-              <div className="text-xs space-y-1">
-                <p className="font-bold uppercase tracking-wider">Potwierdzenie zakończenia sezonu</p>
+              <div className="text-sm space-y-2">
+                <p className="label-caps text-xs">Potwierdzenie zakończenia sezonu</p>
                 <p className="text-bkpk-text-secondary leading-relaxed">
                   Zamknięcie sezonu <strong>{archivingSeason.label}</strong> zamrozi jego statystyki i oznaczy go jako archiwalny. Wszystkie mecze, protokoły i dane zawodników pozostaną nienaruszone w bazie.
                 </p>
@@ -674,7 +683,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
               <BkpkButton variant="ghost" onClick={() => setArchivingSeason(null)} disabled={archiveSubmitting}>
                 Anuluj
               </BkpkButton>
-              <BkpkButton variant="secondary" onClick={handleArchiveSeasonSubmit} disabled={archiveSubmitting}>
+              <BkpkButton variant="outline" onClick={handleArchiveSeasonSubmit} disabled={archiveSubmitting}>
                 {archiveSubmitting ? 'Zamykanie...' : 'Tylko zamknij sezon'}
               </BkpkButton>
               <BkpkButton variant="primary" onClick={handleArchiveAndOpenNewWizard} disabled={archiveSubmitting}>

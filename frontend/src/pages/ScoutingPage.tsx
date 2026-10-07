@@ -16,6 +16,9 @@ import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
 import { usePortraitMobile } from '../hooks/useIsMobile';
 import { formatStatFixed } from '../shared/lib/formatStat';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
+import PageLoader from '../shared/ui/PageLoader';
 
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
@@ -46,7 +49,7 @@ export default function ScoutingPage() {
       if (opponent) q.set('opponent', opponent);
       if (seasonId) q.set('seasonId', seasonId);
       const queryStr = q.toString() ? `?${q.toString()}` : '';
-      const res = await fetchJSON(`/api/scouting/detailed${queryStr}`);
+      const res = await fetchJSON<Record<string, unknown>>(`/api/scouting/detailed${queryStr}`);
       setData(res);
     } catch (err) {
       console.error(err);
@@ -78,22 +81,13 @@ export default function ScoutingPage() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-bkpk-primary/20 border-t-bkpk-primary rounded-full animate-spin" />
-          <span className="text-bkpk-text-secondary font-bold tracking-widest uppercase text-sm">
-            Ładowanie raportu...
-          </span>
-        </div>
-      </div>
-    );
+    return <PageLoader fullScreen label="Ładowanie raportu..." />;
   }
 
   if (!data) {
     return (
-      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
-        <div className="text-bkpk-text-secondary font-bold text-xl">Brak danych o rywalu.</div>
+      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center px-4">
+        <div className="font-display text-2xl uppercase text-bkpk-text-secondary">Brak danych o rywalu.</div>
       </div>
     );
   }
@@ -176,24 +170,26 @@ export default function ScoutingPage() {
     advancedStats?.fallbackBasicOnly || advancedStats?.fallbackFromPreviousMatch;
 
   return (
-    <div className="bg-bkpk-bg pb-[max(2rem,env(safe-area-inset-bottom,0px))] text-bkpk-text-primary">
-      <div className="relative border-b border-bkpk-border-strong bg-gradient-to-b from-bkpk-navy-light/40 to-transparent px-4 pb-6 pt-5 md:px-6 md:pb-8 md:pt-6">
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 h-32 -translate-y-1/2 bg-bkpk-primary/5 blur-3xl" />
-        <div className="relative mx-auto max-w-6xl">
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard')}
-            className="group mb-5 flex items-center gap-2 text-bkpk-text-secondary transition-colors hover:text-bkpk-text-primary"
-          >
-            <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            <span className="text-xs font-bold uppercase tracking-widest sm:text-sm">Powrót do pulpitu</span>
-          </button>
+    <PageContainer
+      width="narrow"
+      className="text-bkpk-text-primary pb-[max(2rem,env(safe-area-inset-bottom,0px))] space-y-6 md:space-y-8"
+    >
+      <div className="space-y-6">
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard')}
+          className="group inline-flex min-h-[44px] items-center gap-2 text-bkpk-text-secondary transition-colors hover:text-bkpk-text-primary"
+        >
+          <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
+          <span className="label-caps text-[12px] sm:text-[13px]">Powrót do pulpitu</span>
+        </button>
 
-          <ScoutingMatchHeader bekapaka={bekapaka} opponent={opponent} />
-        </div>
+        <PageHeader title="Scouting" />
+
+        <ScoutingMatchHeader bekapaka={bekapaka} opponent={opponent} />
       </div>
 
-      <div className="mx-auto max-w-6xl space-y-5 px-4 md:space-y-6 md:px-6">
+      <div className="space-y-5 md:space-y-6">
         {showProtocolBanner ? (
           <ScoutingProtocolBanner
             fallbackBasicOnly={advancedStats?.fallbackBasicOnly}
@@ -272,7 +268,7 @@ export default function ScoutingPage() {
             <BkpkCard
               title="Kluczowi gracze rywala"
               icon={<Users className="h-5 w-5 text-bkpk-primary" />}
-              variant="glass"
+              variant="flat"
               className="h-full"
               overflowVisible
             >
@@ -284,11 +280,11 @@ export default function ScoutingPage() {
                       rank={i + 1}
                       title={p.name}
                       highlight={
-                        <div>
-                          <div className="font-outfit text-xl font-black tabular-nums text-bkpk-primary">
+                        <div className="text-right">
+                          <div className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
                             {formatStatFixed(p.ppg)}
                           </div>
-                          <div className="text-[10px] font-bold uppercase text-bkpk-text-muted">PPG</div>
+                          <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">PPG</div>
                         </div>
                       }
                       stats={[
@@ -300,35 +296,32 @@ export default function ScoutingPage() {
                   ))}
                 </MobileDataList>
               ) : (
-                <ScrollableTableShell compact className="mx-0 rounded-none border-0">
-                  <table className="w-full min-w-[480px] border-collapse text-left text-sm">
+                <ScrollableTableShell compact className="mx-0 border-0 bg-bkpk-bg">
+                  <table className="bkpk-table min-w-[480px] text-left text-[14px]">
                     <thead>
-                      <tr className="border-b border-bkpk-border-strong text-sm font-bold uppercase tracking-widest text-bkpk-text-muted">
-                        <th className="pb-3 pl-2">Zawodnik</th>
-                        <th className="pb-3 text-center">Mecze</th>
-                        <th className="pb-3 text-center">PPG</th>
-                        <th className="pb-3 text-center">3PT</th>
-                        <th className="pb-3 text-center">PTS</th>
+                      <tr>
+                        <th className="h-11 pl-3 text-left">Zawodnik</th>
+                        <th className="h-11 text-center">Mecze</th>
+                        <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">PPG</th>
+                        <th className="h-11 text-center">3PT</th>
+                        <th className="h-11 text-center">PTS</th>
                       </tr>
                     </thead>
                     <tbody>
                       {keyPlayers.map((p, i) => (
-                        <tr
-                          key={i}
-                          className="border-b border-bkpk-border-strong transition-colors last:border-0 hover:bg-bkpk-surface-tint-3"
-                        >
-                          <td className="py-3 pl-2 font-bold text-bkpk-text-primary">
-                            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded bg-bkpk-surface-tint-4 text-caption text-bkpk-text-secondary">
+                        <tr key={i} className="transition-colors">
+                          <td className="h-11 pl-3 font-semibold text-bkpk-text-primary">
+                            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center border border-bkpk-border-strong font-display text-[13px] tabular-nums text-bkpk-text-secondary">
                               {i + 1}
                             </span>
                             {p.name}
                           </td>
-                          <td className="py-3 text-center font-mono text-bkpk-text-secondary">{p.matches}</td>
-                          <td className="py-3 text-center font-black text-bkpk-primary">{formatStatFixed(p.ppg)}</td>
-                          <td className="py-3 text-center font-mono text-bkpk-text-secondary">
+                          <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">{p.matches}</td>
+                          <td className="h-11 text-center font-display text-[18px] leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(p.ppg)}</td>
+                          <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">
                             {p.threePointStats || '-'}
                           </td>
-                          <td className="py-3 text-center font-bold text-bkpk-text-secondary">{p.totalPoints}</td>
+                          <td className="h-11 text-center font-semibold tabular-nums text-bkpk-text-secondary">{p.totalPoints}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -346,41 +339,42 @@ export default function ScoutingPage() {
             <BkpkCard
               title="Ostatnie mecze rywala"
               icon={<History className="h-5 w-5 text-bkpk-primary" />}
-              variant="glass"
+              variant="flat"
               className="h-full"
               overflowVisible
             >
-              <div className="space-y-3">
+              <div className="border-y border-bkpk-border-subtle">
                 {form.map((m, i) => (
                   <div
                     key={i}
-                    className="group flex items-center justify-between rounded-xl border border-bkpk-border-strong bg-bkpk-surface-tint-2 p-3 transition-colors hover:bg-bkpk-surface-tint-4"
+                    className="group flex items-center justify-between gap-3 px-2 py-3 transition-colors even:bg-bkpk-bg hover:bg-bkpk-surface-elevated"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {/* Forma: wygrana pełny kwadrat, porażka kontur — litera zawsze widoczna */}
                       <div
                         className={cn(
-                          'flex h-10 w-10 items-center justify-center rounded-lg border text-sm font-black shadow-lg',
+                          'flex h-10 w-10 shrink-0 items-center justify-center border-[1.5px] font-display text-lg',
                           m.result === 'W'
-                            ? 'border-bkpk-success/30 bg-bkpk-success/20 text-bkpk-success'
-                            : 'border-bkpk-danger/30 bg-bkpk-danger/15 text-bkpk-text-danger-subtle'
+                            ? 'border-bkpk-text-primary bg-bkpk-text-primary text-bkpk-bg'
+                            : 'border-bkpk-text-secondary text-bkpk-text-primary'
                         )}
                       >
                         {m.result === 'W' ? 'Z' : 'P'}
                       </div>
-                      <div className="flex flex-col">
-                        <span className="mb-0.5 text-caption-bold uppercase tracking-widest text-bkpk-text-muted">
+                      <div className="flex flex-col min-w-0">
+                        <span className="label-caps text-[11px] text-bkpk-text-muted">
                           Przeciwnik
                         </span>
-                        <span className="text-body-bold text-bkpk-text-primary transition-colors group-hover:text-bkpk-primary">
+                        <span className="font-semibold text-bkpk-text-primary truncate">
                           vs {m.opponent}
                         </span>
                       </div>
                     </div>
-                    <div className="flex flex-col items-end">
-                      <span className="font-outfit text-lg font-black tracking-tight text-bkpk-text-primary">
+                    <div className="flex flex-col items-end shrink-0">
+                      <span className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
                         {m.score}
                       </span>
-                      <span className="text-xs font-medium text-bkpk-text-muted">{m.date}</span>
+                      <span className="text-xs font-medium text-bkpk-text-muted mt-1 tabular-nums">{m.date}</span>
                     </div>
                   </div>
                 ))}
@@ -389,6 +383,6 @@ export default function ScoutingPage() {
           </motion.div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

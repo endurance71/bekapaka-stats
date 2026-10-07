@@ -3,14 +3,14 @@ import { resolve } from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-/** Logo + manifest only — avoids ETIMEDOUT when public/photos are iCloud placeholders. */
+/** Manifest + PWA icons only — avoids ETIMEDOUT when public/photos are iCloud placeholders. */
 const copyEssentialPublicPlugin = () => ({
   name: 'copy-essential-public',
   closeBundle() {
     const root = resolve(__dirname, 'public');
     const out = resolve(__dirname, 'dist');
     mkdirSync(out, { recursive: true });
-    for (const file of ['logo.png', 'manifest.webmanifest'] as const) {
+    for (const file of ['manifest.webmanifest', 'favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'] as const) {
       const src = resolve(root, file);
       if (existsSync(src)) {
         cpSync(src, resolve(out, file));

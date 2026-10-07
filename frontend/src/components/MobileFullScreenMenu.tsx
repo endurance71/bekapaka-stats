@@ -7,6 +7,8 @@ import { cn } from '../shared/lib/utils';
 import { getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import { BrandMark } from '../shared/ui/BrandMark';
+import { JerseyStripes } from '../shared/ui/JerseyStripes';
 
 /** Must match transition duration in component className */
 const MENU_ANIMATION_MS = 280;
@@ -57,19 +59,19 @@ function MenuProfileSection({
 }: MenuProfileSectionProps) {
     return (
         <section
-            className="mx-4 mt-3 mb-4 shrink-0 rounded-2xl border border-bkpk-border-strong bg-bkpk-surface-tint-1/80 overflow-hidden"
+            className="mx-4 mt-2 mb-2 shrink-0 border-y border-bkpk-border-subtle"
             aria-label="Profil i sezon"
         >
             {user ? (
                 <Link
                     to="/profile"
                     onClick={onClose}
-                    className="flex items-center gap-3 p-3 border-b border-bkpk-border-subtle active:bg-bkpk-surface-tint-2 transition-colors"
+                    className="flex items-center gap-3 py-3 border-b border-bkpk-border-subtle active:bg-bkpk-surface-tint-2 transition-colors"
                 >
                     <div className="relative shrink-0">
-                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-bkpk-border-strong bg-bkpk-surface">
+                        <div className="w-12 h-[60px] overflow-hidden bg-ink-700 chamfer-sm">
                             <img
-                                src={resolvePlayerPhoto(user)}
+                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
@@ -77,15 +79,15 @@ function MenuProfileSection({
                                 alt=""
                             />
                         </div>
-                        <span className="absolute -bottom-0.5 -right-0.5 min-w-[1.25rem] h-5 px-1 rounded-md bg-bkpk-primary text-[10px] font-black text-bkpk-on-primary flex items-center justify-center border border-bkpk-bg">
+                        <span className="absolute -bottom-1 -right-2 min-w-[1.5rem] h-6 px-1 bg-bkpk-primary font-display text-sm leading-none text-bkpk-on-primary flex items-center justify-center">
                             {user.number ?? '—'}
                         </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none mb-0.5">
+                        <p className="label-caps text-[11px] text-bkpk-primary leading-none mb-1">
                             {getPositionLabel(user.position)}
                         </p>
-                        <p className="text-sm font-black font-outfit text-bkpk-text-primary truncate leading-tight">
+                        <p className="font-display text-xl uppercase text-bkpk-text-primary truncate leading-none">
                             {user.firstName} {user.lastName}
                         </p>
                         <p className="text-[11px] text-bkpk-text-muted truncate">@{user.username}</p>
@@ -94,7 +96,7 @@ function MenuProfileSection({
                 </Link>
             ) : null}
 
-            <div className="p-3">
+            <div className="py-3">
                 <SeasonSelector
                     seasons={seasons}
                     seasonId={seasonId}
@@ -103,7 +105,7 @@ function MenuProfileSection({
                     variant="block"
                 />
                 {selectedSeason && !selectedSeason.isActive ? (
-                    <p className="mt-2 text-[10px] font-bold text-bkpk-warning uppercase tracking-widest">
+                    <p className="mt-2 label-caps text-[11px] text-bkpk-warning">
                         Archiwum sezonu
                     </p>
                 ) : null}
@@ -212,6 +214,15 @@ export default function MobileFullScreenMenu({
         };
     }, []);
 
+    useEffect(() => {
+        if (!isMounted) return;
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') handleRequestClose();
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [isMounted, handleRequestClose]);
+
     useOverlayViewportHeight(isMounted);
     usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' });
 
@@ -250,11 +261,11 @@ export default function MobileFullScreenMenu({
                     paddingRight: 'env(safe-area-inset-right, 0px)'
                 }}
             >
-                <header className="relative flex items-center px-4 py-3 shrink-0">
+                <header className="relative flex items-center px-4 py-2 min-h-[56px] shrink-0 border-b border-bkpk-border-subtle">
                     <button
                         type="button"
                         onClick={handleRequestClose}
-                        className="relative z-10 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl bg-bkpk-surface-tint-1/60 border border-bkpk-border-strong text-bkpk-text-primary shrink-0 touch-manipulation"
+                        className="relative z-10 w-11 h-11 min-w-[44px] min-h-[44px] flex items-center justify-center border border-bkpk-border-strong text-bkpk-text-primary shrink-0 touch-manipulation"
                         aria-label="Zamknij menu"
                     >
                         <X className="w-5 h-5" />
@@ -266,23 +277,18 @@ export default function MobileFullScreenMenu({
                         className="absolute inset-x-4 z-[5] flex flex-col items-center justify-center text-center min-w-0 px-12 touch-manipulation"
                         aria-label="Przejdź do pulpitu"
                     >
-                        <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary truncate max-w-full">
-                            BeKaPaKa
-                        </div>
-                        <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">
-                            Centrum statystyk
-                        </div>
+                        <BrandMark size="sm" />
                     </Link>
 
                     {user ? (
                         <Link
                             to="/profile"
                             onClick={handleRequestClose}
-                            className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0"
+                            className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0"
                             aria-label="Mój profil"
                         >
                             <img
-                                src={resolvePlayerPhoto(user)}
+                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
@@ -306,11 +312,10 @@ export default function MobileFullScreenMenu({
                 />
 
                 <nav
-                    className="flex-1 min-h-0 mx-4 mb-4 overflow-y-auto no-scrollbar rounded-2xl border border-bkpk-border-subtle bg-bkpk-surface-tint-1/40 p-1.5 pb-[calc(0.75rem+var(--safe-area-bottom))]"
+                    className="flex-1 min-h-0 mx-4 mb-2 overflow-y-auto no-scrollbar"
                     aria-label="Sekcje aplikacji"
                 >
-                    {links.map((link) => {
-                        const Icon = link.icon;
+                    {links.map((link, index) => {
                         return (
                             <NavLink
                                 key={link.to}
@@ -318,26 +323,23 @@ export default function MobileFullScreenMenu({
                                 onClick={handleRequestClose}
                                 className={({ isActive }) =>
                                     cn(
-                                        'group flex items-center gap-4 px-3 py-3.5 rounded-xl font-bold text-sm tracking-tight transition-all duration-200 min-h-[48px]',
+                                        'group relative flex items-center gap-4 pl-4 pr-2 min-h-[50px] py-1 border-b border-bkpk-border-subtle transition-colors duration-150',
+                                        'before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1',
                                         isActive
-                                            ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25 shadow-[0_0_15px_rgba(236,167,44,0.05)]'
-                                            : 'text-bkpk-text-muted active:bg-bkpk-primary/5 border border-transparent'
+                                            ? 'text-bkpk-text-primary before:bg-bkpk-medal-gold'
+                                            : 'text-bkpk-text-secondary active:bg-bkpk-surface-tint-1 before:bg-transparent'
                                     )
                                 }
                             >
                                 {({ isActive }) => (
                                     <>
-                                        <Icon
-                                            className={cn(
-                                                'w-5 h-5 shrink-0',
-                                                isActive ? 'text-bkpk-primary' : 'text-bkpk-text-muted group-active:text-bkpk-primary'
-                                            )}
-                                            strokeWidth={isActive ? 2.5 : 2}
-                                        />
-                                        <span className="flex-1">{link.label}</span>
-                                        {isActive ? (
-                                            <span className="w-1.5 h-6 rounded-full bg-bkpk-primary shadow-bkpk-glow shrink-0" />
-                                        ) : null}
+                                        <span className="label-caps text-xs text-bkpk-text-muted tabular-nums w-6 shrink-0" aria-hidden>
+                                            {String(index + 1).padStart(2, '0')}
+                                        </span>
+                                        <span className="flex-1 font-display uppercase leading-none text-[clamp(24px,6.6vw,32px)]">
+                                            {link.label}
+                                        </span>
+                                        {isActive ? <span className="sr-only">(aktywna)</span> : null}
                                     </>
                                 )}
                             </NavLink>
@@ -346,12 +348,13 @@ export default function MobileFullScreenMenu({
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="group flex items-center gap-4 w-full px-3 py-3.5 rounded-xl font-bold text-sm tracking-tight transition-all duration-200 min-h-[48px] text-bkpk-text-danger active:bg-bkpk-danger/10 border border-transparent touch-manipulation"
+                        className="group flex items-center gap-3 w-full pl-4 pr-2 mt-2 min-h-[48px] label-caps text-sm text-bkpk-text-danger active:bg-bkpk-surface-tint-1 touch-manipulation"
                     >
                         <LogOut className="w-5 h-5 shrink-0" strokeWidth={2} />
                         <span className="flex-1 text-left">Wyloguj</span>
                     </button>
                 </nav>
+                <JerseyStripes className="shrink-0 px-4 pb-[calc(0.5rem+var(--safe-area-bottom))]" />
             </div>
         </div>,
         document.body

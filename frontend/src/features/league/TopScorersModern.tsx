@@ -7,6 +7,8 @@ import { Trophy, Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
+import SectionHeading from '../../shared/ui/SectionHeading';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 
 interface Scorer {
@@ -136,12 +138,20 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     };
 
     const currentCatInfo = categories.find(c => c.id === activeCategory)!;
-    const CategoryIcon = currentCatInfo.icon;
+
+    // Miejsca 1–3: złoto tylko dla lidera kategorii (wyróżnienie), srebro i brąz jako medale
+    const podiumRankClass = (idx: number) =>
+        cn(
+            'shrink-0 w-11 h-11 flex items-center justify-center text-xl font-display tabular-nums',
+            idx === 0 && 'bg-bkpk-medal-gold text-bkpk-bg',
+            idx === 1 && 'bg-bkpk-medal-silver text-bkpk-bg',
+            idx === 2 && 'bg-bkpk-medal-bronze text-bkpk-bg'
+        );
 
     return (
         <div className="space-y-8">
-            {/* Category Selector Tabs */}
-            <div className="flex flex-wrap gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-full sm:w-fit">
+            {/* Category Selector Tabs — segmenty, aktywny w inwersji */}
+            <div className="flex flex-wrap gap-2 w-full sm:w-fit">
                 {categories.map((cat) => {
                     const Icon = cat.icon;
                     const isActive = activeCategory === cat.id;
@@ -150,13 +160,13 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={cn(
-                                "flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
+                                "inline-flex items-center gap-2 min-h-[44px] px-4 label-caps text-[12px] sm:text-[13px] transition-colors",
                                 isActive
-                                    ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                                    : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
+                                    ? bkpkActivePillClass
+                                    : "border border-bkpk-border-strong text-bkpk-text-secondary hover:text-bkpk-text-primary hover:border-bkpk-text-secondary"
                             )}
                         >
-                            <Icon className={cn("w-3.5 h-3.5", isActive && "text-bkpk-primary")} />
+                            <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
                             {cat.label}
                         </button>
                     );
@@ -166,7 +176,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             {loading ? (
                 <div className="space-y-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-16 bg-bkpk-surface-tint-2 animate-pulse rounded-2xl" />
+                        <div key={i} className="h-16 bg-bkpk-surface-tint-2 animate-pulse" />
                     ))}
                 </div>
             ) : leaders.length === 0 ? (
@@ -174,13 +184,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Top 3 Podium */}
-                    <div className="md:col-span-12 lg:col-span-4 space-y-4 order-1">
-                        <div className="flex items-center gap-2 mb-6">
-                            <CategoryIcon className="w-5 h-5 text-bkpk-primary" />
-                            <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit uppercase tracking-tight">
-                                Liderzy: {currentCatInfo.label}
-                            </h3>
-                        </div>
+                    <div className="md:col-span-12 lg:col-span-4 space-y-3 order-1">
+                        <SectionHeading as="h3" title={`Liderzy: ${currentCatInfo.label}`} className="mb-5" />
 
                         {leaders.slice(0, 3).map((player, idx) => {
                             const isBkpk = player.team?.toLowerCase().includes('bekapaka');
@@ -193,27 +198,22 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                     transition={{ delay: idx * 0.1 }}
                                 >
                                     <BkpkCard
-                                        variant="glass"
+                                        variant="flat"
                                         className={cn(
-                                            "relative overflow-hidden border-bkpk-border-strong group transition-all duration-300",
-                                            idx === 0 && "border-bkpk-warning/30 bg-bkpk-warning/5",
-                                            isBkpk && "border-bkpk-primary/30"
+                                            "relative overflow-hidden group",
+                                            idx === 0 && "border-t-2 border-t-bkpk-medal-gold",
+                                            isBkpk && "bg-[var(--table-own-bg)] shadow-[inset_4px_0_0_var(--c-red-500)]"
                                         )}
                                     >
                                         <div className="relative z-10 flex items-center gap-3 sm:gap-4">
                                             <div
-                                                className={cn(
-                                                    'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-base font-black font-outfit tabular-nums border-2 shadow-lg',
-                                                    idx === 0 && 'bg-bkpk-medal-gold border-bkpk-primary text-black',
-                                                    idx === 1 && 'bg-bkpk-medal-silver border-bkpk-border-strong text-black',
-                                                    idx === 2 && 'bg-bkpk-medal-bronze border-bkpk-warning/60 text-black'
-                                                )}
+                                                className={podiumRankClass(idx)}
                                                 aria-label={`Miejsce ${idx + 1}`}
                                             >
                                                 {idx + 1}
                                             </div>
                                             <div className="relative shrink-0">
-                                                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-bkpk-border-strong bg-bkpk-surface flex items-center justify-center">
+                                                <div className="w-12 h-12 sm:w-14 sm:h-14 overflow-hidden border border-bkpk-border-strong bg-bkpk-bg flex items-center justify-center">
                                                     <img
                                                         src={resolveLeaderPhoto(player)}
                                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
@@ -226,18 +226,21 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             </div>
 
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-base font-bold text-bkpk-text-primary leading-tight truncate">{player.name}</div>
-                                                <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-widest truncate">{player.team}</div>
+                                                <div className="font-display text-lg uppercase text-bkpk-text-primary leading-tight truncate">{player.name}</div>
+                                                <div className="label-caps text-[11px] text-bkpk-text-muted truncate mt-0.5">{player.team}</div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <div className="text-xl font-black font-outfit text-bkpk-text-primary leading-none">{stats.main}</div>
-                                                <div className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest mt-0.5">{stats.label}</div>
-                                                <div className="text-[9px] text-bkpk-text-muted font-semibold mt-0.5">{stats.sub}</div>
+                                                <div className={cn(
+                                                    "text-[28px] font-display tabular-nums leading-none",
+                                                    idx === 0 ? "text-bkpk-medal-gold" : "text-bkpk-text-primary"
+                                                )}>{stats.main}</div>
+                                                <div className="label-caps text-[11px] text-bkpk-text-secondary mt-1">{stats.label}</div>
+                                                <div className="text-[11px] text-bkpk-text-muted font-semibold tabular-nums mt-0.5">{stats.sub}</div>
                                             </div>
                                         </div>
 
                                         {/* Decorative background number */}
-                                        <div className="absolute -bottom-8 -right-4 text-8xl font-black text-white/[0.02] italic pointer-events-none group-hover:text-white/[0.05] transition-colors">
+                                        <div aria-hidden="true" className="absolute -bottom-6 right-2 text-8xl font-display leading-none outline-text text-bkpk-border-subtle pointer-events-none group-hover:text-bkpk-border-strong transition-colors">
                                             {idx + 1}
                                         </div>
                                     </BkpkCard>
@@ -248,7 +251,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
 
                     {/* Rest of the List (4-20) */}
                     <div className="md:col-span-12 lg:col-span-8 order-2">
-                        <BkpkCard variant="glass" padding="none" className="overflow-hidden border-bkpk-border-strong shadow-2xl">
+                        <BkpkCard variant="flat" padding="none" className="overflow-hidden bg-bkpk-bg">
                             {showCards ? (
                             <MobileDataList>
                                 {leaders.slice(3).map((player, index) => {
@@ -262,7 +265,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             title={player.name}
                                             subtitle={player.team}
                                             leading={
-                                                <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-bkpk-border-subtle">
+                                                <div className="w-9 h-9 overflow-hidden shrink-0 border border-bkpk-border-strong">
                                                     <img
                                                         src={resolveLeaderPhoto(player)}
                                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
@@ -274,11 +277,11 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                 </div>
                                             }
                                             highlight={
-                                                <div>
-                                                    <div className="text-xl font-black font-outfit text-bkpk-text-primary tabular-nums">
+                                                <div className="text-right">
+                                                    <div className="text-xl font-display text-bkpk-text-primary tabular-nums leading-none">
                                                         {stats.main}
                                                     </div>
-                                                    <div className="text-[10px] font-bold text-bkpk-primary uppercase">
+                                                    <div className="label-caps text-[11px] text-bkpk-text-secondary mt-1">
                                                         {stats.label}
                                                     </div>
                                                 </div>
@@ -298,26 +301,28 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                 })}
                             </MobileDataList>
                             ) : (
-                            <ScrollableTableShell compact={isNarrow} className="border-0 rounded-none">
-                                <table className="w-full text-sm text-left border-collapse min-w-[520px]">
+                            <ScrollableTableShell compact={isNarrow} className="border-0 bg-bkpk-bg">
+                                <table className="bkpk-table text-[15px] text-left min-w-[520px]">
                                     <thead>
-                                        <tr className="bg-bkpk-surface-tint-2 border-b border-bkpk-border-strong">
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted w-10 sm:w-12 text-center">#</th>
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted sticky left-0 z-10 bg-bkpk-surface border-r border-bkpk-border-strong">Zawodnik</th>
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted whitespace-nowrap">Drużyna</th>
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">M</th>
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center whitespace-nowrap">
+                                        <tr>
+                                            <th className="h-12 px-3 sm:px-5 w-10 sm:w-12 text-center">#</th>
+                                            <th className="h-12 px-3 sm:px-5 text-left sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)]">Zawodnik</th>
+                                            <th className="h-12 px-3 sm:px-5 text-left whitespace-nowrap">Drużyna</th>
+                                            <th className="h-12 px-3 sm:px-5 text-center">M</th>
+                                            <th className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">
                                                 {currentCatInfo.totalLabel}
                                             </th>
-                                            <th className="px-3 py-3 sm:px-6 sm:py-4 text-xs font-bold uppercase tracking-widest text-bkpk-text-muted text-center">
+                                            <th className="h-12 px-3 sm:px-5 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">
                                                 {currentCatInfo.unit}
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-bkpk-border-subtle">
+                                    <tbody>
                                         {leaders.slice(3).map((player, index) => {
                                             const isBkpk = player.team?.toLowerCase().includes('bekapaka');
                                             const stats = getCategoryStats(player, activeCategory);
+                                            // Nieparzyste wiersze: nieprzezroczyste tło pod przyklejoną kolumną
+                                            const isOddRow = index % 2 === 0;
                                             return (
                                                 <motion.tr
                                                     key={player.id}
@@ -325,21 +330,18 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                     animate={{ opacity: 1 }}
                                                     transition={{ delay: index * 0.02 }}
                                                     className={cn(
-                                                        "group transition-all hover:bg-bkpk-surface-tint-2",
-                                                        isBkpk && "bg-bkpk-primary/5 hover:bg-bkpk-primary/10"
+                                                        "transition-colors",
+                                                        isBkpk
+                                                            ? "bkpk-row-highlight"
+                                                            : isOddRow && "[&>*]:bg-bkpk-bg hover:[&>*]:bg-ink-700"
                                                     )}
                                                 >
-                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-bold text-bkpk-text-muted group-hover:text-bkpk-text-secondary transition-colors">
+                                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">
                                                         {index + 4}
                                                     </td>
-                                                    <td className={cn(
-                                                        "px-3 py-2.5 sm:px-6 sm:py-4 font-bold transition-colors sticky left-0 z-10 border-r border-bkpk-border-strong",
-                                                        isBkpk
-                                                            ? "text-bkpk-primary bkpk-row-highlight"
-                                                            : "bg-bkpk-surface group-hover:bg-bkpk-surface-elevated"
-                                                    )}>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-bkpk-border-subtle">
+                                                    <td className="h-12 px-3 sm:px-5 font-semibold sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)] text-bkpk-text-primary">
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-7 h-7 overflow-hidden shrink-0 border border-bkpk-border-strong">
                                                                 <img
                                                                     src={resolveLeaderPhoto(player)}
                                                                     onError={(e) => (e.currentTarget.src = '/photos/default.png')}
@@ -352,10 +354,10 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                             {player.name}
                                                         </div>
                                                     </td>
-                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-bkpk-text-muted text-xs font-semibold max-w-[120px] truncate">{player.team}</td>
-                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary tabular-nums">{player.matchesPlayed ?? player.raw?.mecze_rozegrane ?? 0}</td>
-                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center text-bkpk-text-secondary font-medium tabular-nums">{stats.sub}</td>
-                                                    <td className="px-3 py-2.5 sm:px-6 sm:py-4 text-center font-black text-bkpk-text-primary tabular-nums text-base sm:text-lg bg-bkpk-surface-tint-2">
+                                                    <td className="h-12 px-3 sm:px-5 text-bkpk-text-secondary text-[13px] max-w-[160px] truncate">{player.team}</td>
+                                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">{player.matchesPlayed ?? player.raw?.mecze_rozegrane ?? 0}</td>
+                                                    <td className="h-12 px-3 sm:px-5 text-center text-bkpk-text-secondary tabular-nums">{stats.sub}</td>
+                                                    <td className="h-12 px-3 sm:px-5 text-center font-display text-[19px] leading-none text-bkpk-text-primary tabular-nums">
                                                         {stats.main}
                                                     </td>
                                                 </motion.tr>

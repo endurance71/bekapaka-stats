@@ -5,6 +5,7 @@ import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { Activity, Database, Calendar } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
+import PageHeader from '../shared/ui/PageHeader';
 
 // 2026 UI Components
 import DashboardLayout from '../features/dashboard/DashboardLayout';
@@ -158,13 +159,12 @@ export default function Dashboard() {
   return (
     <DashboardLayout
       header={
-        <>
-          <h1 className="text-3xl font-bold text-bkpk-text-primary font-outfit">Pulpit</h1>
-          <div className="flex items-center gap-2">
-            <p className="text-bkpk-text-secondary text-sm">Witamy w centrum dowodzenia BeKaPaKa 2026</p>
-            <span className="text-xs bg-bkpk-primary/20 text-bkpk-primary px-2 py-0.5 rounded-full font-bold border border-bkpk-primary/30">v3.1</span>
-          </div>
-        </>
+        <PageHeader
+          kicker="Centrum drużyny"
+          title="Pulpit"
+          description="Witamy w centrum dowodzenia BeKaPaKa 2026"
+          actions={<span className="status-flag text-bkpk-text-secondary">v3.1</span>}
+        />
       }
       hero={
         <>
@@ -240,9 +240,9 @@ export default function Dashboard() {
             }
             if (!loading && games.some(g => g.result)) {
               return (
-                <div className="p-2 border border-dashed border-bkpk-border-strong rounded-bkpk-lg bg-bkpk-surface-tint-2 flex items-center justify-center gap-3">
-                  <Database className="w-4 h-4 text-bkpk-text-muted" />
-                  <span className="text-sm font-bold text-bkpk-text-muted uppercase tracking-widest">Brak danych o dynamice meczu</span>
+                <div className="p-3 border border-dashed border-bkpk-border-strong bg-bkpk-surface flex items-center justify-center gap-3">
+                  <Database className="w-4 h-4 text-bkpk-text-muted" aria-hidden="true" />
+                  <span className="label-caps text-sm text-bkpk-text-muted">Brak danych o dynamice meczu</span>
                 </div>
               );
             }
@@ -264,11 +264,11 @@ export default function Dashboard() {
               homeAway={nextMatch.homeTeam?.toLowerCase().includes('bekapaka') ? 'Dom' : 'Wyjazd'}
             />
           ) : !loading && (
-            <div className="p-8 bg-bkpk-surface-tint-2 border-2 border-dashed border-bkpk-border-strong rounded-3xl text-center space-y-4">
-              <Calendar className="w-8 h-8 text-bkpk-text-muted mx-auto" />
+            <div className="p-8 bg-bkpk-surface border border-dashed border-bkpk-border-strong text-center space-y-4">
+              <Calendar className="w-8 h-8 text-bkpk-text-muted mx-auto" aria-hidden="true" />
               <div className="space-y-1">
-                <p className="font-bold text-bkpk-text-primary uppercase tracking-tight">Brak zaplanowanych meczów</p>
-                <p className="text-xs text-bkpk-text-muted">Uruchom scraper w Administracji, aby pobrać aktualny terminarz.</p>
+                <p className="font-display text-xl text-bkpk-text-primary uppercase">Brak zaplanowanych meczów</p>
+                <p className="text-sm text-bkpk-text-muted">Uruchom scraper w Administracji, aby pobrać aktualny terminarz.</p>
               </div>
             </div>
           )}

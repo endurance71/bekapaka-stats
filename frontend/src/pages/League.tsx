@@ -6,6 +6,8 @@ import TopScorersModern from '../features/league/TopScorersModern';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { Trophy, Calendar, Target } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
 
 type Tab = 'table' | 'schedule' | 'scorers';
 
@@ -14,81 +16,65 @@ export default function League() {
     const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
     const tabs = [
-        { id: 'table' as Tab, label: 'Tabela', icon: Trophy, color: 'text-bkpk-warning' },
-        { id: 'schedule' as Tab, label: 'Terminarz', icon: Calendar, color: 'text-bkpk-primary' },
-        { id: 'scorers' as Tab, label: 'Liderzy', icon: Target, color: 'text-bkpk-success' },
+        { id: 'table' as Tab, label: 'Tabela', icon: Trophy },
+        { id: 'schedule' as Tab, label: 'Terminarz', icon: Calendar },
+        { id: 'scorers' as Tab, label: 'Liderzy', icon: Target },
     ];
 
     return (
-        <div className="bg-bkpk-bg p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1400px] mx-auto space-y-12">
+        <PageContainer>
+            <PageHeader
+                title={<>Liga KALK <span className="text-bkpk-primary">Dywizja II</span></>}
+                description={
+                    selectedSeason
+                        ? `Oficjalna tabela i terminarz — ${selectedSeason.label}.`
+                        : 'Oficjalna tabela i terminarz rozgrywek.'
+                }
+            />
 
-                {/* Header Section */}
-                <header className="space-y-2">
-                    <div className="space-y-2">
-                        <motion.h1
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-4xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
+            {/* Zakładki — jak `.tabs` na bekapaka.pl: wersaliki, 3 px czerwone podkreślenie aktywnej */}
+            <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={cn(
+                                "relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-[13px] sm:text-sm transition-colors duration-200",
+                                "after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200",
+                                isActive
+                                    ? "text-bkpk-text-primary after:scale-x-100"
+                                    : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
+                            )}
                         >
-                            Liga KALK <span className="text-bkpk-primary">Dywizja II</span>
-                        </motion.h1>
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.2 }}
-                            className="text-bkpk-text-muted text-lg max-w-xl"
-                        >
-                            {selectedSeason
-                                ? `Oficjalna tabela i terminarz — ${selectedSeason.label}.`
-                                : 'Oficjalna tabela i terminarz rozgrywek.'}
-                        </motion.p>
-                    </div>
-                </header>
-
-                {/* Tab Navigation */}
-                <div className="flex overflow-x-auto no-scrollbar max-w-full justify-start sm:justify-start gap-2 p-1 bg-bkpk-glass border border-bkpk-glass-border rounded-xl w-full sm:w-fit shrink-0">
-                    {tabs.map((tab) => {
-                        const Icon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={cn(
-                                    "flex items-center justify-center gap-2 px-4 py-2.5 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 font-bold text-xs sm:text-sm uppercase tracking-wider shrink-0",
-                                    isActive
-                                        ? "bg-bkpk-surface-tint-4 text-bkpk-text-primary shadow-bkpk-glow"
-                                        : "text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2"
-                                )}
-                            >
-                                <Icon className={cn("w-4 h-4", isActive ? tab.color : "")} />
-                                {tab.label}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* Content Area */}
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
-                        className="min-h-[600px]"
-                    >
-                        {activeTab === 'table' && <LeagueTableModern seasonId={seasonId} />}
-                        {activeTab === 'schedule' && (
-                            <div className="bg-bkpk-glass border border-bkpk-glass-border rounded-bkpk-lg p-1 overflow-hidden">
-                                <LeagueSchedule seasonId={seasonId} />
-                            </div>
-                        )}
-                        {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
-                    </motion.div>
-                </AnimatePresence>
+                            <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                            {tab.label}
+                        </button>
+                    );
+                })}
             </div>
-        </div>
+
+            {/* Content Area */}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    className="min-h-[600px]"
+                >
+                    {activeTab === 'table' && <LeagueTableModern seasonId={seasonId} />}
+                    {activeTab === 'schedule' && (
+                        <div className="border-t border-bkpk-border-subtle bg-bkpk-bg">
+                            <LeagueSchedule seasonId={seasonId} />
+                        </div>
+                    )}
+                    {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
+                </motion.div>
+            </AnimatePresence>
+        </PageContainer>
     );
 }

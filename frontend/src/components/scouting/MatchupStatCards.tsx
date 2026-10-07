@@ -35,42 +35,44 @@ export function MatchupStatCards({ opponent, bekapaka, compact = false }: Matchu
       {METRICS.map((metric) => {
         const oppVal = opponent[metric.key];
         const bkVal = bekapaka[metric.key];
-        const oppBetter = metric.invertBetter ? oppVal < bkVal : oppVal > bkVal;
-        const bkBetter = metric.invertBetter ? bkVal < oppVal : bkVal > oppVal;
+        const invertBetter = 'invertBetter' in metric && metric.invertBetter;
+        const oppBetter = invertBetter ? oppVal < bkVal : oppVal > bkVal;
+        const bkBetter = invertBetter ? bkVal < oppVal : bkVal > oppVal;
 
         return (
           <div
             key={metric.key}
             className={cn(
-              'rounded-xl border border-bkpk-border-strong bg-bkpk-surface-tint-2',
-              compact ? 'p-2' : 'p-2.5 sm:p-3'
+              'border border-bkpk-border-subtle bg-bkpk-bg',
+              compact ? 'p-2.5' : 'p-3 sm:p-3.5'
             )}
           >
             <div
               className={cn(
-                'text-center font-bold uppercase tracking-widest text-bkpk-text-muted',
-                compact ? 'mb-1 text-[9px]' : 'mb-1.5 text-[10px]'
+                'label-caps text-center text-[11px] text-bkpk-text-muted',
+                compact ? 'mb-1.5' : 'mb-2'
               )}
             >
               {metric.label}
             </div>
             <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+              {/* BeKaPaKa zawsze po lewej; przewaga: linia 2 px u dołu */}
               <div
                 className={cn(
-                  'rounded-lg border text-center',
-                  compact ? 'px-1.5 py-1' : 'px-2 py-1.5',
+                  'border text-center',
+                  compact ? 'px-1.5 py-1.5' : 'px-2 py-2',
                   bkBetter
-                    ? 'border-bkpk-primary/40 bg-bkpk-primary/10'
-                    : 'border-bkpk-border-strong bg-bkpk-surface-tint-3'
+                    ? 'border-bkpk-primary border-b-2 bg-[var(--table-own-bg)]'
+                    : 'border-bkpk-border-subtle bg-bkpk-surface'
                 )}
               >
-                <div className="truncate text-[9px] font-bold text-bkpk-text-muted sm:text-[10px]">
+                <div className="truncate text-[11px] font-semibold text-bkpk-text-muted">
                   {bekapaka.name}
                 </div>
                 <div
                   className={cn(
-                    'font-black tabular-nums text-bkpk-primary',
-                    compact ? 'text-base leading-tight' : 'text-lg'
+                    'font-display tabular-nums text-bkpk-text-primary mt-0.5',
+                    compact ? 'text-xl leading-none' : 'text-2xl leading-none'
                   )}
                 >
                   {metric.format(bkVal)}
@@ -78,20 +80,20 @@ export function MatchupStatCards({ opponent, bekapaka, compact = false }: Matchu
               </div>
               <div
                 className={cn(
-                  'rounded-lg border text-center',
-                  compact ? 'px-1.5 py-1' : 'px-2 py-1.5',
+                  'border text-center',
+                  compact ? 'px-1.5 py-1.5' : 'px-2 py-2',
                   oppBetter
-                    ? 'border-bkpk-danger/40 bg-bkpk-danger/10'
-                    : 'border-bkpk-border-strong bg-bkpk-surface-tint-3'
+                    ? 'border-bkpk-text-secondary border-b-2 bg-bkpk-surface-elevated'
+                    : 'border-bkpk-border-subtle bg-bkpk-surface'
                 )}
               >
-                <div className="truncate text-[9px] font-bold text-bkpk-text-muted sm:text-[10px]">
+                <div className="truncate text-[11px] font-semibold text-bkpk-text-muted">
                   {opponent.name}
                 </div>
                 <div
                   className={cn(
-                    'font-black tabular-nums text-bkpk-text-primary',
-                    compact ? 'text-base leading-tight' : 'text-lg'
+                    'font-display tabular-nums text-bkpk-text-secondary mt-0.5',
+                    compact ? 'text-xl leading-none' : 'text-2xl leading-none'
                   )}
                 >
                   {metric.format(oppVal)}
