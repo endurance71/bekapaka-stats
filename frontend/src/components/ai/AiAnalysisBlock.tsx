@@ -11,9 +11,9 @@ import { cn } from '../../shared/lib/utils';
 
 const PROSE_CLASSES = cn(
   'prose prose-invert max-w-none',
-  'prose-headings:font-display prose-headings:font-black prose-headings:text-bkpk-text-primary',
+  'prose-headings:text-bkpk-text-primary',
   'prose-p:text-bkpk-text-secondary prose-li:text-bkpk-text-secondary',
-  'prose-strong:text-bkpk-primary',
+  'prose-strong:text-bkpk-text-primary',
   'prose-table:text-bkpk-text-secondary prose-th:text-bkpk-text-primary',
   'prose-headings:mt-5 prose-headings:mb-3 prose-p:leading-relaxed prose-li:my-1'
 );
@@ -221,11 +221,11 @@ export default function AiAnalysisBlock({
 
   return (
     <>
-      <BkpkCard variant="glass" className="border-bkpk-primary/20" padding="none">
+      <BkpkCard variant="flat" className="border-t-2 border-t-bkpk-primary" padding="none">
         <div
           className={cn(
             'p-4 sm:p-5',
-            (loading && !hasContent) || (!hasContent && !loading) ? 'border-b border-bkpk-border-strong/60' : ''
+            (loading && !hasContent) || (!hasContent && !loading) ? 'border-b border-bkpk-border-subtle' : ''
           )}
         >
           <div
@@ -235,22 +235,22 @@ export default function AiAnalysisBlock({
             )}
           >
             <div className="flex min-w-0 items-start gap-3">
-              <div className="shrink-0 rounded-xl border border-bkpk-primary/20 bg-bkpk-primary/10 p-2.5">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-bkpk-border-strong">
                 <Bot className="h-5 w-5 text-bkpk-primary" aria-hidden />
               </div>
               <div className="min-w-0">
-                <h3 className="font-display text-base font-black leading-tight tracking-tight text-bkpk-text-primary sm:text-lg">
+                <h3 className="text-[20px] leading-tight text-bkpk-text-primary sm:text-[24px]">
                   {title}
                 </h3>
                 {metaLine ? (
                   <p className="mt-1 text-xs font-medium text-bkpk-text-secondary">{metaLine}</p>
                 ) : (
-                  <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-bkpk-text-muted">
+                  <p className="label-caps mt-1 text-[11px] text-bkpk-text-muted">
                     {hasContent ? 'Raport dostępny' : 'Brak raportu'}
                   </p>
                 )}
                 {staleHint && hasContent ? (
-                  <p className="mt-1.5 text-[11px] font-semibold leading-snug text-bkpk-warning">{staleHint}</p>
+                  <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-danger">{staleHint}</p>
                 ) : null}
               </div>
             </div>
@@ -268,7 +268,7 @@ export default function AiAnalysisBlock({
                   onClick={handleOpenModal}
                   disabled={loading}
                   className={cn(
-                    'min-h-9 font-black uppercase tracking-widest shadow-bkpk-primary !py-2 text-xs',
+                    'min-h-[44px] text-[13px]',
                     compactActions && 'flex-1'
                   )}
                   aria-haspopup="dialog"
@@ -284,7 +284,7 @@ export default function AiAnalysisBlock({
                   size="sm"
                   onClick={() => onGenerate(false)}
                   disabled={loading}
-                  className={cn('min-h-9 !py-2', compactActions && hasContent && 'shrink-0 px-3')}
+                  className={cn(compactActions && hasContent && 'shrink-0 px-3')}
                 >
                   {loading ? (
                     <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden />
@@ -301,7 +301,7 @@ export default function AiAnalysisBlock({
                 type="button"
                 onClick={() => onGenerate(true)}
                 disabled={loading}
-                className="self-start text-left text-xs font-medium text-bkpk-text-secondary underline-offset-2 hover:text-bkpk-text-primary hover:underline disabled:opacity-50"
+                className="self-start min-h-[44px] text-left text-sm font-medium text-bkpk-text-secondary underline-offset-4 hover:text-bkpk-text-primary hover:underline disabled:opacity-50"
               >
                 Wymuś ponowną generację
               </button>
@@ -311,10 +311,10 @@ export default function AiAnalysisBlock({
 
         {loading && !hasContent ? (
           <div className="p-4 sm:p-5 space-y-3" aria-busy="true" aria-label="Generowanie analizy">
-            <div className="h-4 w-3/4 rounded-lg bg-bkpk-surface-tint-3 animate-pulse" />
-            <div className="h-3 w-full rounded-lg bg-bkpk-surface-tint-2 animate-pulse" />
-            <div className="h-3 w-5/6 rounded-lg bg-bkpk-surface-tint-2 animate-pulse" />
-            <div className="h-3 w-2/3 rounded-lg bg-bkpk-surface-tint-2 animate-pulse" />
+            <div className="h-4 w-3/4 bg-bkpk-surface-tint-3 animate-pulse" />
+            <div className="h-3 w-full bg-bkpk-surface-tint-2 animate-pulse" />
+            <div className="h-3 w-5/6 bg-bkpk-surface-tint-2 animate-pulse" />
+            <div className="h-3 w-2/3 bg-bkpk-surface-tint-2 animate-pulse" />
           </div>
         ) : null}
 
@@ -339,7 +339,7 @@ export default function AiAnalysisBlock({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute left-0 right-0 overlay-viewport-fill bg-bkpk-overlay-strong backdrop-blur-md max-sm:top-0 sm:inset-0"
+                    className="absolute left-0 right-0 overlay-viewport-fill bg-bkpk-overlay-strong max-sm:top-0 sm:inset-0"
                     aria-label="Zamknij analizę"
                     onClick={() => setModalOpen(false)}
                   />
@@ -354,23 +354,23 @@ export default function AiAnalysisBlock({
                     transition={{ type: 'spring', damping: 28, stiffness: 320 }}
                     className={cn(
                       'relative z-[201] flex w-full max-w-3xl min-h-0 flex-col border-0 overflow-hidden',
-                      'bg-bkpk-surface-elevated shadow-2xl shadow-black/50',
+                      'bg-bkpk-surface shadow-2xl sm:border sm:border-bkpk-border-strong sm:border-t-2 sm:border-t-bkpk-primary',
                       'fixed inset-x-0 bottom-0 top-0 sm:static sm:inset-auto',
                       'min-h-[100lvh] max-sm:h-[var(--overlay-vh)] max-sm:min-h-[var(--overlay-vh)] max-sm:max-h-[var(--overlay-vh)]',
-                      'rounded-t-2xl rounded-b-none sm:rounded-2xl sm:mx-auto',
+                      'sm:mx-auto',
                       'sm:h-auto sm:min-h-0 sm:max-h-[min(85dvh,calc(var(--overlay-vh,100dvh)-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))]'
                     )}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="flex items-start justify-between gap-3 border-b border-bkpk-border-strong bg-bkpk-surface-elevated px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top,0px))] sm:px-5 sm:pb-5 sm:pt-5 shrink-0">
+                    <div className="flex items-start justify-between gap-3 border-b border-bkpk-border-strong bg-bkpk-surface px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top,0px))] sm:px-5 sm:pb-5 sm:pt-5 shrink-0">
                       <div className="flex items-start gap-3 min-w-0">
-                        <div className="p-2 rounded-xl bg-bkpk-primary/10 border border-bkpk-primary/20 shrink-0">
+                        <div className="flex h-11 w-11 items-center justify-center border border-bkpk-border-strong shrink-0">
                           <Bot className="w-5 h-5 text-bkpk-primary" aria-hidden />
                         </div>
                         <div className="min-w-0">
                           <h2
                             id="ai-analysis-modal-title"
-                            className="text-lg font-black text-bkpk-text-primary font-display tracking-tight leading-tight"
+                            className="text-2xl sm:text-[28px] text-bkpk-text-primary leading-none"
                           >
                             {title}
                           </h2>
@@ -383,7 +383,7 @@ export default function AiAnalysisBlock({
                         ref={closeButtonRef}
                         type="button"
                         onClick={() => setModalOpen(false)}
-                        className="p-2 -mr-1 rounded-xl text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 transition-colors shrink-0"
+                        className="flex h-11 w-11 items-center justify-center border border-bkpk-border-strong text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-text-primary transition-colors shrink-0"
                         aria-label="Zamknij"
                       >
                         <X className="w-5 h-5" aria-hidden />

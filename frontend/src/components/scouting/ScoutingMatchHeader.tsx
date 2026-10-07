@@ -23,27 +23,40 @@ function TeamColumn({
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex min-w-0 flex-col items-center text-center"
+      className={cn(
+        'flex min-w-0 flex-col gap-3',
+        variant === 'home' ? 'items-start text-left' : 'items-end text-right'
+      )}
     >
       <div
         className={cn(
-          'flex h-14 w-14 shrink-0 items-center justify-center rounded-full border text-xl font-black sm:h-16 sm:w-16 sm:text-2xl md:h-20 md:w-20 md:text-3xl',
+          'flex h-12 w-12 shrink-0 items-center justify-center border-[1.5px] font-display text-2xl sm:h-14 sm:w-14 sm:text-[28px] md:h-16 md:w-16 md:text-[32px]',
           variant === 'home'
-            ? 'border-bkpk-primary/30 bg-bkpk-surface-tint-2 text-bkpk-primary'
-            : 'border-bkpk-border-strong bg-bkpk-surface-tint-2 text-bkpk-text-primary'
+            ? 'border-bkpk-primary bg-bkpk-primary text-bkpk-on-primary'
+            : 'border-bkpk-border-strong text-bkpk-text-primary'
         )}
       >
         {team.name.charAt(0)}
       </div>
-      <h1 className="mt-2 line-clamp-2 w-full px-0.5 font-display text-xs font-black leading-tight sm:text-sm md:text-lg">
+      <h2
+        className={cn(
+          'line-clamp-2 w-full font-display text-xl leading-[0.95] uppercase sm:text-2xl md:text-[32px]',
+          variant === 'home' ? 'text-bkpk-text-primary' : 'text-bkpk-text-secondary'
+        )}
+      >
         {team.name}
-      </h1>
-      <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1">
-        <span className="rounded-full border border-bkpk-border-strong bg-bkpk-surface-tint-4 px-2 py-0.5 text-[10px] font-bold tabular-nums text-bkpk-text-secondary">
+      </h2>
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-2',
+          variant === 'home' ? 'justify-start' : 'justify-end'
+        )}
+      >
+        <span className="status-flag tabular-nums text-bkpk-text-secondary">
           {team.record}
         </span>
         {team.rank ? (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-bkpk-text-muted">
+          <span className="label-caps text-[11px] text-bkpk-text-muted">
             {team.rank}. miejsce
           </span>
         ) : null}
@@ -53,16 +66,13 @@ function TeamColumn({
 }
 
 export function ScoutingMatchHeader({ bekapaka, opponent }: ScoutingMatchHeaderProps) {
+  // BeKaPaKa zawsze po lewej (Brandbook 2.0) — płaski panel z linią zamiast poświaty
   return (
-    <div className="relative flex flex-col items-center gap-4">
-      <span className="rounded-full border border-bkpk-primary/25 bg-bkpk-primary/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-bkpk-primary">
-        Scouting
-      </span>
-
-      <div className="grid w-full max-w-xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 md:max-w-2xl">
+    <div className="relative border border-bkpk-border-subtle bg-bkpk-surface px-4 py-5 sm:px-6 sm:py-6 md:px-8">
+      <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 sm:gap-6">
         <TeamColumn team={bekapaka} variant="home" />
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-bkpk-border-strong bg-bkpk-navy-light/80 font-display text-xs font-black uppercase tracking-wider text-bkpk-text-muted sm:h-11 sm:w-11 sm:text-sm"
+          className="flex h-11 w-11 shrink-0 items-center justify-center border border-bkpk-border-strong font-display text-sm uppercase text-bkpk-text-muted sm:h-12 sm:w-12 sm:text-base"
           aria-hidden
         >
           VS

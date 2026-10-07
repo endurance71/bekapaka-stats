@@ -27,7 +27,7 @@ export function MatchupComparison({ opponent, bekapaka }: MatchupComparisonProps
       <BkpkCard
         title="Porównanie drużyn"
         icon={<Crosshair className="h-5 w-5 text-bkpk-primary" />}
-        variant="glass"
+        variant="flat"
         overflowVisible
       >
         <MatchupStatCards opponent={opponent} bekapaka={bekapaka} />
