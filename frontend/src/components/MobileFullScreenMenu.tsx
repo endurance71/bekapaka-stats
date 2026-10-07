@@ -312,7 +312,7 @@ export default function MobileFullScreenMenu({
                 />
 
                 <nav
-                    className="flex-1 min-h-0 mx-4 mb-2 overflow-y-auto no-scrollbar pb-[calc(0.75rem+var(--safe-area-bottom))]"
+                    className="flex-1 min-h-0 mx-4 mb-2 overflow-y-auto no-scrollbar"
                     aria-label="Sekcje aplikacji"
                 >
                     {links.map((link, index) => {
@@ -323,8 +323,8 @@ export default function MobileFullScreenMenu({
                                 onClick={handleRequestClose}
                                 className={({ isActive }) =>
                                     cn(
-                                        'group relative flex items-baseline gap-4 pl-4 pr-2 min-h-[60px] py-2 border-b border-bkpk-border-subtle transition-colors duration-150',
-                                        'before:absolute before:left-0 before:top-3 before:bottom-3 before:w-1',
+                                        'group relative flex items-center gap-4 pl-4 pr-2 min-h-[50px] py-1 border-b border-bkpk-border-subtle transition-colors duration-150',
+                                        'before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-1',
                                         isActive
                                             ? 'text-bkpk-text-primary before:bg-bkpk-medal-gold'
                                             : 'text-bkpk-text-secondary active:bg-bkpk-surface-tint-1 before:bg-transparent'
@@ -336,7 +336,7 @@ export default function MobileFullScreenMenu({
                                         <span className="label-caps text-xs text-bkpk-text-muted tabular-nums w-6 shrink-0" aria-hidden>
                                             {String(index + 1).padStart(2, '0')}
                                         </span>
-                                        <span className="flex-1 font-display uppercase leading-none text-[clamp(28px,8vw,40px)] self-center">
+                                        <span className="flex-1 font-display uppercase leading-none text-[clamp(24px,6.6vw,32px)]">
                                             {link.label}
                                         </span>
                                         {isActive ? <span className="sr-only">(aktywna)</span> : null}
@@ -348,13 +348,13 @@ export default function MobileFullScreenMenu({
                     <button
                         type="button"
                         onClick={handleLogout}
-                        className="group flex items-center gap-3 w-full pl-4 pr-2 mt-4 min-h-[48px] label-caps text-sm text-bkpk-text-danger active:bg-bkpk-surface-tint-1 touch-manipulation"
+                        className="group flex items-center gap-3 w-full pl-4 pr-2 mt-2 min-h-[48px] label-caps text-sm text-bkpk-text-danger active:bg-bkpk-surface-tint-1 touch-manipulation"
                     >
                         <LogOut className="w-5 h-5 shrink-0" strokeWidth={2} />
                         <span className="flex-1 text-left">Wyloguj</span>
                     </button>
                 </nav>
-                <JerseyStripes className="shrink-0 px-4 pb-[calc(0.75rem+var(--safe-area-bottom))]" />
+                <JerseyStripes className="shrink-0 px-4 pb-[calc(0.5rem+var(--safe-area-bottom))]" />
             </div>
         </div>,
         document.body
