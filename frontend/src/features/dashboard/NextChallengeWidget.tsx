@@ -29,7 +29,7 @@ export function NextChallengeWidget({
                 <div className="flex justify-between items-start">
                     <div className="flex flex-col">
                         <span className="text-bkpk-primary text-xs font-bold uppercase tracking-[0.2em]">Następny Mecz</span>
-                        <h3 className="text-2xl font-bold font-outfit mt-1 group-hover:text-bkpk-primary transition-colors">
+                        <h3 className="text-2xl font-bold font-display mt-1 group-hover:text-bkpk-primary transition-colors">
                             {opponent}
                         </h3>
                     </div>

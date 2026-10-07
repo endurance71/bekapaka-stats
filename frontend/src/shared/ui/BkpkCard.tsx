@@ -77,7 +77,7 @@ export function BkpkCard({
             {(title || icon) && (
                 <div className="flex items-center gap-2.5 sm:gap-3 mb-3.5 sm:mb-6 pb-2.5 sm:pb-4 border-b border-bkpk-border-strong">
                     {icon && <div className="p-1.5 sm:p-2 rounded-xl bg-bkpk-surface-tint-1 text-bkpk-primary">{icon}</div>}
-                    {title && <h2 className="font-outfit text-base sm:text-lg md:text-h3 text-bkpk-text-primary tracking-tight">{title}</h2>}
+                    {title && <h2 className="font-display text-base sm:text-lg md:text-h3 text-bkpk-text-primary tracking-tight">{title}</h2>}
                 </div>
             )}
             {children}

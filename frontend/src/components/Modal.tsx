@@ -108,7 +108,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center gap-3 border-b border-bkpk-border-strong bg-bkpk-surface shrink-0 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:p-6">
-                    <h2 id={titleId} className="min-w-0 text-lg sm:text-xl font-bold text-bkpk-text-primary font-outfit leading-tight">{title}</h2>
+                    <h2 id={titleId} className="min-w-0 text-lg sm:text-xl font-bold text-bkpk-text-primary font-display leading-tight">{title}</h2>
                     <button
                         type="button"
                         style={{ touchAction: 'manipulation' }}

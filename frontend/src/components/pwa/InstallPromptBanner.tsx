@@ -76,7 +76,7 @@ export function InstallPromptBanner() {
               <img src="/logo.png" alt="" className="w-full h-full object-contain" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-outfit font-black text-xs sm:text-sm text-bkpk-text-primary flex items-center gap-1.5">
+              <h4 className="font-display font-black text-xs sm:text-sm text-bkpk-text-primary flex items-center gap-1.5">
                 <span>Zainstaluj BeKaPaKa</span>
                 <Smartphone className="w-3.5 h-3.5 text-bkpk-primary" />
               </h4>

@@ -10,7 +10,7 @@ const nextConfig = {
   distDir: process.env.SITE_BUILD_DIR || '.next',
   output: 'standalone',
   images: { formats: ['image/avif', 'image/webp'], imageSizes: [16, 32, 48, 64, 96, 128, 192, 224, 256, 320, 352, 384], deviceSizes: [480, 560, 640, 768, 1024, 1280, 1600, 1920, 2400], remotePatterns: [{ protocol: 'https', hostname: 'cms.bekapaka.pl' }, { protocol: 'https', hostname: 'www.kalk-koszalin.com' }, { protocol: 'http', hostname: 'localhost', port: '1337' }] },
-  /* Monorepo: importy z ../packages/design-tokens */
+  /* Monorepo: importy z ../packages (digital-design, match-presentation, safari-overlay) */
   turbopack: {
     root: repoRoot
   },

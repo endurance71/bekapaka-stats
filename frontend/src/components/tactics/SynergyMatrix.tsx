@@ -80,7 +80,7 @@ export default function SynergyMatrix({
             </h4>
             <div className="flex items-baseline gap-3 mt-3">
               <div>
-                <span className="text-2xl font-black text-bkpk-primary font-outfit">
+                <span className="text-2xl font-black text-bkpk-primary font-display">
                   {bestOverallDuo.synergyScore}
                 </span>
                 <span className="text-[10px] text-bkpk-text-muted uppercase block font-medium">Index Synergii</span>
@@ -109,7 +109,7 @@ export default function SynergyMatrix({
             </h4>
             <div className="flex items-baseline gap-3 mt-3">
               <div>
-                <span className="text-2xl font-black text-amber-400 font-outfit">
+                <span className="text-2xl font-black text-amber-400 font-display">
                   {bestOffensivePair.avgCombinedPpg}
                 </span>
                 <span className="text-[10px] text-bkpk-text-muted uppercase block font-medium">Średnio PTS razem</span>
@@ -138,7 +138,7 @@ export default function SynergyMatrix({
             </h4>
             <div className="flex items-baseline gap-3 mt-3">
               <div>
-                <span className="text-2xl font-black text-emerald-400 font-outfit">
+                <span className="text-2xl font-black text-emerald-400 font-display">
                   {bestDefensivePair.avgPlusMinus > 0 ? `+${bestDefensivePair.avgPlusMinus}` : bestDefensivePair.avgPlusMinus}
                 </span>
                 <span className="text-[10px] text-bkpk-text-muted uppercase block font-medium">Średni Plus/Minus</span>
@@ -215,12 +215,12 @@ export default function SynergyMatrix({
                   {duo.gamesTogether}
                 </div>
 
-                <div className="col-span-2 text-center text-xs font-bold text-amber-400 font-outfit">
+                <div className="col-span-2 text-center text-xs font-bold text-amber-400 font-display">
                   {duo.avgCombinedPpg} <span className="text-[10px] text-bkpk-text-muted font-normal">PPG</span>
                 </div>
 
                 <div className="col-span-2 sm:col-span-3 text-right">
-                  <span className="text-xs font-black font-outfit text-bkpk-primary block">
+                  <span className="text-xs font-black font-display text-bkpk-primary block">
                     {duo.synergyScore} pkt
                   </span>
                   <span

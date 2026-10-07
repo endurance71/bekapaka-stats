@@ -177,7 +177,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                     <div className="md:col-span-12 lg:col-span-4 space-y-4 order-1">
                         <div className="flex items-center gap-2 mb-6">
                             <CategoryIcon className="w-5 h-5 text-bkpk-primary" />
-                            <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit uppercase tracking-tight">
+                            <h3 className="text-xl font-bold text-bkpk-text-primary font-display uppercase tracking-tight">
                                 Liderzy: {currentCatInfo.label}
                             </h3>
                         </div>
@@ -203,7 +203,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                         <div className="relative z-10 flex items-center gap-3 sm:gap-4">
                                             <div
                                                 className={cn(
-                                                    'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-base font-black font-outfit tabular-nums border-2 shadow-lg',
+                                                    'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-base font-black font-display tabular-nums border-2 shadow-lg',
                                                     idx === 0 && 'bg-bkpk-medal-gold border-bkpk-primary text-black',
                                                     idx === 1 && 'bg-bkpk-medal-silver border-bkpk-border-strong text-black',
                                                     idx === 2 && 'bg-bkpk-medal-bronze border-bkpk-warning/60 text-black'
@@ -230,7 +230,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                 <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-widest truncate">{player.team}</div>
                                             </div>
                                             <div className="text-right shrink-0">
-                                                <div className="text-xl font-black font-outfit text-bkpk-text-primary leading-none">{stats.main}</div>
+                                                <div className="text-xl font-black font-display text-bkpk-text-primary leading-none">{stats.main}</div>
                                                 <div className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest mt-0.5">{stats.label}</div>
                                                 <div className="text-[9px] text-bkpk-text-muted font-semibold mt-0.5">{stats.sub}</div>
                                             </div>
@@ -275,7 +275,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             }
                                             highlight={
                                                 <div>
-                                                    <div className="text-xl font-black font-outfit text-bkpk-text-primary tabular-nums">
+                                                    <div className="text-xl font-black font-display text-bkpk-text-primary tabular-nums">
                                                         {stats.main}
                                                     </div>
                                                     <div className="text-[10px] font-bold text-bkpk-primary uppercase">

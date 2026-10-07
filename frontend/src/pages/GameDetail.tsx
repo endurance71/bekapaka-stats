@@ -107,14 +107,14 @@ export default function GameDetail() {
               <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-primary/20 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-primary/30 shrink-0">
                 <span className="text-base md:text-2xl font-bold text-bkpk-primary">BK</span>
               </div>
-              <h2 className="text-xs sm:text-base md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-right">
+              <h2 className="text-xs sm:text-base md:text-3xl font-black font-display text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-right">
                 {bekapaka.name}
               </h2>
             </div>
 
             {/* Score */}
             <div className="flex flex-col items-center gap-2 shrink-0">
-              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-outfit flex items-center gap-2 md:gap-6 tabular-nums">
+              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-display flex items-center gap-2 md:gap-6 tabular-nums">
                 <span className={cn(
                   isWin && 'text-bkpk-success',
                   isLoss && 'text-bkpk-danger',
@@ -148,7 +148,7 @@ export default function GameDetail() {
               <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-surface-tint-2 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-border-strong shrink-0">
                 <span className="text-base md:text-2xl font-bold text-bkpk-text-secondary">OP</span>
               </div>
-              <h2 className="text-xs sm:text-base md:text-3xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-left">
+              <h2 className="text-xs sm:text-base md:text-3xl font-black font-display text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-left">
                 {opponentTeam.name}
               </h2>
             </div>
@@ -184,7 +184,7 @@ export default function GameDetail() {
             {game.quarters?.map((q: any, i: number) => (
               <div key={i} className="flex flex-col items-center gap-1 min-w-[56px] bg-bkpk-surface-tint-2 border border-bkpk-border-strong px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl">
                 <span className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase">Q{i + 1}</span>
-                <span className="text-sm sm:text-lg font-black font-outfit text-bkpk-text-primary">{q.home}-{q.away}</span>
+                <span className="text-sm sm:text-lg font-black font-display text-bkpk-text-primary">{q.home}-{q.away}</span>
               </div>
             ))}
           </div>
@@ -207,7 +207,7 @@ export default function GameDetail() {
                 <section className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Zap className="w-5 h-5 text-bkpk-warning" />
-                    <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Inteligentne Wnioski</h3>
+                    <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Inteligentne Wnioski</h3>
                   </div>
                   <div className="grid gap-3">
                     {game.insights.map((insight: any, idx: number) => (
@@ -254,7 +254,7 @@ export default function GameDetail() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BarChart2 className="w-5 h-5 text-bkpk-primary" />
-                  <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Statystyki Zawodników (Box Score)</h3>
+                  <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Statystyki Zawodników (Box Score)</h3>
                 </div>
 
                 <div className="flex bg-bkpk-surface-tint-2 p-1 rounded-xl border border-bkpk-border-strong">
@@ -312,7 +312,7 @@ export default function GameDetail() {
                     <div className="w-16 h-16 bg-bkpk-warning/10 rounded-full flex items-center justify-center border border-bkpk-warning/30 mb-4 group-hover:scale-110 transition-transform">
                       <Trophy className="w-8 h-8 text-bkpk-warning" />
                     </div>
-                    <h4 className="text-2xl font-black font-outfit text-bkpk-text-primary uppercase tracking-tight">{game.mvp}</h4>
+                    <h4 className="text-2xl font-black font-display text-bkpk-text-primary uppercase tracking-tight">{game.mvp}</h4>
                   </div>
                 </div>
                 <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-bkpk-warning/5 rounded-full blur-3xl pointer-events-none" />

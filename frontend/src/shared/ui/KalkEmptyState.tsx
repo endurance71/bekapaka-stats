@@ -32,7 +32,7 @@ export default function KalkEmptyState({
             </div>
 
             <div className="max-w-md space-y-2">
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit uppercase tracking-tight">
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-display uppercase tracking-tight">
                     {title}
                 </h3>
                 <p className="text-bkpk-text-muted text-sm leading-relaxed">

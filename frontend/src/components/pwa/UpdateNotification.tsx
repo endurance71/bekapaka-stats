@@ -21,7 +21,7 @@ export function UpdateNotification() {
               <Sparkles className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-outfit font-black text-sm text-bkpk-text-primary">Dostępna nowa wersja</h4>
+              <h4 className="font-display font-black text-sm text-bkpk-text-primary">Dostępna nowa wersja</h4>
               <p className="text-xs text-bkpk-text-muted mt-0.5 leading-relaxed">
                 Zaktualizuj aplikację, aby wczytać najnowsze statystyki i funkcje.
               </p>

@@ -63,7 +63,7 @@ export default function MatchCard({
                     </div>
 
                     <div>
-                        <h3 className="text-xl font-bold font-outfit text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
+                        <h3 className="text-xl font-bold font-display text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
                             {homeAway === 'home' ? 'BeKaPaKa' : opponent} vs {homeAway === 'home' ? opponent : 'BeKaPaKa'}
                         </h3>
                         <div className="flex items-center gap-4 mt-1 text-bkpk-text-muted text-xs">
@@ -84,7 +84,7 @@ export default function MatchCard({
                     {isPlayed ? (
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col items-center">
-                                <div className="text-2xl md:text-3xl font-black font-outfit flex items-center gap-1.5">
+                                <div className="text-2xl md:text-3xl font-black font-display flex items-center gap-1.5">
                                     <span className={cn(isHome ? ourScoreClass : theirScoreClass)}>
                                         {leftScore}
                                     </span>

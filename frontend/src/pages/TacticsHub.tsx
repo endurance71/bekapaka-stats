@@ -106,7 +106,7 @@ export default function TacticsHub() {
           <span className="text-xs font-bold uppercase tracking-widest text-bkpk-primary block mb-1">
             Smart Coaching &amp; Strategy
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-outfit uppercase">
+          <h1 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-display uppercase">
             Centrum Taktyczne <span className="text-bkpk-primary">BeKaPaKa</span>
           </h1>
         </div>

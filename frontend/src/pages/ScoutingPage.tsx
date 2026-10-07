@@ -285,7 +285,7 @@ export default function ScoutingPage() {
                       title={p.name}
                       highlight={
                         <div>
-                          <div className="font-outfit text-xl font-black tabular-nums text-bkpk-primary">
+                          <div className="font-display text-xl font-black tabular-nums text-bkpk-primary">
                             {formatStatFixed(p.ppg)}
                           </div>
                           <div className="text-[10px] font-bold uppercase text-bkpk-text-muted">PPG</div>
@@ -377,7 +377,7 @@ export default function ScoutingPage() {
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-outfit text-lg font-black tracking-tight text-bkpk-text-primary">
+                      <span className="font-display text-lg font-black tracking-tight text-bkpk-text-primary">
                         {m.score}
                       </span>
                       <span className="text-xs font-medium text-bkpk-text-muted">{m.date}</span>

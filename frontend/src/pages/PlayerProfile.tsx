@@ -187,7 +187,7 @@ export default function PlayerProfile() {
                     <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 md:gap-12">
                         {/* Player Number & Photo Avatar */}
                         <div className="relative">
-                            <div className="hidden sm:block text-8xl md:text-9xl font-black font-outfit text-white/5 absolute -top-8 -left-8 pointer-events-none">
+                            <div className="hidden sm:block text-8xl md:text-9xl font-black font-display text-white/5 absolute -top-8 -left-8 pointer-events-none">
                                 {player.number}
                             </div>
                             <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-gradient-to-tr from-bkpk-primary/20 to-transparent p-1 border border-bkpk-border-strong relative">
@@ -200,7 +200,7 @@ export default function PlayerProfile() {
                                     alt=""
                                 />
                                 <div className="absolute -bottom-1 -right-1 w-9 h-9 md:w-12 md:h-12 bg-bkpk-bg border border-bkpk-border-strong rounded-xl md:rounded-2xl flex items-center justify-center shadow-2xl">
-                                    <span className="text-sm md:text-xl font-black font-outfit text-bkpk-primary">#{player.number}</span>
+                                    <span className="text-sm md:text-xl font-black font-display text-bkpk-primary">#{player.number}</span>
                                 </div>
                             </div>
                         </div>
@@ -208,7 +208,7 @@ export default function PlayerProfile() {
                         {/* Player Meta */}
                         <div className="flex-1 text-center md:text-left space-y-4 w-full">
                             <div>
-                                <h1 className="text-2xl sm:text-4xl md:text-6xl font-black font-outfit text-bkpk-text-primary tracking-tight uppercase">
+                                <h1 className="text-2xl sm:text-4xl md:text-6xl font-black font-display text-bkpk-text-primary tracking-tight uppercase">
                                     <span className="text-bkpk-primary block text-base sm:text-xl mb-0.5 sm:mb-1">{player.firstName}</span>
                                     {player.lastName}
                                 </h1>
@@ -238,7 +238,7 @@ export default function PlayerProfile() {
                                 ].map((s, idx) => (
                                     <div key={idx} className="bg-bkpk-surface-tint-2 border border-bkpk-border-strong p-2.5 sm:p-4 rounded-xl sm:rounded-2xl text-center">
                                         <div className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase tracking-widest">{s.label}</div>
-                                        <div className={cn("text-lg sm:text-2xl font-black font-outfit mt-0.5 sm:mt-1", s.color)}>{s.value}</div>
+                                        <div className={cn("text-lg sm:text-2xl font-black font-display mt-0.5 sm:mt-1", s.color)}>{s.value}</div>
                                     </div>
                                 ))}
                             </div>
@@ -269,7 +269,7 @@ export default function PlayerProfile() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <TrendingUp className="w-5 h-5 text-bkpk-primary" />
-                                    <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Trend Formy</h3>
+                                    <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Trend Formy</h3>
                                 </div>
                                 <div className="px-3 py-1 bg-bkpk-primary/10 border border-bkpk-primary/20 rounded-lg text-xs font-bold text-bkpk-primary uppercase">
                                     Punkty na Mecz
@@ -370,7 +370,7 @@ export default function PlayerProfile() {
                     {/* Sidebar / Detailed Averages */}
                     <div className="lg:col-span-4 space-y-8">
                         <BkpkCard variant="glass" className="space-y-6">
-                            <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Efektywność Sezonowa</h3>
+                            <h3 className="text-lg font-bold text-bkpk-text-primary font-display">Efektywność Sezonowa</h3>
                             <div className="space-y-6">
                                 {[
                                     { label: 'eFG%', value: (averages.efg * 100).toFixed(1) + '%', progress: averages.efg * 100 },
@@ -402,7 +402,7 @@ export default function PlayerProfile() {
                         <BkpkCard variant="glass" className="border-bkpk-warning/20">
                             <div className="flex items-center gap-2 mb-4 text-bkpk-warning">
                                 <Star className="w-5 h-5 fill-current" />
-                                <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Najlepsze Występy</h3>
+                                <h3 className="text-lg font-bold text-bkpk-text-primary font-display">Najlepsze Występy</h3>
                             </div>
                             <div className="space-y-4">
                                 {[...gameLog].sort((a, b) => b.pts - a.pts).slice(0, 3).map((g, idx) => (
@@ -411,7 +411,7 @@ export default function PlayerProfile() {
                                             <div className="text-xs font-bold text-bkpk-text-primary">{g.opponent}</div>
                                             <div className="text-xs text-bkpk-text-muted">{new Date(g.date).toLocaleDateString()}</div>
                                         </div>
-                                        <div className="text-lg font-black font-outfit text-bkpk-warning">
+                                        <div className="text-lg font-black font-display text-bkpk-warning">
                                             {g.pts} PTS
                                         </div>
                                     </div>

@@ -34,7 +34,7 @@ export default function GameCenter() {
           <motion.h1
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl font-bold text-bkpk-text-primary font-outfit"
+            className="text-4xl font-bold text-bkpk-text-primary font-display"
           >
             Mecze
           </motion.h1>

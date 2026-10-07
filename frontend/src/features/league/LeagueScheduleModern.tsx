@@ -105,7 +105,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                 <span className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none">
                                     {new Date(match.date).toLocaleDateString(undefined, { month: 'short' })}
                                 </span>
-                                <span className="text-2xl font-black font-outfit text-bkpk-text-primary leading-none my-1">
+                                <span className="text-2xl font-black font-display text-bkpk-text-primary leading-none my-1">
                                     {new Date(match.date).getDate()}
                                 </span>
                                 <span className="text-[10px] font-medium text-bkpk-text-muted leading-none tabular-nums">
@@ -127,16 +127,16 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                 <div className="flex shrink-0 items-center justify-center px-3 py-1.5 bg-bkpk-surface-tint-2 rounded-full border border-bkpk-border-strong min-w-[4.5rem]">
                                     {match.isFinished ? (
                                         <div className="flex items-center gap-1.5 tabular-nums">
-                                            <span className={cn('text-lg lg:text-xl font-black font-outfit', getHomeScoreClass())}>
+                                            <span className={cn('text-lg lg:text-xl font-black font-display', getHomeScoreClass())}>
                                                 {match.scoreHome}
                                             </span>
                                             <span className="text-bkpk-text-muted font-bold">:</span>
-                                            <span className={cn('text-lg lg:text-xl font-black font-outfit', getAwayScoreClass())}>
+                                            <span className={cn('text-lg lg:text-xl font-black font-display', getAwayScoreClass())}>
                                                 {match.scoreAway}
                                             </span>
                                         </div>
                                     ) : (
-                                        <span className="text-[10px] font-black font-outfit text-bkpk-text-muted tracking-[0.25em] uppercase">
+                                        <span className="text-[10px] font-black font-display text-bkpk-text-muted tracking-[0.25em] uppercase">
                                             VS
                                         </span>
                                     )}
@@ -176,13 +176,13 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                     </span>
                                     {match.isFinished ? (
                                         <span className={cn(
-                                            "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
+                                            "font-black font-display text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
                                             getHomeScoreClass()
                                         )}>
                                             {match.scoreHome}
                                         </span>
                                     ) : (
-                                        <span className="text-[10px] font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                        <span className="text-[10px] font-black font-display text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
                                             GOSP.
                                         </span>
                                     )}
@@ -197,13 +197,13 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                     </span>
                                     {match.isFinished ? (
                                         <span className={cn(
-                                            "font-black font-outfit text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
+                                            "font-black font-display text-lg px-2.5 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong min-w-[36px] text-center",
                                             getAwayScoreClass()
                                         )}>
                                             {match.scoreAway}
                                         </span>
                                     ) : (
-                                        <span className="text-[10px] font-black font-outfit text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
+                                        <span className="text-[10px] font-black font-display text-bkpk-text-muted uppercase tracking-wider px-2 py-0.5 rounded-lg bg-bkpk-surface-tint-2 border border-bkpk-border-strong">
                                             GOŚĆ
                                         </span>
                                     )}

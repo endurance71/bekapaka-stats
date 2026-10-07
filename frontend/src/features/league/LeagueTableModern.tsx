@@ -107,7 +107,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             statsColumns={3}
                             highlight={
                                 <div className="flex flex-col items-center justify-center min-w-[3.25rem] px-2.5 py-1.5 rounded-xl bg-bkpk-surface border border-bkpk-border-strong">
-                                    <div className="text-lg font-black font-outfit text-bkpk-text-primary tabular-nums leading-none">
+                                    <div className="text-lg font-black font-display text-bkpk-text-primary tabular-nums leading-none">
                                         {team.points}
                                     </div>
                                     <div className="text-[9px] font-bold text-bkpk-text-muted uppercase tracking-wider mt-0.5">

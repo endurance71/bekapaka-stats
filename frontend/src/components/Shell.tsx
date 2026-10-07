@@ -142,7 +142,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   return (
     <div
       className={cn(
-        'flex flex-col min-h-[100dvh] min-h-[100svh] bg-bkpk-bg font-montserrat text-bkpk-text-primary',
+        'flex flex-col min-h-[100dvh] min-h-[100svh] bg-bkpk-bg font-text text-bkpk-text-primary',
         'md:flex-row md:fixed md:inset-0 md:z-0 md:max-h-[100dvh] md:overflow-hidden'
       )}
     >
@@ -225,7 +225,7 @@ export default function Shell({ children }: { children: ReactNode }) {
             className="absolute inset-x-3 z-[5] flex justify-center items-center min-w-0 px-12 touch-manipulation"
             aria-label="Przejdź do pulpitu"
           >
-            <span className="font-black font-outfit text-sm tracking-tight text-bkpk-text-primary truncate text-center">
+            <span className="font-black font-display text-sm tracking-tight text-bkpk-text-primary truncate text-center">
               BeKaPaKa
             </span>
           </Link>

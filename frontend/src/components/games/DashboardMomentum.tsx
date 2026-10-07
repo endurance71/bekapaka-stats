@@ -40,7 +40,7 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
         <BkpkCard variant="glass" className="space-y-6 overflow-hidden w-full">
             <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
                 <Activity className="w-5 h-5 text-bkpk-primary" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-display">
                     Dynamika Meczu ({step === 5 ? '5' : '10'}-min bloki)
                 </h3>
             </div>

@@ -85,7 +85,7 @@ function MenuProfileSection({
                         <p className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none mb-0.5">
                             {getPositionLabel(user.position)}
                         </p>
-                        <p className="text-sm font-black font-outfit text-bkpk-text-primary truncate leading-tight">
+                        <p className="text-sm font-black font-display text-bkpk-text-primary truncate leading-tight">
                             {user.firstName} {user.lastName}
                         </p>
                         <p className="text-[11px] text-bkpk-text-muted truncate">@{user.username}</p>
@@ -266,7 +266,7 @@ export default function MobileFullScreenMenu({
                         className="absolute inset-x-4 z-[5] flex flex-col items-center justify-center text-center min-w-0 px-12 touch-manipulation"
                         aria-label="Przejdź do pulpitu"
                     >
-                        <div className="font-black font-outfit text-lg leading-none text-bkpk-text-primary truncate max-w-full">
+                        <div className="font-black font-display text-lg leading-none text-bkpk-text-primary truncate max-w-full">
                             BeKaPaKa
                         </div>
                         <div className="text-[10px] font-bold text-bkpk-text-muted uppercase tracking-[0.2em] mt-1">

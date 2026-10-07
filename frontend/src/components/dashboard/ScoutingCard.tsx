@@ -84,7 +84,7 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                 ) : null}
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                        <h4 className="text-xl font-black font-outfit text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
+                        <h4 className="text-xl font-black font-display text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
                             {data.opponent}
                         </h4>
                         <div className="flex items-center gap-2 mt-1">
@@ -129,14 +129,14 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                             <TrendingUp className="w-3 h-3 text-bkpk-success" />
                             <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Atak</span>
                         </div>
-                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-lg font-black font-display text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
                     </div>
                     <div className="bg-bkpk-surface-tint-2 p-3 rounded-2xl border border-bkpk-border-strong">
                         <div className="flex items-center gap-2 mb-1">
                             <TrendingDown className="w-3 h-3 text-bkpk-text-danger" />
                             <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Obrona</span>
                         </div>
-                        <div className="text-lg font-black font-outfit text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-lg font-black font-display text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
                     </div>
                 </div>
 

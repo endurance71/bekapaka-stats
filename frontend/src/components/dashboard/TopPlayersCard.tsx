@@ -95,7 +95,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                          alt=""
                                      />
                                      <div className={cn(
-                                         "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-outfit text-[10px] shadow-md border border-bkpk-border-strong",
+                                         "absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center font-black font-display text-[10px] shadow-md border border-bkpk-border-strong",
                                          index === 0 ? "bg-bkpk-medal-gold text-black" :
                                              index === 1 ? "bg-bkpk-medal-silver text-black" :
                                                  "bg-bkpk-medal-bronze text-black"
@@ -109,11 +109,11 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                              </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="font-black font-outfit text-bkpk-text-primary truncate group-hover:text-bkpk-primary transition-colors">
+                                <div className="font-black font-display text-bkpk-text-primary truncate group-hover:text-bkpk-primary transition-colors">
                                     {player.firstName} {player.lastName}
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
-                                    <div className="text-xl font-black font-outfit text-bkpk-primary">
+                                    <div className="text-xl font-black font-display text-bkpk-primary">
                                         {formatStatFixed(player.ppg)} <span className="text-2xs uppercase tracking-tighter text-bkpk-text-muted">PPG</span>
                                     </div>
                                     {(player.rpg ?? 0) > 0 && (

@@ -11,7 +11,7 @@ import { cn } from '../../shared/lib/utils';
 
 const PROSE_CLASSES = cn(
   'prose prose-invert max-w-none',
-  'prose-headings:font-outfit prose-headings:font-black prose-headings:text-bkpk-text-primary',
+  'prose-headings:font-display prose-headings:font-black prose-headings:text-bkpk-text-primary',
   'prose-p:text-bkpk-text-secondary prose-li:text-bkpk-text-secondary',
   'prose-strong:text-bkpk-primary',
   'prose-table:text-bkpk-text-secondary prose-th:text-bkpk-text-primary',
@@ -239,7 +239,7 @@ export default function AiAnalysisBlock({
                 <Bot className="h-5 w-5 text-bkpk-primary" aria-hidden />
               </div>
               <div className="min-w-0">
-                <h3 className="font-outfit text-base font-black leading-tight tracking-tight text-bkpk-text-primary sm:text-lg">
+                <h3 className="font-display text-base font-black leading-tight tracking-tight text-bkpk-text-primary sm:text-lg">
                   {title}
                 </h3>
                 {metaLine ? (
@@ -370,7 +370,7 @@ export default function AiAnalysisBlock({
                         <div className="min-w-0">
                           <h2
                             id="ai-analysis-modal-title"
-                            className="text-lg font-black text-bkpk-text-primary font-outfit tracking-tight leading-tight"
+                            className="text-lg font-black text-bkpk-text-primary font-display tracking-tight leading-tight"
                           >
                             {title}
                           </h2>

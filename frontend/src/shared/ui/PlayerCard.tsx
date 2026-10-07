@@ -121,7 +121,7 @@ export default function PlayerCard({
 
                 {/* Number Badge */}
                 <div className="absolute top-4 left-4 z-20 flex flex-col items-center">
-                    <span className="text-4xl font-black font-outfit text-bkpk-text-muted tabular-nums group-hover:text-bkpk-primary transition-colors">
+                    <span className="text-4xl font-black font-display text-bkpk-text-muted tabular-nums group-hover:text-bkpk-primary transition-colors">
                         {number}
                     </span>
                     {isStarter && (
@@ -134,7 +134,7 @@ export default function PlayerCard({
                 {/* Info Overlay */}
                 <div className="absolute inset-x-0 bottom-0 p-3 sm:p-6 z-20 space-y-2 sm:space-y-4">
                     <div className="space-y-0.5">
-                        <h3 className="text-lg sm:text-2xl font-black font-outfit text-bkpk-text-primary leading-none">
+                        <h3 className="text-lg sm:text-2xl font-black font-display text-bkpk-text-primary leading-none">
                             <span className="block text-xs sm:text-sm text-bkpk-primary mb-0.5 sm:mb-1">{firstName}</span>
                             {lastName}
                         </h3>

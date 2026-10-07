@@ -115,7 +115,7 @@ export default function Trends() {
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
+            className="text-4xl md:text-5xl font-black font-display text-bkpk-text-primary tracking-tight"
           >
             Analizy i <span className="text-bkpk-primary">Trendy</span>
           </motion.h1>
@@ -137,7 +137,7 @@ export default function Trends() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Activity className="w-5 h-5 text-bkpk-primary" />
-                  <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Ewolucja Efektywności</h3>
+                  <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Ewolucja Efektywności</h3>
                 </div>
                 {hasTrends && (
                   <div className="flex gap-4">
@@ -238,7 +238,7 @@ export default function Trends() {
             <BkpkCard variant="glass" className="space-y-6">
               <div className="flex items-center gap-2">
                 <PieChart className="w-5 h-5 text-bkpk-success" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">DNA Zdobywanych Punktów</h3>
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-display">DNA Zdobywanych Punktów</h3>
               </div>
 
               <div className="w-full" style={{ height: isMobile ? '200px' : '300px' }}>
@@ -282,7 +282,7 @@ export default function Trends() {
             {/* Radar Chart Card */}
             <BkpkCard variant="glass" className="flex flex-col items-center">
               <div className="w-full mb-6">
-                <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit">Porównanie z Ligą</h3>
+                <h3 className="text-lg font-bold text-bkpk-text-primary font-display">Porównanie z Ligą</h3>
                 <p className="text-xs text-bkpk-text-secondary uppercase tracking-widest font-bold">Względem średniej (100%)</p>
               </div>
               <div className="w-full" style={{ height: isMobile ? '220px' : '300px' }}>
@@ -325,7 +325,7 @@ export default function Trends() {
 
             {/* Efficiency Summary */}
             <BkpkCard variant="glass" className="space-y-6">
-              <h3 className="text-lg font-bold text-bkpk-text-primary font-outfit border-b border-bkpk-border-strong pb-4">Kwadrant Efektywności</h3>
+              <h3 className="text-lg font-bold text-bkpk-text-primary font-display border-b border-bkpk-border-strong pb-4">Kwadrant Efektywności</h3>
               <div className="space-y-6">
                 <div className="flex items-center justify-between p-4 bg-bkpk-surface-tint-2 rounded-2xl border border-bkpk-border-strong">
                   <div className="space-y-1">
@@ -366,12 +366,12 @@ export default function Trends() {
             <div className="grid grid-cols-2 gap-4">
               <BkpkCard variant="glass" className="text-center py-6">
                 <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest mb-1">Śr. Punktów</div>
-                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.ppg ? comparison.bekapaka.ppg.toFixed(1) : '0.0'}</div>
+                <div className="text-2xl font-black font-display text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.ppg ? comparison.bekapaka.ppg.toFixed(1) : '0.0'}</div>
                 <div className="text-xs font-medium text-bkpk-text-muted">średnia {hasLeagueData && comparison?.league.ppg ? comparison.league.ppg.toFixed(1) : '0.0'}</div>
               </BkpkCard>
               <BkpkCard variant="glass" className="text-center py-6">
                 <div className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest mb-1">Obrona</div>
-                <div className="text-2xl font-black font-outfit text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.oppg ? comparison.bekapaka.oppg.toFixed(1) : '0.0'}</div>
+                <div className="text-2xl font-black font-display text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.oppg ? comparison.bekapaka.oppg.toFixed(1) : '0.0'}</div>
                 <div className="text-xs font-medium text-bkpk-text-muted">średnia {hasLeagueData && comparison?.league.oppg ? comparison.league.oppg.toFixed(1) : '0.0'}</div>
               </BkpkCard>
             </div>

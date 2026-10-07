@@ -872,7 +872,7 @@ export default function BasketballCourtCanvas({
             <Target className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-black text-bkpk-text-primary uppercase tracking-wider font-outfit">
+            <h3 className="text-sm sm:text-base font-black text-bkpk-text-primary uppercase tracking-wider font-display">
               {playName || 'Profesjonalny Schemat Taktyczny'}
             </h3>
             <div className="flex items-center gap-2 text-xs text-bkpk-text-muted">
@@ -883,7 +883,7 @@ export default function BasketballCourtCanvas({
                 </span>
               )}
               <span>•</span>
-              <span className="font-bold text-bkpk-primary font-outfit">
+              <span className="font-bold text-bkpk-primary font-display">
                 {activeUiTime.toFixed(1)}s / {duration.toFixed(1)}s
               </span>
             </div>
@@ -994,7 +994,7 @@ export default function BasketballCourtCanvas({
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-wider text-bkpk-text-muted">
             <span>Ustawienie (0.0s)</span>
-            <span className="text-bkpk-primary font-outfit text-xs">{activeUiTime.toFixed(2)}s</span>
+            <span className="text-bkpk-primary font-display text-xs">{activeUiTime.toFixed(2)}s</span>
             <span>Koniec ({duration.toFixed(1)}s)</span>
           </div>
           <input
@@ -1095,7 +1095,7 @@ export default function BasketballCourtCanvas({
             </div>
             <div className="flex-1">
               <div className="flex items-center justify-between gap-2 mb-1">
-                <span className="text-xs font-black uppercase tracking-wider text-bkpk-primary font-outfit">
+                <span className="text-xs font-black uppercase tracking-wider text-bkpk-primary font-display">
                   {currentPhase.title}
                 </span>
                 <span className="text-[10px] text-bkpk-text-muted font-bold">

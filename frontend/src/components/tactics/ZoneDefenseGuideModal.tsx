@@ -150,10 +150,10 @@ export default function ZoneDefenseGuideModal({
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest text-rose-400 block font-outfit">
+                <span className="text-[10px] font-black uppercase tracking-widest text-rose-400 block font-display">
                   Podręcznik Taktyczny &amp; Symulator Ruchu
                 </span>
-                <h2 className="text-lg sm:text-xl font-black text-bkpk-text-primary uppercase font-outfit tracking-tight">
+                <h2 className="text-lg sm:text-xl font-black text-bkpk-text-primary uppercase font-display tracking-tight">
                   Zasady Poruszania się po Strefie (Dla Nowicjusza)
                 </h2>
               </div>
@@ -213,7 +213,7 @@ export default function ZoneDefenseGuideModal({
             )}>
               <Zap className="w-5 h-5 shrink-0 mt-0.5" />
               <div>
-                <h4 className="font-black uppercase tracking-wider text-sm mb-1 font-outfit text-white">
+                <h4 className="font-black uppercase tracking-wider text-sm mb-1 font-display text-white">
                   {selectedZone === '2-3'
                     ? 'Złota Zasada Strefy 2-3: Piłka Rządzi Całą Piątką (Ball-You-Man)'
                     : 'Złota Zasada Strefy 3-2: Zero Czystych Rzutów za 3 (Perimeter Wall)'}
@@ -229,7 +229,7 @@ export default function ZoneDefenseGuideModal({
             {/* 2. INTERAKTYWNY ANIMOWANY SYMULATOR BOISKA (MINI-COURT) */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="font-black uppercase tracking-wider text-sm font-outfit text-bkpk-text-primary flex items-center gap-2">
+                <h3 className="font-black uppercase tracking-wider text-sm font-display text-bkpk-text-primary flex items-center gap-2">
                   <Compass className="w-4 h-4 text-bkpk-primary" />
                   Symulator Przesunięć: Wybierz Gdzie Znajduje się Piłka
                 </h3>
@@ -601,7 +601,7 @@ export default function ZoneDefenseGuideModal({
             {/* 3. Kluczowe Zasady: Bump & Pass oraz Komunikacja */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="p-4 rounded-2xl bg-bkpk-surface-tint-1 border border-bkpk-border-subtle space-y-2">
-                <div className="flex items-center gap-2 text-bkpk-primary font-black uppercase text-xs font-outfit">
+                <div className="flex items-center gap-2 text-bkpk-primary font-black uppercase text-xs font-display">
                   <CheckCircle2 className="w-4 h-4" />
                   Zasada &quot;Bump &amp; Pass&quot; (Przekazywanie Gracza)
                 </div>
@@ -611,7 +611,7 @@ export default function ZoneDefenseGuideModal({
               </div>
 
               <div className="p-4 rounded-2xl bg-bkpk-surface-tint-1 border border-bkpk-border-subtle space-y-2">
-                <div className="flex items-center gap-2 text-amber-400 font-black uppercase text-xs font-outfit">
+                <div className="flex items-center gap-2 text-amber-400 font-black uppercase text-xs font-display">
                   <AlertTriangle className="w-4 h-4" />
                   Zbiórka Defensywna (Box-Out w Strefie)
                 </div>
@@ -623,7 +623,7 @@ export default function ZoneDefenseGuideModal({
 
             {/* 4. Porównanie Kiedy Stosować 2-3 vs 3-2 */}
             <div className="p-4 rounded-2xl bg-bkpk-surface-tint-2 border border-bkpk-border-strong space-y-2">
-              <h4 className="font-black uppercase tracking-wider text-xs text-bkpk-text-primary font-outfit">
+              <h4 className="font-black uppercase tracking-wider text-xs text-bkpk-text-primary font-display">
                 Kiedy wybrać Strefę 2-3, a kiedy Strefę 3-2?
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] pt-1">

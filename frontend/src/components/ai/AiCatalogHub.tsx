@@ -77,7 +77,7 @@ function AiCatalogItemRow({
       >
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
-            <p className="font-outfit text-sm font-black text-bkpk-text-primary sm:text-base">
+            <p className="font-display text-sm font-black text-bkpk-text-primary sm:text-base">
               {item.title}
             </p>
             {item.subtitle ? (
@@ -241,7 +241,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
             <span>Centrum analiz</span>
           </div>
         )}
-        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight">
+        <h1 className="text-2xl sm:text-3xl md:text-5xl font-black font-display text-bkpk-text-primary tracking-tight">
           {categoryMeta ? (
             <>
               {categoryMeta.label}{' '}
@@ -304,7 +304,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h2 className="font-outfit text-lg font-black text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
+                    <h2 className="font-display text-lg font-black text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
                       {cat.label}
                     </h2>
                     <p className="mt-1 text-sm text-bkpk-text-muted">{cat.description}</p>

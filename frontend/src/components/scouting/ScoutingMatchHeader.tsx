@@ -35,7 +35,7 @@ function TeamColumn({
       >
         {team.name.charAt(0)}
       </div>
-      <h1 className="mt-2 line-clamp-2 w-full px-0.5 font-outfit text-xs font-black leading-tight sm:text-sm md:text-lg">
+      <h1 className="mt-2 line-clamp-2 w-full px-0.5 font-display text-xs font-black leading-tight sm:text-sm md:text-lg">
         {team.name}
       </h1>
       <div className="mt-1.5 flex flex-wrap items-center justify-center gap-1">
@@ -62,7 +62,7 @@ export function ScoutingMatchHeader({ bekapaka, opponent }: ScoutingMatchHeaderP
       <div className="grid w-full max-w-xl grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 sm:gap-4 md:max-w-2xl">
         <TeamColumn team={bekapaka} variant="home" />
         <div
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-bkpk-border-strong bg-bkpk-navy-light/80 font-outfit text-xs font-black uppercase tracking-wider text-bkpk-text-muted sm:h-11 sm:w-11 sm:text-sm"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-bkpk-border-strong bg-bkpk-navy-light/80 font-display text-xs font-black uppercase tracking-wider text-bkpk-text-muted sm:h-11 sm:w-11 sm:text-sm"
           aria-hidden
         >
           VS

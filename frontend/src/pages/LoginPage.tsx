@@ -48,7 +48,7 @@ export default function LoginPage() {
                                 <img src="/logo.png" alt="BK Logo" className="w-full h-full object-contain relative z-10" />
                             </div>
                             <div className="space-y-2">
-                                <h1 className="text-3xl font-black font-outfit tracking-tighter text-bkpk-text-primary">
+                                <h1 className="text-3xl font-black font-display tracking-tighter text-bkpk-text-primary">
                                     BeKaPaKa <span className="text-bkpk-primary">STATS</span>
                                 </h1>
                                 <p className="text-sm text-bkpk-text-secondary">

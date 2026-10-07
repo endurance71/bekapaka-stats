@@ -175,7 +175,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                 <span className="text-[10px] font-black uppercase tracking-widest text-bkpk-primary bg-bkpk-primary/10 px-3 py-1 rounded-full border border-bkpk-primary/20 inline-block mb-2">
                   KALK Dywizja II • Matchday Briefing
                 </span>
-                <h2 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-outfit uppercase">
+                <h2 className="text-2xl sm:text-3xl font-black text-bkpk-text-primary tracking-tight font-display uppercase">
                   BEKAPAKA <span className="text-bkpk-primary">vs</span> {briefing.opponentName}
                 </h2>
               </div>
@@ -248,7 +248,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-2">
-                          <span className="w-6 h-6 rounded-full bg-bkpk-primary text-black font-black text-xs flex items-center justify-center font-outfit">
+                          <span className="w-6 h-6 rounded-full bg-bkpk-primary text-black font-black text-xs flex items-center justify-center font-display">
                             {key.number}
                           </span>
                           <span
@@ -288,11 +288,11 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-black text-bkpk-primary font-outfit px-2 py-0.5 rounded-md bg-bkpk-primary/10 border border-bkpk-primary/20">
+                        <span className="text-xs font-black text-bkpk-primary font-display px-2 py-0.5 rounded-md bg-bkpk-primary/10 border border-bkpk-primary/20">
                           {player.position}
                         </span>
                         {player.number != null && (
-                          <span className="text-xs font-black text-bkpk-text-muted font-outfit">
+                          <span className="text-xs font-black text-bkpk-text-muted font-display">
                             #{player.number}
                           </span>
                         )}

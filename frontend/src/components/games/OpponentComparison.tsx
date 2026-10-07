@@ -35,7 +35,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
         return (
             <div className="flex items-center justify-between p-3 border-b border-bkpk-border-strong last:border-0 hover:bg-bkpk-surface-tint-2 transition-colors rounded-lg">
                 <div className={cn(
-                    "w-16 text-right font-black font-outfit text-lg",
+                    "w-16 text-right font-black font-display text-lg",
                     bkWinner ? "text-bkpk-success" : "text-bkpk-text-muted"
                 )}>
                     {bkValue}
@@ -44,7 +44,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
                     {label}
                 </div>
                 <div className={cn(
-                    "w-16 text-left font-black font-outfit text-lg",
+                    "w-16 text-left font-black font-display text-lg",
                     oppWinner ? "text-bkpk-text-danger" : "text-bkpk-text-muted"
                 )}>
                     {oppValue}
@@ -59,7 +59,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
         <BkpkCard variant="glass" className="space-y-6">
             <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
                 <Swords className="w-5 h-5 text-bkpk-warning" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Porównanie Drużyn</h3>
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Porównanie Drużyn</h3>
             </div>
 
             <div className="flex justify-between items-center text-sm font-bold text-bkpk-text-secondary px-4 pb-2">

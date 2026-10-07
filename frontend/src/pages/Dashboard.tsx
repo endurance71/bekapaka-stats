@@ -159,7 +159,7 @@ export default function Dashboard() {
     <DashboardLayout
       header={
         <>
-          <h1 className="text-3xl font-bold text-bkpk-text-primary font-outfit">Pulpit</h1>
+          <h1 className="text-3xl font-bold text-bkpk-text-primary font-display">Pulpit</h1>
           <div className="flex items-center gap-2">
             <p className="text-bkpk-text-secondary text-sm">Witamy w centrum dowodzenia BeKaPaKa 2026</p>
             <span className="text-xs bg-bkpk-primary/20 text-bkpk-primary px-2 py-0.5 rounded-full font-bold border border-bkpk-primary/30">v3.1</span>

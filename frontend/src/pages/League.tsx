@@ -29,7 +29,7 @@ export default function League() {
                         <motion.h1
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-4xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
+                            className="text-4xl md:text-5xl font-black font-display text-bkpk-text-primary tracking-tight"
                         >
                             Liga KALK <span className="text-bkpk-primary">Dywizja II</span>
                         </motion.h1>

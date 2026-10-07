@@ -20,7 +20,7 @@ export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) 
                 <div>
                     <span className="text-bkpk-primary text-xs font-bold uppercase tracking-wider">Bilans Sezonu</span>
                     <div className="flex items-baseline gap-2 mt-1">
-                        <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
+                        <h2 className="text-4xl lg:text-5xl font-bold font-display text-bkpk-text-primary">
                             {isNaN(winPercentage) || winPercentage <= 0 ? 0 : Math.round(winPercentage)}%
                         </h2>
                         <span className="text-bkpk-text-secondary text-sm font-bold uppercase tracking-tighter">Zwycięstw</span>
@@ -63,7 +63,7 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
                         <BkpkTooltip content="Średnia liczba punktów na mecz. Określa potencjał punktowy - im wyższa, tym łatwiej o zwycięstwo przy stabilnej obronie." />
                     </div>
                     <div className="flex items-baseline gap-2 mt-1">
-                        <h2 className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary">
+                        <h2 className="text-4xl lg:text-5xl font-bold font-display text-bkpk-text-primary">
                             {formatStatFixed(ppg)}
                         </h2>
                         <span className="text-bkpk-text-secondary text-sm font-medium uppercase tracking-tighter">PKT/Mecz</span>
@@ -179,7 +179,7 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
-                                    className="text-4xl lg:text-5xl font-bold font-outfit text-bkpk-text-primary"
+                                    className="text-4xl lg:text-5xl font-bold font-display text-bkpk-text-primary"
                                 >
                                     {mode === 'NET' && value > 0 ? `+${formatStatFixed(value)}` : formatStatFixed(value)}
                                 </motion.h2>

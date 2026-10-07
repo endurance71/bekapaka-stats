@@ -29,7 +29,7 @@ export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarPro
                 {/* Profile Card Header with Number */}
                 <div className="absolute top-2 left-2 z-20">
                     <div className="w-8 h-8 rounded-lg bg-bkpk-bg/60 backdrop-blur-md border border-bkpk-border-subtle flex items-center justify-center">
-                        <span className="text-sm font-black font-outfit text-bkpk-primary">
+                        <span className="text-sm font-black font-display text-bkpk-primary">
                             {user.number || '--'}
                         </span>
                     </div>
@@ -52,7 +52,7 @@ export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarPro
                         <p className="text-[10px] font-bold text-bkpk-primary uppercase tracking-widest leading-none">
                             {getPositionLabel(user.position)}
                         </p>
-                        <h3 className="text-base font-black font-outfit text-bkpk-text-primary leading-tight truncate">
+                        <h3 className="text-base font-black font-display text-bkpk-text-primary leading-tight truncate">
                             {user.firstName} {user.lastName}
                         </h3>
                         <p className="text-[10px] font-bold text-bkpk-text-muted truncate">

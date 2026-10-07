@@ -66,7 +66,7 @@ export default function Roster() {
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl md:text-5xl font-black font-outfit text-bkpk-text-primary tracking-tight"
+            className="text-2xl sm:text-3xl md:text-5xl font-black font-display text-bkpk-text-primary tracking-tight"
           >
             Skład
           </motion.h1>

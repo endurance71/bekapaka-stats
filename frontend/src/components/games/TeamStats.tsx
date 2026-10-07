@@ -48,7 +48,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
     const StatItem = ({ label, value, desc, valueClass }: { label: string, value: string | number, desc: string, valueClass?: string }) => (
         <div className="flex flex-col p-4 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong hover:border-bkpk-primary/40 transition-colors">
             <span className="text-xs font-bold text-bkpk-text-muted uppercase tracking-widest mb-1">{label}</span>
-            <span className={cn("text-2xl font-black font-outfit text-bkpk-text-primary", valueClass)}>{value}</span>
+            <span className={cn("text-2xl font-black font-display text-bkpk-text-primary", valueClass)}>{value}</span>
             <span className="text-xs text-bkpk-text-muted truncate">{desc}</span>
         </div>
     );
@@ -57,7 +57,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
         <BkpkCard variant="glass" className="space-y-6">
             <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
                 <span className="w-2 h-8 rounded-full bg-bkpk-primary" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-outfit">Statystyki Zespołowe</h3>
+                <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Statystyki Zespołowe</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

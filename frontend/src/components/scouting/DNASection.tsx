@@ -76,7 +76,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
         <div className="space-y-6 mb-8">
             <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-1 bg-bkpk-primary rounded-full" />
-                <h2 className="text-2xl font-black text-bkpk-text-primary font-outfit uppercase tracking-wider">DNA Zespołu</h2>
+                <h2 className="text-2xl font-black text-bkpk-text-primary font-display uppercase tracking-wider">DNA Zespołu</h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -95,7 +95,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                     overflowVisible={true}
                 >
                     <div className="flex flex-col items-center justify-center py-6">
-                        <div className="text-display font-black text-bkpk-text-primary font-outfit mb-2 tracking-tighter">{formatStatFixed(pace)}</div>
+                        <div className="text-display font-black text-bkpk-text-primary font-display mb-2 tracking-tighter">{formatStatFixed(pace)}</div>
                         <div className={`text-caption-bold uppercase tracking-[0.2em] mb-6 px-3 py-1 bg-bkpk-surface-tint-2 rounded-full border border-bkpk-border-strong ${paceColor}`}>{paceLabel}</div>
 
                         <div className="bg-bkpk-surface-tint-1 rounded-2xl p-4 border border-bkpk-border-strong w-full shadow-inner">
