@@ -73,6 +73,7 @@
     display: grid;
     gap: var(--space-8) var(--gutter);
     align-items: center;
+    padding-top: var(--space-6);
   }
   @media (min-width: 1024px) {
     .profile__grid {

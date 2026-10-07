@@ -114,6 +114,13 @@
       overflow: visible;
     }
   }
+  /* Poniżej 1280 px tabela przewija się w swoim kontenerze — tam nagłówek przyklejałby się 72 px od góry kontenera
+     i zakrywał pierwsze wiersze. Przyklejenie do strony działa tylko bez przewijania w bok. */
+  @media (max-width: 1279px) {
+    .table-scroll .table thead th {
+      top: 0;
+    }
+  }
   .boxscore-col-player {
     position: sticky;
     left: 0;

@@ -31,6 +31,7 @@ ROUTES = [
     '/tabela',
     '/sklad',
     '/sklad/32b52081-2a59-4319-90df-6ebc91e8a210',
+    '/sklad/123622e8-ddd8-40d4-986c-acd4ca39e85e',
     '/aktualnosci',
     '/aktualnosci/3-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026',
     '/aktualnosci/iii-turniej-koszykowki-o-puchar-burmistrza-bobolic-26-wrzesnia-2026',
@@ -108,6 +109,13 @@ AUDIT = r"""(w) => {
     const foot = t.querySelector('tfoot td, tfoot th');
     const last = rows.length ? rows[rows.length - 1].querySelector('td,th') : null;
     if (foot && vis(foot) && (bgOf(foot) === pageBg(t) || (last && bgOf(foot) === bgOf(last)))) issues.push(`table-foot-flat ${label}`);
+    // Pierwszy wiersz nie może leżeć pod (przyklejonym) nagłówkiem tabeli.
+    const first = rows[0] && rows[0].querySelector('td,th');
+    const head0 = t.querySelector('thead th');
+    if (first && head0 && vis(first)) {
+      const fr = first.getBoundingClientRect(); const hr = head0.getBoundingClientRect();
+      if (fr.top < hr.bottom - 1) issues.push(`table-row-covered ${label}`);
+    }
     const low = rows.find((r) => r.getBoundingClientRect().height < 44);
     if (low) issues.push(`table-row-low ${label} ${Math.round(low.getBoundingClientRect().height)}`);
   });
