@@ -6,8 +6,9 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
 import { putJSON, fetchJSON } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShieldCheck, User, Key, ExternalLink, RefreshCw } from 'lucide-react';
+import { ShieldCheck, Key, ExternalLink, RefreshCw } from 'lucide-react';
+import PageContainer from '../shared/ui/PageContainer';
+import PageHeader from '../shared/ui/PageHeader';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
@@ -55,7 +56,7 @@ export default function Profile() {
     if (!user) {
         return (
             <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
-                <div className="text-bkpk-text-muted italic">Brak autoryzacji. Zaloguj się ponownie.</div>
+                <div className="label-caps text-sm text-bkpk-text-muted">Brak autoryzacji. Zaloguj się ponownie.</div>
             </div>
         );
     }
@@ -95,35 +96,14 @@ export default function Profile() {
     const userPhoto = resolvePlayerPhoto(user);
 
     return (
-        <div className="bg-bkpk-bg p-3 sm:p-4 md:p-8 lg:p-12">
-            <div className="max-w-[1100px] mx-auto space-y-6 sm:space-y-12">
-                
+        <div className="bg-bkpk-bg">
+            <PageContainer width="narrow">
                 {/* Header */}
-                <header className="space-y-2">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2 text-bkpk-primary font-bold uppercase tracking-[0.2em] text-[10px] sm:text-xs"
-                    >
-                        <User className="w-4 h-4" />
-                        <span>Konto Zawodnika</span>
-                    </motion.div>
-                    <motion.h1
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-2xl sm:text-3xl md:text-5xl font-black font-display text-bkpk-text-primary tracking-tight"
-                    >
-                        Mój Profil <span className="text-bkpk-primary">& Karta</span>
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-bkpk-text-muted text-sm sm:text-lg"
-                    >
-                        Zarządzaj kontem i zobacz podgląd karty. Sezon wybierasz w menu nawigacji.
-                    </motion.p>
-                </header>
+                <PageHeader
+                    kicker="Konto Zawodnika"
+                    title={<>Mój Profil <span className="text-bkpk-primary">& Karta</span></>}
+                    description="Zarządzaj kontem i zobacz podgląd karty. Sezon wybierasz w menu nawigacji."
+                />
 
                 <AiAnalysisBlock
                     title="Twój plan rozwoju (AI)"
@@ -139,7 +119,7 @@ export default function Profile() {
                     {/* Left Column: Player Card Visualizer */}
                     <div className="lg:col-span-5 flex flex-col items-center gap-6">
                         <div className="w-full max-w-[320px]">
-                            <h2 className="text-xs font-bold text-bkpk-text-muted uppercase tracking-widest mb-3 text-center lg:text-left">
+                            <h2 className="kicker text-bkpk-text-primary mb-4 w-full justify-center lg:justify-start">
                                 Moja Karta Zawodnika
                             </h2>
                             <PlayerCard
@@ -160,13 +140,13 @@ export default function Profile() {
                         <BkpkButton
                             variant="ghost"
                             onClick={() => navigate(`/players/${user.id}`)}
-                            className="w-full max-w-[320px] flex items-center justify-center gap-2 font-bold"
+                            className="w-full max-w-[320px] flex items-center justify-center gap-2"
                         >
                             <span>
                                 Statystyki
                                 {selectedSeason ? ` — ${selectedSeason.label}` : ''}
                             </span>
-                            <ExternalLink className="w-4 h-4" />
+                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
                         </BkpkButton>
                     </div>
 
@@ -179,18 +159,18 @@ export default function Profile() {
                             animateEntrance={false}
                         >
                             <form onSubmit={handlePasswordChange} className="space-y-4">
-                                <div className="flex items-center gap-3 p-3 bg-bkpk-surface-tint-2 rounded-xl border border-bkpk-border-strong text-xs text-bkpk-text-secondary">
-                                    <ShieldCheck className="w-4 h-4 text-bkpk-success" />
+                                <div className="flex items-center gap-3 p-3 bg-bkpk-bg border border-bkpk-border-subtle text-sm text-bkpk-text-secondary">
+                                    <ShieldCheck className="w-4 h-4 text-bkpk-success shrink-0" aria-hidden="true" />
                                     <span>Zalogowany jako: <strong className="text-bkpk-text-primary">@{user.username}</strong> ({getPositionLabel(user.position)} #{user.number || '--'})</span>
                                 </div>
 
                                 {passwordError && (
-                                    <div className="p-3 text-xs bg-bkpk-danger/15 text-bkpk-text-danger-subtle rounded-xl border border-bkpk-danger/30">
+                                    <div className="p-3 text-sm bg-bkpk-bg text-bkpk-text-danger-subtle border border-bkpk-danger border-l-4">
                                         {passwordError}
                                     </div>
                                 )}
                                 {passwordSuccess && (
-                                    <div className="p-3 text-xs bg-bkpk-success/20 text-bkpk-success rounded-xl border border-bkpk-success/30">
+                                    <div className="p-3 text-sm bg-bkpk-bg text-bkpk-success border border-bkpk-success border-l-4">
                                         {passwordSuccess}
                                     </div>
                                 )}
@@ -245,8 +225,7 @@ export default function Profile() {
                     </div>
 
                 </div>
-
-            </div>
+            </PageContainer>
         </div>
     );
 }

@@ -2,6 +2,14 @@ import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tool
 import { Activity } from 'lucide-react';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import useIsMobile from '../../hooks/useIsMobile';
+import {
+    chartAxisProps,
+    chartColors,
+    chartGridProps,
+    chartTooltipItemStyle,
+    chartTooltipLabelStyle,
+    chartTooltipStyle,
+} from '../../shared/lib/chartTheme';
 
 interface MomentumPoint {
     time: string;
@@ -38,9 +46,11 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
 
     return (
         <BkpkCard variant="glass" className="space-y-6 overflow-hidden w-full">
-            <div className="flex items-center gap-2 border-b border-bkpk-border-strong pb-4">
-                <Activity className="w-5 h-5 text-bkpk-primary" />
-                <h3 className="text-xl font-bold text-bkpk-text-primary font-display">
+            <div className="flex items-center gap-3 border-b border-bkpk-border-subtle pb-4">
+                <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
+                    <Activity className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
+                </div>
+                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">
                     Dynamika Meczu ({step === 5 ? '5' : '10'}-min bloki)
                 </h3>
             </div>
@@ -48,54 +58,38 @@ export default function DashboardMomentum({ data, bkCode, oppCode, step = 5 }: D
             <div className="w-full" style={{ height: isMobile ? '200px' : '250px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
-                        <defs>
-                            <linearGradient id="colorDiff" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--color-bkpk-primary)" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="var(--color-bkpk-primary)" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--bkpk-surface-tint-2)" />
+                        <CartesianGrid {...chartGridProps} />
                         <XAxis
                             dataKey="time"
-                            stroke="var(--bkpk-text-muted)"
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
+                            {...chartAxisProps}
                             interval={isMobile ? Math.ceil(chartData.length / 5) : 0}
                         />
                         <YAxis
-                            stroke="var(--bkpk-text-muted)"
-                            fontSize={10}
-                            tickLine={false}
-                            axisLine={false}
+                            {...chartAxisProps}
                             width={isMobile ? 25 : 40}
                         />
                         <Tooltip
                             trigger={isMobile ? 'click' : 'hover'}
-                            contentStyle={{
-                                backgroundColor: 'var(--bkpk-color-surface-elevated)',
-                                border: '1px solid var(--bkpk-border-strong)',
-                                borderRadius: '12px',
-                                backdropFilter: 'blur(10px)',
-                                fontSize: '12px'
-                            }}
-                            itemStyle={{ color: 'var(--bkpk-text-primary)', fontWeight: 'bold' }}
+                            contentStyle={chartTooltipStyle}
+                            itemStyle={chartTooltipItemStyle}
+                            labelStyle={chartTooltipLabelStyle}
+                            cursor={{ stroke: chartColors.axis, strokeDasharray: '2 4' }}
                         />
                         <Area
                             type="monotone"
                             dataKey="diff"
                             name="Różnica (BK - OPP)"
-                            stroke="var(--color-bkpk-primary)"
-                            fillOpacity={1}
-                            fill="url(#colorDiff)"
+                            stroke={chartColors.team}
+                            fill={chartColors.team}
+                            fillOpacity={0.14}
                             strokeWidth={2}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
 
-            <div className="flex items-center justify-center gap-2 text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">
-                <span className="w-2 h-2 rounded-full bg-bkpk-primary shadow-bkpk-primary"></span>
+            <div className="flex items-center justify-center gap-2 label-caps text-xs text-bkpk-text-secondary">
+                <span className="w-6 h-[3px] bg-bkpk-primary" aria-hidden="true"></span>
                 <span>Przewaga punktowa BeKaPaKa</span>
             </div>
         </BkpkCard>

@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
+import PageContainer from '../shared/ui/PageContainer';
+import PageLoader from '../shared/ui/PageLoader';
 import { bkpkActivePillClass } from '../shared/ui/BkpkButton';
 import BoxScoreModern from '../features/games/BoxScoreModern';
 import TeamStats from '../components/games/TeamStats';
@@ -77,139 +79,139 @@ export default function GameDetail() {
   const isLoss = game?.result === 'L';
 
   if (loading) {
-    return (
-      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-bkpk-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-bkpk-text-secondary font-bold uppercase tracking-widest text-xs">Pobieranie danych meczu...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader fullScreen label="Pobieranie danych meczu..." />;
   }
 
   if (!game) return null;
 
   return (
-    <div className="bg-bkpk-bg p-4 md:p-8 lg:p-12">
-      <div className="max-w-[1400px] mx-auto space-y-12">
-        <Link to="/games" className="group flex items-center gap-2 text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
-          <div className="w-8 h-8 rounded-full bg-bkpk-surface-tint-2 flex items-center justify-center group-hover:bg-bkpk-surface-tint-4 transition-colors">
-            <ChevronLeft className="w-4 h-4" />
+    <div className="bg-bkpk-bg">
+      <PageContainer>
+        <Link to="/games" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
+          <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center group-hover:border-bkpk-text-primary transition-colors">
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </div>
-          <span className="font-bold uppercase tracking-wider text-xs">Powrót do meczów</span>
+          <span className="label-caps text-xs">Powrót do meczów</span>
         </Link>
 
-        {/* Immersive Scoreboard Header */}
-        <section className="relative overflow-hidden rounded-bkpk-lg bg-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow p-5 sm:p-8 md:p-12 lg:p-16">
-          <div className="relative z-10 flex flex-row items-center justify-between gap-3 md:gap-12">
+        {/* Scoreboard Header — jak MatchHero/ScoreBoard na bekapaka.pl: BeKaPaKa po lewej, przegrany konturem */}
+        <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 md:p-10 lg:p-12">
+          {(isWin || isLoss) && (
+            <div className="flex justify-center md:justify-start mb-6 md:mb-8">
+              <span className={cn(
+                'status-flag',
+                isWin ? 'bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg' : 'text-bkpk-text-primary'
+              )}>
+                {isWin ? 'Wygrana' : 'Porażka'}
+              </span>
+            </div>
+          )}
+
+          <div className="relative flex flex-row items-center justify-between gap-3 md:gap-10">
             {/* Home Team */}
-            <div className="flex-1 flex flex-col items-center md:items-end gap-2 md:gap-4 min-w-0">
-              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-primary/20 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-primary/30 shrink-0">
-                <span className="text-base md:text-2xl font-bold text-bkpk-primary">BK</span>
+            <div className="flex-1 flex flex-col items-center md:items-start gap-2 md:gap-4 min-w-0">
+              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-primary flex items-center justify-center shrink-0">
+                <span className="font-display text-xl md:text-4xl leading-none text-bkpk-text-primary">BK</span>
               </div>
-              <h2 className="text-xs sm:text-base md:text-3xl font-black font-display text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-right">
+              <h2 className="text-base sm:text-xl md:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-primary w-full text-center md:text-left break-words [text-wrap:balance]">
                 {bekapaka.name}
               </h2>
             </div>
 
             {/* Score */}
             <div className="flex flex-col items-center gap-2 shrink-0">
-              <div className="text-4xl sm:text-6xl md:text-8xl font-black font-display flex items-center gap-2 md:gap-6 tabular-nums">
-                <span className={cn(
-                  isWin && 'text-bkpk-success',
-                  isLoss && 'text-bkpk-danger',
-                  !isWin && !isLoss && 'text-bkpk-text-primary'
-                )}>
+              <div className="font-display flex items-baseline gap-1 sm:gap-2 md:gap-4 tabular-nums leading-[0.85] tracking-[-0.02em] text-bkpk-text-primary text-6xl sm:text-7xl md:text-8xl lg:text-[128px]">
+                <span className={cn(isLoss && 'outline-text')}>
                   {game.scoreUs ?? 0}
                 </span>
-                <span className="text-white/10 text-2xl md:text-4xl">:</span>
-                <span className={cn(
-                  isWin && 'text-bkpk-text-muted',
-                  isLoss && 'text-bkpk-text-primary',
-                  !isWin && !isLoss && 'text-bkpk-text-primary'
-                )}>
+                <span className="text-bkpk-text-muted text-[0.6em] -translate-y-[0.12em]" aria-hidden="true">:</span>
+                <span className={cn(isWin && 'outline-text')}>
                   {game.scoreThem ?? 0}
                 </span>
-              </div>
-              <div className="hidden sm:flex items-center gap-4 text-bkpk-text-secondary font-bold text-xs uppercase tracking-widest bg-bkpk-surface-tint-2 px-4 py-2 rounded-full border border-bkpk-border-strong">
-                <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-bkpk-primary" />
-                  {new Date(game.date).toLocaleDateString()}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-                  {game.venue || 'KOSiR Koszalin'}
-                </div>
               </div>
             </div>
 
             {/* Away Team */}
-            <div className="flex-1 flex flex-col items-center md:items-start gap-2 md:gap-4 min-w-0">
-              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-surface-tint-2 rounded-2xl md:rounded-3xl flex items-center justify-center border border-bkpk-border-strong shrink-0">
-                <span className="text-base md:text-2xl font-bold text-bkpk-text-secondary">OP</span>
+            <div className="flex-1 flex flex-col items-center md:items-end gap-2 md:gap-4 min-w-0">
+              <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-surface-elevated border-[1.5px] border-bkpk-border-strong flex items-center justify-center shrink-0">
+                <span className="font-display text-xl md:text-4xl leading-none text-bkpk-text-secondary">OP</span>
               </div>
-              <h2 className="text-xs sm:text-base md:text-3xl font-black font-display text-bkpk-text-primary uppercase tracking-tighter truncate w-full text-center md:text-left">
+              <h2 className="text-base sm:text-xl md:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-secondary w-full text-center md:text-right break-words [text-wrap:balance]">
                 {opponentTeam.name}
               </h2>
             </div>
           </div>
 
-          {(game.dataSource === 'kalk' || game.isFromKalkMatch) ? (
-            <p className="relative z-10 mt-3 text-center text-[10px] font-bold uppercase tracking-widest text-bkpk-primary">
-              Dane z KALK
-            </p>
-          ) : null}
+          {/* Meta: termin i hala */}
+          <div className="mt-6 md:mt-10 pt-4 border-t border-bkpk-border-subtle flex flex-wrap items-center justify-center md:justify-between gap-x-6 gap-y-2">
+            <div className="hidden sm:flex items-center gap-6 label-caps text-xs text-bkpk-text-secondary">
+              <div className="flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
+                <span className="tabular-nums">{new Date(game.date).toLocaleDateString()}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
+                {game.venue || 'KOSiR Koszalin'}
+              </div>
+            </div>
+
+            {/* Mobile Info Badge */}
+            <div className="sm:hidden flex items-center justify-center gap-2.5 label-caps text-[11px] text-bkpk-text-secondary">
+              <div className="flex items-center gap-1">
+                <Calendar className="w-3 h-3 text-bkpk-primary" aria-hidden="true" />
+                <span className="tabular-nums">{new Date(game.date).toLocaleDateString()}</span>
+              </div>
+              <div className="w-px h-3 bg-bkpk-border-strong" aria-hidden="true" />
+              <div className="flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
+                {game.venue || 'KOSiR Koszalin'}
+              </div>
+            </div>
+
+            {(game.dataSource === 'kalk' || game.isFromKalkMatch) ? (
+              <p className="status-flag text-bkpk-text-secondary">
+                Dane z KALK
+              </p>
+            ) : null}
+          </div>
 
           {game.hasBoxScore === false && game.boxScoreMissingHint ? (
-            <p className="relative z-10 mt-2 text-center text-xs text-bkpk-warning max-w-lg mx-auto">
+            <p className="mt-3 text-center md:text-left text-sm text-bkpk-text-secondary max-w-lg md:max-w-none mx-auto">
               {game.boxScoreMissingHint}
             </p>
           ) : null}
 
-          {/* Mobile Info Badge */}
-          <div className="sm:hidden flex items-center justify-center gap-2.5 mt-4 text-bkpk-text-secondary font-bold text-[10px] uppercase tracking-widest bg-bkpk-surface-tint-2 px-3 py-1.5 rounded-full border border-bkpk-border-strong w-fit mx-auto relative z-10">
-            <div className="flex items-center gap-1">
-              <Calendar className="w-3 h-3 text-bkpk-primary" />
-              {new Date(game.date).toLocaleDateString()}
-            </div>
-            <div className="w-px h-2 bg-bkpk-border-strong" />
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-bkpk-primary" />
-              {game.venue || 'KOSiR Koszalin'}
-            </div>
-          </div>
-
           {/* Quarter Scores */}
-          <div className="mt-8 md:mt-12 flex justify-center gap-2 md:gap-4 overflow-x-auto pb-2 sm:pb-4 no-scrollbar">
-            {game.quarters?.map((q: any, i: number) => (
-              <div key={i} className="flex flex-col items-center gap-1 min-w-[56px] bg-bkpk-surface-tint-2 border border-bkpk-border-strong px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl">
-                <span className="text-[10px] sm:text-xs font-bold text-bkpk-text-muted uppercase">Q{i + 1}</span>
-                <span className="text-sm sm:text-lg font-black font-display text-bkpk-text-primary">{q.home}-{q.away}</span>
+          {game.quarters?.length ? (
+            <div className="mt-6 flex justify-center md:justify-start overflow-x-auto no-scrollbar">
+              <div className="flex border border-bkpk-border-subtle divide-x divide-bkpk-border-subtle">
+                {game.quarters.map((q: any, i: number) => (
+                  <div key={i} className="flex flex-col items-center gap-1 min-w-[64px] px-3 py-2 sm:px-4">
+                    <span className="label-caps text-[11px] text-bkpk-text-muted">Q{i + 1}</span>
+                    <span className="font-display text-lg sm:text-xl leading-none tabular-nums text-bkpk-text-primary">{q.home}-{q.away}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* Decorative Background Elements */}
-          <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden">
-            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-bkpk-primary/10 rounded-full blur-[120px]" />
-            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[500px] bg-bkpk-success/5 rounded-full blur-[120px]" />
-          </div>
+            </div>
+          ) : null}
         </section>
 
         {/* Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Main Content */}
-          <div className="lg:col-span-8 space-y-12">
+          <div className="lg:col-span-8 space-y-10 md:space-y-12">
 
             {/* Intelligent Insights */}
             <AnimatePresence>
               {game.insights && game.insights.length > 0 && (
                 <section className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-bkpk-warning" />
-                    <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Inteligentne Wnioski</h3>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
+                      <Zap className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
+                    </div>
+                    <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Inteligentne Wnioski</h3>
                   </div>
-                  <div className="grid gap-3">
+                  <div className="grid gap-2">
                     {game.insights.map((insight: any, idx: number) => (
                       <motion.div
                         key={idx}
@@ -217,13 +219,18 @@ export default function GameDetail() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         className={cn(
-                          "p-4 rounded-xl border flex gap-4 items-start",
-                          insight.type === 'success' ? "bg-bkpk-success/10 border-bkpk-success/20 text-bkpk-success" :
-                            insight.type === 'warning' ? "bg-bkpk-danger/10 border-bkpk-danger/20 text-bkpk-text-danger" :
-                              "bg-bkpk-surface-tint-2 border-bkpk-border-strong text-bkpk-text-secondary"
+                          "p-4 bg-bkpk-surface border border-bkpk-border-subtle border-l-4 flex gap-4 items-start text-bkpk-text-primary",
+                          insight.type === 'success' ? "border-l-bkpk-success" :
+                            insight.type === 'warning' ? "border-l-bkpk-danger" :
+                              "border-l-bkpk-border-strong"
                         )}
                       >
-                        <div className="p-1.5 rounded-lg bg-current/10">
+                        <div className={cn(
+                          "w-7 h-7 shrink-0 inline-grid place-items-center border-[1.5px] text-xs font-semibold leading-none",
+                          insight.type === 'success' ? "border-bkpk-success text-bkpk-success" :
+                            insight.type === 'warning' ? "border-bkpk-danger text-bkpk-text-danger" :
+                              "border-bkpk-border-strong text-bkpk-text-secondary"
+                        )}>
                           {insight.type === 'success' ? '✓' : insight.type === 'warning' ? '!' : 'i'}
                         </div>
                         <p className="text-sm font-medium leading-relaxed">{insight.text}</p>
@@ -252,17 +259,19 @@ export default function GameDetail() {
             {/* Box Score Section */}
             <section className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BarChart2 className="w-5 h-5 text-bkpk-primary" />
-                  <h3 className="text-xl font-bold text-bkpk-text-primary font-display">Statystyki Zawodników (Box Score)</h3>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
+                    <BarChart2 className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki Zawodników (Box Score)</h3>
                 </div>
 
-                <div className="flex bg-bkpk-surface-tint-2 p-1 rounded-xl border border-bkpk-border-strong">
+                <div className="flex shrink-0 border border-bkpk-border-strong">
                   <button
                     onClick={() => setActiveTab('bekapaka')}
                     className={cn(
-                      "px-4 py-1.5 text-xs font-bold rounded-lg transition-all uppercase tracking-widest",
-                      activeTab === 'bekapaka' ? bkpkActivePillClass : "text-bkpk-text-secondary"
+                      "px-4 py-1.5 min-h-[44px] label-caps text-xs transition-colors",
+                      activeTab === 'bekapaka' ? bkpkActivePillClass : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                     )}
                   >
                     BKPK
@@ -270,8 +279,8 @@ export default function GameDetail() {
                   <button
                     onClick={() => setActiveTab('opponent')}
                     className={cn(
-                      "px-4 py-1.5 text-xs font-bold rounded-lg transition-all uppercase tracking-widest",
-                      activeTab === 'opponent' ? bkpkActivePillClass : "text-bkpk-text-secondary"
+                      "px-4 py-1.5 min-h-[44px] label-caps text-xs transition-colors",
+                      activeTab === 'opponent' ? bkpkActivePillClass : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                     )}
                   >
                     OPP
@@ -302,20 +311,19 @@ export default function GameDetail() {
           </div>
 
           {/* Sidebar Area */}
-          <aside className="lg:col-span-4 space-y-12">
+          <aside className="lg:col-span-4 space-y-8">
             {/* Match MVP */}
             {game.mvp && (
-              <BkpkCard variant="glass" className="relative overflow-hidden group">
+              <BkpkCard variant="glass" className="relative overflow-hidden group border-t-2 border-t-bkpk-medal-gold">
                 <div className="relative z-10 space-y-4 text-center">
-                  <span className="text-xs font-bold text-bkpk-warning uppercase tracking-[0.2em]">Najbardziej Wartościowy Zawodnik (MVP)</span>
+                  <span className="label-caps text-xs text-bkpk-medal-gold">Najbardziej Wartościowy Zawodnik (MVP)</span>
                   <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 bg-bkpk-warning/10 rounded-full flex items-center justify-center border border-bkpk-warning/30 mb-4 group-hover:scale-110 transition-transform">
-                      <Trophy className="w-8 h-8 text-bkpk-warning" />
+                    <div className="w-16 h-16 flex items-center justify-center border-[1.5px] border-bkpk-medal-gold mb-4">
+                      <Trophy className="w-8 h-8 text-bkpk-medal-gold" aria-hidden="true" />
                     </div>
-                    <h4 className="text-2xl font-black font-display text-bkpk-text-primary uppercase tracking-tight">{game.mvp}</h4>
+                    <h4 className="text-3xl leading-none font-display font-extrabold uppercase text-bkpk-text-primary">{game.mvp}</h4>
                   </div>
                 </div>
-                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-48 h-48 bg-bkpk-warning/5 rounded-full blur-3xl pointer-events-none" />
               </BkpkCard>
             )}
 
@@ -336,9 +344,7 @@ export default function GameDetail() {
             </div>
           </aside>
         </div>
-
-
-      </div>
+      </PageContainer>
     </div>
   );
 }

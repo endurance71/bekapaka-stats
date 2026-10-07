@@ -45,7 +45,7 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
         return (
             <BkpkCard title="Scouting Rywala" icon={<Users className="w-5 h-5 text-bkpk-primary" />}>
                 <div className="py-12 flex justify-center">
-                    <div className="w-6 h-6 border-4 border-bkpk-primary/20 border-t-bkpk-primary rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-4 border-bkpk-border-strong border-t-bkpk-primary rounded-full animate-spin" />
                 </div>
             </BkpkCard>
         );
@@ -77,45 +77,47 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
         >
             <div className="flex-1 space-y-6">
                 {data.usingLastMatchFallback ? (
-                    <p className="text-[10px] font-bold text-bkpk-warning uppercase tracking-widest px-1">
+                    <p className="label-caps text-[11px] text-bkpk-text-secondary border-l-2 border-bkpk-primary pl-2">
                         Brak nadchodzącego meczu — dane z ostatniego spotkania
                         {data.matchDate ? ` (${data.matchDate})` : ''}
                     </p>
                 ) : null}
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col">
-                        <h4 className="text-xl font-black font-display text-bkpk-text-primary group-hover:text-bkpk-primary transition-colors">
+                        <h4 className="text-2xl leading-none font-display font-extrabold uppercase text-bkpk-text-primary">
                             {data.opponent}
                         </h4>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest">Bilans:</span>
-                            <span className="text-sm font-black text-bkpk-text-primary">{data.wins}-{data.losses}</span>
+                        <div className="flex items-center gap-2 mt-2">
+                            <span className="label-caps text-xs text-bkpk-text-secondary">Bilans:</span>
+                            <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{data.wins}-{data.losses}</span>
                         </div>
                     </div>
                     {data.rank && (
-                        <div className="bg-bkpk-surface-tint-2 border border-bkpk-border-strong px-3 py-1.5 rounded-xl flex flex-col items-center">
-                            <span className="text-xs text-bkpk-text-secondary font-bold uppercase tracking-tighter">Miejsce</span>
-                            <span className="text-base font-black text-bkpk-primary">{data.rank}.</span>
+                        <div className="border border-bkpk-border-strong px-3 py-1.5 flex flex-col items-center">
+                            <span className="label-caps text-[11px] text-bkpk-text-secondary">Miejsce</span>
+                            <span className="font-display text-2xl leading-none tabular-nums text-bkpk-text-primary">{data.rank}.</span>
                         </div>
                     )}
                 </div>
 
                 <div className="space-y-2 min-w-0">
-                    <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest pl-1">Ostatnia Forma</label>
+                    <label className="block label-caps text-xs text-bkpk-text-secondary">Ostatnia Forma</label>
                     <div className="grid grid-cols-3 gap-1.5 min-w-0">
                         {data.form.slice(0, 3).map((match, i) => (
                             <div
                                 key={i}
-                                className="min-w-0 bg-bkpk-surface-tint-1 border border-bkpk-border-strong p-2 rounded-xl hover:bg-bkpk-surface-tint-2 transition-colors overflow-hidden"
+                                className="min-w-0 bg-bkpk-bg border border-bkpk-border-subtle p-2 hover:border-bkpk-border-strong transition-colors overflow-hidden"
                             >
                                 <div className={cn(
-                                    "w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black mb-1.5",
-                                    match.result === 'W' ? "bg-bkpk-success-fill text-white" : "bg-bkpk-danger-fill text-white"
+                                    "w-7 h-7 inline-grid place-items-center border-[1.5px] text-xs font-semibold leading-none mb-1.5",
+                                    match.result === 'W'
+                                        ? "bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg"
+                                        : "bg-transparent border-bkpk-text-secondary text-bkpk-text-primary"
                                 )}>
                                     {match.result}
                                 </div>
-                                <div className="text-[11px] font-black text-bkpk-text-primary truncate tabular-nums">{match.scoreUs}:{match.scoreThem}</div>
-                                <div className="text-[9px] text-bkpk-text-muted truncate uppercase mt-0.5 leading-tight" title={match.opponent}>
+                                <div className="font-display text-base leading-none text-bkpk-text-primary truncate tabular-nums">{match.scoreUs}:{match.scoreThem}</div>
+                                <div className="text-[11px] text-bkpk-text-muted truncate uppercase mt-1 leading-tight" title={match.opponent}>
                                     {match.opponent}
                                 </div>
                             </div>
@@ -124,30 +126,30 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-bkpk-surface-tint-2 p-3 rounded-2xl border border-bkpk-border-strong">
+                    <div className="bg-bkpk-bg p-3 border border-bkpk-border-subtle">
                         <div className="flex items-center gap-2 mb-1">
-                            <TrendingUp className="w-3 h-3 text-bkpk-success" />
-                            <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Atak</span>
+                            <TrendingUp className="w-3.5 h-3.5 text-bkpk-success" aria-hidden="true" />
+                            <span className="label-caps text-xs text-bkpk-text-secondary">Atak</span>
                         </div>
-                        <div className="text-lg font-black font-display text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">PPG</span></div>
                     </div>
-                    <div className="bg-bkpk-surface-tint-2 p-3 rounded-2xl border border-bkpk-border-strong">
+                    <div className="bg-bkpk-bg p-3 border border-bkpk-border-subtle">
                         <div className="flex items-center gap-2 mb-1">
-                            <TrendingDown className="w-3 h-3 text-bkpk-text-danger" />
-                            <span className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-tighter">Obrona</span>
+                            <TrendingDown className="w-3.5 h-3.5 text-bkpk-text-danger" aria-hidden="true" />
+                            <span className="label-caps text-xs text-bkpk-text-secondary">Obrona</span>
                         </div>
-                        <div className="text-lg font-black font-display text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="text-2xs text-bkpk-text-muted uppercase">PPG</span></div>
+                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">PPG</span></div>
                     </div>
                 </div>
 
                 {data.keyPlayers && data.keyPlayers.length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-bkpk-text-secondary uppercase tracking-widest pl-1">Kluczowi Gracze</label>
-                        <div className="space-y-1">
+                        <label className="block label-caps text-xs text-bkpk-text-secondary">Kluczowi Gracze</label>
+                        <div className="border-t border-bkpk-border-subtle">
                             {data.keyPlayers.map((player, i) => (
-                                <div key={i} className="flex items-center justify-between p-2 rounded-lg hover:bg-bkpk-surface-tint-2 transition-colors">
-                                    <span className="text-sm font-bold text-bkpk-text-primary">{player.name}</span>
-                                    <span className="text-sm font-black text-bkpk-primary">{formatStatFixed(player.ppg)} <span className="text-xs opacity-60 uppercase tracking-tighter">pkt</span></span>
+                                <div key={i} className="flex items-center justify-between px-2 py-2.5 border-b border-bkpk-border-subtle hover:bg-bkpk-surface-elevated transition-colors">
+                                    <span className="text-sm font-semibold text-bkpk-text-primary">{player.name}</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(player.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">pkt</span></span>
                                 </div>
                             ))}
                         </div>
