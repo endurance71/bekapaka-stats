@@ -1,0 +1,411 @@
+/* BeKaPaKa Website 2.0 — fundament.
+   Warstwy: paleta marki (packages/digital-design/dist/tokens.css, generowana) → role semantyczne (ten plik)
+   → komponenty (components.css) → treści (content.css) → mecz (match.css) → strony (pages.css).
+   Komponenty używają wyłącznie ról: kolorów, typografii i odstępów zdefiniowanych tutaj. */
+
+
+@layer foundation {
+  /* ---------- Role semantyczne: płyta (domyślnie) ---------- */
+  :root,
+  [data-theme='plyta'] {
+    --bg: var(--c-black);
+    --bg-muted: var(--c-ink-900);
+    --surface: var(--c-ink-800);
+    --surface-elevated: var(--c-ink-700);
+    --text: var(--c-white);
+    --text-secondary: var(--c-stone-200);
+    --text-muted: var(--c-stone-400);
+    --line: var(--c-ink-600);
+    --line-strong: var(--c-ink-500);
+    --brand: var(--c-red-500);
+    --brand-deep: var(--c-red-700);
+    --brand-text: var(--c-red-300);
+    --brand-gold: var(--c-gold-500);
+    --action: var(--c-red-600);
+    --action-hover: var(--c-red-700);
+    --action-text: var(--c-pure);
+    --success: var(--c-green-400);
+    --warning: var(--c-gold-500);
+    --danger: var(--c-red-300);
+    --focus: var(--c-gold-500);
+    --media-bg: var(--c-ink-900);
+    /* Tabele: pas nagłówka, zebra co 2. wiersz, pas stopki, wiersz BeKaPaKa */
+    --table-head-bg: var(--c-ink-600);
+    --table-head-text: var(--c-pure);
+    --table-stripe: var(--c-ink-800);
+    --table-hover: var(--c-ink-700);
+    --table-foot-bg: var(--c-ink-700);
+    --table-foot-line: var(--c-white);
+    --table-own-bg: rgb(239 23 52 / 0.14);
+    color: var(--text);
+  }
+
+  /* ---------- Role semantyczne: papier ---------- */
+  [data-theme='papier'] {
+    --bg: var(--c-paper);
+    --bg-muted: #eae7e0;
+    --surface: var(--c-pure);
+    --surface-elevated: var(--c-pure);
+    --text: var(--c-black);
+    --text-secondary: var(--c-ink-600);
+    --text-muted: var(--c-stone-600);
+    --line: var(--c-stone-200);
+    --line-strong: var(--c-black);
+    --brand: var(--c-red-600);
+    --brand-deep: var(--c-red-700);
+    --brand-text: var(--c-red-700);
+    --brand-gold: var(--c-gold-700);
+    --action: var(--c-red-600);
+    --action-hover: var(--c-red-700);
+    --success: var(--c-green-600);
+    --warning: var(--c-gold-700);
+    --danger: var(--c-red-700);
+    --focus: var(--c-black);
+    --media-bg: #e2ded6;
+    --table-head-bg: var(--c-black);
+    --table-head-text: var(--c-pure);
+    --table-stripe: #eae7e0;
+    --table-hover: #e2ded6;
+    --table-foot-bg: #e2ded6;
+    --table-foot-line: var(--c-black);
+    --table-own-bg: rgb(217 20 47 / 0.1);
+    color: var(--text);
+  }
+
+  /* Nadpisania tokenów marki wiązane na body — tokens.css definiuje je na :root poza warstwami.
+     Fonty: next/font haszuje nazwy rodzin. Szerokość: kontener płynny do 1600 px.
+     Czytelność 2.1: najmniejszy tekst 14 px (--fs-micro), dane w tabelach od 16 px. */
+  body {
+    --font-text: var(--font-barlow), Barlow, system-ui, sans-serif;
+    --font-display: var(--font-barlow-condensed), 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    --container-max: 1600px;
+    --fs-micro: 14px;
+    --fs-label: 14px;
+    --fs-caption: 15px;
+    --fs-meta: 15px;
+    --fs-table: 16px;
+    --row-h: 48px;
+  }
+  @media (min-width: 1024px) {
+    body {
+      --fs-table: 17px;
+      --row-h: 52px;
+    }
+  }
+  @media (min-width: 1280px) {
+    body {
+      --margin: clamp(48px, 3.75vw, 80px);
+    }
+  }
+  @media (min-width: 1600px) {
+    body {
+      --fs-body: 19px;
+      --fs-lead: 23px;
+      --fs-label: 15px;
+      --fs-micro: 15px;
+      --fs-caption: 16px;
+      --fs-meta: 16px;
+      --fs-table: 18px;
+      --fs-h1: 72px;
+      --fs-h2: 48px;
+      --fs-h3: 32px;
+      --fs-h4: 24px;
+      --fs-display: 108px;
+      --row-h: 56px;
+    }
+  }
+
+  :root {
+    /* Typografia — 11 ról. Rozmiary bazowe z tokens.css (--fs-*), role płynne liczone tutaj. */
+    --t-display-xl: clamp(3.5rem, 1.6rem + 8.2vw, 9.5rem);
+    --t-score: clamp(5rem, 2.4rem + 10vw, 12.5rem);
+    --t-stat: clamp(2.5rem, 1.9rem + 2.4vw, 4rem);
+    --t-small: var(--fs-body-sm);
+
+    /* Layout */
+    --band-pad: var(--section-pad);
+    --band-pad-lg: calc(var(--section-pad) * 1.5);
+    --measure: min(68ch, 720px);
+    --chamfer: 12px;
+    --chamfer-sm: 8px;
+  }
+
+  /* ---------- Reset ---------- */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--header-h) + var(--space-4));
+    background: var(--c-black);
+  }
+  body {
+    margin: 0;
+    min-height: 100svh;
+    font: 400 var(--fs-body) / var(--lh-body) var(--font-text);
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-wrap: break-word;
+  }
+  img,
+  svg,
+  video,
+  picture {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  figure,
+  blockquote,
+  ul,
+  ol,
+  dl,
+  dd {
+    margin: 0;
+  }
+  ul[role='list'],
+  ol[role='list'] {
+    list-style: none;
+    padding: 0;
+  }
+  a {
+    color: inherit;
+    text-underline-offset: 0.2em;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  main {
+    display: block;
+    min-width: 0;
+  }
+  main:focus {
+    outline: none;
+  }
+  :focus-visible {
+    outline: var(--bw-focus) solid var(--focus);
+    outline-offset: 3px;
+  }
+  [data-theme] {
+    background-color: var(--bg);
+  }
+
+  /* ---------- Dostępność ---------- */
+  .sr-only,
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .visually-hidden-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .skip-link {
+    position: absolute;
+    left: var(--space-4);
+    top: -100px;
+    z-index: 100;
+    padding: var(--space-3) var(--space-4);
+    background: var(--c-pure);
+    color: var(--c-black);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    top: var(--space-4);
+  }
+
+  /* ---------- Typografia: role ----------
+     Role bazowe (.t-display, .t-h1–h6, .t-lead, .t-body, .t-label, .t-meta, .t-caption, .t-score, .t-number)
+     pochodzą z tokens.css marki. Tu: nagłówki HTML i role płynne 2.0 (Display XL, Stat, Small). */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: var(--fs-h1);
+    line-height: var(--lh-h1);
+    letter-spacing: var(--tr-h1);
+  }
+  h2 {
+    font-size: var(--fs-h2);
+    line-height: var(--lh-h2);
+  }
+  h3 {
+    font-size: var(--fs-h3);
+    line-height: var(--lh-h3);
+  }
+  h4 {
+    font: 600 var(--fs-h4) / var(--lh-h4) var(--font-text);
+  }
+  .t-display-xl {
+    font: 800 var(--t-display-xl) / 0.86 var(--font-display);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .t-small {
+    font-size: var(--t-small);
+    line-height: var(--lh-body-sm);
+  }
+  .t-stat {
+    font: 800 var(--t-stat) / 0.9 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+  .muted {
+    color: var(--text-muted);
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Litery i cyfry BKPK: pochylenie 9° + przecięcie maską. Tylko wynik, numer, godzina w hero, display.
+     Brak wsparcia maski (oraz Safari/Firefox do czasu testu ręcznego) → zwykły Barlow Condensed. */
+  /* Pochylenie wystaje ~0,08 em w prawo u góry — rezerwa, żeby cyfry nie wychodziły poza kontener. */
+  .cut {
+    display: inline-block;
+    transform: skewX(var(--cut-skew));
+    padding-inline-end: 0.08em;
+  }
+  @supports ((mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000))) {
+    .cut {
+      -webkit-mask-image: repeating-linear-gradient(
+        to bottom,
+        #000 0 var(--cut-top),
+        transparent var(--cut-top) var(--cut-bottom),
+        #000 var(--cut-bottom) 1em
+      );
+      mask-image: repeating-linear-gradient(
+        to bottom,
+        #000 0 var(--cut-top),
+        transparent var(--cut-top) var(--cut-bottom),
+        #000 var(--cut-bottom) 1em
+      );
+      line-height: 1;
+    }
+  }
+  @supports (-webkit-touch-callout: none) {
+    .cut {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+  @supports (-moz-appearance: none) {
+    .cut {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+  /* Kontur cyfr: przegrywający w wyniku, numer za postacią. */
+  .outline {
+    color: transparent;
+    -webkit-text-stroke: max(1.5px, 0.03em) var(--text);
+  }
+
+  /* ---------- Layout ---------- */
+  .container {
+    width: min(var(--container-max), 100% - 2 * var(--margin));
+    margin-inline: auto;
+  }
+  .band {
+    position: relative;
+    padding-block: var(--band-pad);
+  }
+  .band--lg {
+    padding-block: var(--band-pad-lg);
+  }
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--cluster, var(--space-3));
+  }
+  .split {
+    display: grid;
+    gap: var(--space-12) var(--gutter);
+  }
+  @media (min-width: 1024px) {
+    .split--7-5 {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+
+  /* Lista rozdzielona liniami — domyślny sposób grupowania treści zamiast kart. */
+  .rule-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .rule-list > * {
+    border-bottom: 1px solid var(--line);
+  }
+
+
+  /* ---------- Overlay: blokada przewijania (packages/safari-overlay) ---------- */
+  html.is-scroll-locked,
+  body.is-scroll-locked {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+  body.is-scroll-locked {
+    position: fixed;
+    left: 0;
+    right: 0;
+  }
+  /* Safari iOS: tło overlayu = tło aplikacji (transparentne odsłania chrome przeglądarki). */
+  html.is-overlay-open,
+  html.is-overlay-open body {
+    background-color: var(--c-black);
+  }
+  @supports (-webkit-touch-callout: none) {
+    html.is-overlay-open .menu-overlay,
+    html.is-overlay-open .menu-overlay__panel {
+      min-height: 100lvh;
+    }
+  }
+
+  /* ---------- Ruch ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

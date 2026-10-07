@@ -1,3 +1,5 @@
+> **NIEAKTUALNE (wersja 1.0).** Obowiązuje Brandbook 2.0: `BeKaPaKa - brand/05_brandbook/BeKaPaKa_Brandbook_2.0.pdf` i tom WWW `BeKaPaKa_Brandbook_2.0_WWW.pdf`; decyzje zamrożone w `packages/digital-design/CURRENT.source.md`. Ten plik zostaje wyłącznie jako odniesienie historyczne.
+
 # **BeKaPaKa Bobolice – Przewodnik po Identyfikacji Wizualnej (Brand Book)**
 
 Niniejszy dokument definiuje standardy wizualne dla amatorskiej drużyny koszykówki BeKaPaKa Bobolice. Konsekwentne stosowanie poniższych wytycznych jest kluczowe dla budowania profesjonalnego i rozpoznawalnego wizerunku, zarówno na parkiecie, jak i w komunikacji cyfrowej (social media, strona www).

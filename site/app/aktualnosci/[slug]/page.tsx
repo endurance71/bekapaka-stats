@@ -5,7 +5,11 @@ import { serializeJsonLd } from '../../../lib/json-ld'
 import { getAllNewsPosts } from '../../../lib/data/cms'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { ArticleMarkdown } from '../../../components/public/shared/ArticleMarkdown'
+import { ArticleMarkdown, getArticleNavigation } from '../../../components/public/shared/ArticleMarkdown'
+import { Band } from '../../../components/public/primitives/Band'
+import { BandHead } from '../../../components/public/primitives/BandHead'
+import { ArrowLink } from '../../../components/public/primitives/ArrowLink'
+import { Story } from '../../../components/public/news/Story'
 import { ArticleRelations } from '../../../components/public/shared/ArticleRelations'
 import { NewsAttachments } from '../../../components/public/shared/NewsAttachments'
 import { ViewTracker } from '../../../components/public/shared/ViewTracker'
@@ -30,6 +34,10 @@ type NewsContext = {
   previous?: NewsPost
   next?: NewsPost
   related: NewsPost[]
+  /** Pasmo pod artykułem: powiązane, dopełnione najnowszymi — do 6 historii. */
+  more: NewsPost[]
+  /** Kolumna boczna: najnowsze poza nowszym / starszym — razem do 5 pozycji. */
+  latest: NewsPost[]
 }
 
 async function getNewsContext(slug: string): Promise<NewsContext> {
@@ -38,7 +46,7 @@ async function getNewsContext(slug: string): Promise<NewsContext> {
   const items = await getAllNewsPosts({ includeDrafts })
   const itemIndex = items.findIndex((item) => matchesNewsSlug(item, slug))
   const item = itemIndex >= 0 ? items[itemIndex] : null
-  if (!item) return { item: null, related: [] }
+  if (!item) return { item: null, related: [], more: [], latest: [] }
 
   const previous = items[itemIndex + 1]
   const next = items[itemIndex - 1]
@@ -50,8 +58,11 @@ async function getNewsContext(slug: string): Promise<NewsContext> {
       return Boolean(sameType || sameTag)
     })
     .slice(0, 3)
+  const others = items.filter((candidate) => candidate.id !== item.id)
+  const more = [...related, ...others.filter((candidate) => !related.includes(candidate))].slice(0, 6)
+  const latest = others.filter((candidate) => candidate !== previous && candidate !== next).slice(0, 5 - [previous, next].filter(Boolean).length)
 
-  return { item, previous, next, related }
+  return { item, previous, next, related, more, latest }
 }
 
 async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
@@ -88,6 +99,7 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
   const metaText = [formattedDate, readingTime, isArchivedEvent(item) ? 'Wydarzenie zakończone' : null].filter(Boolean).join(' · ')
   const leadText = item.excerpt || excerptFromContent(item.content)
   const isPoster = newsImageFit(item) === 'contain'
+  const toc = getArticleNavigation(item.content, { contextTitle: item.title, mediaRecords: item.mediaRecords, mediaPreview: item.mediaPreview })
 
   return (
     <EditorialDetailTemplate
@@ -108,7 +120,20 @@ export default async function NewsDetailPage({ params }: { params: Promise<Param
             </div>
           ) : null
       }
-      sidebar={<ArticleRelations related={context.related} previous={context.previous} next={context.next} />}
+      toc={toc}
+      sidebar={<ArticleRelations previous={context.previous} next={context.next} latest={context.latest} />}
+      more={
+        context.more.length > 0 && (
+          <Band theme='plyta' labelledBy='czytaj-dalej' className='article-more'>
+            <BandHead kicker='Co jeszcze?' title='Czytaj dalej' titleId='czytaj-dalej' action={<ArrowLink href='/aktualnosci'>Wszystkie aktualności</ArrowLink>} />
+            <div className='news-grid article-more__grid'>
+              {context.more.map((story) => (
+                <Story key={story.id} item={story} variant='grid' />
+              ))}
+            </div>
+          </Band>
+        )
+      }
       content={
         <>
           <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: serializeJsonLd({ '@context': 'https://schema.org', '@type': 'NewsArticle', headline: item.title, datePublished: item.publishedAt, dateModified: item.updatedAt || item.publishedAt, author: { '@type': 'Organization', name: item.author || 'BeKaPaKa Bobolice' }, mainEntityOfPage: `https://bekapaka.pl/aktualnosci/${item.slug}` }) }}/>

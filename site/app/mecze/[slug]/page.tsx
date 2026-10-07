@@ -5,6 +5,8 @@ import { getGameByIdState } from '../../../lib/data/backend'
 import { LiveMatchCard } from '../../../components/public/shared/LiveMatchCard'
 import { MatchDrawerContent } from '../MatchDrawerContent'
 import { NearestEventCalendarActions } from '../../../components/public/home/NearestEventCalendarActions'
+import { Breadcrumbs } from '../../../components/public/primitives/PageHeader'
+import { ShareActions } from '../../../components/public/shared/ShareActions'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { EditorialDetailTemplate } from '../../../components/public/templates/EditorialDetailTemplate'
@@ -69,45 +71,50 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
     const isFinal = game.status === 'FINAL' || (!game.status && !!game.result)
     const parentHref = isFinal ? '/mecze?widok=wyniki' : '/mecze'
     return (
-      <EditorialDetailTemplate
-        sectionLabel="Mecze"
-        theme="plyta"
-        title={`BeKaPaKa — ${game.opponent}`}
-        parentHref={parentHref}
-        share
-        content={
-          <>
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: serializeJsonLd({
-                  '@context': 'https://schema.org',
-                  '@type': 'SportsEvent',
-                  name: `BeKaPaKa — ${game.opponent}`,
-                  startDate: game.date,
-                  sport: 'Basketball',
-                  eventStatus:
-                    game.status === 'CANCELLED'
-                      ? 'https://schema.org/EventCancelled'
-                      : game.status === 'POSTPONED'
-                        ? 'https://schema.org/EventPostponed'
-                        : 'https://schema.org/EventScheduled',
-                  location: { '@type': 'Place', name: game.venue || 'KOSiR Koszalin' },
-                  competitor: [
-                    { '@type': 'SportsTeam', name: 'BeKaPaKa Bobolice' },
-                    { '@type': 'SportsTeam', name: game.opponent }
-                  ]
-                })
-              }}
-            />
-            <LiveMatchCard game={game} />
-            {game.status === 'SCHEDULED' && (
-              <NearestEventCalendarActions highlight={{ source: 'kalk', at: game.date, game }} />
-            )}
+      <div className="match-page" data-theme="plyta">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: serializeJsonLd({
+              '@context': 'https://schema.org',
+              '@type': 'SportsEvent',
+              name: `BeKaPaKa — ${game.opponent}`,
+              startDate: game.date,
+              sport: 'Basketball',
+              eventStatus:
+                game.status === 'CANCELLED'
+                  ? 'https://schema.org/EventCancelled'
+                  : game.status === 'POSTPONED'
+                    ? 'https://schema.org/EventPostponed'
+                    : 'https://schema.org/EventScheduled',
+              location: { '@type': 'Place', name: game.venue || 'KOSiR Koszalin' },
+              competitor: [
+                { '@type': 'SportsTeam', name: 'BeKaPaKa Bobolice' },
+                { '@type': 'SportsTeam', name: game.opponent }
+              ]
+            })
+          }}
+        />
+        <div className="container match-detail__crumbs">
+          <Breadcrumbs items={[{ label: 'Start', href: '/' }, { label: 'Mecze', href: parentHref }, { label: `BeKaPaKa — ${game.opponent}` }]} />
+        </div>
+        <LiveMatchCard
+          game={game}
+          heading="h1"
+          priority
+          actions={
+            <>
+              {game.status === 'SCHEDULED' && <NearestEventCalendarActions primary highlight={{ source: 'kalk', at: game.date, game }} />}
+              <ShareActions />
+            </>
+          }
+        />
+        <section className="match-detail" aria-label="Statystyki meczu">
+          <div className="container">
             <MatchDrawerContent game={game} hideScoreHeader />
-          </>
-        }
-      />
+          </div>
+        </section>
+      </div>
     )
   }
   const item = await getMatchBySlug(slug)

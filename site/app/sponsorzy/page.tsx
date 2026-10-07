@@ -1,7 +1,7 @@
 import { siteSettings } from '../../lib/site-settings'
 import type { Metadata } from 'next'
 import { PartnersGrid } from '../../components/public/sponsors/PartnersGrid'
-import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { ListingTemplate } from '../../components/public/templates/ListingTemplate'
 import {
   getSiteMetadataBase,
   getSponsorsState
@@ -20,36 +20,39 @@ export default async function SponsorsPage() {
   const sponsorsState = await getSponsorsState(60)
   const sponsors = [...sponsorsState.data].sort((a, b) => (a.order || 999) - (b.order || 999))
 
+  const mailto = `mailto:${siteSettings.contactEmail}?subject=${encodeURIComponent('Współpraca partnerska z BeKaPaKa')}`
+
   return (
-    <EditorialListingTemplate
+    <ListingTemplate
+      theme='papier'
+      kicker='Kto nas wspiera?'
       title='Partnerzy klubu'
-      eyebrow='Dziękujemy'
-      description='Dziękujemy firmom i osobom wspierającym rozwój klubu.'
+      lead='Firmy, instytucje i osoby, dzięki którym gramy w lidze KALK i organizujemy turnieje w Bobolicach. Dziękujemy.'
       hasItems={sponsors.length > 0}
       stateStatus={sponsorsState.status}
       stateSource={sponsorsState.source}
       stateMessage={sponsorsState.message}
-      emptyTitle='Brak sponsorów'
-      emptyDescription='Lista sponsorów jest aktualnie pusta.'
+      emptyTitle='Brak partnerów'
+      emptyDescription='Lista partnerów jest aktualnie pusta.'
     >
-      <div className="sponsors-content-wrap">
-        <PartnersGrid sponsors={sponsors}/>
-        <section className="sponsors-cooperation-card" aria-labelledby="sponsors-coop-title">
-          <div className="sponsors-cooperation-card__content">
-            <span className="label accent">Współpraca</span>
-            <h2 id="sponsors-coop-title" className="sponsors-cooperation-card__title">Zostań partnerem BeKaPaKa</h2>
-            <p className="sponsors-cooperation-card__desc">
-              Chcesz porozmawiać o współpracy z BeKaPaKa? Napisz do nas, aby wspólnie ustalić jej zakres i warunki.
-            </p>
-            <div className="sponsors-cooperation-card__actions">
-              <a className="btn btn--primary" href={`mailto:${siteSettings.contactEmail}?subject=${encodeURIComponent('Współpraca partnerska z BeKaPaKa')}`}>
-                Skontaktuj się w sprawie współpracy →
-              </a>
-              <span className="muted text-sm">{siteSettings.contactEmail}</span>
-            </div>
-          </div>
-        </section>
-      </div>
-    </EditorialListingTemplate>
+      <PartnersGrid sponsors={sponsors} />
+      <section id='wspolpraca' className='cooperation' aria-labelledby='h-cooperation'>
+        <div className='cooperation__text'>
+          <p className='kicker'>Współpraca</p>
+          <h2 id='h-cooperation' className='band-head__title'>Zostań partnerem BeKaPaKa</h2>
+          <p className='cooperation__lead'>
+            Twoja firma na parkiecie, na koszulkach i w relacjach z meczów. Napisz do nas — wspólnie ustalimy zakres i warunki współpracy.
+          </p>
+        </div>
+        <div className='cooperation__action'>
+          <a className='btn btn--primary' href={mailto}>
+            Napisz w sprawie współpracy
+          </a>
+          <a className='cooperation__email' href={mailto}>
+            {siteSettings.contactEmail}
+          </a>
+        </div>
+      </section>
+    </ListingTemplate>
   )
 }

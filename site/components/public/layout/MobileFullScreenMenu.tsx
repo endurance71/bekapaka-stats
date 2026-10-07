@@ -1,7 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { createPortal } from 'react-dom'
 import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { ClubLogo } from '../shared/ClubLogo'
@@ -9,7 +8,7 @@ import { CloseIcon } from '../shared/PublicIcons'
 import { siteSettings } from '../../../lib/site-settings'
 import { MainNav } from './MainNav'
 
-/** Must match `--mobile-menu-duration` in base.css */
+/** Musi odpowiadać czasowi przejścia .menu-overlay w components.css */
 const MENU_ANIMATION_MS = 300
 
 interface MobileFullScreenMenuProps {
@@ -21,8 +20,8 @@ interface MobileFullScreenMenuProps {
 
 function MenuIcon() {
   return (
-    <svg width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden>
-      <path d='M4 6h16M4 12h16M4 18h16' strokeLinecap='round' />
+    <svg width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='currentColor' strokeWidth='2' aria-hidden>
+      <path d='M3 7h18M3 12h18M3 17h12' strokeLinecap='square' />
     </svg>
   )
 }
@@ -170,40 +169,25 @@ export function MobileFullScreenMenu({ isOpen, onClose, onAfterClose, logoUrl }:
       role='dialog'
       aria-modal='true'
       aria-label='Menu nawigacji'
-      className={`mobile-fullscreen-menu ${isVisible ? 'is-visible' : ''}`}
+      className={`menu-overlay ${isVisible ? 'is-visible' : ''}`}
+      data-theme='plyta'
     >
-      <div ref={panelRef} className='mobile-fullscreen-menu__panel'>
-        <header className='mobile-fullscreen-menu__header'>
-          <button
-            type='button'
-            onClick={handleRequestClose}
-            className='mobile-fullscreen-menu__close'
-            aria-label='Zamknij menu'
-          >
+      <div ref={panelRef} className='menu-overlay__panel'>
+        <header className='menu-overlay__header'>
+          <ClubLogo logoUrl={logoUrl} onNavigate={handleRequestClose} />
+          <button type='button' onClick={handleRequestClose} className='icon-btn' aria-label='Zamknij menu'>
             <CloseIcon />
           </button>
-
-          <div className='mobile-fullscreen-menu__title'>
-            <Link
-              href='/'
-              className='mobile-fullscreen-menu__brand'
-              onClick={handleRequestClose}
-              aria-label='Strona główna'
-            >
-              BeKaPaKa
-            </Link>
-          </div>
-
-          <ClubLogo logoUrl={logoUrl} onNavigate={handleRequestClose} />
         </header>
-
-        <div className='mobile-fullscreen-menu__nav'>
-          <MainNav
-            onLinkClick={handleRequestClose}
-            variant='fullscreen'
-          />
+        <div className='menu-overlay__nav'>
+          <MainNav onLinkClick={handleRequestClose} variant='fullscreen' />
         </div>
-        <p className='mobile-fullscreen-menu__organization'>{siteSettings.organizationName}</p>
+        <footer className='menu-overlay__footer'>
+          <a className='arrow-link' href='https://panel.bekapaka.pl' target='_blank' rel='noopener noreferrer' onClick={handleRequestClose}>
+            <span>Panel klubu</span>
+          </a>
+          <p>{siteSettings.organizationName}</p>
+        </footer>
       </div>
     </div>,
     document.body

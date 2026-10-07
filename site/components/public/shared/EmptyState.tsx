@@ -10,10 +10,10 @@ export function EmptyState({
   action?: React.ReactNode
 }) {
   return (
-    <div className={`empty-state empty-state--${mode}`}>
+    <div className={`empty-state empty-state--${mode}`} role={mode === 'error' ? 'alert' : undefined}>
       <h2>{title}</h2>
       <p>{description}</p>
-      {action && <div className="empty-state__action" style={{ marginTop: 'var(--space-4)' }}>{action}</div>}
+      {action && <div className="empty-state__action">{action}</div>}
     </div>
   )
 }

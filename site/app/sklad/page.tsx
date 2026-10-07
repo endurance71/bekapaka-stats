@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
-import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
+import { ListingTemplate } from '../../components/public/templates/ListingTemplate'
+import { StatLeaders } from '../../components/public/team/StatLeaders'
 import { getRosterState, getSiteMetadataBase } from '../../lib/data'
 import { RosterList } from './RosterList'
 
@@ -16,11 +17,13 @@ export default async function RosterPage() {
   const rosterState = await getRosterState()
   const roster = rosterState.data
 
+  const active = roster.filter((player) => (player.gamesPlayed ?? 0) > 0).length
+
   return (
-    <EditorialListingTemplate
+    <ListingTemplate
+      kicker='Kto gra? · KALK'
       title='Skład drużyny'
-      description={`${roster[0]?.seasonLabel || 'Sezon niepotwierdzony'} · KALK · ${roster.length} zawodników w kadrze BeKaPaKa Bobolice.`}
-      eyebrow='Drużyna · KALK Koszalin'
+      lead={`${roster[0]?.seasonLabel || 'Sezon niepotwierdzony'} · ${roster.length} zawodników w kadrze${active ? `, ${active} z występem w sezonie` : ''}.`}
       hasItems={roster.length > 0}
       stateStatus={rosterState.status}
       stateSource={rosterState.source}
@@ -32,9 +35,13 @@ export default async function RosterPage() {
           : 'Skład zostanie uzupełniony po potwierdzeniu przez klub.'
       }
     >
-      <div className='listing-panel'>
-        <RosterList roster={roster} />
-      </div>
-    </EditorialListingTemplate>
+      <RosterList roster={roster} />
+      {active > 0 && (
+        <section className='roster-leaders' aria-labelledby='h-leaders'>
+          <h2 id='h-leaders' className='band-head__title'>Liderzy sezonu</h2>
+          <StatLeaders roster={roster} />
+        </section>
+      )}
+    </ListingTemplate>
   )
 }

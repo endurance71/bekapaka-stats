@@ -1,9 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { NearestEventCard } from '../components/public/home/NearestEventCard'
+import { MatchHero } from '../components/public/match/MatchHero'
+import { NearestEventCalendarActions } from '../components/public/home/NearestEventCalendarActions'
 import type { NearestHighlight } from '../lib/data'
 
-const mockKalkHighlight: NearestHighlight = {
+const mockKalkHighlight: Extract<NearestHighlight, { source: 'kalk' }> = {
   source: 'kalk',
   at: '2026-10-04T10:00:00.000Z',
   game: {
@@ -12,22 +13,27 @@ const mockKalkHighlight: NearestHighlight = {
     opponent: 'Kosz-All-In',
     scoreUs: null,
     scoreThem: null,
-    data: {
-      venue: 'KOSiR Koszalin'
-    }
+    venue: 'KOSiR Koszalin'
   }
 }
 
-describe('NearestEventCard mobile layout', () => {
-  it('renders header with kicker and mobile countdown in flow', () => {
-    const html = renderToStaticMarkup(<NearestEventCard highlight={mockKalkHighlight} />)
+describe('MatchHero for the nearest game', () => {
+  it('renders status kicker, venue facts, countdown and calendar action', () => {
+    const html = renderToStaticMarkup(
+      <MatchHero game={mockKalkHighlight.game} actions={<NearestEventCalendarActions primary highlight={mockKalkHighlight} />} />
+    )
 
-    expect(html).toContain('match-tile')
+    expect(html).toContain('match-hero')
     expect(html).toContain('Najbliższy mecz')
     expect(html).toContain('match-countdown')
+    expect(html).toContain('KOSiR Koszalin')
+    expect(html).toContain('Wstęp')
     expect(html).toContain('/api/calendar?')
     expect(html).toContain('Dodaj do kalendarza')
-    expect(html).not.toContain('next-event-glass-dock')
+  })
 
+  it('keeps BeKaPaKa first and puts the rival in the same heading', () => {
+    const html = renderToStaticMarkup(<MatchHero game={mockKalkHighlight.game} heading="h1" />)
+    expect(html).toMatch(/<h1 class="match-hero__teams">.*BeKaPaKa.*Kosz-All-In.*<\/h1>/s)
   })
 })

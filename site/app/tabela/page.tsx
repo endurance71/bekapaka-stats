@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { EditorialListingTemplate } from '../../components/public/templates/EditorialListingTemplate'
-import { StandingsBoardInteractive } from '../../components/public/shared/StandingsBoardInteractive'
+import { ListingTemplate } from '../../components/public/templates/ListingTemplate'
+import { PositionSummary } from '../../components/public/shared/PositionSummary'
+import { StandingsBoard } from '../../components/public/shared/StandingsBoard'
 import { getLeagueTableState, getSiteMetadataBase } from '../../lib/data'
 
 export const revalidate = 60
@@ -16,11 +17,16 @@ export default async function LeagueTablePage() {
   const tableState = await getLeagueTableState()
   const table = tableState.data
 
+  const updated = tableState.meta?.updatedAt
+    ? new Date(tableState.meta.updatedAt).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw', dateStyle: 'long', timeStyle: 'short' })
+    : null
+
   return (
-    <EditorialListingTemplate
+    <ListingTemplate
+      kicker={['KALK Koszalin', tableState.meta?.division].filter(Boolean).join(' · ')}
       title='Tabela ligi'
-      eyebrow={['KALK Koszalin', tableState.meta?.division].filter(Boolean).join(' · ')}
-      description={`${tableState.meta?.season?.label || 'Sezon niepotwierdzony'} · Aktualna pozycja zespołów, bilans meczów i punktacja.`}
+      lead={`${tableState.meta?.season?.label || 'Sezon niepotwierdzony'} · Koszalińska Amatorska Liga Koszykówki. Za wygraną 2 pkt, za porażkę 1 pkt.`}
+      headerAside={table.length > 0 ? <PositionSummary table={table} kicker='BeKaPaKa' /> : undefined}
       hasItems={table.length > 0}
       stateStatus={tableState.status}
       stateSource={tableState.source}
@@ -32,8 +38,8 @@ export default async function LeagueTablePage() {
           : 'Tabela zostanie uzupełniona po potwierdzeniu danych sezonu.'
       }
     >
-      <p className='muted'>{tableState.meta?.updatedAt ? `Aktualizacja danych: ${new Date(tableState.meta.updatedAt).toLocaleString('pl-PL', { timeZone: 'Europe/Warsaw' })}` : 'Data aktualizacji nie jest dostępna.'}</p>
-      <StandingsBoardInteractive table={table} />
-    </EditorialListingTemplate>
+      <StandingsBoard table={table} />
+      <p className='table-updated'>{updated ? `Dane ligi z ${updated}.` : 'Data aktualizacji danych ligi nie jest dostępna.'}</p>
+    </ListingTemplate>
   )
 }

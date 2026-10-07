@@ -15,13 +15,13 @@ describe('Sprint 3: Content, Roster Context and Partners', () => {
     const html = renderToStaticMarkup(<RosterList roster={players} />)
 
     expect(html).toContain('Olearczyk')
-    expect(html).toContain('Dawid · #1')
+    expect(html).toContain('#1 · Obrońca')
     expect(html).toContain('Mras')
-    expect(html).toContain('Łukasz · #13')
+    expect(html).toContain('#13 · Obrońca')
     expect(html).toContain('Tymiński')
-    expect(html).toContain('Maciej · #29')
+    expect(html).toContain('#29 · Skrzydłowy')
     expect(html).toContain('Sosiński')
-    expect(html).toContain('Piotr · #8')
+    expect(html).toContain('#8 · Środkowy')
   })
 
   it('renders balanced sponsors grid with equal plaques for partners', () => {

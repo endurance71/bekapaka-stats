@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { formatTeamShortName } from '../../lib/format'
 
 export interface PlayByPlayEvent {
   time: string
@@ -56,7 +57,8 @@ function matchesCategory(action: string, category: EventCategory, hasScore: bool
   const act = action.toLowerCase()
   switch (category) {
     case 'score':
-      return hasScore || act.includes('celny') || act.includes('punkty')
+      // „niecelny” zawiera „celny” — liczymy tylko rzuty zaczynające się od „Celny” i zdarzenia z wynikiem
+      return hasScore || act.startsWith('celny') || act.includes('punkty')
     case 'rebound':
       return act.includes('zbiórka') || act.includes('zbiorka')
     case 'assist':
@@ -78,12 +80,27 @@ function matchesCategory(action: string, category: EventCategory, hasScore: bool
   }
 }
 
+/** Opis akcji bez powtarzania nazwiska; kod KALK „#-2” (wejście z ławki / pierwsza piątka) zamieniony na słowa. */
+export function describeAction(action: string, player?: string | null): string {
+  const entry = action.match(/^Zmiana:\s*#-?\d+\s*→\s*(.+?)(?:\s*\(#\d+\))?$/)
+  if (entry && /#-\d/.test(action)) return 'Wchodzi na parkiet'
+  const sub = action.match(/^Zmiana:\s*(.+?)\s*→\s*(.+)$/)
+  if (sub) return `Zmiana: ${sub[1]} → ${sub[2]}`
+  if (player && action.includes(player)) return action.replace(player, '').replace(/\s{2,}/g, ' ').trim()
+  return action
+}
+
+function periodScore(events: PlayByPlayEvent[]): string | null {
+  for (let i = events.length - 1; i >= 0; i--) if (events[i].score) return events[i].score as string
+  return null
+}
+
 export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPlayByPlayProps) {
   const [periods, setPeriods] = useState<PlayByPlayPeriod[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState<number | 'all'>('all')
-  const [selectedCategory, setSelectedCategory] = useState<EventCategory>('all')
+  const [selectedCategory, setSelectedCategory] = useState<EventCategory>('score')
   const [selectedSide, setSelectedSide] = useState<'all' | 'home' | 'away'>('all')
 
   useEffect(() => {
@@ -199,202 +216,101 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
 
   const totalDisplayedEvents = filteredPeriods.reduce((sum, p) => sum + p.events.length, 0)
 
+  const awayShort = formatTeamShortName(awayTeamName)
+  const sides: { key: 'all' | 'home' | 'away'; label: string }[] = [
+    { key: 'all', label: 'Obie' },
+    { key: 'home', label: homeTeamName.replace(/\s+Bobolice$/i, '') },
+    { key: 'away', label: awayTeamName }
+  ]
+
   return (
-    <div className='pbp-container'>
-      {/* 1. Quarter filter buttons */}
-      <div className='pbp-filter-group'>
-        <span className='pbp-filter-label text-xs muted font-bold'>KWARTY:</span>
-        <div className='pbp-period-tabs' role='tablist' aria-label='Wybór kwarty'>
-          <button
-            type='button'
-            role='tab'
-            aria-selected={selectedPeriod === 'all'}
-            className={`boxscore-team-tab ${selectedPeriod === 'all' ? 'boxscore-team-tab--active' : ''}`}
-            onClick={() => setSelectedPeriod('all')}
-          >
-            Cały mecz
+    <div className='pbp'>
+      <div className='pbp-toolbar'>
+        <div className='segmented pbp-toolbar__periods' role='tablist' aria-label='Kwarta'>
+          <button type='button' role='tab' aria-selected={selectedPeriod === 'all'} className='segmented__btn' onClick={() => setSelectedPeriod('all')}>
+            Mecz
           </button>
           {periods.map((period, idx) => (
-            <button
-              key={idx}
-              type='button'
-              role='tab'
-              aria-selected={selectedPeriod === idx}
-              className={`boxscore-team-tab ${selectedPeriod === idx ? 'boxscore-team-tab--active' : ''}`}
-              onClick={() => setSelectedPeriod(idx)}
-            >
-              {period.title}
+            <button key={idx} type='button' role='tab' aria-selected={selectedPeriod === idx} className='segmented__btn' onClick={() => setSelectedPeriod(idx)}>
+              {period.title.replace(/^Kwarta\s*/i, 'Q')}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* 2. Team filter (Wszystkie, BeKaPaKa, Rywal) */}
-      <div className='pbp-filter-group'>
-        <span className='pbp-filter-label text-xs muted font-bold'>DRUŻYNA:</span>
-        <div className='pbp-team-filter-tabs' role='tablist' aria-label='Filtr drużyny'>
-          <button
-            type='button'
-            role='tab'
-            aria-selected={selectedSide === 'all'}
-            className={`boxscore-team-tab ${selectedSide === 'all' ? 'boxscore-team-tab--active' : ''}`}
-            onClick={() => setSelectedSide('all')}
-          >
-            Obie drużyny
-          </button>
-          <button
-            type='button'
-            role='tab'
-            aria-selected={selectedSide === 'home'}
-            className={`boxscore-team-tab ${selectedSide === 'home' ? 'boxscore-team-tab--active' : ''}`}
-            onClick={() => setSelectedSide('home')}
-          >
-            {homeTeamName}
-          </button>
-          <button
-            type='button'
-            role='tab'
-            aria-selected={selectedSide === 'away'}
-            className={`boxscore-team-tab ${selectedSide === 'away' ? 'boxscore-team-tab--active' : ''}`}
-            onClick={() => setSelectedSide('away')}
-          >
-            {awayTeamName}
-          </button>
+        <div className='segmented' role='tablist' aria-label='Drużyna'>
+          {sides.map((side) => (
+            <button key={side.key} type='button' role='tab' aria-selected={selectedSide === side.key} className='segmented__btn' onClick={() => setSelectedSide(side.key)}>
+              {side.label}
+            </button>
+          ))}
         </div>
-      </div>
-
-      {/* 3. Specific Action Event Filter Buttons */}
-      <div className='pbp-filter-group'>
-        <span className='pbp-filter-label text-xs muted font-bold'>RODZAJ AKCJI:</span>
-        <div className='pbp-action-filter-pills' role='tablist' aria-label='Filtr rodzaju akcji'>
-          {FILTER_OPTIONS.map((opt) => {
-            const count = categoryCounts[opt.key]
-            if (count === 0 && opt.key !== 'all') return null
-            const isActive = selectedCategory === opt.key
-            return (
-              <button
-                key={opt.key}
-                type='button'
-                role='tab'
-                aria-selected={isActive}
-                className={`pbp-action-pill ${isActive ? 'pbp-action-pill--active' : ''}`}
-                onClick={() => setSelectedCategory(opt.key)}
-              >
-                <span>{opt.label}</span>
-                <span className='pbp-pill-count'>{count}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Summary indicator */}
-      {selectedCategory !== 'all' || selectedSide !== 'all' ? (
-        <div className='pbp-active-filter-bar'>
-          <span className='text-xs'>
-            Wyniki filtrowania: <strong>{totalDisplayedEvents}</strong> akcji
-          </span>
+        <label className='select'>
+          <span className='sr-only'>Rodzaj akcji</span>
+          <select value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value as EventCategory)}>
+            {FILTER_OPTIONS.map((opt) => {
+              const count = categoryCounts[opt.key]
+              if (count === 0 && opt.key !== 'all' && opt.key !== selectedCategory) return null
+              return (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label} ({count})
+                </option>
+              )
+            })}
+          </select>
+        </label>
+        {(selectedCategory !== 'score' || selectedSide !== 'all' || selectedPeriod !== 'all') && (
           <button
             type='button'
-            className='pbp-reset-btn text-xs'
+            className='btn btn--secondary'
             onClick={() => {
-              setSelectedCategory('all')
+              setSelectedCategory('score')
               setSelectedSide('all')
+              setSelectedPeriod('all')
             }}
           >
-            ✕ Resetuj filtry
+            Resetuj
           </button>
-        </div>
-      ) : null}
+        )}
+      </div>
+      <p className='pbp-summary' aria-live='polite'>
+        {totalDisplayedEvents} {totalDisplayedEvents === 1 ? 'zdarzenie' : 'zdarzeń'}
+        {selectedCategory === 'score' ? ' — punkty i celne rzuty' : ''}
+      </p>
 
-      {/* Timeline of events */}
       {totalDisplayedEvents === 0 ? (
-        <div className='pbp-empty-box'>
-          <p className='muted'>Brak zdarzeń spełniających wybrane kryteria filtrów.</p>
-        </div>
+        <p className='pbp-empty'>Brak zdarzeń dla wybranych filtrów.</p>
       ) : (
         <div className='pbp-timeline'>
           {filteredPeriods.map((period, pIdx) => {
-            if (period.events.length === 0) return null
+            const full = selectedPeriod === 'all' ? periods[pIdx] : periods[selectedPeriod as number]
+            const after = full ? periodScore(full.events) : null
+            const events = period.events.filter((ev) => ev.side !== 'neutral')
+            if (events.length === 0) return null
             return (
-              <div key={pIdx} className='pbp-period-block'>
-                <div className='pbp-period-header'>
-                  <h4 className='pbp-period-title'>{period.title}</h4>
-                  <span className='pbp-period-badge'>{period.events.length} zdarzeń</span>
-                </div>
-
-                <div className='pbp-events-list'>
-                  {period.events.map((ev, eIdx) => {
-                    const isHome = ev.side === 'home'
-                    const isAway = ev.side === 'away'
-                    const isScoreEvent = Boolean(ev.score)
-                    const isCelny = ev.action.toLowerCase().includes('celny') || isScoreEvent
-                    const isZbiorka = ev.action.toLowerCase().includes('zbiórka') || ev.action.toLowerCase().includes('zbiorka')
-                    const isAsysta = ev.action.toLowerCase().includes('asysta')
-                    const isStrata = ev.action.toLowerCase().includes('strata')
-                    const isPrzechwyt = ev.action.toLowerCase().includes('przechwyt')
-                    const isBlok = ev.action.toLowerCase().includes('blok')
-                    const isFaul = ev.action.toLowerCase().includes('faul')
-                    const isZmiana = ev.action.toLowerCase().includes('zmiana')
-
-                    let actionBadgeCls = ''
-                    if (isCelny) actionBadgeCls = 'pbp-badge--score'
-                    else if (isZbiorka) actionBadgeCls = 'pbp-badge--rebound'
-                    else if (isAsysta) actionBadgeCls = 'pbp-badge--assist'
-                    else if (isStrata) actionBadgeCls = 'pbp-badge--tov'
-                    else if (isPrzechwyt) actionBadgeCls = 'pbp-badge--stl'
-                    else if (isBlok) actionBadgeCls = 'pbp-badge--blk'
-                    else if (isFaul) actionBadgeCls = 'pbp-badge--foul'
-                    else if (isZmiana) actionBadgeCls = 'pbp-badge--sub'
-
-                    return (
-                      <div
-                        key={eIdx}
-                        className={`pbp-event-row pbp-event-row--${ev.side} ${isScoreEvent ? 'pbp-event-row--scoring' : ''}`}
-                      >
-                        {/* Home Side Action (Left) */}
-                        <div className='pbp-cell pbp-cell--home'>
-                          {isHome && (
-                            <div className='pbp-action-content'>
-                              {ev.player && <span className='pbp-player-name font-bold'>{ev.player}</span>}
-                              <span className={`pbp-action-desc ${actionBadgeCls}`}>
-                                {ev.action}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Center Timestamp & Score Indicator */}
-                        <div className='pbp-cell-center'>
-                          <span className='pbp-timestamp font-mono'>{ev.time}</span>
-                          {ev.score && (
-                            <span className='pbp-score-badge font-mono font-bold highlight-gold'>
-                              {ev.score}
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Away Side Action (Right) */}
-                        <div className='pbp-cell pbp-cell--away'>
-                          {isAway && (
-                            <div className='pbp-action-content'>
-                              {ev.player && <span className='pbp-player-name font-bold'>{ev.player}</span>}
-                              <span className={`pbp-action-desc ${actionBadgeCls}`}>
-                                {ev.action}
-                              </span>
-                            </div>
-                          )}
-                          {ev.side === 'neutral' && (
-                            <div className='pbp-action-content pbp-action-content--neutral'>
-                              <span className='pbp-action-desc muted'>{ev.action}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
+              <section key={pIdx} className='pbp-period' aria-label={period.title}>
+                <header className='pbp-period__head'>
+                  <h4 className='pbp-period__title'>{period.title}</h4>
+                  {after && (
+                    <span className='pbp-period__score'>
+                      po kwarcie <strong>{after}</strong>
+                    </span>
+                  )}
+                </header>
+                <ol className='pbp-events zebra-list' role='list'>
+                  {events.map((ev, eIdx) => (
+                    <li key={eIdx} className={`pbp-event pbp-event--${ev.side}${ev.score ? ' is-score' : ''}`}>
+                      <time className='pbp-event__time'>{ev.time}</time>
+                      <span className='pbp-event__team' aria-label={ev.side === 'home' ? 'BeKaPaKa' : awayTeamName}>
+                        {ev.side === 'home' ? 'BKPK' : awayShort}
+                      </span>
+                      <span className='pbp-event__text'>
+                        {ev.player ? <strong>{ev.player}</strong> : null}
+                        <span>{describeAction(ev.action, ev.player)}</span>
+                      </span>
+                      <span className='pbp-event__score'>{ev.score ?? ''}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
             )
           })}
         </div>

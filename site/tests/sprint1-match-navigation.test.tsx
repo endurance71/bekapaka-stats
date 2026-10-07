@@ -74,8 +74,8 @@ describe('Sprint 1 - Match Navigation & Presentation (UI-01, UI-02, UI-03, UI-04
 
   it('Box Score renders sticky player column and proper table shell for mobile (UI-04)', () => {
     const html = renderToStaticMarkup(<MatchDrawerContent game={mockFinishedGame} />)
-    expect(html).toContain('class="table-shell-v2 boxscore-scroll-shell"')
-    expect(html).toContain('class="data-table-v2 boxscore-table text-sm"')
+    expect(html).toContain('class="table-scroll boxscore-scroll-shell"')
+    expect(html).toContain('class="table data-table boxscore-table text-sm"')
     expect(html).toContain('class="boxscore-col-player"')
     expect(html).toContain('Jan Kowalski')
     expect(html).toContain('#24')

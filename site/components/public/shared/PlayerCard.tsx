@@ -1,62 +1,37 @@
 import Link from 'next/link'
-import { FallbackImage } from './FallbackImage'
 import type { RosterPlayer } from '../../../lib/data/schemas'
-import { getPositionLabel, resolvePlayerPhoto } from '../../../lib/data/utils'
-export function PlayerCardContent({ player, showStats = false }: { player: RosterPlayer; showStats?: boolean }) {
-  const hasNumber = player.number && player.number.trim() !== '' && player.number.trim() !== '-'
-  const numberDisplay = hasNumber ? player.number.trim() : '—'
-  const posLabel = getPositionLabel(player.position)
+import { getPositionLabel } from '../../../lib/data/utils'
+import { formatStat } from '../../../lib/format'
+import { PlayerPortrait, playerNumber } from '../team/PlayerPortrait'
 
-  const hasStats = Boolean(
-    (player.gamesPlayed && player.gamesPlayed > 0) ||
-    (player.ppg != null && player.ppg > 0) ||
-    (player.eval != null && player.eval > 0)
-  )
-
-  return <>
-    <div className="player-card__img" aria-hidden="true">
-      <span className="player-card__num">{numberDisplay}</span>
-      {player.photoApproved ? <FallbackImage src={resolvePlayerPhoto(player)} alt={player.photoAlt || ''}
-        width={480} height={600} sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 25vw"
-        fallback={<span className="player-card__placeholder" />} /> : <span className="player-card__placeholder" />}
-    </div>
-    <div className="player-card__body">
-      <span className="player-card__first">
-        {player.firstName}{hasNumber ? ` · #${numberDisplay}` : ''}
+/** Zawodnik w składzie: portret z numerem, imię, nazwisko, pozycja; cała karta jest linkiem do profilu. */
+export function PlayerCard({ player, showStats = false, priority = false }: { player: RosterPlayer; showStats?: boolean; priority?: boolean }) {
+  const number = playerNumber(player)
+  const played = (player.gamesPlayed ?? 0) > 0
+  return (
+    <Link className="player-card" href={`/sklad/${encodeURIComponent(player.id)}`}>
+      <PlayerPortrait player={player} sizes="(min-width: 1280px) 20vw, (min-width: 768px) 30vw, 50vw" priority={priority} />
+      <span className="player-card__body">
+        <span className="player-card__first">{player.firstName}</span>{' '}
+        <strong className="player-card__last">{player.lastName}</strong>
+        <span className="player-card__meta">
+          {number ? `#${number} · ` : ''}
+          {getPositionLabel(player.position)}
+        </span>
+        {showStats && played && (
+          <span className="player-card__stats">
+            <span>
+              <b>{formatStat(player.ppg)}</b> pkt
+            </span>
+            <span>
+              <b>{formatStat(player.rpg)}</b> zb
+            </span>
+            <span>
+              <b>{formatStat(player.apg)}</b> as
+            </span>
+          </span>
+        )}
       </span>
-      <strong className="player-card__last">{player.lastName}</strong>
-      <span className="player-card__pos">{posLabel}</span>
-      {showStats && hasStats && (
-        <div className="player-card__stats-strip" aria-label="Statystyki lidera">
-          {player.ppg != null && (
-            <div className="player-card__stat-item">
-              <span className="player-card__stat-val">{player.ppg}</span>
-              <span className="player-card__stat-lbl">PPG</span>
-            </div>
-          )}
-          {player.eval != null && (
-            <div className="player-card__stat-item player-card__stat-item--eval">
-              <span className="player-card__stat-val">{player.eval}</span>
-              <span className="player-card__stat-lbl">EVAL</span>
-            </div>
-          )}
-          {player.apg != null && player.apg > 0 && (
-            <div className="player-card__stat-item">
-              <span className="player-card__stat-val">{player.apg}</span>
-              <span className="player-card__stat-lbl">APG</span>
-            </div>
-          )}
-          {player.rpg != null && player.rpg > 0 && (
-            <div className="player-card__stat-item">
-              <span className="player-card__stat-val">{player.rpg}</span>
-              <span className="player-card__stat-lbl">RPG</span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  </>
-}
-export function PlayerCard({ player, showStats = false }: { player: RosterPlayer; showStats?: boolean }) {
-  return <Link className="player-card" href={`/sklad/${encodeURIComponent(player.id)}`}><PlayerCardContent player={player} showStats={showStats} /></Link>
+    </Link>
+  )
 }

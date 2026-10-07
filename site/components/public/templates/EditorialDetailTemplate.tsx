@@ -1,8 +1,15 @@
-import { serializeJsonLd } from '../../../lib/json-ld'
 import Link from 'next/link'
+import { serializeJsonLd } from '../../../lib/json-ld'
 import { bindPolishOrphans } from '../../../lib/typography'
+import { ArticleToc, type ArticleTocItem } from '../news/ArticleToc'
 import { ShareActions } from '../shared/ShareActions'
 
+/**
+ * Artykuł redakcyjny na papierze.
+ * Nagłówek: tytuł i lead | okładka (na telefonie okładka zaraz pod tytułem).
+ * Treść: z `toc` od 1280 px trzy strefy — szyna ze spisem treści · tekst · kolumna boczna, obie szyny przez cały artykuł.
+ * Zakończenie: tematy, udostępnianie, a pod artykułem pasmo `more`.
+ */
 export function EditorialDetailTemplate({
   sectionLabel,
   title,
@@ -17,7 +24,9 @@ export function EditorialDetailTemplate({
   parentHref,
   parentLabel = 'Wróć do listy',
   theme = 'papier',
-  sidebar
+  sidebar,
+  toc,
+  more
 }: {
   sectionLabel: string
   title: string
@@ -33,13 +42,17 @@ export function EditorialDetailTemplate({
   parentLabel?: string
   theme?: 'papier' | 'plyta'
   sidebar?: React.ReactNode
+  /** Sekcje artykułu dla szyny ze spisem treści (≥ 1280 px). */
+  toc?: ArticleTocItem[]
+  /** Pasmo pod artykułem, np. „Czytaj dalej” ze zdjęciami. */
+  more?: React.ReactNode
 }) {
+  const rail = Boolean(toc && toc.length >= 3)
+  const bodyClass = ['art-body', sidebar ? 'art-body--aside' : '', rail ? 'art-body--rail' : ''].filter(Boolean).join(' ')
+
   return (
-    <article
-      className={`article-detail${theme === 'plyta' ? ' article-detail--sport' : ''}${cover ? '' : ' article-detail--no-cover'}`}
-      data-theme={theme}
-    >
-      <div className="article-detail__shell">
+    <article className={`article-detail${theme === 'plyta' ? ' article-detail--sport' : ''}${cover ? '' : ' article-detail--no-cover'}`} data-theme={theme}>
+      <div className="article-detail__shell container">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -47,27 +60,24 @@ export function EditorialDetailTemplate({
               '@context': 'https://schema.org',
               '@type': 'BreadcrumbList',
               itemListElement: [
-                {
-                  '@type': 'ListItem',
-                  position: 1,
-                  name: sectionLabel,
-                  item: `https://bekapaka.pl${parentHref}`
-                },
+                { '@type': 'ListItem', position: 1, name: sectionLabel, item: `https://bekapaka.pl${parentHref}` },
                 { '@type': 'ListItem', position: 2, name: title }
               ]
             })
           }}
         />
 
-        <nav aria-label="Ścieżka" className="article-breadcrumbs-nav">
-          <ol className="breadcrumbs" role="list">
+        <nav aria-label="Ścieżka" className="breadcrumbs">
+          <ol role="list">
             <li>
               <Link href="/">Start</Link>
             </li>
             <li>
               <Link href={parentHref}>{sectionLabel || 'Aktualności'}</Link>
             </li>
-            <li aria-current="page">{title}</li>
+            <li aria-current="page">
+              <span>{title}</span>
+            </li>
           </ol>
           {parentLabel && (
             <Link href={parentHref} className="article-detail__back-link visually-hidden-focusable">
@@ -77,44 +87,59 @@ export function EditorialDetailTemplate({
         </nav>
 
         <header className="article-detail__header">
-          <div className="stack" style={{ '--stack': 'var(--space-5)' } as React.CSSProperties}>
-            {sectionLabel && (
-              <span className="article-detail__eyebrow">{sectionLabel}</span>
-            )}
+          <div className="article-detail__headline">
+            {sectionLabel && <p className="kicker article-detail__eyebrow">{sectionLabel}</p>}
             <h1 className="article-detail__title">{bindPolishOrphans(title)}</h1>
-            {lead && (
-              <p
-                className="article-detail__lead"
-                style={{ fontSize: 'var(--fs-lead)', lineHeight: 'var(--lh-lead)' }}
-              >
-                {bindPolishOrphans(lead)}
-              </p>
-            )}
-            <div className="article-meta meta">
-              {meta && <span className="article-detail__meta">{meta}</span>}
-              {author && <span className="article-detail__author">{author}</span>}
-              {share && <ShareActions />}
-            </div>
-            {tags && tags.length > 0 && (
-              <ul className="article-detail__tags" aria-label="Tagi artykułu">
-                {tags.map((tag) => (
-                  <li key={tag}>{tag}</li>
-                ))}
-              </ul>
-            )}
           </div>
-          {cover && (
-            <figure className={`art-cover${coverFit === 'contain' ? ' art-cover--contain' : ''}`}>
-              {cover}
-            </figure>
+          {cover && <figure className={`art-cover${coverFit === 'contain' ? ' art-cover--contain' : ''}`}>{cover}</figure>}
+          {(lead || meta || author) && (
+            <div className="article-detail__intro">
+              {lead && <p className="article-detail__lead">{bindPolishOrphans(lead)}</p>}
+              {(meta || author) && (
+                <p className="article-detail__byline">
+                  {meta && <span className="article-detail__meta">{meta}</span>}
+                  {author && <span className="article-detail__author">{author}</span>}
+                </p>
+              )}
+            </div>
           )}
         </header>
 
-        <div className="art-body">
-          <div className="prose">{content}</div>
-          {sidebar && <aside className="art-aside" aria-label="Boczny panel artykułu">{sidebar}</aside>}
+        <div className={bodyClass}>
+          {rail && toc && (
+            <aside className="art-rail" aria-label="Nawigacja po artykule">
+              <div className="art-rail__inner">
+                <ArticleToc items={toc} />
+                {share && <ShareActions />}
+              </div>
+            </aside>
+          )}
+          <div className="prose">
+            {content}
+            {((tags && tags.length > 0) || share) && (
+              <footer className="art-end">
+                {tags && tags.length > 0 && (
+                  <div className="art-end__tags">
+                    <p className="t-label muted">Tematy</p>
+                    <ul role="list" aria-label="Tematy artykułu">
+                      {tags.map((tag) => (
+                        <li key={tag}>{tag}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {share && <ShareActions />}
+              </footer>
+            )}
+          </div>
+          {sidebar && (
+            <aside className="art-aside" aria-label="Czytaj dalej">
+              <div className="art-aside__inner">{sidebar}</div>
+            </aside>
+          )}
         </div>
       </div>
+      {more}
     </article>
   )
 }

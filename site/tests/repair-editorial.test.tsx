@@ -17,7 +17,7 @@ describe('Editorial corrections', () => {
     expect(isArchivedEvent({ slug: 'event', eventDate: 'invalid' })).toBe(false)
   })
   it('creates unique working anchors for repeated headings, excluding code fences', () => {
-    const html = renderToStaticMarkup(<ArticleMarkdown content={'## Wyniki\n\nOpis\n\n## Wyniki\n\nOpis\n\n```\n## Nie jest nagłówkiem\n```\n\n### Galeria\n\nOpis'} />)
+    const html = renderToStaticMarkup(<ArticleMarkdown content={'## Wyniki\n\nOpis\n\n## Wyniki\n\nOpis\n\n```\n## Nie jest nagłówkiem\n```\n\n## Galeria\n\nOpis'} />)
     const links = [...html.matchAll(/href="#([^"]+)"/g)].map(match => match[1])
     expect(links).toHaveLength(3)
     expect(new Set(links).size).toBe(3)
@@ -33,7 +33,9 @@ describe('Editorial corrections', () => {
   })
   it('marks local-only gallery metadata gaps and gives cover a zoom control', () => {
     const html = renderToStaticMarkup(<ArticleImageCarousel variant="cover" images={[{ src: '/poster.png', alt: 'Plakat turnieju', metadataMissing: true }]} />)
-    expect(html).toContain('Powiększ zdjęcie: Plakat turnieju')
+    expect(html).toContain('Powiększ okładkę: Plakat turnieju')
+    expect(html).toContain('article-gallery__zoom')
+    expect(html).not.toContain('>Powiększ okładkę<')
     expect(html).toContain('opis i autor wymagają uzupełnienia')
   })
 })

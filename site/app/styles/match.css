@@ -1,0 +1,273 @@
+/* BeKaPaKa Website 2.1 — szczegóły meczu: przegląd (kwarty + porównanie), box score, akcja po akcji. Płyta, dane. */
+
+@layer match {
+  .match-detail {
+    padding-block: var(--band-pad);
+  }
+  .match-detail__crumbs {
+    padding-top: var(--space-4);
+  }
+  .match-detail__crumbs .breadcrumbs {
+    margin-bottom: 0;
+  }
+  .match-stats {
+    display: grid;
+    gap: var(--space-16);
+  }
+  .match-section {
+    display: grid;
+    gap: var(--space-5);
+    align-content: start;
+    min-width: 0;
+  }
+  .match-section__title {
+    font: 800 var(--fs-h2) / var(--lh-h2) var(--font-display);
+    text-transform: uppercase;
+  }
+  .table-hint,
+  .drawer-match-loading {
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+  }
+  .drawer-match-loading {
+    font-size: var(--fs-lead);
+  }
+  /* Od tabletu tabela pokazuje wszystkie kolumny — przełącznik i podpowiedź są tylko na telefon. */
+  @media (min-width: 768px) {
+    .table-hint--mobile,
+    .boxscore-view-toggle {
+      display: none;
+    }
+  }
+  .match-video {
+    justify-self: start;
+  }
+
+  /* Przegląd meczu: kwarty | porównanie zespołowe | punkty specjalne */
+  .match-overview {
+    display: grid;
+    gap: var(--space-12) var(--space-16);
+  }
+  @media (min-width: 1024px) {
+    .compare {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--space-16);
+    }
+  }
+  /* Porównanie zespołowe: nagłówek drużyn, wartości po bokach, belka udziału */
+  .compare__head {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: var(--space-2);
+    border-bottom: 2px solid var(--text);
+    font: 800 var(--fs-h4) / 1 var(--font-display);
+    text-transform: uppercase;
+  }
+  .compare__head span:last-child {
+    color: var(--text-secondary);
+  }
+  .compare {
+    display: grid;
+    row-gap: var(--space-4);
+  }
+  .compare__item {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .compare__labels {
+    display: grid;
+    grid-template-columns: 4.5rem minmax(0, 1fr) 4.5rem;
+    align-items: baseline;
+    gap: var(--space-3);
+  }
+  .compare__home,
+  .compare__away {
+    font: 800 var(--fs-h4) / 1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .compare__away {
+    text-align: right;
+    color: var(--text-secondary);
+  }
+  .compare__name {
+    text-align: center;
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+  }
+  .compare__track {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+  }
+  .compare__fill-home {
+    background: var(--brand);
+  }
+  .compare__fill-away {
+    background: var(--line-strong);
+  }
+
+  /* Przełącznik segmentowy: wybór drużyny, kwarty, strony w PBP */
+  .segmented {
+    display: inline-flex;
+    flex-wrap: wrap;
+    border: 1px solid var(--line-strong);
+  }
+  .segmented__btn {
+    min-height: var(--control-h-md);
+    padding: 0 var(--space-5);
+    border: 0;
+    background: transparent;
+    font: 600 var(--fs-label) / 1 var(--font-text);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .segmented__btn + .segmented__btn {
+    border-left: 1px solid var(--line-strong);
+  }
+  .segmented__btn:hover {
+    color: var(--text);
+  }
+  .segmented__btn[aria-selected='true'],
+  .segmented__btn.is-active {
+    background: var(--text);
+    color: var(--bg);
+  }
+  .tabs--buttons {
+    gap: var(--space-8);
+  }
+
+  /* Akcja po akcji: pasek filtrów w jednym wierszu, jedna linia na zdarzenie */
+  .pbp {
+    display: grid;
+    gap: var(--space-5);
+  }
+  .pbp-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+  .pbp-summary,
+  .pbp-empty {
+    font-size: var(--fs-caption);
+    color: var(--text-secondary);
+  }
+  .pbp-timeline {
+    display: grid;
+    gap: var(--space-10) var(--space-12);
+    align-items: start;
+  }
+  @media (min-width: 1280px) {
+    .pbp-timeline {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* Nagłówek kwarty = pas nagłówka tabeli, przyklejony */
+  .pbp-period__head {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 52px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--table-head-bg);
+    color: var(--table-head-text);
+  }
+  .pbp-period__title {
+    font: 800 var(--fs-h3) / 1 var(--font-display);
+    text-transform: uppercase;
+  }
+  .pbp-period__score {
+    font-size: var(--fs-caption);
+    color: var(--table-head-text);
+    opacity: 0.85;
+  }
+  .pbp-period__score strong {
+    font: 800 var(--fs-h4) / 1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+  }
+  .pbp-events {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .pbp-event {
+    display: grid;
+    grid-template-columns: 4rem 4.5rem minmax(0, 1fr) 4.5rem;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-table);
+  }
+  .pbp-event--home {
+    box-shadow: inset 4px 0 0 var(--brand);
+  }
+  .pbp-event__time {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+  }
+  .pbp-event__team {
+    font: 600 var(--fs-micro) / 1 var(--font-text);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .pbp-event--home .pbp-event__team {
+    color: var(--brand-text);
+  }
+  .pbp-event__text {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+    min-width: 0;
+  }
+  .pbp-event__text strong {
+    font-weight: 600;
+  }
+  .pbp-event__text span {
+    color: var(--text-secondary);
+  }
+  .pbp-event__score {
+    font: 800 calc(var(--fs-table) * 1.25) / 1 var(--font-display);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .pbp-event.is-score .pbp-event__text span {
+    color: var(--text);
+    font-weight: 600;
+  }
+  @media (max-width: 767px) {
+    .pbp-toolbar__periods {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .pbp-toolbar .select {
+      flex: 1 1 100%;
+    }
+    .pbp-event {
+      grid-template-columns: 3.25rem 3.5rem minmax(0, 1fr) auto;
+      grid-template-areas:
+        'time team team score'
+        'text text text text';
+      gap: var(--space-1) var(--space-2);
+      padding-block: var(--space-3);
+    }
+    .pbp-event__time {
+      grid-area: time;
+    }
+    .pbp-event__team {
+      grid-area: team;
+    }
+    .pbp-event__text {
+      grid-area: text;
+    }
+    .pbp-event__score {
+      grid-area: score;
+    }
+  }
+}

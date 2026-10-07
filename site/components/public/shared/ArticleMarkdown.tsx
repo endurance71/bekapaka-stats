@@ -7,6 +7,7 @@ import { TournamentGroupsBoard, type TournamentGroup } from '../editorial/Tourna
 import { getStrapiMediaProps } from '../../../lib/data/media'
 import { isCameraOrUuidFilename, resolveImageAlt } from '../../../lib/data/utils'
 import { bindPolishOrphans, bindTrailingPolishOrphan } from '../../../lib/typography'
+import { isBekapakaRow } from '../../../lib/navigation'
 
 interface MarkdownTextNode {
   type: string
@@ -85,11 +86,68 @@ function sentenceCaseHeading(children: React.ReactNode): React.ReactNode {
   return result
 }
 
-function parseSummary(text: string): { title: string; items: string[] } | null {
+type SummaryItem = { value: string; label: string }
+
+/** „III Turniej w liczbach: 8 drużyn · 16 meczów” → pas liczb (wartość + etykieta). */
+function parseSummary(text: string): { title: string; items: SummaryItem[] } | null {
   const match = text.trim().match(/^(.{2,80}w liczbach):\s*(.+)$/i)
   if (!match) return null
-  const items = match[2].split('·').map((item) => item.trim()).filter(Boolean)
+  const items = match[2]
+    .split('·')
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .map((item) => {
+      const parts = item.match(/^(\d[\d\s.,:]*?)\s+(.+)$/)
+      return parts ? { value: parts[1].trim(), label: parts[2] } : { value: item, label: '' }
+    })
   return items.length >= 2 ? { title: match[1], items } : null
+}
+
+interface HastNode {
+  type: string
+  tagName?: string
+  value?: string
+  properties?: Record<string, unknown>
+  children?: HastNode[]
+  position?: { start: { line: number } }
+}
+
+function hastText(node: HastNode | undefined): string {
+  if (!node) return ''
+  if (node.type === 'text') return node.value || ''
+  return (node.children || []).map(hastText).join('')
+}
+
+const hastItems = (node: HastNode | undefined) => (node?.children || []).filter((child) => child.type === 'element' && child.tagName === 'li')
+
+/** Lista „**Etykieta:** wartość” w każdym punkcie → tabela faktów. */
+function isFactList(node: HastNode | undefined): boolean {
+  const items = hastItems(node)
+  return (
+    items.length >= 2 &&
+    items.every((item) => {
+      const children = (item.children || []).filter((child) => !(child.type === 'text' && !child.value?.trim()))
+      const [first, second] = children
+      if (first?.type !== 'element' || first.tagName !== 'strong') return false
+      return hastText(first).trim().endsWith(':') || Boolean(second?.type === 'text' && second.value?.trimStart().startsWith(':'))
+    })
+  )
+}
+
+const rankingHeading = /klasyfikac|ranking|kolejno|miejsc|końcow/i
+
+/** Lista numerowana krótkich nazw pod nagłówkiem „Klasyfikacja…” → ranking jak tabela. */
+function rankingItems(node: HastNode | undefined, source: string): string[] | null {
+  const items = hastItems(node).map((item) => hastText(item).replace(/\s+/g, ' ').trim())
+  if (items.length < 3 || items.some((item) => !item || item.split(' ').length > 6 || /[.!?]$/.test(item))) return null
+  const line = node?.position?.start.line
+  if (!line) return null
+  const heading = source
+    .split('\n')
+    .slice(0, line - 1)
+    .reverse()
+    .find((candidate) => isHeadingLine(candidate.trim()))
+  return heading && rankingHeading.test(heading) ? items : null
 }
 
 /** Turn a standalone `Team A 40:26 Team B` line into a scannable score board. */
@@ -355,9 +413,41 @@ function normalizeNewsMarkdown(content: string): string {
   }
   flush()
 
+  // Nagłówek sekcji ma własną linię — `---` tuż przed nim dawałby podwójną kreskę.
   return blocks
+    .filter((block, index) => !(isHorizontalRule(block) && blocks[index + 1] && isHeadingLine(blocks[index + 1])))
     .join('\n\n')
     .replace(/\*\*([^*]+?)\*\*/g, (_, inner: string) => `**${inner.trim()}**`)
+}
+
+function navigationFromBlocks(blocks: ContentBlock[], mediaRecords: MediaRecord[], mediaPreview: boolean) {
+  const navigation: Array<{ id: string; title: string }> = []
+  // Blok bez własnego wpisu, jeśli sekcja tuż nad nim już go nazywa („## Galeria z turnieju” + galeria).
+  const pushBlock = (id: string, title: string, covered: RegExp) => {
+    if (!covered.test(navigation.at(-1)?.title || '')) navigation.push({ id, title })
+  }
+  blocks.forEach((block, blockIndex) => {
+    if (block.type === 'gallery') {
+      if (mediaPreview || block.images.some(image => approvedMedia(mediaRecords, image.src))) pushBlock(`gallery-${blockIndex}`, 'Galeria zdjęć', /galeri|zdjęc/i)
+    } else if (block.type === 'schedule') pushBlock(`schedule-${blockIndex}`, block.title || 'Harmonogram', /harmonogram|program/i)
+    else if (block.type === 'tournament_groups') pushBlock(`groups-${blockIndex}`, block.title || 'Grupy i klasyfikacja', /grup/i)
+    else {
+      let fence: string | null = null
+      block.content.split('\n').forEach((line, lineIndex) => {
+        const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1]
+        if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return }
+        const heading = !fence && line.match(/^##\s+(.+?)\s*#*$/)
+        if (heading) navigation.push({ id: `section-${blockIndex}-${lineIndex + 1}`, title: String(sentenceCaseHeading(heading[1].replace(/[*_`]/g, ''))) })
+      })
+    }
+  })
+  return navigation
+}
+
+/** Sekcje artykułu (H2, galerie, harmonogramy, grupy) — dla spisu treści w szynie i zwijanego spisu na początku tekstu. */
+export function getArticleNavigation(content: string, { contextTitle = 'Aktualność', mediaRecords = [], mediaPreview = false }: { contextTitle?: string; mediaRecords?: MediaRecord[]; mediaPreview?: boolean } = {}) {
+  if (!content.trim()) return []
+  return navigationFromBlocks(extractSemanticBlocks(normalizeNewsMarkdown(content), contextTitle), mediaRecords, mediaPreview)
 }
 
 interface ArticleMarkdownProps {
@@ -378,26 +468,11 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
 
   const normalized = normalizeNewsMarkdown(content)
   const blocks = extractSemanticBlocks(normalized, contextTitle)
-  const navigation: Array<{ id: string; title: string }> = []
-  blocks.forEach((block, blockIndex) => {
-    if (block.type === 'gallery') {
-      if (mediaPreview || block.images.some(image => approvedMedia(mediaRecords, image.src))) navigation.push({ id: `gallery-${blockIndex}`, title: 'Galeria zdjęć' })
-    } else if (block.type === 'schedule') navigation.push({ id: `schedule-${blockIndex}`, title: block.title || 'Harmonogram' })
-    else if (block.type === 'tournament_groups') navigation.push({ id: `groups-${blockIndex}`, title: block.title || 'Grupy i klasyfikacja' })
-    else {
-      let fence: string | null = null
-      block.content.split('\n').forEach((line, lineIndex) => {
-        const marker = line.match(/^\s*(`{3,}|~{3,})/)?.[1]
-        if (marker) { if (!fence) fence = marker[0]; else if (marker[0] === fence) fence = null; return }
-        const heading = !fence && line.match(/^#{2,3}\s+(.+?)\s*#*$/)
-        if (heading) navigation.push({ id: `section-${blockIndex}-${lineIndex + 1}`, title: heading[1].replace(/[*_`]/g, '') })
-      })
-    }
-  })
+  const navigation = navigationFromBlocks(blocks, mediaRecords, mediaPreview)
 
   return (
     <div className='article-markdown'>
-      {navigation.length > 0 && (content.length > 2000 || navigation.length >= 3) && <nav className='article-toc' aria-label='Spis treści'><strong>W tym artykule</strong><ul>{navigation.map(item => <li key={item.id}><a href={`#${item.id}`}>{item.title}</a></li>)}</ul></nav>}
+      {navigation.length > 0 && (content.length > 2000 || navigation.length >= 3) && <nav className='article-toc' aria-label='Spis treści'><details><summary>W tym artykule <span>{navigation.length} części</span></summary><ol>{navigation.map(item => <li key={item.id}><a href={`#${item.id}`}>{item.title}</a></li>)}</ol></details></nav>}
       {blocks.map((block, idx) => {
         if (block.type === 'gallery') {
           return (
@@ -440,13 +515,13 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
                       role='group'
                       aria-label={`Wynik meczu: ${score.homeTeam} ${score.homeScore} do ${score.awayScore} ${score.awayTeam}`}
                     >
-                      <span className='article-markdown__score-team'>{score.homeTeam}</span>
+                      <span className={`article-markdown__score-team${isBekapakaRow(score.homeTeam) ? ' is-own' : ''}`}>{score.homeTeam}</span>
                       <span className='article-markdown__score-value' aria-hidden='true'>
                         <strong>{score.homeScore}</strong>
                         <span>:</span>
                         <strong>{score.awayScore}</strong>
                       </span>
-                      <span className='article-markdown__score-team article-markdown__score-team--away'>{score.awayTeam}</span>
+                      <span className={`article-markdown__score-team article-markdown__score-team--away${isBekapakaRow(score.awayTeam) ? ' is-own' : ''}`}>{score.awayTeam}</span>
                     </div>
                   )
                 }
@@ -454,10 +529,15 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
                 const summary = parseSummary(text)
                 if (summary) {
                   return (
-                    <aside className='article-markdown__summary'>
+                    <aside className='article-markdown__summary article-markdown__breakout' aria-label={summary.title}>
                       <strong>{summary.title}</strong>
-                      <ul className='article-markdown__summary-grid'>
-                        {summary.items.map((item) => <li key={item}>{item}</li>)}
+                      <ul className='article-markdown__summary-grid' role='list'>
+                        {summary.items.map((item) => (
+                          <li key={`${item.value}-${item.label}`}>
+                            <span className='article-markdown__stat-value'>{item.value}</span>
+                            {item.label && <span className='article-markdown__stat-label'>{item.label}</span>}
+                          </li>
+                        ))}
                       </ul>
                     </aside>
                   )
@@ -467,8 +547,23 @@ export function ArticleMarkdown({ content, contextTitle = 'Aktualność', mediaR
               strong: ({ children }) => <strong className='article-markdown__strong'>{children}</strong>,
               em: ({ children }) => <em className='article-markdown__em'>{children}</em>,
               blockquote: ({ children }) => <blockquote className='article-markdown__blockquote'>{children}</blockquote>,
-              ul: ({ children }) => <ul className='article-markdown__ul'>{children}</ul>,
-              ol: ({ children }) => <ol className='article-markdown__ol'>{children}</ol>,
+              ul: ({ children, node }) =>
+                isFactList(node as HastNode) ? <ul className='article-markdown__facts zebra-list' role='list'>{children}</ul> : <ul className='article-markdown__ul'>{children}</ul>,
+              ol: ({ children, node }) => {
+                const ranking = rankingItems(node as HastNode, block.content)
+                if (!ranking) return <ol className='article-markdown__ol'>{children}</ol>
+                const start = Number((node as HastNode)?.properties?.start) || 1
+                return (
+                  <ol className='article-markdown__ranking zebra-list' role='list'>
+                    {ranking.map((name, position) => (
+                      <li key={name} className={[position + start === 1 ? 'is-first' : '', isBekapakaRow(name) ? 'is-own' : ''].filter(Boolean).join(' ') || undefined}>
+                        <span className='article-markdown__ranking-pos'>{position + start}</span>
+                        <span className='article-markdown__ranking-name'>{name}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )
+              },
               li: ({ children }) => <li className='article-markdown__li'>{children}</li>,
               hr: () => <hr className='article-markdown__hr' />,
               a: ({ href, children }) => (

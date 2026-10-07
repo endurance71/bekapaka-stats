@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
-import { ArticleMarkdown } from '../components/public/shared/ArticleMarkdown'
+import { ArticleMarkdown, getArticleNavigation } from '../components/public/shared/ArticleMarkdown'
 import { NewsAttachments } from '../components/public/shared/NewsAttachments'
 import { EditorialDetailTemplate } from '../components/public/templates/EditorialDetailTemplate'
 
@@ -20,10 +20,10 @@ describe('Article Editorial System', () => {
       )
 
       expect(html).toContain('class="article-detail article-detail--no-cover"')
-      expect(html).toContain('class="article-detail__shell"')
+      expect(html).toContain('class="article-detail__shell container"')
       expect(html).toContain('href="/aktualnosci"')
       expect(html).toContain('Wróć do aktualności')
-      expect(html).toContain('class="article-detail__eyebrow"')
+      expect(html).toContain('class="kicker article-detail__eyebrow"')
       expect(html).toContain('Aktualności')
       expect(html).toContain('class="article-detail__title"')
       expect(html).toContain('Politechnika Koszalińska z Pucharem')
@@ -266,7 +266,8 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
       expect(html).toContain('Od symbolicznej wstęgi do pierwszego podrzutu')
       expect(html).toContain('MAXBAU wygrywa mecz o\u00a07. miejsce')
       expect(html).toContain('Brąz dla LKS Bonin Bio-Energetyka')
-      expect(html).toContain('class="article-markdown__ol"')
+      expect(html).toContain('class="article-markdown__ranking zebra-list"')
+      expect(html).toContain('class="is-first"')
       expect(html).toContain('Alfa Trans')
     })
   })
@@ -399,6 +400,54 @@ TKKF Koszalin 15:20 LKS Bonin Bio-Energetyka
       expect(titlePos).toBeGreaterThan(eyebrowPos)
       expect(leadPos).toBeGreaterThan(titlePos)
       expect(metaPos).toBeGreaterThan(leadPos)
+    })
+  })
+
+  describe('Article 2.4 blocks', () => {
+    it('drops an author rule placed right before a section heading, keeps others', () => {
+      const html = renderToStaticMarkup(<ArticleMarkdown content={'Akapit\n\n---\n\n## Sekcja\n\nTekst\n\n---\n\nKoniec'} />)
+      expect(html.split('article-markdown__hr').length - 1).toBe(1)
+    })
+
+    it('turns "W liczbach" into a stat strip with values and labels', () => {
+      const html = renderToStaticMarkup(<ArticleMarkdown content={'III Turniej w liczbach: 8 drużyn · 16 meczów · 1 zwycięzca'} />)
+      expect(html).toContain('article-markdown__summary article-markdown__breakout')
+      expect(html).toContain('<span class="article-markdown__stat-value">16</span><span class="article-markdown__stat-label">meczów</span>')
+    })
+
+    it('renders "Label: value" lists as a fact table', () => {
+      const html = renderToStaticMarkup(<ArticleMarkdown content={'## Najważniejsze informacje\n\n- **Data:** 26 września\n- **Miejsce:** Hala CESiR'} />)
+      expect(html).toContain('class="article-markdown__facts zebra-list"')
+    })
+
+    it('renders a classification as a ranking with the BeKaPaKa row highlighted, but leaves other numbered lists alone', () => {
+      const ranking = renderToStaticMarkup(<ArticleMarkdown content={'## Klasyfikacja końcowa\n\n1. Alfa Trans\n2. TKKF Koszalin\n3. BeKaPaKa Bobolice'} />)
+      expect(ranking).toContain('article-markdown__ranking')
+      expect(ranking).toContain('class="is-own"')
+      const steps = renderToStaticMarkup(<ArticleMarkdown content={'## Jak się zapisać\n\n1. Wypełnij formularz\n2. Opłać wpisowe\n3. Przyjdź na halę'} />)
+      expect(steps).toContain('class="article-markdown__ol"')
+    })
+
+    it('lists H2 sections and blocks for the rail, without duplicating a gallery named by its heading', () => {
+      const content = '## Start\n\nTekst\n\n## Galeria z turnieju\n\n![a](https://cms.example/a.jpg)\n\n![b](https://cms.example/b.jpg)\n\n### Podsekcja\n\nTekst\n\n## Koniec\n\nTekst'
+      const toc = getArticleNavigation(content, { mediaPreview: true })
+      expect(toc.map((item) => item.title)).toEqual(['Start', 'Galeria z turnieju', 'Koniec'])
+      const html = renderToStaticMarkup(<ArticleMarkdown content={content} mediaPreview />)
+      for (const item of toc) expect(html).toContain(`id="${item.id}"`)
+    })
+
+    it('renders the rail, end of article and more band only when given', () => {
+      const toc = [{ id: 'a', title: 'A' }, { id: 'b', title: 'B' }, { id: 'c', title: 'C' }]
+      const html = renderToStaticMarkup(
+        <EditorialDetailTemplate sectionLabel='Aktualności' title='T' parentHref='/aktualnosci' tags={['KALK']} share toc={toc} more={<section className='article-more' />} content={<p>Treść</p>} />
+      )
+      expect(html).toContain('art-body art-body--rail')
+      expect(html).toContain('class="toc-rail"')
+      expect(html).toContain('class="art-end"')
+      expect(html).toContain('class="article-more"')
+      const plain = renderToStaticMarkup(<EditorialDetailTemplate sectionLabel='Dokumenty' title='T' parentHref='/dokumenty' content={<p>Treść</p>} />)
+      expect(plain).not.toContain('art-body--rail')
+      expect(plain).not.toContain('art-end')
     })
   })
 })

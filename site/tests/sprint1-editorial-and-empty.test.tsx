@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { EditorialDetailTemplate } from '../components/public/templates/EditorialDetailTemplate'
 import { EmptyState } from '../components/public/shared/EmptyState'
-import { EditorialListingTemplate } from '../components/public/templates/EditorialListingTemplate'
+import { ListingTemplate } from '../components/public/templates/ListingTemplate'
 
 describe('Sprint 1 - Editorial & Empty States (UI-05, UI-07, UI-10)', () => {
   it('EditorialDetailTemplate supports coverFit="contain" for posters (UI-05)', () => {
@@ -47,18 +47,18 @@ describe('Sprint 1 - Editorial & Empty States (UI-05, UI-07, UI-10)', () => {
     expect(html).toContain('Wróć do klubu')
   })
 
-  it('EditorialListingTemplate passes emptyAction to EmptyState (UI-10)', () => {
+  it('ListingTemplate passes emptyAction to EmptyState (UI-10)', () => {
     const html = renderToStaticMarkup(
-      <EditorialListingTemplate
+      <ListingTemplate
         title="Dokumenty klubowe"
-        description="Regulaminy i formularze."
+        lead="Regulaminy i formularze."
         hasItems={false}
         emptyTitle="Brak dokumentów"
         emptyDescription="Klub nie opublikował jeszcze dokumentów."
         emptyAction={<a href="/klub">Wróć do klubu</a>}
       >
         <ul><li>Item</li></ul>
-      </EditorialListingTemplate>
+      </ListingTemplate>
     )
     expect(html).toContain('class="empty-state__action"')
     expect(html).toContain('href="/klub"')

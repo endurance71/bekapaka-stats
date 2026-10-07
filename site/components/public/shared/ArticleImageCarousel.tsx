@@ -5,7 +5,11 @@ import { createPortal } from 'react-dom'
 import { CloseIcon, ArrowRightIcon } from './PublicIcons'
 import { FallbackImage } from './FallbackImage'
 type ImageInfo = { src: string; alt: string; caption?: string; author?: string; width?: number; height?: number; metadataMissing?: boolean }
+/** Galeria w treści pokazuje najpierw 1 duże + 8 zdjęć; reszta po kliknięciu. Lightbox przegląda wszystkie. */
+const GALLERY_PREVIEW = 9
+
 export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: ImageInfo[]; variant?: 'gallery' | 'cover' }) {
+  const [expanded, setExpanded] = useState(false)
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'error'>('loading')
   const [attempt, setAttempt] = useState(0)
   const selectImage = (next: number) => { setImageState('loading'); setIndex(next) }
@@ -53,15 +57,20 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
   }, [open, images.length])
   if (!images.length) return null
   const active = index === null ? null : images[index]
+  const visible = variant === 'cover' || expanded ? images : images.slice(0, GALLERY_PREVIEW)
+  const hidden = images.length - visible.length
   return (
     <div className={`article-gallery${variant === 'cover' ? ' article-gallery--cover' : ''}`}>
+      {variant !== 'cover' && images.some((image) => image.metadataMissing) && (
+        <p className="article-gallery__notice">Podgląd lokalny: opisy i autorzy zdjęć wymagają uzupełnienia przed publikacją.</p>
+      )}
       <div className="article-gallery__grid">
-        {images.map((image, i) => (
+        {visible.map((image, i) => (
           <figure key={`${image.src}-${i}`}>
             <button
               className="article-gallery__image-button"
               type="button"
-              aria-label={`Powiększ zdjęcie: ${image.alt}`}
+              aria-label={variant === 'cover' ? `Powiększ okładkę: ${image.alt}` : `Powiększ zdjęcie: ${image.alt}`}
               onClick={(event) => {
                 trigger.current = event.currentTarget
                 selectImage(i)
@@ -72,21 +81,34 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
                 src={image.src}
                 width={image.width || 800}
                 height={image.height || 600}
-                sizes={variant === 'cover' ? '(max-width: 767px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 64px), (max-width: 1279px) calc(41.667vw - 46.667px), min(513.34px, calc(41.667vw - 60px))' : i === 0 ? '(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 32vw, 457px' : '(max-width: 767px) calc((100vw - 44px)/2), (max-width: 1023px) 321px, (max-width: 1440px) 16vw, 223px'}
+                sizes={variant === 'cover' ? '(max-width: 1023px) calc(100vw - 32px), min(660px, 42vw)' : i === 0 ? '(max-width: 767px) 100vw, min(800px, 50vw)' : '(max-width: 767px) 50vw, min(400px, 25vw)'}
                 alt={image.alt}
                 loading={variant === 'cover' ? 'eager' : 'lazy'}
                 fetchPriority={variant === 'cover' ? 'high' : 'auto'}
               />
+              {variant === 'cover' && (
+                <span className="article-gallery__zoom" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+                    <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" />
+                  </svg>
+                </span>
+              )}
             </button>
-            {(image.caption || image.author || image.metadataMissing || variant === 'cover') && (
+            {(image.caption || image.author || (variant === 'cover' && image.metadataMissing)) && (
               <figcaption>
-                {variant === 'cover' && <span>Powiększ okładkę · </span>}{image.metadataMissing && <span>Podgląd lokalny: opis i autor wymagają uzupełnienia. </span>}{image.caption}
-                {image.author && ` · Fot. ${image.author}`}
+                {[variant === 'cover' && image.metadataMissing ? 'Podgląd lokalny: opis i autor wymagają uzupełnienia.' : null, image.caption || null, image.author ? `Fot. ${image.author}` : null]
+                  .filter(Boolean)
+                  .join(' · ')}
               </figcaption>
             )}
           </figure>
         ))}
       </div>
+      {hidden > 0 && (
+        <button type="button" className="btn btn--secondary article-gallery__more" onClick={() => setExpanded(true)}>
+          Pokaż wszystkie zdjęcia ({images.length})
+        </button>
+      )}
       {active &&
         createPortal(
           <div

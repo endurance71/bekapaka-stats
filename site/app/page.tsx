@@ -1,4 +1,4 @@
-import { MegaHomeTemplate } from '../components/public/templates/MegaHomeTemplate'
+import { HomeTemplate } from '../components/public/templates/HomeTemplate'
 import { getPublicSiteData } from '../lib/data'
 
 export const revalidate = 60
@@ -19,7 +19,7 @@ export default async function HomePage() {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
       />
-      <MegaHomeTemplate
+      <HomeTemplate
         allGames={allGames}
         news={news}
         recentGames={recentGames}
@@ -29,7 +29,6 @@ export default async function HomePage() {
         table={table}
         newsState={states.news}
         tableState={states.table}
-        eventsState={states.events}
       />
     </>
   )

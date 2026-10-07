@@ -38,7 +38,7 @@ export default async function DocumentDetailPage({ params }: { params: Promise<P
     <EditorialDetailTemplate
       sectionLabel='Dokumenty'
       title={item.title}
-      meta={`${item.category} | ${formatDate(item.effectiveDate)}`}
+      meta={`${item.category} · ${formatDate(item.effectiveDate)}`}
       parentHref='/dokumenty'
       content={
         item.fileUrl ? (

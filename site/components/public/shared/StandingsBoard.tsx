@@ -2,204 +2,166 @@
 
 import { useState } from 'react'
 import type { TeamStanding } from '../../../lib/data'
-import { formatDiffValue, formatTeamShortName } from '../../../lib/format'
+import { formatDiffValue } from '../../../lib/format'
+import { isBekapakaRow } from '../../../lib/navigation'
 
-function isBekapakaRow(name: string) {
-  const n = name.toLowerCase()
-  return n.includes('bekapaka') || n.includes('bobolice')
-}
 
 export function TeamLogo({ logoUrl, name, isBkp }: { logoUrl?: string | null; name: string; isBkp: boolean }) {
   const [hasError, setHasError] = useState(false)
 
   if (isBkp) {
     return (
-      <span className='standings-team-logo-wrap' aria-hidden='true'>
-        <img
-          src='/brand/sygnet2-kolor-ciasny.svg'
-          alt='BeKaPaKa'
-          className='standings-team-logo standings-team-logo--bkp'
-          width={28}
-          height={28}
-          loading='lazy'
-        />
+      <span className="standings-logo" aria-hidden="true">
+        <img src="/brand/sygnet2-kolor-ciasny.svg" alt="" className="standings-team-logo--bkp" width={28} height={28} loading="lazy" />
       </span>
     )
   }
 
-  const isPlaceholder = !logoUrl || logoUrl.includes('placeholder') || hasError
-
-  if (isPlaceholder) {
+  if (!logoUrl || logoUrl.includes('placeholder') || hasError) {
     const initial = name.trim().charAt(0).toUpperCase() || '•'
     return (
-      <span className='standings-team-logo-wrap standings-team-logo-wrap--shield' aria-hidden='true'>
-        <svg viewBox='0 0 24 24' width='28' height='28' fill='none' className='shield-svg'>
-          <path
-            d='M12 2L4 5V11C4 16.5 7.5 21.3 12 22C16.5 21.3 20 16.5 20 11V5L12 2Z'
-            fill='currentColor'
-            fillOpacity='0.15'
-            stroke='currentColor'
-            strokeWidth='1.5'
-          />
+      <span className="standings-logo standings-logo--shield" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" className="shield-svg">
+          <path d="M12 2L4 5V11C4 16.5 7.5 21.3 12 22C16.5 21.3 20 16.5 20 11V5L12 2Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.5" />
         </svg>
-        <span className='shield-initial'>{initial}</span>
+        <span className="shield-initial">{initial}</span>
       </span>
     )
   }
 
   return (
-    <span className='standings-team-logo-wrap' aria-hidden='true'>
-      <img
-        src={logoUrl}
-        alt=''
-        className='standings-team-logo'
-        width={28}
-        height={28}
-        loading='lazy'
-        onError={() => setHasError(true)}
-      />
+    <span className="standings-logo" aria-hidden="true">
+      <img src={logoUrl} alt="" width={28} height={28} loading="lazy" onError={() => setHasError(true)} />
     </span>
   )
 }
 
+function resultKind(value: string) {
+  const upper = value.toUpperCase()
+  if (upper.startsWith('W') || upper.startsWith('Z')) return 'win'
+  if (upper.startsWith('L') || upper.startsWith('P')) return 'loss'
+  return 'neutral'
+}
+
+/** Forma: litera + kształt (pełny / kontur) + tekst dla czytnika — kolor nie jest jedyną informacją. */
 export function FormBadges({ form }: { form?: string[] }) {
-  if (!form || form.length === 0) {
-    return <span className='standings-badge standings-badge--neutral'>—</span>
-  }
+  if (!form || form.length === 0) return <span className="standings-badge standings-badge--neutral">—</span>
   return (
-    <div className='standings-form-badges'>
-      {form.map((f, i) => {
-        const upper = f.toUpperCase()
-        const isWin = upper === 'W' || upper === 'Z'
-        const isLoss = upper === 'L' || upper === 'P'
-        const cls = isWin
-          ? 'standings-badge--win'
-          : isLoss
-          ? 'standings-badge--loss'
-          : 'standings-badge--neutral'
-        const label = isWin ? 'Wygrana' : isLoss ? 'Porażka' : f
+    <span className="standings-form">
+      {form.map((entry, index) => {
+        const kind = resultKind(entry)
+        const label = kind === 'win' ? 'Wygrana' : kind === 'loss' ? 'Porażka' : entry
         return (
-          <span key={i} className={`standings-badge standings-badge--form ${cls}`} title={label}>
-            <span aria-hidden='true'>{isWin ? 'W' : isLoss ? 'P' : upper}</span><span className='sr-only'>{label}</span>
+          <span key={index} className={`standings-badge standings-badge--${kind}`} title={label}>
+            <span aria-hidden="true">{kind === 'win' ? 'W' : kind === 'loss' ? 'P' : entry.toUpperCase()}</span>
+            <span className="sr-only">{label}</span>
           </span>
         )
       })}
-    </div>
+    </span>
   )
 }
 
 export function StreakBadge({ streak }: { streak?: string | null }) {
   if (!streak || streak.trim() === '' || streak.trim() === '—') {
-    return <span className='standings-badge standings-badge--neutral'>—</span>
+    return <span className="standings-streak standings-badge--neutral">—</span>
   }
-  const upper = streak.toUpperCase()
-  const isWin = upper.startsWith('W') || upper.startsWith('Z')
-  const isLoss = upper.startsWith('L') || upper.startsWith('P')
-  const cls = isWin
-    ? 'standings-badge--win'
-    : isLoss
-    ? 'standings-badge--loss'
-    : 'standings-badge--neutral'
-  // Normalizacja do polskiej notacji w tabeli (L -> P)
-  const displayStreak = upper.startsWith('L') ? `P${streak.slice(1)}` : streak
+  const kind = resultKind(streak)
+  // Polska notacja w tabeli (L → P)
+  const display = streak.toUpperCase().startsWith('L') ? `P${streak.slice(1)}` : streak
   return (
-    <span className={`standings-badge standings-badge--streak ${cls}`}>
-      <span aria-hidden='true'>{displayStreak}</span><span className='sr-only'>{isWin ? 'Seria wygranych' : isLoss ? 'Seria porażek' : 'Seria'}: {streak.replace(/\D/g, '')}</span>
+    <span className={`standings-streak standings-badge--${kind}`}>
+      <span aria-hidden="true">{display}</span>
+      <span className="sr-only">
+        {kind === 'win' ? 'Seria wygranych' : kind === 'loss' ? 'Seria porażek' : 'Seria'}: {streak.replace(/\D/g, '')}
+      </span>
     </span>
   )
 }
 
+/**
+ * Tabela ligi. compact: 5 wierszy wokół BeKaPaKa (strona główna). Pełna: kolumny dobierane do szerokości —
+ * telefon: # · drużyna · M · W · P · Pkt; tablet: + bilans i forma; desktop: wszystkie. Bez przewijania i przełączników.
+ */
 export function StandingsBoard({ table, className, compact = false }: { table: TeamStanding[]; className?: string; compact?: boolean }) {
-  const [viewMode, setViewMode] = useState<'main' | 'all'>('main')
-  const ownIndex = table.findIndex(row => isBekapakaRow(row.name))
+  const ownIndex = table.findIndex((row) => isBekapakaRow(row.name))
   const start = ownIndex < 0 ? 0 : Math.min(Math.max(ownIndex - 2, 0), Math.max(table.length - 5, 0))
   const visibleRows = compact ? table.slice(start, start + 5) : table
 
   return (
-    <div className={`standings-board-wrapper standings-board-wrapper--${viewMode}${className ? ` ${className}` : ''}${compact ? ' standings-board-wrapper--compact' : ''}`}>
-      <div className='standings-mobile-tabs' hidden={compact}><button type='button' className='btn btn--secondary btn--sm' aria-expanded={viewMode === 'all'} onClick={() => setViewMode(viewMode === 'all' ? 'main' : 'all')}>{viewMode === 'all' ? 'Podstawowe kolumny' : 'Więcej kolumn'}</button></div>
-
-      {viewMode === 'all' && (
-        <div className='standings-scroll-hint' aria-hidden='true'>
-          <span>↔ Przewiń tabelę w poziomie, aby zobaczyć wszystkie statystyki</span>
-        </div>
-      )}
-
-      <div className='standings-board-shell' tabIndex={0} role='region' aria-label='Tabela ligi, przewijaj poziomo'>
-        <table className={`standings-table standings-table--tab-${viewMode}`} aria-label='Tabela ligowa'>
-          <thead>
-            <tr>
-              <th scope='col' className='col-pos'>#</th>
-              <th scope='col' className='col-team'>Drużyna</th>
-              <th scope='col' className='col-stat col-matches'>M</th>
-              <th scope='col' className='col-stat col-wins'>W</th>
-              <th scope='col' className='col-stat col-losses'>P</th>
-              <th scope='col' className='col-stat col-for'>+</th>
-              <th scope='col' className='col-stat col-against'>-</th>
-              <th scope='col' className='col-stat col-diff'>+/-</th>
-              <th scope='col' className='col-stat col-pts'>PKT</th>
-              <th scope='col' className='col-stat col-form'>Forma</th>
-              <th scope='col' className='col-stat col-streak'>Seria</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row) => {
-              const isBkp = isBekapakaRow(row.name)
-              const position = row.position > 0 ? row.position : table.indexOf(row) + 1
-              const matches = row.matches ?? (row.wins + row.losses)
-              const pointsFor = row.pointsFor ?? 0
-              const pointsAgainst = row.pointsAgainst ?? 0
-              const diff = row.pointsDiff ?? (pointsFor - pointsAgainst)
-              const points = row.points ?? (row.wins * 2 + row.losses)
-              const diffClass = diff > 0 ? 'is-positive' : diff < 0 ? 'is-negative' : 'is-zero'
-
-              return (
-                <tr
-                  key={`${row.name}-${position}`}
-                  className={`standings-row-v2 ${isBkp ? 'is-bkp is-own' : ''}`}
-                >
-                  <td className='col-pos'>
-                    <span className='standings-pos-badge'>{position}</span>
-                  </td>
-                  <th scope='row' className='col-team'>
-                    <div className='standings-team-identity'>
-                      <TeamLogo logoUrl={row.logoUrl} name={row.name} isBkp={isBkp} />
-                      <span className='standings-team-name' title={row.name}>
-                        <span className='standings-team-name__full'>{row.name}</span>
-                        <span className='standings-team-name__short' aria-hidden='true'>{formatTeamShortName(row.name)}</span>
-                      </span>
-                    </div>
-                  </th>
-                  <td className='col-stat col-matches'>{matches}</td>
-                  <td className='col-stat col-wins'>{row.wins}</td>
-                  <td className='col-stat col-losses'>{row.losses}</td>
-                  <td className='col-stat col-for'>{pointsFor}</td>
-                  <td className='col-stat col-against'>{pointsAgainst}</td>
-                  <td className={`col-stat col-diff ${diffClass}`}>{formatDiffValue(diff)}</td>
-                  <td className='col-stat col-pts'>
-                    <strong>{points}</strong>
-                  </td>
-                  <td className='col-stat col-form'>
+    <div className={`standings standings--${compact ? 'compact' : 'full'}${className ? ` ${className}` : ''}`}>
+      <table className="table standings-table">
+        <caption className="sr-only">Tabela KALK{compact ? ` — 5 z ${table.length} zespołów` : ''}</caption>
+        <thead>
+          <tr>
+            <th scope="col" className="col-pos">#</th>
+            <th scope="col" className="col-team">Drużyna</th>
+            <th scope="col" className="col-stat col-matches"><abbr title="Mecze">M</abbr></th>
+            <th scope="col" className="col-stat col-wins"><abbr title="Wygrane">W</abbr></th>
+            <th scope="col" className="col-stat col-losses"><abbr title="Porażki">P</abbr></th>
+            {!compact && <th scope="col" className="col-stat col-for col-wide"><abbr title="Punkty zdobyte">+</abbr></th>}
+            {!compact && <th scope="col" className="col-stat col-against col-wide"><abbr title="Punkty stracone">−</abbr></th>}
+            <th scope="col" className="col-stat col-diff col-mid"><abbr title="Bilans punktów">+/−</abbr></th>
+            <th scope="col" className="col-stat col-pts col-key"><abbr title="Punkty ligowe">Pkt</abbr></th>
+            {!compact && <th scope="col" className="col-form col-mid">Forma</th>}
+            {!compact && <th scope="col" className="col-stat col-streak col-wide">Seria</th>}
+          </tr>
+        </thead>
+        <tbody>
+          {visibleRows.map((row) => {
+            const isBkp = isBekapakaRow(row.name)
+            const position = row.position > 0 ? row.position : table.indexOf(row) + 1
+            const matches = row.matches ?? row.wins + row.losses
+            const pointsFor = row.pointsFor ?? 0
+            const pointsAgainst = row.pointsAgainst ?? 0
+            const diff = row.pointsDiff ?? pointsFor - pointsAgainst
+            const points = row.points ?? row.wins * 2 + row.losses
+            const diffClass = diff > 0 ? 'is-positive' : diff < 0 ? 'is-negative' : 'is-zero'
+            return (
+              <tr key={`${row.name}-${position}`} className={`standings-row${isBkp ? ' is-bkp' : ''}`} aria-current={isBkp ? 'true' : undefined}>
+                <td className="col-pos">{position}</td>
+                <th scope="row" className="col-team">
+                  <span className="standings-team">
+                    <TeamLogo logoUrl={row.logoUrl} name={row.name} isBkp={isBkp} />
+                    <span className="standings-team__name">{row.name}</span>
+                  </span>
+                </th>
+                <td className="col-stat col-matches">{matches}</td>
+                <td className="col-stat col-wins">{row.wins}</td>
+                <td className="col-stat col-losses">{row.losses}</td>
+                {!compact && <td className="col-stat col-for col-wide">{pointsFor}</td>}
+                {!compact && <td className="col-stat col-against col-wide">{pointsAgainst}</td>}
+                <td className={`col-stat col-diff col-mid ${diffClass}`}>{formatDiffValue(diff)}</td>
+                <td className="col-stat col-pts">{points}</td>
+                {!compact && (
+                  <td className="col-form col-mid">
                     <FormBadges form={row.form} />
                   </td>
-                  <td className='col-stat col-streak'>
+                )}
+                {!compact && (
+                  <td className="col-stat col-streak col-wide">
                     <StreakBadge streak={row.streak} />
                   </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+                )}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
 
-      {compact && table.length > 5 && <p className='muted text-xs'>Wybrane 5 z {table.length} zespołów. Pełne zestawienie na stronie tabeli.</p>}
-      <div className='standings-legend' role='group' aria-label='Objaśnienia skrótów tabeli'>
-        <span><strong>M</strong> – mecze</span>
-        <span><strong>W</strong> – wygrane</span>
-        <span><strong>P</strong> – porażki</span>
-        <span className={compact ? 'standings-legend__extended' : undefined}><strong>+</strong> – punkty zdobyte</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>−</strong> – punkty stracone</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>+/−</strong> – różnica punktów zdobytych i straconych</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>Forma</strong> – ostatnie wyniki: W wygrana, P porażka</span><span className={compact ? 'standings-legend__extended' : undefined}><strong>Seria</strong> – liczba kolejnych wygranych lub porażek</span>
-        <span><strong>PKT</strong> – punkty ligowe (2 za wygraną, 1 za porażkę)</span>
-      </div>
+      {compact && table.length > 5 && <p className="standings__note">Wybrane 5 z {table.length} zespołów.</p>}
+      {!compact && (
+        <dl className="glossary-inline glossary-inline--table" aria-label="Objaśnienia skrótów tabeli">
+          <div><dt>M</dt><dd>mecze</dd></div>
+          <div><dt>W</dt><dd>wygrane</dd></div>
+          <div><dt>P</dt><dd>porażki</dd></div>
+          <div className="col-wide"><dt>+ i −</dt><dd>punkty zdobyte i stracone</dd></div>
+          <div className="col-mid"><dt>+/−</dt><dd>bilans punktów</dd></div>
+          <div><dt>Pkt</dt><dd>punkty ligowe: 2 za wygraną, 1 za porażkę</dd></div>
+          <div className="col-mid"><dt>Forma</dt><dd>ostatnie wyniki: W wygrana, P porażka</dd></div>
+          <div className="col-wide"><dt>Seria</dt><dd>kolejne wygrane lub porażki</dd></div>
+        </dl>
+      )}
     </div>
   )
 }

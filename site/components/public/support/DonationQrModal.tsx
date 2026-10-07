@@ -133,7 +133,7 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
           </h2>
           <button
             type="button"
-            className="donation-qr-modal__close"
+            className="icon-btn donation-qr-modal__close"
             onClick={() => onCloseRef.current()}
             aria-label="Zamknij"
           >
@@ -146,29 +146,29 @@ export function DonationQrModal({ isOpen, onClose }: DonationQrModalProps) {
             Skopiuj dane do przelewu lub zeskanuj kod QR w aplikacji bankowej na telefonie.
           </p>
 
-          <dl className="fsmm-support-facts donation-qr-modal__facts">
-            <div className="fsmm-support-facts__row">
+          <dl className="facts donation-qr-modal__facts">
+            <div>
               <dt>Odbiorca</dt>
               <dd>
-                <code>{BKPK_DONATION.organizationName}</code>
+                {BKPK_DONATION.organizationName}
               </dd>
             </div>
-            <div className="fsmm-support-facts__row">
+            <div>
               <dt>Rachunek</dt>
               <dd>
-                <code className="fsmm-support-account">{BKPK_DONATION.bankAccountDisplay}</code>
-                <span className="muted fsmm-support-bank-name">{BKPK_DONATION.bankName}</span>
+                <span className="tnum facts__account">{BKPK_DONATION.bankAccountDisplay}</span>
+                <span className="muted"> · {BKPK_DONATION.bankName}</span>
               </dd>
             </div>
-            <div className="fsmm-support-facts__row">
+            <div>
               <dt>Tytuł</dt>
               <dd>
-                <code>{BKPK_DONATION.transferTitle}</code>
+                {BKPK_DONATION.transferTitle}
               </dd>
             </div>
           </dl>
 
-          <div className="donation-qr-modal__actions">
+          <div className="donation-qr-modal__actions actions">
             <button type="button" className="btn btn--primary" onClick={handleCopyAccount}>
               {copyStatus === 'copied'
                 ? '✓ Skopiowano numer konta'

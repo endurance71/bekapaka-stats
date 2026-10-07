@@ -7,7 +7,8 @@ import {
   validatePresentation
 } from '../../packages/match-presentation'
 import { mapApiGameToSummary, mapApiGameToSummarySafe } from '../lib/data/map-game'
-import { MatchCard } from '../components/public/shared/MatchCard'
+import { MatchHero } from '../components/public/match/MatchHero'
+import { FixtureRow } from '../components/public/match/FixtureRow'
 const game = {
   id: '42',
   date: '2030-06-01T12:00:00Z',
@@ -19,18 +20,18 @@ describe('Match presentation', () => {
   it.each(MATCH_STATUSES)('keeps explicit %s throughout adapter and card', (status) => {
     const mapped = mapApiGameToSummary({ ...game, presentation: { status } })
     expect(mapped.status).toBe(status)
-    const html = renderToStaticMarkup(<MatchCard game={mapped} />)
-    expect(html).toContain(`match-status--${status.toLowerCase()}`)
-    expect(html.indexOf('BeKaPaKa Bobolice')).toBeLessThan(html.indexOf('Rywal'))
+    const html = renderToStaticMarkup(<MatchHero game={mapped} />)
+    expect(html).toContain(`data-status="${status.toLowerCase()}"`)
+    expect(html.indexOf('BeKaPaKa')).toBeLessThan(html.indexOf('Rywal'))
   })
   it.each(MATCH_STATUSES)('preserves %s in compact fixtures', (status) => {
     const html = renderToStaticMarkup(
-      <MatchCard compact game={{ ...game, status, scoreUs: 0, scoreThem: 0 }} />
+      <FixtureRow game={{ ...game, status, scoreUs: 0, scoreThem: 0 }} />
     )
-    expect(html).toContain(`fixture--${status.toLowerCase()}`)
-    if (status === 'POSTPONED') expect(html).toContain('Czekamy na nowy termin')
-    if (['FINAL', 'LIVE', 'BREAK'].includes(status)) expect(html).toContain('0:0')
-    if (status === 'CANCELLED') expect(html).not.toContain('0:0')
+    expect(html).toContain(`data-status="${status.toLowerCase()}"`)
+    if (status === 'POSTPONED') expect(html).toContain('Przełożony')
+    if (['FINAL', 'LIVE', 'BREAK'].includes(status)) expect(html).toContain('aria-label="BeKaPaKa 0, Rywal 0"')
+    if (status === 'CANCELLED') expect(html).not.toContain('BeKaPaKa 0, Rywal 0')
   })
   it('rejects malformed details without fabricating a score', () =>
     expect(
@@ -48,11 +49,11 @@ describe('Match presentation', () => {
     ).toBe(0)
   })
   it('never renders a synthetic 0:0', () =>
-    expect(renderToStaticMarkup(<MatchCard game={{ ...game, status: 'FINAL' }} />)).not.toContain(
-      '0:0'
+    expect(renderToStaticMarkup(<MatchHero game={{ ...game, status: 'FINAL' }} />)).not.toContain(
+      'BeKaPaKa 0'
     ))
   it('postponement without new date asks for the next term', () =>
-    expect(renderToStaticMarkup(<MatchCard game={{ ...game, status: 'POSTPONED' }} />)).toContain(
+    expect(renderToStaticMarkup(<MatchHero game={{ ...game, status: 'POSTPONED' }} />)).toContain(
       'Czekamy na nowy termin'
     ))
   it('prioritizes active games, then next planned, then last final', () => {

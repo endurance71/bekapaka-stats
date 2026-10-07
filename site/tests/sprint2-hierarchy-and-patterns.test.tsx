@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, it, expect } from 'vitest'
 import { normalizeRoundName } from '../../packages/match-presentation'
 import { StreakBadge, StandingsBoard } from '../components/public/shared/StandingsBoard'
-import { MatchCard } from '../components/public/shared/MatchCard'
+import { MatchHero } from '../components/public/match/MatchHero'
 import type { GameSummary, TeamStanding } from '../lib/data'
 
 describe('Sprint 2: Hierarchy, Presentation & Navigation Patterns', () => {
@@ -30,7 +30,7 @@ describe('Sprint 2: Hierarchy, Presentation & Navigation Patterns', () => {
     }
 
     it('renders Dojazd directions link with Google Maps search query for scheduled match', () => {
-      const html = renderToStaticMarkup(<MatchCard game={scheduledGame} />)
+      const html = renderToStaticMarkup(<MatchHero game={scheduledGame} />)
       expect(html).toContain('Szukaj hali w mapach')
       expect(html).toContain('google.com/maps/search/?api=1&amp;query=')
       expect(html).toContain(encodeURIComponent('Hala KOSiR, Koszalin'))

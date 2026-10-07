@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "quality": "npm run typecheck && npm run lint && npm run build",
-    "preview:local": "node scripts/preview-local.mjs"
+    "preview:local": "node scripts/preview-local.mjs",
+    "qa:layout": "uv run --with playwright python scripts/qa-layout.py http://127.0.0.1:3200"
   },
   "dependencies": {
     "micromark-util-character": "^2.1.1",

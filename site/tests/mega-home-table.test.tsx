@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it, vi } from 'vitest'
-import { MegaHomeTemplate } from '../components/public/templates/MegaHomeTemplate'
+import { HomeTemplate } from '../components/public/templates/HomeTemplate'
 import type { TeamStanding } from '../lib/data'
 
-vi.mock('../components/public/support/FsmmSupportSection', () => ({
-  FsmmSupportSection: () => null
+vi.mock('../components/public/shared/LiveMatchCard', () => ({
+  LiveMatchCard: () => null
 }))
 
 const testStandings: TeamStanding[] = [
@@ -108,7 +108,7 @@ const testStandings: TeamStanding[] = [
   }
 ]
 
-describe('MegaHomeTemplate Standings Table', () => {
+describe('HomeTemplate Standings Table', () => {
   it.each([
     { pointsDiff: 66, expected: '+66' },
     { pointsDiff: -12, expected: '-12' },
@@ -118,7 +118,7 @@ describe('MegaHomeTemplate Standings Table', () => {
   ])('shows the point balance in the position tile: $expected', ({ expected, ...balance }) => {
     const standing = { ...testStandings[6], pointsDiff: undefined, pointsFor: undefined, pointsAgainst: undefined, ...balance }
     const html = renderToStaticMarkup(
-      <MegaHomeTemplate news={[]} recentGames={[]} nearestEvent={null}
+      <HomeTemplate news={[]} recentGames={[]} nearestEvent={null}
         table={[standing]} roster={[]} sponsors={[]} />
     )
     expect(html).toContain(`aria-label="Bilans punktów: ${expected}">+/− ${expected}</span>`)
@@ -126,7 +126,7 @@ describe('MegaHomeTemplate Standings Table', () => {
 
   it('renders a compact preview around BeKaPaKa with the complete table link', () => {
     const html = renderToStaticMarkup(
-      <MegaHomeTemplate
+      <HomeTemplate
         news={[]}
         recentGames={[]}
         nearestEvent={null}
@@ -136,25 +136,25 @@ describe('MegaHomeTemplate Standings Table', () => {
       />
     )
 
+    // Compact preview: key columns only (form, streak and points for/against stay on /tabela)
     expect(html).toContain('col-pos">#</th>')
     expect(html).toContain('col-team">Drużyna</th>')
-    expect(html).toContain('col-stat col-matches">M</th>')
-    expect(html).toContain('col-stat col-wins">W</th>')
-    expect(html).toContain('col-stat col-losses">P</th>')
-    expect(html).toContain('col-stat col-for">+</th>')
-    expect(html).toContain('col-stat col-against">-</th>')
-    expect(html).toContain('col-stat col-diff">+/-</th>')
-    expect(html).toContain('col-stat col-pts">PKT</th>')
-    expect(html).toContain('col-stat col-form">Forma</th>')
-    expect(html).toContain('col-stat col-streak">Seria</th>')
+    expect(html).toContain('<abbr title="Mecze">M</abbr>')
+    expect(html).toContain('<abbr title="Wygrane">W</abbr>')
+    expect(html).toContain('<abbr title="Porażki">P</abbr>')
+    expect(html).toContain('<abbr title="Bilans punktów">+/−</abbr>')
+    expect(html).toContain('<abbr title="Punkty ligowe">Pkt</abbr>')
+    expect(html).not.toContain('col-form')
+    expect(html).not.toContain('col-streak')
 
     // Team logo and identity
-    expect(html).toContain('standings-team-identity')
+    expect(html).toContain('standings-team')
     expect(html).toContain('Wybrane 5 z 7 zespołów')
+    expect(html).toContain('href="/tabela"')
     expect(html).not.toContain('src="https://www.kalk-koszalin.com/storage/legacy/teams/1.jpg"')
 
     // BeKaPaKa highlight row
-    expect(html).toContain('standings-row-v2 is-bkp')
+    expect(html).toContain('standings-row is-bkp')
     expect(html).toContain('BeKaPaKa Bobolice')
 
     expect(html).toContain('Max BAU')

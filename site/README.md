@@ -2,10 +2,12 @@
 
 Publiczna strona klubu oparta o Next.js (App Router), zaprojektowana mobile-first.
 
-## Standard UI
+## Standard UI — Website 2.0
 
-- Bento Grid (premium dark sport)
-- Brandbook-first tokens (BKP Gold / Obsidian / Crimson / Amber / Slate)
+- Art direction „program meczowy”: płyta (dane) i papier (czytanie), linie zamiast kart, cięte cyfry BKPK dla wyniku, godziny i numeru.
+- Źródło marki: Brandbook 2.0 + tom WWW (`BeKaPaKa - brand/05_brandbook`); tokeny marki: `packages/digital-design/dist/tokens.css`.
+- CSS w warstwach: `app/styles/foundation.css` (role semantyczne, typografia, layout) → `components.css` → `content.css` → `match.css` → `pages.css`. Komponenty używają wyłącznie ról, bez wartości „na oko”.
+- Zasady, architektura i decyzje: `docs/BEKAPAKA_REBRANDING_2_PLAN.md`, raport: `docs/BEKAPAKA_REBRANDING_2_FINAL.md`.
 - WCAG 2.2 AA i quality gates przed deployem
 
 ## Lokalne uruchomienie
@@ -46,6 +48,12 @@ npm run dev
 
 ```bash
 npm run quality
+```
+
+Kontrola layoutu (serwer na :3200; 5 szerokości × 13 tras: poziomy scroll, tekst < 14 px, nierówne kontrolki, przewijane tabele ≥ 1440 px, H1, konsola):
+
+```bash
+npm run qa:layout
 ```
 
 ## SEO

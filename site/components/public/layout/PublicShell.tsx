@@ -36,11 +36,18 @@ export function PublicShell({
       <a href="#content" className="skip-link">
         Przejdź do treści
       </a>
-      <header className="site-header">
+      <header className="site-header" data-theme="plyta">
         <div className="container site-header__inner">
+          <ClubLogo logoUrl={logoUrl} />
+          <div className="site-header__nav">
+            <MainNav />
+          </div>
+          <a className="site-header__panel" href="https://panel.bekapaka.pl">
+            Panel klubu
+          </a>
           <button
             ref={menuButtonRef}
-            className="mobile-menu-open-btn"
+            className="icon-btn site-header__menu"
             type="button"
             onClick={openMenu}
             aria-label="Otwórz menu nawigacji"
@@ -48,18 +55,6 @@ export function PublicShell({
           >
             <MenuIcon />
           </button>
-
-          <ClubLogo logoUrl={logoUrl} />
-
-          <div className="desktop-nav-wrapper">
-            <MainNav />
-          </div>
-
-          <div className="header-actions-wrapper">
-            <a className="btn btn--secondary btn--sm" href="https://panel.bekapaka.pl">
-              Panel klubu
-            </a>
-          </div>
         </div>
       </header>
 
@@ -75,7 +70,6 @@ export function PublicShell({
         {children}
       </main>
       {footer}
-      <div className="page-bottom-safe-spacer" aria-hidden="true" />
     </div>
   )
 }
