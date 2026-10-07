@@ -729,6 +729,7 @@
     margin-top: var(--space-6);
   }
   .article-gallery__credit {
+    max-width: var(--measure);
     margin-top: var(--space-3);
     font-size: var(--fs-caption);
     color: var(--text-muted);

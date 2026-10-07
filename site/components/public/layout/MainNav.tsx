@@ -17,12 +17,17 @@ export function MainNav({ onLinkClick, variant = 'inline' }: { onLinkClick?: () 
   return (
     <nav aria-label="Nawigacja główna" className={fullscreen ? 'nav nav--fullscreen' : 'nav'}>
       <ul className="nav__list" role="list">
-        {items.map((item) => {
+        {items.map((item, index) => {
           const active = isActive(pathname, item.href)
           return (
             <li key={item.href}>
               <Link href={item.href} onClick={onLinkClick} aria-current={active ? 'page' : undefined} className={active ? 'is-active' : undefined}>
-                {item.label}
+                <span>{item.label}</span>
+                {fullscreen && (
+                  <span className="nav__index" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                )}
               </Link>
             </li>
           )
