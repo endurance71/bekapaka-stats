@@ -45,6 +45,7 @@ import {
   createPlay,
   updatePlay,
   getLeagueTable,
+  getMatchup,
   getLeagueSchedule,
   getTopScorers,
   getLeagueLeaders,
@@ -1130,6 +1131,19 @@ app.get(['/api/league/table', '/league/table'], async (req, res) => {
   if (req.query.includeMeta !== '1') return res.json(rows);
   const season = req.query.seasonId ? await getSeasonById(req.query.seasonId) : await getActiveSeason();
   res.json({ data: rows, meta: leagueMetadata(season, rows) });
+});
+// Zapowiedź meczu: porównanie BeKaPaKa i rywala w sezonie (publiczne, dane ligi).
+app.get(['/api/league/matchup', '/league/matchup'], async (req, res) => {
+  const opponent = typeof req.query.opponent === 'string' ? req.query.opponent.trim() : '';
+  if (!opponent || opponent.length > 80) return res.status(400).json({ error: 'Podaj nazwę rywala (do 80 znaków).' });
+  try {
+    const matchup = await getMatchup(opponent, req.query.seasonId);
+    if (!matchup) return res.status(404).json({ error: 'Nie znaleziono rywala w tabeli ligi.' });
+    res.json(matchup);
+  } catch (error) {
+    console.error('Matchup failed:', error);
+    res.status(500).json({ error: 'Nie udało się przygotować porównania.' });
+  }
 });
 app.get(['/api/league/schedule', '/league/schedule'], async (req, res) => {
   res.json(await getLeagueSchedule(req.query.seasonId));

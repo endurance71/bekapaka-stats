@@ -32,6 +32,7 @@ import {
 } from './lib/leagueTeamResolve.js';
 import { kalkMatchToGameDetail, kalkMatchToListItem } from './kalk/kalkGameView.js';
 import { enrichKalkTeamStats, isBekapakaTeamName } from './kalk/parseMatchBoxScore.js';
+import { buildMatchup } from './lib/matchup.js';
 
 const BEKAPAKA_LEAGUE_MATCH_OR = [
   { homeTeam: { contains: 'BeKaPaKa', mode: 'insensitive' } },
@@ -2196,6 +2197,26 @@ export async function getLeagueTable(phase = 'regular', seasonIdParam) {
       ? (team.form.includes(',') ? team.form.split(',') : [team.form])
       : []
   }));
+}
+
+/**
+ * Zapowiedź meczu (publiczne): BeKaPaKa i rywal w sezonie — tabela, średnie z box score, strzelcy, mecze bezpośrednie.
+ * @returns {Promise<object | null>} null, gdy rywala nie ma w tabeli ligi.
+ */
+export async function getMatchup(opponentName, seasonIdParam) {
+  await ensureSeeded();
+  await ensureDefaultSeason();
+  const seasonId = await resolveSeasonId(seasonIdParam);
+  const [table, seasons, finished, players] = await Promise.all([
+    getLeagueTable('regular', seasonId),
+    listSeasons(),
+    prisma.kalkMatch.findMany({ where: { isFinished: true }, orderBy: { date: 'desc' } }),
+    prisma.kalkPlayer.findMany({ where: { seasonId }, select: { name: true, team: true, pointsAverage: true, matchesPlayed: true } })
+  ]);
+  const season = seasons.find((item) => item.id === seasonId) || null;
+  const seasonLabels = Object.fromEntries(seasons.map((item) => [item.id, item.label]));
+  const seasonMatches = finished.filter((km) => km.seasonId === seasonId).map((km) => kalkMatchToGameDetail(km));
+  return buildMatchup({ opponent: opponentName, season, table, seasonMatches, allMatches: finished, players, seasonLabels });
 }
 
 // LIGA - Pobierz terminarz

@@ -232,3 +232,14 @@ Audyt bekapaka.pl na telefonie (390 × 844, ekran 2×, dotyk): 17 stron + menu, 
 - **`/klub`:** zakładki bez wygaszonej krawędzi (zawijają się). **Liderzy:** kwadratowy kadr portretu na telefonie.
 - **Kontrola:** `npm run qa:mobile` (`scripts/qa-mobile.py`: kontrast, tekst, pola dotyku, zdjęcia, opcjonalnie zrzuty) oraz w `qa-layout.py` reguły `table-row-covered`, `image-undersized`, `image-distorted`, `tap-target`. Lokalnie: `qa-mobile` 0 uwag (18 widoków), `qa-layout` 0 naruszeń (5 szerokości × 16 tras).
 - **Do uzupełnienia poza kodem:** większy plik portretu #24 (dziś 304 px, na liście wyjątków QA), docelowy e-mail klubu (`SITE_CONTACT_EMAIL`).
+
+## Zapowiedź meczu: porównanie z rywalem w sezonie (7.10.2026)
+
+Strona nadchodzącego meczu (`/mecze/kalk-<id>`) ma pod hero sekcję „Przed meczem · Jak wypadamy w sezonie”:
+
+- **Para drużyn:** herb, miejsce w tabeli, bilans i forma (odznaki jak w tabeli ligi).
+- **Średnio na mecz** z box score KALK: punkty zdobyte i stracone, zbiórki, asysty, przechwyty, bloki, straty, FG%, 3P%, FT% (procenty z sum celnych i oddanych). Lepsza wartość podkreślona — dla punktów straconych i strat niższa.
+- **Najlepsi strzelcy** obu drużyn (pkt na mecz) i **mecze bezpośrednie** ze wszystkich sezonów (z linkiem do meczu).
+- Drużyna bez meczu w sezonie: zdanie zamiast pustych słupków; błąd lub brak danych — sekcja się nie pokazuje.
+- **Backend:** publiczny `GET /api/league/matchup?opponent=<nazwa>` (`getMatchup` w `dataStore.js`, czyste funkcje w `backend/lib/matchup.js` + testy).
+- **Wspólne słupki** `CompareBars` także w „Porównaniu zespołowym” meczu zakończonego — przy meczu wyjazdowym wartości BeKaPaKa i rywala nie są już zamienione miejscami.
