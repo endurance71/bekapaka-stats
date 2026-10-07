@@ -264,6 +264,19 @@ jobs:
             deploy_one backend http://127.0.0.1:4001/api/health
             deploy_one site http://127.0.0.1:8082/
             deploy_one frontend http://127.0.0.1:8081/
+            # Strona jest prerenderowana w CI bez backendu i CMS — w cache leżą stany „Nie można pobrać”.
+            # Odświeżamy cache i renderujemy główne trasy (dwa przejścia: stara wersja → regeneracja), zanim wejdą odwiedzający.
+            secret="$(grep -E '^SITE_REVALIDATE_SECRET=' .env | cut -d= -f2- || true)"
+            [ -n "$secret" ] || secret="$(grep -E '^PREVIEW_SECRET=' .env | cut -d= -f2- || true)"
+            if [ -n "$secret" ]; then
+              curl -fsS -o /dev/null --max-time 20 -X POST -H "x-revalidate-secret: $secret" http://127.0.0.1:8082/api/revalidate || echo 'Odświeżenie cache strony nie powiodło się.' >&2
+            fi
+            for pass in 1 2; do
+              for route in / /mecze '/mecze?widok=wyniki' /tabela /sklad /aktualnosci /sponsorzy /klub /dokumenty; do
+                curl -fsS -o /dev/null --max-time 30 "http://127.0.0.1:8082${route}" || echo "Rozgrzanie ${route} nie powiodło się." >&2
+              done
+              sleep 5
+            done
             echo 'Wdrażanie zakończone pomyślnie. Zachowuję obrazy rollbacku.'
             # Shared VPS: global pruning can remove rollback images of other projects.
             # Review BeKaPaKa image retention separately before deleting old releases.
