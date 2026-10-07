@@ -1,7 +1,8 @@
 import { serializeJsonLd } from '../../../lib/json-ld'
 import { getAllEvents } from '../../../lib/data/cms'
 import { getLeagueTableState } from '../../../lib/data/backend'
-import { getGameByIdState } from '../../../lib/data/backend'
+import { getGameByIdState, getMatchup } from '../../../lib/data/backend'
+import { MatchupPreview } from '../../../components/public/match/MatchupPreview'
 import { LiveMatchCard } from '../../../components/public/shared/LiveMatchCard'
 import { resolvePresentation } from '../../../../packages/match-presentation'
 import { MatchDrawerContent } from '../MatchDrawerContent'
@@ -72,6 +73,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
     const isFinal = game.status === 'FINAL' || (!game.status && !!game.result)
     // Mecz przed rozpoczęciem (z uwzględnieniem statusu ustawionego w panelu).
     const upcoming = resolvePresentation(game).status === 'SCHEDULED'
+    const matchup = upcoming ? await getMatchup(game.opponent) : null
     const parentHref = isFinal ? '/mecze?widok=wyniki' : '/mecze'
     return (
       <div className="match-page" data-theme="plyta">
@@ -116,7 +118,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
             </>
           }
         />
-        {/* Przed meczem nie ma czego pokazać — informacja jest w hero, bez pustej sekcji między paskami. */}
+        {/* Przed meczem: porównanie z rywalem w sezonie (gdy są dane); statystyki meczu — dopiero po meczu. */}
+        {upcoming && matchup && <MatchupPreview matchup={matchup} />}
         {!upcoming && (
           <section className="match-detail" aria-label="Statystyki meczu">
             <div className="container">

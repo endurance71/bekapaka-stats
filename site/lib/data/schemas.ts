@@ -224,3 +224,29 @@ export type DataState<T> = {
   message?: string
   meta?: { season?: { id: string; label: string; slug?: string } | null; division?: string | null; updatedAt?: string | null }
 }
+
+/** Zapowiedź meczu: BeKaPaKa i rywal w sezonie (`/api/league/matchup`). */
+const matchupTeamSchema = z.object({
+  name: z.string(),
+  logoUrl: z.string().nullable().optional(),
+  position: z.number().nullable(),
+  matches: z.number(),
+  wins: z.number(),
+  losses: z.number(),
+  form: z.array(z.string()).default([]),
+  streak: z.string().nullable().optional(),
+  boxScoreGames: z.number(),
+  perGame: z.object({ pts: z.number(), opp: z.number(), reb: z.number(), ast: z.number(), stl: z.number(), blk: z.number(), tov: z.number() }).nullable(),
+  pct: z.object({ fg: z.number().nullable(), three: z.number().nullable(), ft: z.number().nullable() }).nullable()
+})
+const matchupScorerSchema = z.object({ name: z.string(), pointsAverage: z.number(), matchesPlayed: z.number() })
+export const matchupSchema = z.object({
+  season: z.object({ id: z.string(), label: z.string() }).nullable(),
+  teams: z.object({ us: matchupTeamSchema, them: matchupTeamSchema }),
+  scorers: z.object({ us: z.array(matchupScorerSchema), them: z.array(matchupScorerSchema) }),
+  headToHead: z.array(
+    z.object({ gameId: z.string(), date: z.string(), seasonId: z.string(), seasonLabel: z.string().nullable(), scoreUs: z.number(), scoreThem: z.number() })
+  )
+})
+export type Matchup = z.infer<typeof matchupSchema>
+export type MatchupTeam = z.infer<typeof matchupTeamSchema>

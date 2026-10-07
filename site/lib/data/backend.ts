@@ -5,10 +5,12 @@ import { backendPath, fetchJson, fetchJsonState } from './client'
 import { allowFakeData, resolveFallbackState } from './fallback'
 import { mapApiGameToSummary, mapApiGameToSummarySafe } from './map-game'
 import {
+  matchupSchema,
   rosterPlayerSchema,
   teamStandingSchema,
   type DataState,
   type GameSummary,
+  type Matchup,
   type RosterPlayer,
   type TeamStanding
 } from './schemas'
@@ -420,6 +422,17 @@ export async function getRecentGamesState(limit = 100): Promise<DataState<GameSu
 
 function findFallbackGameById(id: string): GameSummary | null {
   return fallbackGames.find((g) => g.id === id) ?? null
+}
+
+/** Zapowiedź meczu: porównanie z rywalem w sezonie. Brak danych lub błąd → null (sekcja się nie pokazuje). */
+export async function getMatchup(opponent: string): Promise<Matchup | null> {
+  if (!opponent.trim()) return null
+  const payload = await fetchJson<unknown>(backendPath(`/api/league/matchup?opponent=${encodeURIComponent(opponent)}`), {
+    revalidate: 300,
+    tags: ['backend', 'backend-table', 'backend-games']
+  })
+  const parsed = matchupSchema.safeParse(payload)
+  return parsed.success ? parsed.data : null
 }
 
 export async function getGameByIdState(id: string, fresh = false): Promise<DataState<GameSummary | null>> {
