@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "media_records",
+  "info": {
+    "singularName": "media-record",
+    "pluralName": "media-records",
+    "displayName": "Metadane i zgody zdjęć"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "url": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "media": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "alt": {
+      "type": "string",
+      "required": true
+    },
+    "caption": {
+      "type": "text"
+    },
+    "author": {
+      "type": "string",
+      "required": true
+    },
+    "consentStatus": {
+      "type": "enumeration",
+      "enum": [
+        "unknown",
+        "granted",
+        "not_required",
+        "revoked"
+      ],
+      "default": "unknown",
+      "required": true
+    }
+  }
+}
