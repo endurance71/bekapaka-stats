@@ -193,6 +193,12 @@
   .art-rail {
     display: none;
   }
+  /* Telefon i tablet: kolumna boczna powtarzałaby pasmo „Czytaj dalej” pod artykułem — zostaje samo pasmo ze zdjęciami. */
+  @media (max-width: 1023px) {
+    .art-body--more .art-aside {
+      display: none;
+    }
+  }
   @media (min-width: 1024px) {
     .art-body--aside {
       grid-template-columns: minmax(0, 46rem) minmax(16rem, 22rem);
@@ -496,13 +502,26 @@
     font-size: 0.6em;
     color: rgb(255 255 255 / 0.5);
   }
+  /* Telefon: wynik na całą szerokość, drużyny pod nim — długie nazwy („Junior&Senior”) nie łamią się w środku słowa. */
   @media (max-width: 767px) {
     .article-markdown__score {
-      padding: var(--space-4) var(--space-3);
-      gap: var(--space-3);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: 'score score' 'home away';
+      gap: var(--space-3) var(--space-4);
+      padding: var(--space-4);
+    }
+    .article-markdown__score-value {
+      grid-area: score;
+      justify-self: center;
     }
     .article-markdown__score-team {
+      grid-area: home;
       font-size: var(--fs-caption);
+      overflow-wrap: break-word;
+      hyphens: manual;
+    }
+    .article-markdown__score-team--away {
+      grid-area: away;
     }
   }
 

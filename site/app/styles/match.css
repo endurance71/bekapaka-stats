@@ -196,7 +196,7 @@
   }
   .pbp-event {
     display: grid;
-    grid-template-columns: 4rem 4.5rem minmax(0, 1fr) 4.5rem;
+    grid-template-columns: 4rem minmax(4.5rem, 8.5rem) minmax(0, 1fr) 4.5rem;
     align-items: center;
     gap: var(--space-3);
     min-height: 48px;
@@ -210,10 +210,15 @@
     font-variant-numeric: tabular-nums;
     color: var(--text-secondary);
   }
+  /* Pełna nazwa drużyny (bez skrótów typu „KAI”); przy braku miejsca ucięta wielokropkiem, całość w podpowiedzi. */
   .pbp-event__team {
-    font: 600 var(--fs-micro) / 1 var(--font-text);
-    letter-spacing: 0.06em;
+    min-width: 0;
+    overflow: hidden;
+    font: 600 var(--fs-micro) / 1.2 var(--font-text);
+    letter-spacing: 0.04em;
     text-transform: uppercase;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     color: var(--text-secondary);
   }
   .pbp-event--home .pbp-event__team {

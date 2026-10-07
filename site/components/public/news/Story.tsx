@@ -3,7 +3,7 @@ import type { NewsPost } from '../../../lib/data'
 import { getStrapiMediaProps } from '../../../lib/data/media'
 import { formatDate } from '../../../lib/format'
 import { getNewsCategory } from '../../../lib/news-category'
-import { isArchivedEvent, newsImageFit } from '../../../lib/news-presentation'
+import { isArchivedEvent, storyImageFit } from '../../../lib/news-presentation'
 import { bindPolishOrphans } from '../../../lib/typography'
 import { FallbackImage } from '../shared/FallbackImage'
 
@@ -11,7 +11,7 @@ type Variant = 'lead' | 'item' | 'grid' | 'row'
 
 const sizes: Record<Variant, string> = {
   lead: '(min-width: 1024px) 58vw, 100vw',
-  item: '(min-width: 1024px) 14vw, 30vw',
+  item: '(min-width: 1024px) 20vw, 38vw',
   grid: '(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 100vw',
   row: '1px'
 }
@@ -31,9 +31,8 @@ export function Story({
   priority?: boolean
   headingLevel?: 'h2' | 'h3'
 }) {
-  // Plakaty (kwadrat / pion) i grafiki oznaczone w CMS pokazujemy w całości na czerni; zdjęcia poziome kadrujemy.
-  const ratio = item.coverImageWidth && item.coverImageHeight ? item.coverImageWidth / item.coverImageHeight : null
-  const fit = newsImageFit(item) === 'contain' || (ratio !== null && ratio < 1.3) ? 'contain' : 'cover'
+  // Plakaty i grafiki innych proporcji niż zdjęcie pokazujemy w całości na czerni; zdjęcia kadrujemy.
+  const fit = storyImageFit(item)
   const category = getNewsCategory(item)
   const Heading = headingLevel
   const archived = isArchivedEvent(item)

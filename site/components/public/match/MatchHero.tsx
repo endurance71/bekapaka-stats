@@ -7,6 +7,7 @@ import { Countdown } from '../home/Countdown'
 import { FallbackImage } from '../shared/FallbackImage'
 import { JerseyStripes } from '../primitives/JerseyStripes'
 import { Score, resultLabel } from './Score'
+import { ScoreBoard } from './ScoreBoard'
 import { TeamMark, VersusMark } from './TeamMark'
 
 const statusLabels = {
@@ -82,6 +83,12 @@ export function MatchHero({
           </Heading>
 
           <div className="match-hero__panel">
+            {hasScore && (
+              /* Telefon i tablet: wynik przy nazwach drużyn (tablica), zamiast samych liczb nad parą drużyn. */
+              <div className="match-hero__scoreline">
+                <ScoreBoard game={source} size="md" meta={false} />
+              </div>
+            )}
             {hasScore ? (
               <div className="match-hero__result">
                 <Score us={game.scoreUs as number} them={game.scoreThem as number} opponent={game.opponent} size="xl" />
@@ -120,7 +127,7 @@ export function MatchHero({
                   {game.venue && game.status === 'SCHEDULED' && (
                     <>
                       {' · '}
-                      <a href={mapsHref(game.venue)} target="_blank" rel="noopener noreferrer">
+                      <a className="nowrap" href={mapsHref(game.venue)} target="_blank" rel="noopener noreferrer">
                         Szukaj hali w mapach
                       </a>
                     </>

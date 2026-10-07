@@ -8,7 +8,7 @@ import { TeamMark } from './TeamMark'
  * Wynik jako tablica: dwa wiersze „znak · drużyna · liczba”, BeKaPaKa zawsze u góry.
  * Liczby w skali Score — wynik jest nagłówkiem, nie przypisem.
  */
-export function ScoreBoard({ game: source, size = 'lg' }: { game: GameSummary; size?: 'lg' | 'md' }) {
+export function ScoreBoard({ game: source, size = 'lg', meta: showMeta = true }: { game: GameSummary; size?: 'lg' | 'md'; meta?: boolean }) {
   const game = resolvePresentation(source)
   if (game.scoreUs == null || game.scoreThem == null) return null
   const us = game.scoreUs
@@ -28,7 +28,7 @@ export function ScoreBoard({ game: source, size = 'lg' }: { game: GameSummary; s
         <strong className={`scoreboard__outcome scoreboard__outcome--${us > them ? 'win' : us < them ? 'loss' : 'draw'}`}>
           {game.status === 'FINAL' ? resultLabel(us, them) : game.status === 'LIVE' ? 'Na żywo' : 'Przerwa'}
         </strong>
-        <span>{meta}</span>
+        {showMeta && <span>{meta}</span>}
       </p>
       <dl className="scoreboard__rows" aria-label={`BeKaPaKa ${us}, ${game.opponent} ${them}`}>
         {rows.map((row) => (

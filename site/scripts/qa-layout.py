@@ -9,7 +9,8 @@ Sprawdza dla 375 / 768 / 1024 / 1440 / 1920 px:
   - kontrolki w jednym rzędzie (.actions, .toolbar) o różnej wysokości lub górnej krawędzi,
   - tabele danych przewijane w poziomie przy szerokości >= 1440 px,
   - liczbę H1 (dokładnie 1) i błędy konsoli,
-  - artykuły: wykorzystanie szerokości (≥ 1440), podwójne linie, kolumna boczna na blokach szerokich, okładka na pierwszym ekranie (375).
+  - artykuły: wykorzystanie szerokości (≥ 1440), podwójne linie, kolumna boczna na blokach szerokich, okładka na pierwszym ekranie (375),
+  - zdjęcia: za mały plik względem szerokości (zły `sizes`), zniekształcone proporcje; pola dotyku < 44 px na telefonie.
 Kod wyjścia 1, jeśli są naruszenia.
 """
 
@@ -143,6 +144,30 @@ AUDIT = r"""(w) => {
     }
     const cover = document.querySelector('.art-cover');
     if (w < 768 && cover && cover.getBoundingClientRect().top + scrollY > 812) issues.push(`cover-below-fold ${Math.round(cover.getBoundingClientRect().top + scrollY)}`);
+  }
+  // Zdjęcia: atrybut sizes mniejszy niż faktyczna szerokość (przeglądarka pobiera za mały plik → rozmycie)
+  // i zniekształcone proporcje. Wyjątki: pliki źródłowe znanej, zbyt małej rozdzielczości (do podmiany).
+  const SMALL_SOURCES = ['player-24.webp'];
+  document.querySelectorAll('main img, header img').forEach((img) => {
+    if (!vis(img) || !img.complete || !img.naturalWidth) return;
+    const r = img.getBoundingClientRect(); const cs = getComputedStyle(img); const src = img.currentSrc || img.src;
+    if (/\.svg(\?|$|&)/.test(decodeURIComponent(src))) {
+      const nr = img.naturalWidth / img.naturalHeight, rr = r.width / r.height;
+      if (cs.objectFit === 'fill' && Math.abs(nr - rr) / rr > 0.03) issues.push(`image-distorted ${src.split('/').pop().slice(0, 40)}`);
+      return;
+    }
+    if (r.width > 80 && img.naturalWidth < r.width * 0.95 && !SMALL_SOURCES.some((name) => decodeURIComponent(src).includes(name)))
+      issues.push(`image-undersized ${Math.round(img.naturalWidth)}<${Math.round(r.width)} ${decodeURIComponent(src).split('/').pop().slice(0, 40)}`);
+    if (cs.objectFit === 'fill') { const nr = img.naturalWidth / img.naturalHeight, rr = r.width / r.height; if (Math.abs(nr - rr) / rr > 0.03) issues.push(`image-distorted ${src.split('/').pop().slice(0, 40)}`) }
+  });
+  // Pola dotyku na telefonie: wysokość ≥ 44 px (linki w treści akapitów są wyjątkiem).
+  if (w < 768) {
+    document.querySelectorAll('a, button, select, input, summary, [role=tab]').forEach((e) => {
+      if (!vis(e)) return; const r = e.getBoundingClientRect();
+      if (r.width <= 2) return;
+      const inline = e.tagName === 'A' && getComputedStyle(e).display === 'inline' && e.closest('p, li, dd, figcaption, td');
+      if (!inline && r.height < 43.5) issues.push(`tap-target ${Math.round(r.width)}x${Math.round(r.height)} ${name(e)} "${(e.innerText || e.getAttribute('aria-label') || '').trim().slice(0, 30)}"`);
+    });
   }
   const captions = {};
   document.querySelectorAll('figcaption').forEach((f) => { if (!vis(f)) return; const t = f.textContent.trim(); if (t) captions[t] = (captions[t] || 0) + 1 });

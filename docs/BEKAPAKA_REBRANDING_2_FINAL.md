@@ -215,3 +215,20 @@ Przygotowanie w repo przed przełączeniem bekapaka.pl na 2.0:
 - **`docker-compose.prod.yml`:** dane klubu dla strony (`SITE_CONTACT_EMAIL`, `SITE_PRIVACY_URL`, `SITE_ASSOCIATION_KRS`, `SITE_PARTNER_LEVELS_APPROVED`). Backend odświeża stronę przez sieć Docker po zapisie prezentacji meczu.
 - **Skład:** Filip Kawecki (#77) nie gra już w klubie. Jego rekord składu usuwa się na produkcji jak przyciskiem „Usuń” w panelu; statystyki KALK i box score zostają. W aktywnym sezonie KALK 2026/27 go nie ma, więc synchronizacja go nie przywróci. Z repo usunięto jego portret do lokalnego podglądu.
 - Kolejność wdrożenia i polecenia: [vps-runbook.md](./vps-runbook.md#wdrożenie-strony-20-i-zgody-na-zdjęcia).
+
+## Iteracja 2.5 — audyt mobilny produkcji i naprawy (7.10.2026)
+
+Audyt bekapaka.pl na telefonie (390 × 844, ekran 2×, dotyk): 17 stron + menu, 134 zrzuty, pomiar każdego tekstu, pola dotyku i zdjęcia. Kontrast (WCAG AA), tekst < 14 px, przewijanie w bok i błędy JS — bez uwag. Poprawione:
+
+- **Tabele na telefonie** (PR #14): przyklejony nagłówek zakrywał pierwszy wiersz — w kwartach brakowało wiersza BeKaPaKa, historia występów z jednym meczem wyglądała na pustą. Profil dostał odstęp od nagłówka strony.
+- **Wynik meczu zakończonego:** na telefonie tablica „herb · drużyna · liczba” (`ScoreBoard`) zamiast samych liczb nad parą drużyn.
+- **Wynik w artykule:** na telefonie liczby na górze, drużyny pod nimi — bez łamania nazw w środku słowa.
+- **Plakaty w kartach:** kadr tylko dla zdjęć o proporcjach 1,3–1,7; plakaty pionowe, kwadratowe i 16:9 w całości (`storyImageFit`, pole CMS `imageFit` ma pierwszeństwo).
+- **Koniec artykułu:** na telefonie bez listy „Czytaj dalej” dublującej pasmo ze zdjęciami.
+- **Zapowiedź meczu:** bez pustej sekcji między paskami; informacja o statystykach w hero.
+- **Ostrość zdjęć:** poprawione `sizes` strojów na `/klub` i miniatur relacji; sygnet w nagłówku w proporcjach 912 × 981.
+- **Stopka:** linki w dwóch kolumnach na telefonie. **Pola dotyku** e-maili kontaktowych 44 px. „Szukaj hali w mapach” bez łamania.
+- **Akcja po akcji:** pełne nazwy drużyn zamiast skrótów („KAI”); usunięta nieużywana `formatTeamShortName`.
+- **`/klub`:** zakładki bez wygaszonej krawędzi (zawijają się). **Liderzy:** kwadratowy kadr portretu na telefonie.
+- **Kontrola:** `npm run qa:mobile` (`scripts/qa-mobile.py`: kontrast, tekst, pola dotyku, zdjęcia, opcjonalnie zrzuty) oraz w `qa-layout.py` reguły `table-row-covered`, `image-undersized`, `image-distorted`, `tap-target`. Lokalnie: `qa-mobile` 0 uwag (18 widoków), `qa-layout` 0 naruszeń (5 szerokości × 16 tras).
+- **Do uzupełnienia poza kodem:** większy plik portretu #24 (dziś 304 px, na liście wyjątków QA), docelowy e-mail klubu (`SITE_CONTACT_EMAIL`).

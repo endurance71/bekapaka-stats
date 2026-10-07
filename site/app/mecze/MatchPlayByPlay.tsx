@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
-import { formatTeamShortName } from '../../lib/format'
 
 export interface PlayByPlayEvent {
   time: string
@@ -216,7 +215,6 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
 
   const totalDisplayedEvents = filteredPeriods.reduce((sum, p) => sum + p.events.length, 0)
 
-  const awayShort = formatTeamShortName(awayTeamName)
   const sides: { key: 'all' | 'home' | 'away'; label: string }[] = [
     { key: 'all', label: 'Obie' },
     { key: 'home', label: homeTeamName.replace(/\s+Bobolice$/i, '') },
@@ -299,8 +297,8 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
                   {events.map((ev, eIdx) => (
                     <li key={eIdx} className={`pbp-event pbp-event--${ev.side}${ev.score ? ' is-score' : ''}`}>
                       <time className='pbp-event__time'>{ev.time}</time>
-                      <span className='pbp-event__team' aria-label={ev.side === 'home' ? 'BeKaPaKa' : awayTeamName}>
-                        {ev.side === 'home' ? 'BKPK' : awayShort}
+                      <span className='pbp-event__team' title={ev.side === 'home' ? 'BeKaPaKa Bobolice' : awayTeamName}>
+                        {ev.side === 'home' ? 'BeKaPaKa' : awayTeamName}
                       </span>
                       <span className='pbp-event__text'>
                         {ev.player ? <strong>{ev.player}</strong> : null}
