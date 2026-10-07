@@ -39,7 +39,7 @@ export interface PreGameData {
 interface PreGameMatchCardProps {
   briefing: PreGameData | null;
   opponent: string | null;
-  seasonId: string;
+  seasonId: string | null;
   onRefresh: () => void;
   canGenerate?: boolean;
 }
@@ -99,7 +99,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
     return (
       <KalkEmptyState
         title="Brak Nadchodzącego Rywala w Terminarzu"
-        description="Odprawa przedmeczowa będzie dostępna, gdy w terminarzu sezonu pojawi się zaplanowany mecz BeKaPaKa."
+        message="Odprawa przedmeczowa będzie dostępna, gdy w terminarzu sezonu pojawi się zaplanowany mecz BeKaPaKa."
       />
     );
   }

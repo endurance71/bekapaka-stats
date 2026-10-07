@@ -132,7 +132,7 @@ export default function Profile() {
                                 ppg={user.ppg}
                                 rpg={user.rpg}
                                 apg={user.apg}
-                                isStarter={user.kalkPlayer?.rosterPlayer?.starter || false}
+                                isStarter={(user.kalkPlayer?.rosterPlayer as { starter?: boolean } | undefined)?.starter || false}
                                 onClick={() => navigate(`/players/${user.id}`)}
                             />
                         </div>

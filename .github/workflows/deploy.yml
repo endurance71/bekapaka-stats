@@ -71,6 +71,7 @@ jobs:
         working-directory: frontend
         run: |
           npm ci
+          npm run typecheck
           npm test -- --run
           npm run build
       - name: Brand tokens are in sync with tokens.json

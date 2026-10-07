@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
-import BasketballCourtCanvas, { DiagramData } from '../components/tactics/BasketballCourtCanvas';
+import BasketballCourtCanvas from '../components/tactics/BasketballCourtCanvas';
 import PlaybookList, { PlayItem } from '../components/tactics/PlaybookList';
 import AiPlayGeneratorModal from '../components/tactics/AiPlayGeneratorModal';
 import SynergyMatrix, { DuoRecord } from '../components/tactics/SynergyMatrix';

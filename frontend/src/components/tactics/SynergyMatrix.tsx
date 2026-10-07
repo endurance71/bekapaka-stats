@@ -47,7 +47,7 @@ export default function SynergyMatrix({
     return (
       <KalkEmptyState
         title="Brak Danych o Zestawieniach w Wybranym Sezonie"
-        description="Analiza synergii duetów i wskaźniki efektywności par (Net Rating / Plus-Minus) zostaną obliczone automatycznie po rozegraniu pierwszych meczów w sezonie."
+        message="Analiza synergii duetów i wskaźniki efektywności par (Net Rating / Plus-Minus) zostaną obliczone automatycznie po rozegraniu pierwszych meczów w sezonie."
       />
     );
   }

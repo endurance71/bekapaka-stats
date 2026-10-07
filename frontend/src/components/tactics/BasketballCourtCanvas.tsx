@@ -44,9 +44,7 @@ const COURT_PALETTE = {
   rimMount: 'rgba(247, 246, 242, 0.6)',
   net: 'rgba(247, 246, 242, 0.15)',
   rim: '#EF1734', // red-500
-  zoneFill: 'rgba(216, 212, 204, 0.08)', // stone-200
   zoneFillActive: 'rgba(244, 168, 22, 0.14)', // gold-500
-  zoneStroke: 'rgba(216, 212, 204, 0.6)',
   zoneStrokeActive: '#F4A816',
   zoneAnchor: 'rgba(247, 246, 242, 0.3)',
   badgeBg: 'rgba(11, 11, 11, 0.94)',
@@ -75,6 +73,16 @@ const COURT_PALETTE = {
   outcomeBg: 'rgba(11, 11, 11, 0.94)',
   outcome: '#3DBA6F', // green-400
 } as const;
+
+/** Strefy obrony: kolor wg kolejności strefy z palety marki (bez złota — złoto = strefa z piłką).
+ *  Barwy zapisane w danych (`zone.color`, presety / AI) są pomijane, bo bywają spoza marki. */
+const ZONE_PALETTE = [
+  { fill: 'rgba(239, 23, 52, 0.14)', stroke: 'rgba(239, 23, 52, 0.75)' }, // red-500
+  { fill: 'rgba(216, 212, 204, 0.10)', stroke: 'rgba(216, 212, 204, 0.7)' }, // stone-200
+  { fill: 'rgba(61, 186, 111, 0.12)', stroke: 'rgba(61, 186, 111, 0.7)' }, // green-400
+  { fill: 'rgba(255, 90, 110, 0.12)', stroke: 'rgba(255, 90, 110, 0.7)' }, // red-300
+  { fill: 'rgba(156, 151, 143, 0.12)', stroke: 'rgba(156, 151, 143, 0.75)' }, // stone-400
+] as const;
 
 const COURT_FONT = '"Barlow Condensed", "Barlow", sans-serif';
 
@@ -284,7 +292,7 @@ export default function BasketballCourtCanvas({
   const showZonesRef = useRef<boolean>(true);
   const durationRef = useRef<number>(duration);
   const lastTimeUpdateUiRef = useRef<number>(0);
-  const prevPlayNameRef = useRef<string | null>(null);
+  const prevPlayNameRef = useRef<string | null | undefined>(null);
 
   speedRef.current = speed;
   isLoopRef.current = isLoop;
@@ -550,7 +558,8 @@ export default function BasketballCourtCanvas({
 
       // 2.5 WYRAZISTA WIZUALIZACJA STREF DEFENSYWNYCH (ZONE OVERLAYS)
       if (showZonesRef.current && timelineData.zoneAreas && timelineData.zoneAreas.length > 0) {
-        for (const zone of timelineData.zoneAreas) {
+        for (const [zoneIndex, zone] of timelineData.zoneAreas.entries()) {
+          const zoneColors = ZONE_PALETTE[zoneIndex % ZONE_PALETTE.length];
           if (!zone.polygon || zone.polygon.length < 3) continue;
 
           // Wyliczenie środka ciężkości (centroid)
@@ -575,13 +584,12 @@ export default function BasketballCourtCanvas({
           }
           ctx.closePath();
 
-          // Wypełnienie strefy — jednolita paleta marki (zone.color z presetów ignorowany:
-          // strefy rozróżnia etykieta; strefa z piłką = złote wyróżnienie, linia ciągła)
-          ctx.fillStyle = isBallInZone ? C.zoneFillActive : C.zoneFill;
+          // Wypełnienie strefy — paleta marki wg kolejności + etykieta; strefa z piłką = złote wyróżnienie
+          ctx.fillStyle = isBallInZone ? C.zoneFillActive : zoneColors.fill;
           ctx.fill();
 
           // Granica strefy (bez poświaty)
-          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : C.zoneStroke;
+          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : zoneColors.stroke;
           ctx.lineWidth = isBallInZone ? 2.5 : 1.8;
           ctx.setLineDash(isBallInZone ? [] : [6, 4]);
           ctx.stroke();
@@ -614,7 +622,7 @@ export default function BasketballCourtCanvas({
           ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 6);
           ctx.fill();
 
-          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : C.zoneStroke;
+          ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : zoneColors.stroke;
           ctx.lineWidth = isBallInZone ? 1.8 : 1.2;
           ctx.stroke();
 

@@ -71,7 +71,7 @@ function MenuProfileSection({
                     <div className="relative shrink-0">
                         <div className="w-12 h-[60px] overflow-hidden bg-ink-700 chamfer-sm">
                             <img
-                                src={resolvePlayerPhoto(user)}
+                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
@@ -288,7 +288,7 @@ export default function MobileFullScreenMenu({
                             aria-label="Mój profil"
                         >
                             <img
-                                src={resolvePlayerPhoto(user)}
+                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
                                 onError={(e) => (e.currentTarget.src = '/photos/default.png')}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
