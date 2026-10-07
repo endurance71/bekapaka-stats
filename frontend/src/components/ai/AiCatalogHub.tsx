@@ -300,7 +300,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
               <Link
                 key={slug}
                 to={`/ai/${slug}`}
-                className="group block rounded-2xl border border-bkpk-border-strong bg-bkpk-surface-tint-1 p-5 transition-colors hover:border-bkpk-primary/30 hover:bg-bkpk-surface-tint-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                className="group block rounded-2xl border border-bkpk-border-strong bg-bkpk-surface-tint-1 p-5 transition-colors hover:border-bkpk-primary/30 hover:bg-bkpk-surface-tint-2"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">

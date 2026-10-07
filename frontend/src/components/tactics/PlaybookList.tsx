@@ -124,7 +124,7 @@ export default function PlaybookList({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Szukaj presetu zagrywki..."
-          className="bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-1.5 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:outline-none focus:border-bkpk-primary w-full sm:w-64"
+          className="bg-bkpk-bg border border-bkpk-border-strong rounded-xl px-3 py-1.5 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary w-full sm:w-64"
         />
       </div>
 

@@ -380,7 +380,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   placeholder="np. Sezon 2026/2027"
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                   required
                 />
               </div>
@@ -395,7 +395,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     value={newSlug}
                     onChange={(e) => setNewSlug(e.target.value)}
                     placeholder="np. 2026-2027"
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                     required
                   />
                 </div>
@@ -408,7 +408,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     value={newDivisionPath}
                     onChange={(e) => setNewDivisionPath(e.target.value)}
                     placeholder="dzial,dywizja-2,4.html"
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                     required
                   />
                 </div>
@@ -423,7 +423,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     type="date"
                     value={newStartsAt}
                     onChange={(e) => setNewStartsAt(e.target.value)}
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                   />
                 </div>
                 <div>
@@ -434,7 +434,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                     type="date"
                     value={newEndsAt}
                     onChange={(e) => setNewEndsAt(e.target.value)}
-                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                    className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                   />
                 </div>
               </div>
@@ -444,7 +444,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   type="checkbox"
                   checked={activateNow}
                   onChange={(e) => setActivateNow(e.target.checked)}
-                  className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                  className="w-4 h-4 rounded text-bkpk-primary"
                 />
                 <span className="text-xs text-bkpk-text-primary font-medium">
                   Ustaw ten sezon natychmiast jako bieżący aktywny sezon
@@ -499,7 +499,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                         type="checkbox"
                         checked={selectedPlayerIds.includes(player.id)}
                         onChange={() => togglePlayerSelection(player.id)}
-                        className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                        className="w-4 h-4 rounded text-bkpk-primary"
                       />
                       <span className="text-xs font-bold text-bkpk-text-primary">
                         #{player.number ?? '—'} {player.firstName} {player.lastName}
@@ -519,7 +519,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   type="checkbox"
                   checked={resetGoals}
                   onChange={(e) => setResetGoals(e.target.checked)}
-                  className="w-4 h-4 rounded text-bkpk-primary focus:ring-bkpk-primary"
+                  className="w-4 h-4 rounded text-bkpk-primary"
                 />
                 <span className="text-xs text-bkpk-text-primary font-medium">
                   Zresetuj cele osobiste zawodników na nowy sezon (rekomendowane)
@@ -596,7 +596,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                 type="text"
                 value={editLabel}
                 onChange={(e) => setEditLabel(e.target.value)}
-                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                 required
               />
             </div>
@@ -609,7 +609,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                 type="text"
                 value={editDivisionPath}
                 onChange={(e) => setEditDivisionPath(e.target.value)}
-                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                 required
               />
             </div>
@@ -623,7 +623,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   type="date"
                   value={editStartsAt}
                   onChange={(e) => setEditStartsAt(e.target.value)}
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                 />
               </div>
               <div>
@@ -634,7 +634,7 @@ export default function SeasonManagement({ onSeasonChanged }: SeasonManagementPr
                   type="date"
                   value={editEndsAt}
                   onChange={(e) => setEditEndsAt(e.target.value)}
-                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary"
+                  className="w-full bg-bkpk-surface-tint-2 border border-bkpk-border-strong rounded-xl px-4 py-2.5 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                 />
               </div>
             </div>

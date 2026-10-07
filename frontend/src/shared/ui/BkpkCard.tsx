@@ -24,7 +24,8 @@ const paddings = {
 };
 
 const variants = {
-    glass: 'bg-bkpk-glass backdrop-blur-bkpk-glass border border-bkpk-glass-border shadow-bkpk-glow',
+    // Digital 2.0: płaska płyta + linia 1 px (bez blur, cienia i zaokrągleń)
+    glass: 'bg-bkpk-surface border border-bkpk-border-subtle',
     flat: 'bg-bkpk-surface border border-bkpk-border-subtle',
     outline: 'bg-transparent border border-bkpk-border-strong',
 };
@@ -56,28 +57,24 @@ export function BkpkCard({
             role={onClick ? 'button' : undefined}
             tabIndex={onClick ? 0 : undefined}
             className={cn(
-                'rounded-bkpk-lg transition-[transform,box-shadow,border-color] duration-200',
+                'relative transition-[transform,border-color,background-color] duration-200',
                 !overflowVisible && 'overflow-hidden',
                 variants[variant],
                 paddings[padding],
-                onClick && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary focus-visible:ring-offset-2 focus-visible:ring-offset-bkpk-bg',
+                (hoverEffect || onClick) && 'hover:border-bkpk-border-strong hover:bg-bkpk-surface-elevated',
+                onClick && 'cursor-pointer',
                 className
             )}
-            whileHover={!prefersReducedMotion && (hoverEffect || onClick) ? {
-                y: -2,
-                scale: 1.005,
-                borderColor: 'rgba(236, 167, 44, 0.3)',
-                boxShadow: '0 0 15px rgba(236, 167, 44, 0.1)'
-            } : undefined}
+            whileHover={!prefersReducedMotion && (hoverEffect || onClick) ? { y: -2 } : undefined}
             whileTap={!prefersReducedMotion && onClick ? { scale: 0.995 } : undefined}
             initial={animateEntrance && !prefersReducedMotion ? { opacity: 0, y: 6 } : false}
             animate={animateEntrance && !prefersReducedMotion ? { opacity: 1, y: 0 } : undefined}
             transition={animateEntrance && !prefersReducedMotion ? { duration: 0.25, ease: [0.16, 1, 0.3, 1] } : undefined}
         >
             {(title || icon) && (
-                <div className="flex items-center gap-2.5 sm:gap-3 mb-3.5 sm:mb-6 pb-2.5 sm:pb-4 border-b border-bkpk-border-strong">
-                    {icon && <div className="p-1.5 sm:p-2 rounded-xl bg-bkpk-surface-tint-1 text-bkpk-primary">{icon}</div>}
-                    {title && <h2 className="font-display text-base sm:text-lg md:text-h3 text-bkpk-text-primary tracking-tight">{title}</h2>}
+                <div className="flex items-center gap-2.5 sm:gap-3 mb-3.5 sm:mb-6 pb-2.5 sm:pb-4 border-b border-bkpk-border-subtle">
+                    {icon && <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong text-bkpk-primary shrink-0">{icon}</div>}
+                    {title && <h2 className="font-display text-lg sm:text-xl md:text-h3 text-bkpk-text-primary">{title}</h2>}
                 </div>
             )}
             {children}

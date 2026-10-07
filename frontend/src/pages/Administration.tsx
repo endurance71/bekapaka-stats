@@ -474,7 +474,7 @@ function LoginLogs() {
                         autoCorrect="off"
                         autoCapitalize="none"
                         placeholder="Wpisz login..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors touch-manipulation"
                         value={usernameFilter}
                         onChange={(e) => setUsernameFilter(e.target.value)}
                     />
@@ -485,7 +485,7 @@ function LoginLogs() {
                         Status
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors"
                         value={statusFilter}
                         onChange={(e) => {
                             setStatusFilter(e.target.value);
@@ -856,7 +856,7 @@ function UserManagement() {
                         autoCorrect="off"
                         autoCapitalize="none"
                         placeholder="Szukaj..."
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary touch-manipulation"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-base sm:text-sm transition-colors touch-manipulation"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -867,7 +867,7 @@ function UserManagement() {
                         Typ konta / Rola
                     </label>
                     <select
-                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className="w-full bg-bkpk-surface-tint-1 border border-bkpk-border-subtle rounded-xl px-4 py-2.5 text-sm transition-colors"
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
                     >
@@ -881,7 +881,7 @@ function UserManagement() {
                     <label className="flex items-center gap-2 cursor-pointer select-none text-sm text-bkpk-text-secondary">
                         <input
                             type="checkbox"
-                            className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface-tint-1"
+                            className="rounded border-bkpk-border-subtle text-bkpk-primary bg-bkpk-surface-tint-1"
                             checked={inactiveOnly}
                             onChange={(e) => setInactiveOnly(e.target.checked)}
                         />
@@ -1113,7 +1113,7 @@ function UserManagement() {
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={addFirstName}
                                 onChange={(e) => setAddFirstName(e.target.value)}
                             />
@@ -1123,7 +1123,7 @@ function UserManagement() {
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={addLastName}
                                 onChange={(e) => setAddLastName(e.target.value)}
                             />
@@ -1135,7 +1135,7 @@ function UserManagement() {
                             <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
                             <input
                                 type="number"
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={addNumber}
                                 onChange={(e) => setAddNumber(e.target.value)}
                             />
@@ -1143,7 +1143,7 @@ function UserManagement() {
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={addPosition}
                                 onChange={(e) => setAddPosition(e.target.value)}
                             >
@@ -1204,7 +1204,7 @@ function UserManagement() {
                         <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
                             <input
                                 type="checkbox"
-                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                className="rounded border-bkpk-border-subtle text-bkpk-primary bg-bkpk-surface"
                                 checked={addEnableLogin}
                                 onChange={(e) => setAddEnableLogin(e.target.checked)}
                             />
@@ -1221,7 +1221,7 @@ function UserManagement() {
                                 <input
                                     type="text"
                                     required={addEnableLogin}
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                     value={addUsername}
                                     onChange={(e) => setAddUsername(e.target.value)}
                                 />
@@ -1244,7 +1244,7 @@ function UserManagement() {
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={addRole}
                                 onChange={(e) => setAddRole(e.target.value as 'USER' | 'ADMIN')}
                             >
@@ -1288,7 +1288,7 @@ function UserManagement() {
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={editFirstName}
                                 onChange={(e) => setEditFirstName(e.target.value)}
                             />
@@ -1298,7 +1298,7 @@ function UserManagement() {
                             <input
                                 type="text"
                                 required
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={editLastName}
                                 onChange={(e) => setEditLastName(e.target.value)}
                             />
@@ -1310,7 +1310,7 @@ function UserManagement() {
                             <label className="text-xs font-bold text-bkpk-text-muted uppercase">Numer koszulki</label>
                             <input
                                 type="number"
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={editNumber}
                                 onChange={(e) => setEditNumber(e.target.value)}
                             />
@@ -1318,7 +1318,7 @@ function UserManagement() {
                         <div className="space-y-1">
                             <label className="text-xs font-bold text-bkpk-text-muted uppercase">Pozycja</label>
                             <select
-                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                 value={editPosition}
                                 onChange={(e) => setEditPosition(e.target.value)}
                             >
@@ -1378,7 +1378,7 @@ function UserManagement() {
                     <div className="space-y-1">
                         <label className="text-xs font-bold text-bkpk-text-muted uppercase">Rola *</label>
                         <select
-                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                            className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                             value={editRole}
                             onChange={(e) => setEditRole(e.target.value as 'USER' | 'ADMIN')}
                         >
@@ -1391,7 +1391,7 @@ function UserManagement() {
                         <label className="flex items-center gap-2 cursor-pointer py-1 select-none">
                             <input
                                 type="checkbox"
-                                className="rounded border-bkpk-border-subtle text-bkpk-primary focus:ring-bkpk-primary bg-bkpk-surface"
+                                className="rounded border-bkpk-border-subtle text-bkpk-primary bg-bkpk-surface"
                                 checked={editEnableLogin}
                                 onChange={(e) => setEditEnableLogin(e.target.checked)}
                             />
@@ -1408,7 +1408,7 @@ function UserManagement() {
                                 <input
                                     type="text"
                                     required={editEnableLogin}
-                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:outline-none focus:border-bkpk-primary/50"
+                                    className="w-full bg-bkpk-surface border border-bkpk-border-subtle rounded-xl px-3 py-2 text-sm text-bkpk-text-primary focus:border-bkpk-text-primary"
                                     value={editUsername}
                                     onChange={(e) => setEditUsername(e.target.value)}
                                 />

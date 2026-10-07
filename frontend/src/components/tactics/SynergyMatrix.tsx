@@ -175,7 +175,7 @@ export default function SynergyMatrix({
               value={filterPlayer}
               onChange={(e) => setFilterPlayer(e.target.value)}
               placeholder="Filtruj po zawodniku..."
-              className="bg-bkpk-bg border border-bkpk-border-strong rounded-xl pl-9 pr-3 py-1.5 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:outline-none focus:border-bkpk-primary w-full sm:w-56"
+              className="bg-bkpk-bg border border-bkpk-border-strong rounded-xl pl-9 pr-3 py-1.5 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary w-full sm:w-56"
             />
           </div>
         </div>

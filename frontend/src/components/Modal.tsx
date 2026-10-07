@@ -93,7 +93,7 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
 
     return createPortal(
         <div
-            className="fixed left-0 right-0 z-[200] flex bg-bkpk-overlay-strong backdrop-blur-md animate-in fade-in duration-200 overlay-viewport-fill max-sm:items-stretch max-sm:justify-stretch sm:items-center sm:justify-center sm:p-4"
+            className="fixed left-0 right-0 z-[200] flex bg-bkpk-overlay-strong animate-in fade-in duration-200 overlay-viewport-fill max-sm:items-stretch max-sm:justify-stretch sm:items-center sm:justify-center sm:p-4"
             style={{ touchAction: 'none' }}
             onClick={() => onCloseRef.current()}
             role="presentation"
@@ -104,15 +104,15 @@ export default function Modal({ isOpen, onClose, title, children, maxWidth = 'ma
                 aria-modal="true"
                 aria-labelledby={titleId}
                 tabIndex={-1}
-                className={`bg-bkpk-surface w-full ${maxWidth} flex flex-col outline-none overscroll-contain animate-in slide-in-from-bottom-5 duration-300 max-sm:absolute max-sm:inset-0 max-sm:h-[var(--overlay-vh)] max-sm:min-h-[var(--overlay-vh)] max-sm:max-h-[var(--overlay-vh)] max-sm:border-0 max-sm:rounded-none max-sm:shadow-none sm:max-h-[min(85dvh,calc(var(--overlay-vh,100dvh)-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))] sm:rounded-xl sm:border sm:border-bkpk-border-strong sm:shadow-2xl`}
+                className={`bg-bkpk-surface w-full ${maxWidth} flex flex-col outline-none overscroll-contain animate-in slide-in-from-bottom-5 duration-300 max-sm:absolute max-sm:inset-0 max-sm:h-[var(--overlay-vh)] max-sm:min-h-[var(--overlay-vh)] max-sm:max-h-[var(--overlay-vh)] max-sm:border-0 max-sm:rounded-none max-sm:shadow-none sm:max-h-[min(85dvh,calc(var(--overlay-vh,100dvh)-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-2rem))] sm:border sm:border-bkpk-border-strong sm:border-t-2 sm:border-t-bkpk-primary sm:shadow-2xl`}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center gap-3 border-b border-bkpk-border-strong bg-bkpk-surface shrink-0 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top,0px))] sm:p-6">
-                    <h2 id={titleId} className="min-w-0 text-lg sm:text-xl font-bold text-bkpk-text-primary font-display leading-tight">{title}</h2>
+                    <h2 id={titleId} className="min-w-0 text-2xl sm:text-[28px] text-bkpk-text-primary leading-none">{title}</h2>
                     <button
                         type="button"
                         style={{ touchAction: 'manipulation' }}
-                        className="flex h-11 w-11 shrink-0 items-center justify-center text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-2 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bkpk-primary"
+                        className="flex h-11 w-11 shrink-0 items-center justify-center border border-bkpk-border-strong text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-text-primary transition-colors"
                         onClick={() => onCloseRef.current()}
                         aria-label="Zamknij"
                     >

@@ -71,14 +71,13 @@ export default function BkpkTooltip({ content, children, className }: BkpkToolti
                                 pointerEvents: 'none',
                                 maxWidth: '300px' // Ensure it doesn't get too wide
                             }}
-                            className="w-64 p-3 bg-bkpk-surface-elevated border border-bkpk-border-strong rounded-xl shadow-[0_0_50px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                            className="w-64 p-3 bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary shadow-xl"
                         >
                             <div className="relative z-10">
-                                <p className="text-xs font-medium text-bkpk-text-secondary leading-relaxed text-center">
+                                <p className="text-[13px] text-bkpk-text-secondary leading-relaxed text-left">
                                     {content}
                                 </p>
                             </div>
-                            <div className="absolute top-0 left-0 w-full h-full bg-bkpk-primary/5 pointer-events-none" />
                         </motion.div>
                     )}
                 </AnimatePresence>,

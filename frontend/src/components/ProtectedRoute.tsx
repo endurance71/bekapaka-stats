@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { PageLoader } from '../shared/ui/PageLoader';
 
 interface ProtectedRouteProps {
     children: ReactNode;
@@ -12,7 +13,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }: Prote
     const location = useLocation();
 
     if (loading) {
-        return <div className="min-h-[100dvh] flex items-center justify-center bg-bkpk-bg text-bkpk-text-primary">Ładowanie...</div>;
+        return <PageLoader fullScreen label="Ładowanie..." />;
     }
 
     if (!isAuthenticated) {

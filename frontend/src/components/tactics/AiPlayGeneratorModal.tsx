@@ -181,7 +181,7 @@ export default function AiPlayGeneratorModal({
             onChange={(e) => setAdditionalNotes(e.target.value)}
             placeholder="np. Wykorzystaj ścięcie skrzydłowego i dodatkową zasłonę bez piłki..."
             rows={2}
-            className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl p-3 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:outline-none focus:border-bkpk-primary resize-none"
+            className="w-full bg-bkpk-bg border border-bkpk-border-strong rounded-xl p-3 text-xs text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary resize-none"
           />
         </div>
 

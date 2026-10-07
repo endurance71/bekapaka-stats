@@ -24,6 +24,7 @@ import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { AppFooter } from './AppFooter';
+import { BrandMark } from '../shared/ui/BrandMark';
 import { useBreakpoint } from '../hooks/useIsMobile';
 import { OfflineIndicator } from './pwa/OfflineIndicator';
 import { InstallPromptBanner } from './pwa/InstallPromptBanner';
@@ -53,7 +54,7 @@ function NavItems({
   collapsed?: boolean;
 }) {
   return (
-    <nav className="flex-1 space-y-1 overflow-y-auto no-scrollbar">
+    <nav className="flex-1 overflow-y-auto no-scrollbar -mx-2">
       {links.map((link) => {
         const Icon = link.icon;
         return (
@@ -63,16 +64,17 @@ function NavItems({
             onClick={onNavigate}
             title={collapsed ? link.label : undefined}
             className={({ isActive }) => cn(
-              'group flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 font-bold text-sm tracking-tight min-h-[48px]',
+              'group relative flex items-center gap-4 px-4 transition-colors duration-150 font-semibold text-[15px] uppercase tracking-[0.08em] min-h-[48px]',
+              'before:absolute before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:transition-colors',
               collapsed && 'justify-center px-2',
               isActive
-                ? 'bg-bkpk-primary/10 text-bkpk-primary border border-bkpk-primary/25 shadow-[0_0_15px_rgba(236,167,44,0.05)]'
-                : 'text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-primary/5 border border-transparent'
+                ? 'bg-bkpk-surface text-bkpk-text-primary before:bg-bkpk-medal-gold'
+                : 'text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1 before:bg-transparent hover:before:bg-bkpk-primary'
             )}
           >
             {({ isActive }) => (
               <>
-                <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-bkpk-primary' : 'text-bkpk-text-muted group-hover:text-bkpk-primary')} />
+                <Icon className={cn('w-5 h-5 shrink-0', isActive ? 'text-bkpk-text-primary' : 'text-bkpk-text-muted group-hover:text-bkpk-text-primary')} strokeWidth={2} />
                 <AnimatePresence initial={false}>
                   {!collapsed && (
                     <motion.span
@@ -85,9 +87,6 @@ function NavItems({
                     </motion.span>
                   )}
                 </AnimatePresence>
-                {!collapsed && isActive && (
-                  <span className="w-1.5 h-6 bg-bkpk-primary rounded-full shadow-bkpk-glow shrink-0" />
-                )}
               </>
             )}
           </NavLink>
@@ -153,10 +152,18 @@ export default function Shell({ children }: { children: ReactNode }) {
         aria-label="Nawigacja główna"
         layout
         className={cn(
-          'hidden md:flex flex-col bg-bkpk-surface border-r border-bkpk-border-strong transition-colors duration-200 shrink-0',
-          navCollapsed ? 'w-16 p-3' : 'w-56 lg:w-72 p-6 lg:p-8'
+          'hidden md:flex flex-col bg-bkpk-bg border-r border-bkpk-border-subtle transition-colors duration-200 shrink-0',
+          navCollapsed ? 'w-16 p-3' : 'w-60 lg:w-72 p-5 lg:p-6'
         )}
       >
+        <Link
+          to="/dashboard"
+          className={cn('block mb-6 pb-4 border-b border-bkpk-border-subtle relative after:absolute after:left-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary', navCollapsed ? 'after:w-full flex justify-center' : 'after:w-16')}
+          aria-label="BeKaPaKa — przejdź do pulpitu"
+        >
+          <BrandMark compact={navCollapsed} label="Panel klubu" size={navCollapsed ? 'sm' : 'md'} />
+        </Link>
+
         {user && !navCollapsed && (
           <Link to="/profile" className="block cursor-pointer mb-6">
             <SidebarProfile user={user} />
@@ -167,7 +174,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           <button
             type="button"
             onClick={() => setSidebarCollapsed((v) => !v)}
-            className="flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg text-bkpk-text-muted hover:text-bkpk-primary hover:bg-bkpk-primary/5 touch-manipulation"
+            className="flex items-center justify-center w-11 h-11 min-h-[44px] min-w-[44px] border border-bkpk-border-strong text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-text-primary touch-manipulation"
             aria-label={navCollapsed ? 'Rozwiń menu boczne' : 'Zwiń menu boczne'}
           >
             {navCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
@@ -177,7 +184,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         <NavItems links={links} collapsed={navCollapsed} />
 
         {!navCollapsed && (
-          <div className="mt-6 pt-6 border-t border-bkpk-border-strong">
+          <div className="mt-6 pt-6 border-t border-bkpk-border-subtle">
             <SeasonSelector
               seasons={seasons}
               seasonId={seasonId}
@@ -188,12 +195,12 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <div className="mt-auto pt-6 border-t border-bkpk-border-strong space-y-4">
+        <div className="mt-auto pt-4 border-t border-bkpk-border-subtle space-y-4">
           <button
             type="button"
             onClick={handleLogout}
             className={cn(
-              'flex items-center gap-4 px-4 py-3 text-bkpk-text-muted hover:text-bkpk-text-danger transition-colors font-bold text-sm tracking-tight w-full text-left min-h-[48px] touch-manipulation',
+              'flex items-center gap-4 px-2 py-3 text-bkpk-text-muted hover:text-bkpk-text-danger transition-colors font-semibold text-[13px] uppercase tracking-[0.08em] w-full text-left min-h-[48px] touch-manipulation',
               navCollapsed && 'justify-center px-2'
             )}
             aria-label="Wyloguj się"
@@ -209,11 +216,11 @@ export default function Shell({ children }: { children: ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
         {/* Mobile header */}
-        <header className="md:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 py-0.5 bg-bkpk-bg/55 backdrop-blur-md border-b border-bkpk-border-subtle mobile-header-safe-top min-h-[50px]">
+        <header className="md:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 py-1 bg-bkpk-bg border-b border-bkpk-border-subtle mobile-header-safe-top min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
-            className="relative z-10 flex items-center justify-center w-11 h-11 rounded-xl bg-bkpk-surface-tint-1 border border-bkpk-border-strong text-bkpk-text-primary active:bg-bkpk-surface-tint-2 shrink-0 touch-manipulation"
+            className="relative z-10 flex items-center justify-center w-11 h-11 border border-bkpk-border-strong text-bkpk-text-primary active:bg-bkpk-surface-tint-2 shrink-0 touch-manipulation"
             aria-label="Otwórz menu nawigacji"
             aria-expanded={isMenuOpen}
           >
@@ -225,15 +232,13 @@ export default function Shell({ children }: { children: ReactNode }) {
             className="absolute inset-x-3 z-[5] flex justify-center items-center min-w-0 px-12 touch-manipulation"
             aria-label="Przejdź do pulpitu"
           >
-            <span className="font-black font-display text-sm tracking-tight text-bkpk-text-primary truncate text-center">
-              BeKaPaKa
-            </span>
+            <BrandMark size="sm" />
           </Link>
 
           {user ? (
             <Link
               to="/profile"
-              className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 rounded-xl border border-bkpk-border-strong overflow-hidden bg-bkpk-surface-tint-2 shrink-0 touch-manipulation"
+              className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0 touch-manipulation"
               aria-label="Mój profil"
             >
               <img
@@ -273,8 +278,6 @@ export default function Shell({ children }: { children: ReactNode }) {
         <InstallPromptBanner />
         <UpdateNotification />
 
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-bkpk-primary/5 blur-[120px] rounded-full pointer-events-none -mr-48 -mt-48" />
-        <div className="hidden md:block absolute bottom-0 left-0 w-[500px] h-[500px] bg-bkpk-success/5 blur-[120px] rounded-full pointer-events-none -ml-48 -mb-48" />
       </div>
     </div>
   );

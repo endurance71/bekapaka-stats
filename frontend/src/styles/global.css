@@ -316,6 +316,12 @@ html.is-scroll-locked {
 
   /* Bez blur i poświat (Digital 2.0: płaskie płaszczyzny, linie 1 px) */
   --blur-bkpk-glass: 0px;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: 0 24px 64px -16px rgb(0 0 0 / 0.6);
+  --shadow-2xl: 0 24px 64px -16px rgb(0 0 0 / 0.6);
   --shadow-bkpk-glow: none;
   --shadow-bkpk-primary: none;
   --shadow-bkpk-card-hover: none;
@@ -558,8 +564,9 @@ html.is-scroll-locked {
     );
   }
 
+  /* Kontur (przegrany wynik, numer w tle) — kolor obrysu z `text-*` */
   .outline-text {
-    color: transparent;
+    -webkit-text-fill-color: transparent;
     -webkit-text-stroke: 1.5px currentColor;
   }
 
@@ -599,6 +606,15 @@ html.is-scroll-locked {
 
   .bkpk-row-highlight:hover > * {
     background-color: rgb(239 23 52 / 0.2);
+  }
+
+  /* Tabele w ScrollableTableShell — rytm jak tables.css na bekapaka.pl */
+  .bkpk-table-shell table {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bkpk-table-shell thead th {
+    letter-spacing: 0.05em;
   }
 
   .bkpk-status-badge--danger {
