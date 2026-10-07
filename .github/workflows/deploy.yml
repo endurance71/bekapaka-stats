@@ -195,14 +195,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload production compose file
+      - name: Upload production compose file and image cleanup helper
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          source: docker-compose.prod.yml
+          source: docker-compose.prod.yml,scripts/vps/prune-images.sh
           target: /opt/bekapaka-stats/
 
       - name: Deploy to VPS
@@ -277,7 +277,7 @@ jobs:
               done
               sleep 5
             done
-            echo 'Wdrażanie zakończone pomyślnie. Zachowuję obrazy rollbacku.'
-            # Shared VPS: global pruning can remove rollback images of other projects.
-            # Review BeKaPaKa image retention separately before deleting old releases.
+            echo 'Wdrażanie zakończone pomyślnie. Czyszczenie starych obrazów BeKaPaKa (zostają 2 ostatnie rollbacki)...'
+            # Shared VPS: the helper touches only ghcr.io/<repo>/* images, never other projects.
+            bash scripts/vps/prune-images.sh "$GITHUB_REPOSITORY" || echo 'Czyszczenie obrazów nie powiodło się.' >&2
 
