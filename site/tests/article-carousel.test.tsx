@@ -15,5 +15,10 @@ describe('Gallery grid', () => {
   expect(html).toContain('Pokaż wszystkie zdjęcia (20)')
   expect(renderToStaticMarkup(<ArticleImageCarousel images={images(9)}/>)).not.toContain('Pokaż wszystkie zdjęcia')
  })
+ it('credits a shared author once under the gallery instead of under every photo', () => {
+  const html=renderToStaticMarkup(<ArticleImageCarousel images={images(5).map(image=>({ ...image, caption: undefined }))}/>)
+  expect(html.split('Fot. Fotograf').length-1).toBe(1)
+  expect(html).toContain('article-gallery__credit')
+ })
  it('does not render an empty gallery', () => expect(renderToStaticMarkup(<ArticleImageCarousel images={[]}/>)).toBe(''))
 })

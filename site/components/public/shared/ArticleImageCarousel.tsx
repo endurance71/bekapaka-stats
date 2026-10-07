@@ -59,6 +59,8 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
   const active = index === null ? null : images[index]
   const visible = variant === 'cover' || expanded ? images : images.slice(0, GALLERY_PREVIEW)
   const hidden = images.length - visible.length
+  // Wspólny autor całej galerii bez opisów zdjęć — jeden podpis pod galerią zamiast powtarzania go pod każdym zdjęciem.
+  const sharedAuthor = variant !== 'cover' && images.length > 1 && images.every((image) => !image.caption && image.author && image.author === images[0].author) ? images[0].author : undefined
   return (
     <div className={`article-gallery${variant === 'cover' ? ' article-gallery--cover' : ''}`}>
       {variant !== 'cover' && images.some((image) => image.metadataMissing) && (
@@ -94,9 +96,9 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
                 </span>
               )}
             </button>
-            {(image.caption || image.author || (variant === 'cover' && image.metadataMissing)) && (
+            {(image.caption || (image.author && !sharedAuthor) || (variant === 'cover' && image.metadataMissing)) && (
               <figcaption>
-                {[variant === 'cover' && image.metadataMissing ? 'Podgląd lokalny: opis i autor wymagają uzupełnienia.' : null, image.caption || null, image.author ? `Fot. ${image.author}` : null]
+                {[variant === 'cover' && image.metadataMissing ? 'Podgląd lokalny: opis i autor wymagają uzupełnienia.' : null, image.caption || null, image.author && !sharedAuthor ? `Fot. ${image.author}` : null]
                   .filter(Boolean)
                   .join(' · ')}
               </figcaption>
@@ -104,6 +106,7 @@ export function ArticleImageCarousel({ images, variant = 'gallery' }: { images: 
           </figure>
         ))}
       </div>
+      {sharedAuthor && <p className="article-gallery__credit">Fot. {sharedAuthor}</p>}
       {hidden > 0 && (
         <button type="button" className="btn btn--secondary article-gallery__more" onClick={() => setExpanded(true)}>
           Pokaż wszystkie zdjęcia ({images.length})
