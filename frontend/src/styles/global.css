@@ -577,6 +577,126 @@ html.is-scroll-locked {
     -webkit-text-stroke: 1.5px currentColor;
   }
 
+  /* Portret i karta zawodnika — port site/app/styles/components.css (.portrait, .player-card) */
+  .portrait {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    container-type: inline-size;
+    background: radial-gradient(120% 80% at 50% 20%, var(--c-ink-700) 0%, var(--c-ink-900) 60%, var(--c-black) 100%);
+  }
+
+  .portrait__number {
+    position: absolute;
+    inset: 4% 0 auto;
+    z-index: 0;
+    font: 800 72cqw / 1 var(--font-display);
+    text-align: center;
+    color: transparent;
+    -webkit-text-stroke: max(2px, 0.6cqw) var(--brand);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+
+  .portrait__photo {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 0;
+  }
+
+  .portrait::after {
+    content: '';
+    position: absolute;
+    inset: 55% 0 0;
+    z-index: 2;
+    background: linear-gradient(0deg, var(--c-black) 0%, rgb(11 11 11 / 0) 100%);
+    pointer-events: none;
+  }
+
+  .portrait__monogram {
+    position: absolute;
+    right: 8%;
+    bottom: 8%;
+    z-index: 3;
+    width: 20cqw;
+    min-width: 32px;
+    opacity: 0.35;
+  }
+
+  .portrait--empty .portrait__number {
+    inset: 14% 0 auto;
+  }
+
+  .player-card {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .player-card__body {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .player-card__first {
+    font: 600 var(--fs-body-sm) / 1.2 var(--font-text);
+    color: var(--text-secondary);
+  }
+
+  .player-card__last {
+    font: 800 clamp(1.5rem, 1.2rem + 1vw, 2rem) / 1 var(--font-display);
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+  }
+
+  .player-card__meta {
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+  }
+
+  .player-card__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+
+  .player-card__stats > span {
+    display: grid;
+    gap: 2px;
+    padding: var(--space-2) var(--space-2) 0 0;
+    font: 600 13px / 1.2 var(--font-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-secondary);
+  }
+
+  .player-card__stats > span + span {
+    padding-left: var(--space-2);
+    border-left: 1px solid var(--line);
+  }
+
+  .player-card__stats b {
+    font: 800 22px / 1 var(--font-display);
+    color: var(--text);
+  }
+
+  .player-card:hover .portrait__number {
+    color: var(--brand);
+  }
+
+  .player-card:hover .player-card__last {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-decoration-color: var(--brand);
+    text-underline-offset: 4px;
+  }
+
   /* Tabele danych — port site/app/styles/tables.css */
   .bkpk-table {
     width: 100%;
