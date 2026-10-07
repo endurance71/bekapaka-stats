@@ -8,6 +8,7 @@ import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
+import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
 
 interface Team {
     name: string;
@@ -17,6 +18,9 @@ interface Team {
     losses: number;
     pointsFor: number;
     pointsAgainst: number;
+    /** Ostatnie wyniki z KALK, np. ['W','L','W'] */
+    form?: string[];
+    streak?: string | null;
 }
 
 type TablePhase = 'regular' | 'playout';
@@ -127,6 +131,15 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     tone: diff > 0 ? 'success' : diff < 0 ? 'danger' : 'muted',
                                 }
                             ]}
+                            footer={team.form && team.form.length > 0 ? (
+                                <div className="flex items-center justify-between gap-3">
+                                    <span className="label-caps text-[11px] text-bkpk-text-muted">Forma</span>
+                                    <span className="flex items-center gap-2">
+                                        <FormBadges form={team.form} />
+                                        <StreakBadge streak={team.streak} />
+                                    </span>
+                                </div>
+                            ) : undefined}
                         />
                     );
                 })}
@@ -134,7 +147,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
             ) : (
             <ScrollableTableShell compact={isNarrow} className="border-0 bg-bkpk-bg">
                 {/* Tabela jak StandingsBoard na bekapaka.pl: nagłówek pasmem, zebra, wiersz BeKaPaKa, Pkt Condensed */}
-                <table className="bkpk-table text-[15px] text-left min-w-[560px]">
+                <table className="bkpk-table text-[15px] text-left min-w-[760px]">
                     <thead>
                         <tr>
                             <th scope="col" className="h-12 px-3 sm:px-5 w-10 sm:w-12 text-center">#</th>
@@ -146,6 +159,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">RZ</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">ST</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">+/-</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-left whitespace-nowrap">Forma</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">Seria</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -184,6 +199,12 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                         diff > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"
                                     )}>
                                         {diff > 0 ? `+${diff}` : diff}
+                                    </td>
+                                    <td className="h-12 px-3 sm:px-5 whitespace-nowrap">
+                                        <FormBadges form={team.form} />
+                                    </td>
+                                    <td className="h-12 px-3 sm:px-5 text-center">
+                                        <StreakBadge streak={team.streak} />
                                     </td>
                                 </motion.tr>
                             );

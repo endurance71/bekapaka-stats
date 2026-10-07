@@ -96,6 +96,7 @@ export default function GameDetail() {
 
         {/* Scoreboard Header — jak MatchHero/ScoreBoard na bekapaka.pl: BeKaPaKa po lewej, przegrany konturem */}
         <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 md:p-10 lg:p-12">
+          <h1 className="sr-only">Mecz: {bekapaka.name} – {opponentTeam.name}</h1>
           {(isWin || isLoss) && (
             <div className="flex justify-center md:justify-start mb-6 md:mb-8">
               <span className={cn(
