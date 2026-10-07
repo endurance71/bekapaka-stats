@@ -1,4 +1,4 @@
-/** AI portrait variants for the explicitly enabled localhost preview. Original assets stay intact. */
+/** Portrety marki (wycięte z tła, public/brand/photography) przypisane do zawodnika po ID i numerze. Oryginalne zdjęcia zostają bez zmian. */
 const portraits: Readonly<Record<string, { number: string; photo: string }>> = {
   '08a918a8-2643-436d-9812-f6ffe7d90b52': { number: '3', photo: '/brand/photography/pawel-samusionek-portret-v1.png' },
   '428899fd-f115-48da-be46-67e3d401f075': { number: '4', photo: '/brand/photography/pablo-iriarte-portret-v1.png' },
@@ -12,8 +12,7 @@ const portraits: Readonly<Record<string, { number: string; photo: string }>> = {
 }
 
 /** Match identity and jersey number; an unknown player or changed number keeps their source photo. */
-export function resolveLocalPlayerPortrait(player: { id: string; number?: string | null }, enabled = false): string | undefined {
-  if (!enabled) return undefined
+export function resolveLocalPlayerPortrait(player: { id: string; number?: string | null }): string | undefined {
   const portrait = portraits[player.id]
   return portrait && player.number?.trim() === portrait.number ? portrait.photo : undefined
 }

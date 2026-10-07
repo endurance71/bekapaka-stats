@@ -167,7 +167,8 @@ Kolejność pierwszego wdrożenia (bez okresu bez zdjęć):
 
    Token strony (`SITE_CMS_TOKEN`) musi czytać `media-record`. Do zapisu potrzebny jest token z prawem `create` — jeśli token strony go nie ma, utwórz w Strapi (Settings → API Tokens) token „custom” i dopisz `CMS_MEDIA_TOKEN=…` do `.env`.
 3. `pg_dump` bazy, potem merge strony 2.0 do `main` (automatyczny deploy backendu z migracją, strony i panelu).
-4. Nowe zdjęcia: przy dodaniu zdjęcia do artykułu utwórz rekord w CMS albo uruchom skrypt ponownie.
+4. Nowe zdjęcia: przy dodaniu zdjęcia do artykułu albo portretu zawodnika (`site/public/photos/imie-nazwisko.png`) utwórz rekord w CMS albo uruchom skrypt ponownie — portrety sprawdza pod adresem strony w sieci Docker.
+5. Po każdym deployu workflow odświeża cache strony i renderuje główne trasy. Strona jest prerenderowana w CI bez backendu, więc bez tego pierwsze wejścia po wdrożeniu (i prefetch z menu) pokazywały „Nie można pobrać”. Ręcznie: `POST http://127.0.0.1:8082/api/revalidate` z nagłówkiem `x-revalidate-secret`, potem otwórz główne trasy.
 
 Dane klubu na stronie (opcjonalnie w `.env`, puste = wartości domyślne z `site/lib/site-settings.ts`): `SITE_CONTACT_EMAIL`, `SITE_PRIVACY_URL`, `SITE_ASSOCIATION_KRS`, `SITE_PARTNER_LEVELS_APPROVED=1`.
 

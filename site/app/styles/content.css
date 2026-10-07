@@ -728,6 +728,11 @@
   .article-gallery__more {
     margin-top: var(--space-6);
   }
+  .article-gallery__credit {
+    margin-top: var(--space-3);
+    font-size: var(--fs-caption);
+    color: var(--text-muted);
+  }
   .article-gallery__image-button {
     display: block;
     width: 100%;

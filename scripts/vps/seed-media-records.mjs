@@ -11,7 +11,8 @@
  *   cd /opt/bekapaka-stats
  *   docker run --rm --network bkpk-network --env-file <(grep -E '^(SITE_CMS_TOKEN|CMS_MEDIA_TOKEN)=' .env) \
  *     -v "$PWD/scripts/vps/seed-media-records.mjs:/seed.mjs:ro" node:22-alpine node /seed.mjs          # podgląd
- *   … node /seed.mjs --apply                                                                         # zapis
+ *   … node /seed.mjs --apply
+ * Portrety zawodników z site/public/photos sprawdzane są pod adresem strony w sieci Docker (SITE_INTERNAL_URL, domyślnie bkpk-site:3000).                                                                         # zapis
  */
 
 export const AUTHOR = 'BeKaPaKa Bobolice'
@@ -38,8 +39,31 @@ export function normalizeMediaUrl(raw, cmsHosts = ['cms.bekapaka.pl', 'bkpk-cms'
   }
 }
 
+/** Jak normalizePolishChars w site/lib/data/utils.ts. */
+const slug = (text) => String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/\s+/g, '-')
+
+/**
+ * Lokalne portrety, które strona może pokazać dla zawodnika bez zdjęcia w bazie (resolvePlayerPhoto w site/lib/data/utils.ts):
+ * /photos/imie-nazwisko.png, /photos/nazwisko-imie.png oraz zdjęcie z księgi marki dla #24.
+ */
+export function localPortraitCandidates(player) {
+  const first = slug(player.firstName)
+  const last = slug(player.lastName)
+  if (!first || !last) return []
+  // Pliki nazywane są „imie-nazwisko”; KALK bywa odwrotnie, więc nazwę w opisie bierzemy z kolejności pasującego pliku.
+  const asGiven = `${player.firstName} ${player.lastName}`.trim()
+  const reversed = `${player.lastName} ${player.firstName}`.trim()
+  const candidates = [
+    { url: `/photos/${first}-${last}.png`, name: asGiven },
+    { url: `/photos/${last}-${first}.png`, name: reversed }
+  ]
+  if (`${first}-${last}` === 'damian-motylinski') candidates.push({ url: '/brand/photography/player-24.webp', name: asGiven })
+  if (`${last}-${first}` === 'damian-motylinski') candidates.push({ url: '/brand/photography/player-24.webp', name: reversed })
+  return candidates
+}
+
 /** Lista rekordów do utworzenia z opublikowanych artykułów i składu (bez duplikatów, w kolejności występowania). */
-export function collectMedia(posts, roster = []) {
+export function collectMedia(posts, roster = [], portraits = []) {
   const media = new Map()
   const add = (rawUrl, alt) => {
     const url = normalizeMediaUrl(rawUrl)
@@ -65,6 +89,7 @@ export function collectMedia(posts, roster = []) {
     const name = [player.firstName, player.lastName].filter(Boolean).join(' ').trim()
     add(player.photo_url || player.photoUrl || player.photo, name ? `${name}, zawodnik BeKaPaKa Bobolice` : 'Zawodnik BeKaPaKa Bobolice')
   }
+  for (const portrait of portraits) add(portrait.url, `${portrait.name}, zawodnik BeKaPaKa Bobolice`)
   return [...media.values()]
 }
 
@@ -83,6 +108,7 @@ async function fetchAll(fetchImpl, base, path, headers) {
 export async function run({ apply = false, fetchImpl = fetch, env = process.env, log = console.log } = {}) {
   const cms = env.SITE_CMS_API_URL || 'http://bkpk-cms:1337'
   const backend = env.SITE_BACKEND_API_URL || 'http://bkpk-backend:4001'
+  const site = env.SITE_INTERNAL_URL || 'http://bkpk-site:3000'
   const token = env.CMS_MEDIA_TOKEN || env.SITE_CMS_TOKEN
   if (!token) throw new Error('Brak tokenu CMS (CMS_MEDIA_TOKEN albo SITE_CMS_TOKEN).')
   const headers = { Authorization: `Bearer ${token}` }
@@ -90,7 +116,17 @@ export async function run({ apply = false, fetchImpl = fetch, env = process.env,
   const posts = await fetchAll(fetchImpl, cms, '/api/news-posts?status=published&populate[coverImage]=true&populate[attachments]=true', headers)
   const rosterResponse = await fetchImpl(`${backend}/api/roster`)
   const roster = rosterResponse.ok ? await rosterResponse.json() : []
-  const wanted = collectMedia(posts, Array.isArray(roster) ? roster : [])
+  const players = Array.isArray(roster) ? roster : []
+  // Portret dostaje rekord tylko wtedy, gdy plik naprawdę jest na stronie.
+  const portraits = []
+  for (const player of players) {
+    if (player.photo_url || player.photoUrl || player.photo) continue
+    for (const candidate of localPortraitCandidates(player)) {
+      const response = await fetchImpl(`${site}${candidate.url}`, { method: 'HEAD' })
+      if (response.ok) portraits.push(candidate)
+    }
+  }
+  const wanted = collectMedia(posts, players, portraits)
 
   // Szkice i opublikowane — żeby nie tworzyć drugiego rekordu dla adresu, który ktoś już opisuje w CMS.
   const existing = new Set()

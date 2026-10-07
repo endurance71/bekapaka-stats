@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { collectMedia, meaningfulAlt, normalizeMediaUrl, run } from './seed-media-records.mjs'
+import { collectMedia, localPortraitCandidates, meaningfulAlt, normalizeMediaUrl, run } from './seed-media-records.mjs'
 
 test('camera file names and empty values are not used as alt', () => {
   assert.equal(meaningfulAlt('IMG_2041.jpg'), '')
@@ -39,6 +39,30 @@ test('collects covers, inline images, image attachments and roster photos once, 
     ]
   )
   assert.ok(media.every((item) => item.author === 'BeKaPaKa Bobolice' && item.consentStatus === 'not_required'))
+})
+
+test('local portrait candidates follow the site photo resolver, both name orders', () => {
+  assert.deepEqual(localPortraitCandidates({ firstName: 'Samusionek', lastName: 'Paweł' }), [
+    { url: '/photos/samusionek-pawel.png', name: 'Samusionek Paweł' },
+    { url: '/photos/pawel-samusionek.png', name: 'Paweł Samusionek' }
+  ])
+  assert.ok(localPortraitCandidates({ firstName: 'Damian', lastName: 'Motyliński' }).some((item) => item.url === '/brand/photography/player-24.webp'))
+  assert.deepEqual(localPortraitCandidates({ firstName: '', lastName: 'X' }), [])
+})
+
+test('portraits are added only for files that exist on the site', async () => {
+  const roster = [{ firstName: 'Emil', lastName: 'Kłos' }, { firstName: 'Bez', lastName: 'Zdjęcia' }]
+  const calls = []
+  const fetchImpl = async (url, options = {}) => {
+    calls.push({ url, method: options.method || 'GET' })
+    if (url.includes('/api/news-posts')) return { ok: true, json: async () => ({ data: [] }) }
+    if (url.includes('/api/roster')) return { ok: true, json: async () => roster }
+    if (url.includes('/api/media-records')) return { ok: true, json: async () => ({ data: [] }) }
+    if (options.method === 'HEAD') return { ok: url.endsWith('/photos/emil-klos.png') }
+    return { ok: true, json: async () => ({}) }
+  }
+  const result = await run({ fetchImpl, env: { SITE_CMS_TOKEN: 't', SITE_INTERNAL_URL: 'http://site' }, log: () => {} })
+  assert.deepEqual(result.missing.map((item) => [item.url, item.alt]), [['/photos/emil-klos.png', 'Emil Kłos, zawodnik BeKaPaKa Bobolice']])
 })
 
 function fakeCms({ posts, records }) {

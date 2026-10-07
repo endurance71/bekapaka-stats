@@ -530,13 +530,14 @@ export async function getRosterState(): Promise<DataState<RosterPlayer[]>> {
     const records = await getMediaRecords()
     const localPreview = isLocalMediaPreview()
     const items = parseCollectionItems(mapped, rosterPlayerSchema, 'roster-player').map(player => {
-      const review = approvedMedia(records, hasPlayerPhoto(player) ? resolvePlayerPhoto(player) : undefined)
-      // Local portrait mockup; retain the original photograph outside the local preview.
-      const photo = resolveLocalPlayerPortrait(player, localPreview) ?? player.photo
+      // Portret marki powstał ze zdjęcia zawodnika — wystarczy rekord zgody portretu albo oryginału.
+      const portrait = resolveLocalPlayerPortrait(player)
+      const review = approvedMedia(records, portrait) ?? approvedMedia(records, hasPlayerPhoto(player) ? resolvePlayerPhoto(player) : undefined)
+      const photo = portrait ?? player.photo
       return {
         ...player,
         photo,
-        photoApproved: !!review || (localPreview && hasPlayerPhoto(player)),
+        photoApproved: !!review || (localPreview && (hasPlayerPhoto(player) || Boolean(portrait))),
         photoAlt: review?.alt
       }
     })
