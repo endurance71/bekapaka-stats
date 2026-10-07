@@ -971,7 +971,7 @@ export default function BasketballCourtCanvas({
                     setIsPlaying(true);
                   }}
                   className={cn(
-                    "px-3 py-1 label-caps text-[12px] transition-colors shrink-0 min-h-[36px] border",
+                    "px-3 py-1 label-caps text-[12px] transition-colors shrink-0 min-h-[44px] border",
                     isActive
                       ? bkpkActivePillClass
                       : "border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary hover:bg-bkpk-surface-tint-1"
@@ -1109,7 +1109,7 @@ export default function BasketballCourtCanvas({
                   key={spd}
                   onClick={() => handleSpeedChange(spd)}
                   className={cn(
-                    "px-2.5 py-1 min-h-[36px] font-display tabular-nums text-[15px] transition-colors border",
+                    "px-2.5 py-1 min-h-[44px] min-w-[44px] font-display tabular-nums text-[15px] transition-colors border",
                     speed === spd
                       ? bkpkActivePillClass
                       : "border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary"

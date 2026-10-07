@@ -195,7 +195,7 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                                 key={m}
                                 onClick={() => setMode(m)}
                                 className={clsx(
-                                    "px-2.5 py-1.5 label-caps text-xs transition-colors",
+                                    "px-2.5 min-h-[44px] min-w-[44px] label-caps text-xs transition-colors",
                                     mode === m
                                         ? bkpkActivePillClass
                                         : "text-bkpk-text-secondary hover:text-bkpk-text-primary"

@@ -14,14 +14,14 @@ export function AppFooter({ className }: AppFooterProps) {
         href="https://bekapaka.pl"
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-block underline decoration-bkpk-primary decoration-2 underline-offset-4 hover:text-bkpk-text-primary transition-colors"
+        className="inline-flex items-center min-h-[44px] underline decoration-bkpk-primary decoration-2 underline-offset-4 hover:text-bkpk-text-primary transition-colors"
       >
         bekapaka.pl
       </a>
       <p>© 2026 by MT HUB Damian Motyliński</p>
       <a
         href="mailto:kontakt@damianmotylinski.pl"
-        className="block hover:text-bkpk-text-primary transition-colors break-all"
+        className="flex items-center min-h-[44px] hover:text-bkpk-text-primary transition-colors break-all"
       >
         kontakt@damianmotylinski.pl
       </a>
