@@ -1,112 +1,94 @@
-# Design tokens BeKaPaKa
+# Design tokens BeKaPaKa — Digital 2.0
 
-Kanoniczna paleta marki jest w [`packages/design-tokens/bkp-tokens.css`](../packages/design-tokens/bkp-tokens.css). Oba frontendy importują ten plik:
+Jedynym źródłem palety, fontów, skali typografii i odstępów jest **[`packages/digital-design`](../packages/digital-design/)** (Brandbook 2.0, generowany z `tokens.json` przez `build_tokens.py`; nadrzędne decyzje: `CURRENT.source.md`). Poprzedni pakiet `packages/design-tokens` (1.0, złoto #ECA72C, gradient CTA, glass) został usunięty.
 
-| Aplikacja | Plik importu |
-|-----------|--------------|
-| Strona publiczna (`site/`) | [`packages/digital-design/dist/tokens.css`](../packages/digital-design/dist/tokens.css) (Brandbook 2.0) → role w [`site/app/styles/foundation.css`](../site/app/styles/foundation.css) |
-| Panel (`frontend/`) | [`frontend/src/styles/global.css`](../frontend/src/styles/global.css) |
+| Aplikacja | Import | Role semantyczne |
+|-----------|--------|------------------|
+| Strona publiczna (`site/`) | [`dist/tokens.css`](../packages/digital-design/dist/tokens.css) | [`site/app/styles/foundation.css`](../site/app/styles/foundation.css) |
+| Panel (`frontend/`) | [`dist/tokens.css`](../packages/digital-design/dist/tokens.css) | [`frontend/src/styles/global.css`](../frontend/src/styles/global.css) — te same nazwy ról (`--bg`, `--surface`, `--text*`, `--line*`, `--brand*`, `--action*`, `--focus`, `--table-*`) + aliasy `--bkpk-*` dla klas Tailwind |
 
 ## Zasady
 
-1. **Nie hardcoduj kolorów** w komponentach — używaj tokenów CSS lub klas Tailwind `bkpk-*`.
-2. **Zmiany brandu** wprowadzaj wyłącznie w `bkp-tokens.css`, potem weryfikuj oba produkty.
-3. **Deploy kolorystyki** — po zmianie tokenów wdrażaj razem `bkpk-site-prod` i `bkpk-frontend-prod`.
+1. **Nie hardcoduj kolorów** w komponentach — klasy `*-bkpk-*`, klasy marki (`brand-red-500`, `ink-700`, `brand-stone-400`…) albo `var(--c-…)`.
+2. **Zmiany brandu** wprowadzaj w `packages/digital-design/tokens.json` → `python3 build_tokens.py`; potem sprawdź **oba** produkty.
+3. **Deploy** — po zmianie tokenów wdrażaj razem `bkpk-site-prod` i `bkpk-frontend-prod` (obraz panelu kopiuje `packages/digital-design`).
+4. Fonty: wyłącznie **Barlow Condensed 800** (nagłówki, liczby, wyniki — wersaliki) i **Barlow 400/600** (tekst, etykiety). Pliki WOFF2: `site/app/fonts/` i `frontend/src/assets/fonts/` (bundlowane przez Vite).
 
-## Paleta (skrót)
+## Paleta (płyta — motyw panelu)
 
 | Token | Wartość | Użycie |
 |-------|---------|--------|
-| `--bkp-gold` | `#ECA72C` | Akcent primary, linki, aktywna nawigacja |
-| `--bkp-gold-strong` | `#F0B849` | Hover akcentu |
-| `--bkp-copper` | `#D97736` | Gradient CTA, active state |
-| `--bkp-crimson` | `#D32F2F` | Błędy, porażki |
-| `--bkp-bg-app` | `#0B0B0C` | Tło aplikacji |
-| `--bkp-bg-surface` | `#121214` | Karty, sidebar |
-| `--bkp-border` | `rgba(255,255,255,0.08)` | Obramowania subtelne |
-| `--bkp-gold-gradient` | gold → copper | Przyciski primary |
+| `--c-black` | `#0B0B0B` | Tło aplikacji, sidebar, nagłówek |
+| `--c-ink-800` / `--c-ink-700` | `#161616` / `#1F1E1C` | Powierzchnia / powierzchnia podniesiona |
+| `--c-ink-600` / `--c-ink-500` | `#2E2C29` / `#3A3632` | Linia / linia mocna |
+| `--c-white` | `#F7F6F2` | Tekst |
+| `--c-stone-200` / `--c-stone-400` | `#D8D4CC` / `#9C978F` | Tekst drugorzędny / metadane |
+| `--c-red-500` | `#EF1734` | Marka: belki kickera, paski stroju, wypełnienia, wiersz BeKaPaKa |
+| `--c-red-600` / `--c-red-700` | `#D9142F` / `#AE1027` | Akcja (CTA) / hover akcji |
+| `--c-red-300` | `#FF5A6E` | Czerwień jako **tekst** na ciemnym tle |
+| `--c-gold-500` | `#F4A816` | **Tylko** wyróżnienia: MVP, lider, rekord, medal, aktywna pozycja nawigacji, fokus |
+| `--c-green-400` | `#3DBA6F` | Status pozytywny |
 
-## Panel (Tailwind)
+Kształt: brak zaokrągleń (w panelu `--radius-*` wyzerowane w `@theme`; `rounded-full` tylko dla awatarów i kropek). Ścięty róg: `.chamfer` (12 px, karty/portrety), `.chamfer-sm` (8 px, przyciski). Bez blur, poświat i gradientowych CTA.
+
+## Panel (Tailwind v4)
+
+Konfiguracja wyłącznie w `@theme` w `global.css` (plik `tailwind.config.ts` usunięto — Tailwind v4 go nie ładował, ~520 klas nie generowało CSS).
 
 ```tsx
-// Tło, tekst, akcent
-<div className="bg-bkpk-bg text-bkpk-text-primary border border-bkpk-border-subtle">
-  <span className="text-bkpk-primary">Akcent</span>
+// Powierzchnia i tekst
+<div className="bg-bkpk-surface border border-bkpk-border-subtle text-bkpk-text-primary">
+  <span className="kicker">Liga KALK</span>                 {/* 24×3 px czerwona belka + etykieta */}
+  <p className="font-display text-4xl tabular-nums">86</p>  {/* liczby Condensed */}
+  <span className="label-caps text-xs text-bkpk-text-muted">Punkty</span>
 </div>
 
-// Przycisk primary (gradient jak strona)
-<button className="bkpk-btn-primary rounded-bkpk-md px-5 py-2.5 font-bold">
-  Zapisz
-</button>
+// Akcja: BkpkButton variant="primary" (czerwień akcji + ścięty róg 8 px)
+<BkpkButton variant="primary">Zapisz</BkpkButton>
 ```
 
-## Strona publiczna (CSS) — Website 2.0
+| Klasa / komponent | Rola |
+|-------------------|------|
+| `bkpk-primary` | Czerwień marki (#EF1734); `text-bkpk-primary` = #FF5A6E (kontrast) |
+| `bkpk-medal-gold`, `bkpk-warning` | Złoto (wyróżnienie / ostrzeżenie) |
+| `.bkpk-row-highlight` | Wiersz BeKaPaKa w tabeli: tło czerwone 14% + 4 px pasek |
+| `.status-flag` | Obramowana flaga statusu |
+| `.outline-text` | Kontur (przegrany wynik, numer w tle) |
+| `.cut` | Cięcie BKPK — tylko wynik, numery, krótkie nagłówki |
+| `bkpkActivePillClass` | Aktywny segment/filtr: inwersja (białe tło, czarny tekst) |
+| `PageHeader`, `SectionHeading`, `PageContainer`, `PageLoader`, `JerseyStripes`, `BrandMark` | Prymitywy w `frontend/src/shared/ui/` |
+| `shared/lib/chartTheme.ts` | Kolory wykresów: BeKaPaKa = czerwień, rywal/liga = stone-200, złoto = rekord |
 
-Strona nie używa złotych gradientów ani poświaty. Złoto to wyróżnienie (aktywna nawigacja, lider statystyki, focus na płycie), nigdy CTA.
+## Kontrast / WCAG (płyta)
 
-```css
-/* Role semantyczne zależne od materiału: data-theme="plyta" | "papier" */
-.btn--primary { background: var(--action); color: var(--action-text); }
-.kicker::before { background: var(--brand); }
-.story__category { color: var(--brand-text); }
-```
+| Para | Kontrast |
+|------|----------|
+| `#F7F6F2` na `#0B0B0B` / `#161616` | 18,2 / 16,7 |
+| `#D8D4CC` (secondary) na `#161616` | 12,2 |
+| `#9C978F` (muted) na `#161616` / `#1F1E1C` | 6,2 / 5,7 |
+| `#FF5A6E` (czerwony tekst) na `#161616` | 6,0 |
+| `#EF1734` jako tekst na `#161616` | **4,2 — nie używać dla małego tekstu** |
+| `#FFFFFF` na `#D9142F` (CTA) / `#AE1027` (hover) | 5,1 / 7,2 |
+| `#F4A816` na `#0B0B0B` | 9,8 |
+| `#3DBA6F` na `#161616` | 7,3 |
 
-Role (`--bg`, `--bg-muted`, `--surface`, `--surface-elevated`, `--text`, `--text-secondary`, `--text-muted`, `--line`, `--brand`, `--brand-gold`, `--action`, `--success`, `--warning`, `--danger`, `--focus`) definiuje `site/app/styles/foundation.css`. Sekcja „Kontrast / WCAG” poniżej dotyczy panelu (`frontend/`).
+Kolor nigdy nie jest jedyną informacją: wygrana/porażka słowem lub literą (Z/P), forma = litera + kształt (pełny/kontur).
 
-## Kontrast / WCAG
-
-### Dozwolone pary kolorów
-
-| Kontekst | Tło | Tekst | Uwagi |
-|----------|-----|-------|-------|
-| CTA primary | `--bkp-gold-gradient` | `#000` (`--bkp-on-primary`) | Kanoniczny przycisk akcji |
-| Aktywny pill / tab | `bg-bkpk-primary/10` | `text-bkpk-primary` | Użyj `bkpkActivePillClass` z `BkpkButton.tsx` |
-| Tekst pomocniczy | `--bkp-bg-surface` | `--bkp-text-secondary` | Min. `text-xs` (12px) |
-| Tekst wyciszony | `--bkp-bg-surface` | `--bkp-text-muted` | Tylko ≥12px; przy 10–11px użyj secondary |
-
-### Zakazy
-
-1. **Cykliczne aliasy tokenów** — nigdy `--bkp-gold-gradient: var(--bkp-gold-gradient)` w `:root`; nadpisuje gradient z `bkp-tokens.css` i przezroczyste CTA.
-2. **`text-bkpk-primary/20`–`/40`** na tekście UI — opacity primary tylko dla dekoracji (ikony tła, glow), nie dla czytelnego tekstu.
-3. **Niezdefiniowane klasy Tailwind** — np. `bg-bkpk-card` bez wpisu w `tailwind.config.ts`.
-4. **Opacity na custom shadow** — `shadow-bkpk-primary/20` nie działa; użyj `shadow-bkpk-primary` lub jawnego `shadow-[...]`.
-
-### Wzorzec aktywnych stanów
-
-- **Akcje główne** (submit, „Zobacz analizę”, login) → gradient + czarny tekst (`.bkpk-btn-primary` / `BkpkButton variant="primary"`).
-- **Toggle / filtry / taby** → `bkpkActivePillClass` (złoty tint + border), nie `bg-bkpk-primary-fill text-white`.
-
-### Regresja w repo
+## Regresja (grep-gate)
 
 ```bash
-# Cykliczne aliasy w global.css
-rg 'var\(--bkp-[a-z-]+\);\s*$' frontend/src/styles/global.css
-
-# Zbyt niska opacity primary na tekście
-rg 'text-bkpk-primary/(2[0-9]|3[0-9])' frontend/src
-
-# Legacy pomarańcz
-rg '#FF6B35|rgba\(255,\s*107,\s*53' frontend/src --glob '!global.css'
+# Musi zwrócić 0 trafień w panelu
+rg -n "ECA72C|236, ?167, ?44|backdrop-blur|blur-(sm|md|lg|xl|2xl|3xl|\[)|shadow-bkpk-glow|font-(outfit|montserrat|inter|bebas)|bkp-gold" frontend/src
 ```
 
 ## Checklist QA wizualnego
 
-Po zmianie tokenów sprawdź ręcznie:
-
-- [ ] **Login** (`panel.bekapaka.pl`) — CTA gradient złoty, czarny tekst, glow, brak pomarańczu
-- [ ] **Dashboard briefing** — przycisk „Zobacz analizę” widoczny (gradient + czarny tekst), ghost „Odśwież” obok
-- [ ] **Dashboard** — karty, wykresy, hero stats, taby trybu statystyk (gold tint)
-- [ ] **Shell** — sidebar active (złote tło ~8%), mobile menu, header glass
-- [ ] **Mecze** — filtry (tło `bg-bkpk-surface`), aktywny filtr gold tint; lista filtrów Wszystkie/Rozegrane
-- [ ] **Box score / Game detail** — taby BKPK/OPP, sticky headers, primary highlights
-- [ ] **Skład** — PlayerCard: numer czytelny, imię w pełnym primary; panel + `bekapaka.pl/sklad`
-- [ ] **Liga KALK** — wiersz BeKaPaKa w tabeli / rankingach
-- [ ] **Administracja** — tabele, badge ADMIN; meta AI ≥12px, secondary zamiast muted
-- [ ] **Wykresy** — kontrast etykiet (muted text) na ciemnym tle
-
-## CI / regresja kolorów (opcjonalnie)
-
-```bash
-# Pomarańcz legacy — nie powinien występować poza dokumentacją
-rg '#FF6B35|rgba\(255,\s*107,\s*53' frontend/src --glob '!global.css'
-```
+- [ ] **Login** — herb 2.0, CTA czerwone ze ściętym rogiem, fokus złoty 3 px
+- [ ] **Shell** — Sygnet 2.0 + wordmark, aktywna pozycja: złota belka; mobile: 2 px czerwona linia pod nagłówkiem, menu numerowane (Esc zamyka)
+- [ ] **Pulpit** — liczby Condensed, kickery, forma Z/P (pełny/kontur)
+- [ ] **Mecze** — wiersze data · para · wynik, BeKaPaKa po lewej, przegrany konturem
+- [ ] **Liga KALK** — tabela jak `/tabela` na bekapaka.pl (pasmo nagłówka, zebra, wiersz BeKaPaKa)
+- [ ] **Skład** — portret 4:5, numer konturem, pasek średnich
+- [ ] **Wykresy** — `chartTheme.ts`, siatka ink-600, tooltip bez zaokrągleń
+- [ ] **Taktyka** — boisko czytelne, drużyny rozróżnialne kolorem i etykietą
+- [ ] **Administracja** — pola 48 px, tabele `.bkpk-table`, strefa resetu z lewym paskiem
