@@ -45,7 +45,7 @@ Internet :443 / :80
         ▼
    Caddy (host, /etc/caddy/Caddyfile)
         │
-        ├── moya-api.damianmotylinski.pl  → 127.0.0.1:3000   (MOYA API)
+        ├── mthub-api.damianmotylinski.pl → 127.0.0.1:3000   (MOYA / MT Hub API — nie dotykać)
         │
         ├── bekapaka.pl, www.bekapaka.pl  → 127.0.0.1:8082   (BeKaPaKa strona publiczna)
         ├── panel.bekapaka.pl             → 127.0.0.1:8081   (BeKaPaKa panel)
@@ -69,7 +69,9 @@ Docker — BeKaPaKa (ten projekt):
 
 | Port (host) | Usługa | Projekt |
 |-------------|--------|---------|
-| `3000` | MOYA API | **moya-native-app** — nie dotykać |
+| `3000` | MOYA / MT Hub API (`mthub-api`) | **moya-native-app** — nie dotykać |
+| `127.0.0.1:3001–3003` | MT Hub (admin, staging) | nie dotykać |
+| `127.0.0.1:8083` | BeKaPaKa Studio | bekapaka-stats |
 | `127.0.0.1:4001` | BeKaPaKa backend | bekapaka-stats |
 | `127.0.0.1:8081` | BeKaPaKa panel frontend | bekapaka-stats |
 | `127.0.0.1:8082` | BeKaPaKa strona publiczna | bekapaka-stats |
@@ -143,10 +145,33 @@ curl -sI https://panel.bekapaka.pl | grep -i strict-transport-security
 
 - `docker compose down` w `~/apps/moya-native-app/` bez wyraźnej zgody użytkownika
 - Usuwanie wolumenów, baz lub obrazów MOYA
-- Zmiana portu `3000` lub bloku `moya-api.damianmotylinski.pl` w Caddyfile
+- Zmiana portu `3000` lub bloku `mthub-api.damianmotylinski.pl` (dawniej `moya-api.*`) w Caddyfile
 - `docker system prune -a` na całym VPS (może usunąć obrazy MOYA)
 - Wspólna sieć Docker między MOYA a BeKaPaKa (używaj `bkpk-network` tylko dla bkpk)
 - Nadpisywanie `/opt/bekapaka-stats/data/pgdata` bez backupu
+
+## Wdrożenie strony 2.0 i zgody na zdjęcia
+
+Strona 2.0 pokazuje okładki, galerie i zdjęcia zawodników tylko z opublikowanym rekordem **„Metadane i zgody zdjęć”** (Strapi `media-record`: alt, autor, zgoda `granted` / `not_required`). Bez rekordu zdjęcie jest ukryte.
+
+Kolejność pierwszego wdrożenia (bez okresu bez zdjęć):
+
+1. CMS z kolekcją `media-record` (push `cms-app` do `main` → ręczny workflow **Deploy CMS to VPS**).
+2. Rekordy dla opublikowanych zdjęć — skrypt `scripts/vps/seed-media-records.mjs` (podgląd, potem `--apply`; tworzy tylko brakujące, zgoda „nie wymagana”, autor „BeKaPaKa Bobolice”):
+
+   ```bash
+   cd /opt/bekapaka-stats
+   docker run --rm --network bkpk-network --env-file <(grep -E '^(SITE_CMS_TOKEN|CMS_MEDIA_TOKEN)=' .env) \
+     -v "$PWD/scripts/vps/seed-media-records.mjs:/seed.mjs:ro" node:22-alpine node /seed.mjs
+   ```
+
+   Token strony (`SITE_CMS_TOKEN`) musi czytać `media-record`. Do zapisu potrzebny jest token z prawem `create` — jeśli token strony go nie ma, utwórz w Strapi (Settings → API Tokens) token „custom” i dopisz `CMS_MEDIA_TOKEN=…` do `.env`.
+3. `pg_dump` bazy, potem merge strony 2.0 do `main` (automatyczny deploy backendu z migracją, strony i panelu).
+4. Nowe zdjęcia: przy dodaniu zdjęcia do artykułu utwórz rekord w CMS albo uruchom skrypt ponownie.
+
+Dane klubu na stronie (opcjonalnie w `.env`, puste = wartości domyślne z `site/lib/site-settings.ts`): `SITE_CONTACT_EMAIL`, `SITE_PRIVACY_URL`, `SITE_ASSOCIATION_KRS`, `SITE_PARTNER_LEVELS_APPROVED=1`.
+
+Backend odświeża stronę po zapisie prezentacji meczu przez `http://bkpk-site:3000/api/revalidate` z sekretem `SITE_REVALIDATE_SECRET` (albo `PREVIEW_SECRET`).
 
 ## Scraping (Scrapling)
 

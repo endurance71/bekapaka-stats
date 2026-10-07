@@ -65,12 +65,18 @@ jobs:
           (cd backend/scripts && /tmp/bkpk-scraper-tests/bin/python -m unittest discover -p 'test_kalk_*.py' -v)
       - name: CMS backup helper regressions
         run: python3 -m unittest discover -s scripts/vps -p 'test_cms_release.py' -v
+      - name: Media consent seed regressions
+        run: node --test scripts/vps/seed-media-records.test.mjs
       - name: Frontend tests and build
         working-directory: frontend
         run: |
           npm ci
           npm test -- --run
           npm run build
+      - name: Brand tokens are in sync with tokens.json
+        run: |
+          python3 packages/digital-design/build_tokens.py
+          git diff --exit-code packages/digital-design/dist
       - name: Public site quality
         working-directory: site
         run: |

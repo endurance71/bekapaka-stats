@@ -8,7 +8,6 @@ const portraits: Readonly<Record<string, { number: string; photo: string }>> = {
   '5b93fd48-790e-44ba-bfaa-f4e754b09b0b': { number: '21', photo: '/brand/photography/robert-kulik-portret-v1.png' },
   '1a13d025-0978-4640-8568-2bc4b4c9a2ef': { number: '23', photo: '/brand/photography/emil-klos-portret-v1.png' },
   '32b52081-2a59-4319-90df-6ebc91e8a210': { number: '69', photo: '/brand/photography/filip-karpinski-portret-v1.png' },
-  '30ed3c7c-f2c6-498b-952f-5b97c409a47a': { number: '77', photo: '/brand/photography/filip-kawecki-portret-v1.png' },
   '6e4b3066-85ba-4448-9d88-1437c68f8b05': { number: '12', photo: '/brand/photography/tomasz-kaszubowski-portret-v3.png' }
 }
 

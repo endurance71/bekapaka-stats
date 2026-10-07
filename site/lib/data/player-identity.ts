@@ -16,7 +16,6 @@ const identities: ReadonlyArray<readonly [string, string, string?]> = [
   ["Dawid", "Olearczyk", "1"],
   ["Łukasz", "Gośniak", "34"],
   ["Filip", "Karpiński", "69"],
-  ["Filip", "Kawecki", "77"],
   ["Łukasz", "Mras", "13"],
   ["Maciej", "Tymiński", "29"],
   ["Piotr", "Sosiński", "8"]

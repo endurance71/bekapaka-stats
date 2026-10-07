@@ -204,3 +204,14 @@ Przy 1920 px artykuł zajmował ~1150 z 1600 px kontenera, a prawa strona była 
 - **Kolumna boczna „Czytaj dalej”:** do 5 artykułów — nowszy, starszy, a po nich najnowsze z datą.
 - **Miniatury aktualności:** każde zdjęcie historii ma ścięty róg (24 px w historii wiodącej, 12 px w miniaturach i siatce).
 - **QA:** nowe reguły — wykorzystanie szerokości artykułu ≥ 90% kontenera (≥ 1440), brak podwójnych linii, kolumna boczna nie nachodzi na bloki, okładka na pierwszym ekranie przy 375 px. Dodana trasa z plakatem jako okładką. Wynik: 0 naruszeń w 5 szerokościach × 15 tras. Testy 162/162, typecheck, lint i build produkcyjny przechodzą.
+
+## Wdrożenie produkcyjne (7.10.2026)
+
+Przygotowanie w repo przed przełączeniem bekapaka.pl na 2.0:
+
+- **Build w CI i Dockerze:** wygenerowane tokeny marki `packages/digital-design/dist/` są wersjonowane (wyjątki w `.gitignore` i `.dockerignore`). Wcześniej strona budowała się tylko lokalnie. CI sprawdza, czy `dist/` zgadza się z `tokens.json` (`build_tokens.py` + `git diff --exit-code`).
+- **Bezpieczeństwo zależności:** `proxy-addr` 2.0.7 → 2.0.8 w backendzie (krytyczna podatność, poprawka bez zmian API). Bez niej bramka audytu w CI zatrzymałaby wdrożenie.
+- **Zgody na zdjęcia:** skrypt `scripts/vps/seed-media-records.mjs` (+ test w CI) tworzy rekordy `media-record` dla opublikowanych zdjęć: zgoda „nie wymagana”, autor „BeKaPaKa Bobolice”, opis z alt lub tytułu artykułu. Tworzy tylko brakujące.
+- **`docker-compose.prod.yml`:** dane klubu dla strony (`SITE_CONTACT_EMAIL`, `SITE_PRIVACY_URL`, `SITE_ASSOCIATION_KRS`, `SITE_PARTNER_LEVELS_APPROVED`). Backend odświeża stronę przez sieć Docker po zapisie prezentacji meczu.
+- **Skład:** Filip Kawecki (#77) nie gra już w klubie. Jego rekord składu usuwa się na produkcji jak przyciskiem „Usuń” w panelu; statystyki KALK i box score zostają. W aktywnym sezonie KALK 2026/27 go nie ma, więc synchronizacja go nie przywróci. Z repo usunięto jego portret do lokalnego podglądu.
+- Kolejność wdrożenia i polecenia: [vps-runbook.md](./vps-runbook.md#wdrożenie-strony-20-i-zgody-na-zdjęcia).

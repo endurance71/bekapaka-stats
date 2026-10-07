@@ -26,6 +26,8 @@ cms-app/build/
 cms-app/dist/
 cms-app/types/
 dist/
+# Tokeny marki są wejściem buildu strony (site/app/globals.css) — wersjonowane, generowane przez build_tokens.py.
+!packages/digital-design/dist/
 dist-ssr/
 backend/generated/
 *.local
