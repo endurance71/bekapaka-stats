@@ -10,7 +10,7 @@ Zrzuty przed / po: [`docs/qa/panel-2-0-2026-10-07/`](qa/panel-2-0-2026-10-07/) (
 
 - `npm test -- --run` — 3 pliki, 6/6 testów.
 - `npm run build` — OK; fonty WOFF2 i znaki SVG trafiają do `dist/assets`.
-- `tsc --noEmit` — 15 błędów, wszystkie zastane (na `main` było 19; 4 naprawione przy okazji). CI nie uruchamia `tsc`.
+- `npm run typecheck` (`tsc --noEmit`) — 0 błędów (na `main` było 19); uruchamiany w CI.
 - 12 tras (Pulpit, Mecze, Mecz, Liga, Skład, Zawodnik, Mój profil, Analizy, Scouting, Taktyka, AI, Admin) przy 375 px: brak poziomego przepełnienia, brak awarii, brak błędów konsoli. Menu mobilne: wszystkie pozycje + „Wyloguj” mieszczą się przy 375×812, Esc zamyka.
 - Grep-gate z [`design-tokens.md`](design-tokens.md#regresja-grep-gate): 0 trafień (`#ECA72C`, złote rgba, blur, poświaty, fonty 1.0, kolory palety Tailwind).
 - Kontrast WCAG AA dla wszystkich par ról — tabela w `design-tokens.md`.
@@ -50,16 +50,16 @@ Zrzuty przed / po: [`docs/qa/panel-2-0-2026-10-07/`](qa/panel-2-0-2026-10-07/) (
 | Menu mobilne zamyka się klawiszem Esc | jak na bekapaka.pl (dostępność) |
 | Kickery nad tytułami („Centrum drużyny”, „Sezon”) i flaga „Wygrana/Porażka” w meczu | Brandbook: wynik słowem, nie tylko kolorem |
 | Terminarz ligi: BeKaPaKa u góry, etykieta GOSP./GOŚĆ zawsze widoczna | Brandbook „BeKaPaKa zawsze po lewej”; informacja o gospodarzu zachowana |
-| Boisko taktyczne nie używa `zone.color` z presetów | presety w `backend/lib/playbookPresets.js` mają barwy spoza marki; strefy rozróżnia etykieta |
+| Boisko taktyczne: kolory stref z palety marki wg kolejności zamiast `zone.color` z danych | zapisane barwy bywały spoza marki; strefy rozróżnia kolor i etykieta |
 | Cele dotykowe podniesione do 44 px (przełączniki, stopka, ikony w adminie) | wytyczne strony |
 
-## Do zrobienia poza tym zakresem
+## Domknięte w drugiej iteracji
 
-- Forma W/P w tabeli ligi wymaga pola w `/api/league/table` (endpoint jej nie zwraca).
-- Zdjęcia `frontend/public/photos/*.png` mają 3,6–6,2 MB (2048 px) — warto przygotować WebP ~600 px.
-- `GameDetail` nie ma `h1` (nazwy drużyn to `h2`, jak przed zmianą).
-- 15 zastanych błędów `tsc` (m.in. `BasketballCourtCanvas`, `PreGameMatchCard`, `SynergyMatrix`, `TacticsHub`, `Profile`, typy testów) — warto dodać `tsc` do CI po ich naprawie.
-- Presety playbooka w backendzie: przenieść kolory stref na paletę marki, jeśli mają wrócić do rysowania.
+- **Forma i seria w tabeli ligi** — `/api/league/table` już zwracał `form` i `streak` (brakowało ich w typie panelu); kolumny „Forma” / „Seria” jak na `/tabela` (`shared/ui/FormBadges.tsx`), na telefonie w stopce karty.
+- **Zdjęcia zawodników** — `frontend/public/photos/*.png` przeskalowane z 2048 do 720 px i skompresowane: 63 MB → 3,9 MB (te same nazwy i ścieżki).
+- **`h1` na ekranie meczu** — wizualnie ukryty nagłówek „Mecz: BeKaPaKa – rywal”.
+- **`tsc` = 0 błędów** (z 19 na `main`); `npm run typecheck` dodany do CI (`.github/workflows/deploy.yml`). Przy okazji: `PreGameMatchCard` i `SynergyMatrix` przekazywały do `KalkEmptyState` nieistniejący prop `description`, więc pokazywał się domyślny komunikat o imporcie KALK zamiast właściwego — teraz `message`.
+- **Kolory stref taktyki** — canvas nadaje strefom kolory z palety marki wg kolejności (dane z bazy/AI nie mogą już wprowadzić barw spoza marki); presety w `backend/lib/playbookPresets.js` zaktualizowane do tej samej palety.
 
 ## Deploy
 
