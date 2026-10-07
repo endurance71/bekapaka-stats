@@ -329,6 +329,13 @@ html.is-scroll-locked {
   --animate-spin-slow: spin 3s linear infinite;
 }
 
+/* Czerwień jako TEKST = --brand-text (#FF5A6E, 6:1 na płycie); wypełnienia i linie zostają #EF1734 (jak bekapaka.pl) */
+@layer utilities {
+  .text-bkpk-primary {
+    color: var(--c-red-300);
+  }
+}
+
 @layer base {
   * {
     @apply box-border m-0 p-0 cursor-default border-bkpk-glass-border;
