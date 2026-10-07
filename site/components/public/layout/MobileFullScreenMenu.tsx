@@ -6,6 +6,7 @@ import { usePageScrollLock } from '@bekapaka/safari-overlay'
 import { ClubLogo } from '../shared/ClubLogo'
 import { CloseIcon } from '../shared/PublicIcons'
 import { siteSettings } from '../../../lib/site-settings'
+import { JerseyStripes } from '../primitives/JerseyStripes'
 import { MainNav } from './MainNav'
 
 /** Musi odpowiadać czasowi przejścia .menu-overlay w components.css */
@@ -183,6 +184,7 @@ export function MobileFullScreenMenu({ isOpen, onClose, onAfterClose, logoUrl }:
           <MainNav onLinkClick={handleRequestClose} variant='fullscreen' />
         </div>
         <footer className='menu-overlay__footer'>
+          <JerseyStripes className='menu-overlay__stripes' />
           <a className='arrow-link' href='https://panel.bekapaka.pl' target='_blank' rel='noopener noreferrer' onClick={handleRequestClose}>
             <span>Panel klubu</span>
           </a>

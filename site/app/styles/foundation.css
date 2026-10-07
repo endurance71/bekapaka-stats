@@ -293,7 +293,8 @@
   }
 
   /* Litery i cyfry BKPK: pochylenie 9° + przecięcie maską. Tylko wynik, numer, godzina w hero, display.
-     Brak wsparcia maski (oraz Safari/Firefox do czasu testu ręcznego) → zwykły Barlow Condensed. */
+     Działa w Chromium i WebKit (Safari, wszystkie przeglądarki iOS). Brak wsparcia maski oraz Firefox
+     (do czasu testu ręcznego) → zwykły pochylony Barlow Condensed. */
   /* Pochylenie wystaje ~0,08 em w prawo u góry — rezerwa, żeby cyfry nie wychodziły poza kontener. */
   .cut {
     display: inline-block;
@@ -315,12 +316,6 @@
         #000 var(--cut-bottom) 1em
       );
       line-height: 1;
-    }
-  }
-  @supports (-webkit-touch-callout: none) {
-    .cut {
-      -webkit-mask-image: none;
-      mask-image: none;
     }
   }
   @supports (-moz-appearance: none) {
@@ -391,9 +386,10 @@
   html.is-overlay-open body {
     background-color: var(--c-black);
   }
+  /* iOS: tło menu na pełną (dużą) wysokość, żeby pod paskiem Safari nie prześwitywała strona;
+     treść panelu tylko w widocznej części ekranu (dvh), żeby stopka menu nie wpadała pod pasek. */
   @supports (-webkit-touch-callout: none) {
-    html.is-overlay-open .menu-overlay,
-    html.is-overlay-open .menu-overlay__panel {
+    html.is-overlay-open .menu-overlay {
       min-height: 100lvh;
     }
   }
