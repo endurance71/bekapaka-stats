@@ -7,6 +7,7 @@ import BkpkButton from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';
 import { postJSON } from '../../lib/api';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
+import { formatMatchTime } from '../../shared/lib/matchUtils';
 
 export interface PreGameData {
   id: string;
@@ -24,8 +25,32 @@ export interface PreGameData {
   generatedByAi: boolean;
 }
 
+/** Logistyka z terminarza i dnia meczowego (`/api/me/home` → nextMatch) — ma pierwszeństwo przed zapisem w odprawie. */
+export interface PreGameSchedule {
+  date: string;
+  venue?: string | null;
+  gatheringTime?: string | null;
+  kit?: string | null;
+}
+
+const NONE = '—';
+
+/** Data, godziny, strój i hala odprawy: najpierw terminarz/dzień meczowy, potem zapis odprawy; nigdy zmyślone wartości. */
+export function pregameLogistics(briefing: PreGameData, schedule?: PreGameSchedule | null) {
+  const date = schedule?.date || briefing.matchDate || null;
+  return {
+    date: date ? new Date(date).toLocaleDateString('pl-PL', { timeZone: 'Europe/Warsaw' }) : NONE,
+    tipoff: schedule?.date ? formatMatchTime(schedule.date) : briefing.tipoffTime || NONE,
+    gathering: schedule?.gatheringTime || briefing.gatheringTime || NONE,
+    kit: schedule?.kit || briefing.jerseyColor || NONE,
+    venue: schedule?.venue || briefing.venue || NONE
+  };
+}
+
 interface PreGameMatchCardProps {
   briefing: PreGameData | null;
+  /** Mecz z terminarza, gdy odprawa dotyczy najbliższego rywala */
+  schedule?: PreGameSchedule | null;
   opponent: string | null;
   seasonId: string | null;
   onRefresh: () => void;
@@ -34,13 +59,15 @@ interface PreGameMatchCardProps {
 
 export default function PreGameMatchCard({
   briefing,
+  schedule,
   opponent,
   seasonId,
   onRefresh,
   canGenerate = false
 }: PreGameMatchCardProps) {
   const [generating, setGenerating] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<'ok' | 'error' | null>(null);
+  const logistics = briefing ? pregameLogistics(briefing, schedule) : null;
 
   const handleGenerate = async (force = false) => {
     setGenerating(true);
@@ -58,25 +85,27 @@ export default function PreGameMatchCard({
     }
   };
 
-  const handleCopyText = () => {
-    if (!briefing) return;
+  const handleCopyText = async () => {
+    if (!briefing || !logistics) return;
     const text = `🏀 ODPRAWA PRZEDMECZOWA: BeKaPaKa vs ${briefing.opponentName}
-📅 Data: ${briefing.matchDate ? new Date(briefing.matchDate).toLocaleDateString('pl-PL') : 'Najbliższa kolejka'}
-⏰ Zbiórka: ${briefing.gatheringTime || '45 min przed meczem'} | Mecz: ${briefing.tipoffTime || '18:30'}
-🎽 Stroje: ${briefing.jerseyColor} | 📍 ${briefing.venue}
+📅 Data: ${logistics.date}
+⏰ Zbiórka: ${logistics.gathering} | Mecz: ${logistics.tipoff}
+🎽 Stroje: ${logistics.kit} | 📍 ${logistics.venue}
 
 🎯 3 KLUCZOWE ZAŁOŻENIA TAKTYCZNE:
 ${briefing.tacticalKeys?.map((k) => `${k.number}. ${k.title.toUpperCase()}: ${k.description}`).join('\n')}
 
 ⭐ WYJŚCIOWA PIĄTKA & KRYCIE:
 ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.name}: ${p.assignment}`).join('\n')}
+${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.motivationalMotto ? `\n🔥 MOTTO: "${briefing.motivationalMotto}"` : ''}`;
 
-⚡ ŁAWKA: ${briefing.benchKeys || 'Utrzymanie tempa i energii'}
-🔥 MOTTO: "${briefing.motivationalMotto || 'Gramy twardo od pierwszej minuty!'}"`;
-
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied('ok');
+    } catch {
+      setCopied('error');
+    }
+    setTimeout(() => setCopied(null), 2500);
   };
 
   const handlePrint = () => {
@@ -100,17 +129,19 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
           <h3 className="text-[24px] sm:text-[28px] leading-tight text-bkpk-text-primary">
             Odprawa Meczowa: vs {opponent || briefing?.opponentName}
           </h3>
-          <p className="text-[14px] text-bkpk-text-muted">
-            1-stronicowy panel taktyczny dla zespołu (gotowy na Messenger/WhatsApp oraz do druku)
-          </p>
+          {canGenerate && (
+            <p className="text-[14px] text-bkpk-text-muted">
+              Jedna strona dla drużyny — do wysłania na Messengera albo wydruku.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {briefing && (
             <>
               <BkpkButton variant="outline" size="sm" onClick={handleCopyText}>
-                {copied ? <Check className="w-4 h-4 mr-1.5 text-bkpk-success" /> : <Copy className="w-4 h-4 mr-1.5" />}
-                {copied ? 'Skopiowano!' : 'Kopiuj na Messenger'}
+                {copied === 'ok' ? <Check className="w-4 h-4 mr-1.5 text-bkpk-success" /> : <Copy className="w-4 h-4 mr-1.5" />}
+                {copied === 'ok' ? 'Skopiowano!' : copied === 'error' ? 'Nie udało się skopiować' : 'Kopiuj na Messenger'}
               </BkpkButton>
               <BkpkButton variant="outline" size="sm" onClick={handlePrint}>
                 <Printer className="w-4 h-4 mr-1.5" />
@@ -177,7 +208,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                   <div>
                     <span className="label-caps text-[11px] text-bkpk-text-muted block">Data</span>
                     <span className="font-bold text-bkpk-text-primary">
-                      {briefing.matchDate ? new Date(briefing.matchDate).toLocaleDateString('pl-PL') : 'Najbliższa'}
+                      {logistics?.date}
                     </span>
                   </div>
                 </div>
@@ -187,7 +218,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                   <div>
                     <span className="label-caps text-[11px] text-bkpk-text-muted block">Zbiórka / Mecz</span>
                     <span className="font-bold text-bkpk-text-primary tabular-nums">
-                      {briefing.gatheringTime || '17:45'} / {briefing.tipoffTime || '18:30'}
+                      {logistics?.gathering} / {logistics?.tipoff}
                     </span>
                   </div>
                 </div>
@@ -196,7 +227,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                   <Shirt className="w-4 h-4 text-bkpk-text-muted shrink-0" />
                   <div>
                     <span className="label-caps text-[11px] text-bkpk-text-muted block">Stroje</span>
-                    <span className="font-bold text-bkpk-text-primary">{briefing.jerseyColor}</span>
+                    <span className="font-bold text-bkpk-text-primary">{logistics?.kit}</span>
                   </div>
                 </div>
 
@@ -205,7 +236,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
                   <div>
                     <span className="label-caps text-[11px] text-bkpk-text-muted block">Hala</span>
                     <span className="font-bold text-bkpk-text-primary truncate max-w-[120px]">
-                      {briefing.venue}
+                      {logistics?.venue}
                     </span>
                   </div>
                 </div>

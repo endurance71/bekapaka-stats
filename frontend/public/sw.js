@@ -46,9 +46,10 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
-  // Strategy A: API requests -> Network-First with cache fallback
+  // Strategy A: API requests -> Network-First with cache fallback.
+  // Odpowiedzi z tokenem (dane zawodnika) nigdy nie trafiają do cache — po wylogowaniu nic nie zostaje w telefonie.
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request));
+    event.respondWith(request.headers.has('Authorization') ? networkOnly(request) : networkFirst(request));
     return;
   }
 
@@ -73,6 +74,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(networkFirst(request));
 });
 
+// Network-Only (prywatne API): offline → ten sam JSON 503 co networkFirst, bez zapisu
+async function networkOnly(request) {
+  try {
+    return await fetch(request);
+  } catch (err) {
+    return offlineApiResponse(request, err);
+  }
+}
+
 // Network-First with Cache Fallback
 async function networkFirst(request) {
   try {
@@ -87,15 +97,19 @@ async function networkFirst(request) {
     if (cachedResponse) {
       return cachedResponse;
     }
-    // Return structured offline JSON response for failed API calls
-    if (request.headers.get('accept')?.includes('application/json')) {
-      return new Response(
-        JSON.stringify({ error: 'Offline', message: 'Brak aktywnego połączenia z siecią.' }),
-        { status: 503, headers: { 'Content-Type': 'application/json' } }
-      );
-    }
-    throw err;
+    return offlineApiResponse(request, err);
   }
+}
+
+// Offline: API dostaje JSON 503 z polskim komunikatem (panel pokaże „Spróbuj ponownie”), reszta — błąd sieci
+function offlineApiResponse(request, err) {
+  if (new URL(request.url).pathname.startsWith('/api/')) {
+    return new Response(
+      JSON.stringify({ error: 'Brak połączenia z internetem — spróbuj ponownie.' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+  throw err;
 }
 
 // Cache-First with Network Fetch

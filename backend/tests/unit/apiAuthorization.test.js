@@ -3,6 +3,10 @@ import jwt from 'jsonwebtoken';
 
 const mocks = vi.hoisted(() => ({
   touchUserActivity: vi.fn(),
+  // Rola z „bazy”: konta admin-* to trenerzy; wersja tokenu 0, chyba że test ją zmieni
+  getSessionUser: vi.fn(async (id) => (id === 'gone' ? null : {
+    id, role: String(id).startsWith('admin') ? 'ADMIN' : 'USER', username: `u-${id}`, tokenVersion: id === 'pw-changed' ? 1 : 0
+  })),
   createGame: vi.fn(async () => ({ id: 'game-1' })),
   getRoster: vi.fn(async () => [{
     id: 'player-1', firstName: 'Jan', lastName: 'Testowy',
@@ -54,6 +58,16 @@ afterAll(async () => {
 });
 
 describe('API authorization', () => {
+  it('session: invalid, expired, revoked or deleted token is 401; role comes from the database', async () => {
+    expect((await request('/api/players/player-1', 'GET', 'not-a-jwt')).status).toBe(401);
+    const expired = jwt.sign({ id: 'player-1', exp: Math.floor(Date.now() / 1000) - 60 }, secret);
+    expect((await request('/api/players/player-1', 'GET', expired)).status).toBe(401);
+    expect((await request('/api/players/player-1', 'GET', jwt.sign({ id: 'pw-changed', tv: 0 }, secret))).status).toBe(401);
+    expect((await request('/api/players/player-1', 'GET', token('gone', 'ADMIN'))).status).toBe(401);
+    // Token mówi ADMIN, baza mówi USER → bez dostępu do admina
+    expect((await request('/api/admin/users', 'GET', token('player-1', 'ADMIN'))).status).toBe(403);
+  });
+
   it('players cannot change their own photo (coach only, via admin)', async () => {
     expect((await request('/api/profile', 'PUT', token('player-1', 'PLAYER'))).status).toBe(403);
     expect((await request('/api/admin/users/player-1', 'PUT', token('player-1', 'PLAYER'))).status).toBe(403);

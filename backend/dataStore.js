@@ -1162,6 +1162,26 @@ export async function verifyPassword(password, hash) {
   return await bcrypt.compare(password, hash);
 }
 
+/** Sesja w aplikacji na telefonie: 30 dni. `tv` = wersja tokenu — zmiana hasła unieważnia starsze tokeny. */
+export const SESSION_TTL = '30d';
+
+export function signSessionToken(user) {
+  return jwt.sign(
+    { id: user.id, username: user.username, role: user.role, tv: user.tokenVersion ?? 0 },
+    SECRET_KEY,
+    { expiresIn: SESSION_TTL }
+  );
+}
+
+/** Stan sesji z bazy przy każdym żądaniu: rola na bieżąco (zmiana roli bez ponownego logowania) i wersja tokenu. */
+export async function getSessionUser(id) {
+  if (!id) return null;
+  return prisma.rosterPlayer.findUnique({
+    where: { id: String(id) },
+    select: { id: true, role: true, username: true, tokenVersion: true }
+  });
+}
+
 export async function loginUser(username, password, ipAddress) {
   await ensureSeeded();
 
@@ -1186,11 +1206,7 @@ export async function loginUser(username, password, ipAddress) {
 
   await touchUserActivity(user.id, ipAddress, { force: true });
 
-  const token = jwt.sign(
-    { id: user.id, username: user.username, role: user.role },
-    SECRET_KEY,
-    { expiresIn: '24h' }
-  );
+  const token = signSessionToken(user);
 
   return {
     user: {

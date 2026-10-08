@@ -92,6 +92,8 @@ model RosterPlayer {
   kalkSlug     String?  @unique
   /// Sezony (KalkSeason.id), w których zawodnik nie gra — ukryty w składzie, rankingach i na stronie WWW
   inactiveSeasonIds String[] @default([])
+  /// Wersja tokenu sesji — podbijana przy zmianie hasła; starsze tokeny przestają działać
+  tokenVersion Int @default(0)
   
   // Statystyki (obliczane z meczów)
   gamesPlayed  Int      @default(0)
