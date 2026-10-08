@@ -2,7 +2,7 @@
 
 > Plik generowany z kodu Studio (`node scripts/studio/export-prompts.mjs`). Nie edytuj ręcznie — zmień `backend/studio/publications/*` i wygeneruj ponownie.
 
-Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.1.0 · prompty copy-2026.10-v2 · kontrola marki 1.1.0.
+Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.2.0 · prompty copy-2026.10-v2 · kontrola marki 1.1.0.
 
 ## Jak powstaje publikacja
 

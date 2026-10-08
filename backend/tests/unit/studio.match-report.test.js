@@ -63,6 +63,10 @@ describe('match report article', () => {
     for (const part of ['## Przebieg meczu', '- **Do przerwy:** 35:30', 'BeKaPaKa w liczbach: 41 zbiórek · 18 asyst', '## Nasi zawodnicy', '- **Jan Kowalski (#7):** 24 pkt', 'MVP meczu: Jan Kowalski', '## Statystyki zespołów', '- **Rzuty z gry:** BeKaPaKa 28/56 (50%) · Pantery 20/60 (33%)', 'Najskuteczniejsi w zespole Pantery: Piotr Rywal 19 pkt', '## Następny mecz', '- **Rywal:** Kosz-All-In'])
       expect(website.content).toContain(part);
     expect(website.content).toContain('\n\nBeKaPaKa Bobolice 71:60 Pantery\n\n');
+    // Narrative is derived from quarter scores and player lines only.
+    expect(website.content).toContain('Po pierwszej kwarcie przegrywaliśmy 15:20. Do przerwy prowadziliśmy 35:30. Trzecią kwartę wygraliśmy 18:15, a czwartą 18:15.');
+    expect(website.content).toContain('Najwięcej punktów zdobył Jan Kowalski – 24, do tego 5 zbiórek i 6 asyst.');
+    expect(website.content).toContain('Najwięcej zbiórek miał Adam Nowak (9).');
     expect(website.content).not.toMatch(/dziś|dzisiaj|wczoraj/i);
     expect(website.excerpt.length).toBeGreaterThanOrEqual(140);
     expect(lintCopy('website', website, facts).filter((i) => i.level === 'error')).toEqual([]);

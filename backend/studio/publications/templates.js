@@ -2,7 +2,7 @@
 // Missing facts drop whole sentences instead of leaving placeholders. Isomorphic (shared with the browser).
 import { copySchemas } from './channels.js';
 
-export const TEMPLATE_VERSION = '1.1.0';
+export const TEMPLATE_VERSION = '1.2.0';
 const CLUB = 'BeKaPaKa Bobolice';
 const ZONE = 'Europe/Warsaw';
 
@@ -238,6 +238,23 @@ function reportArticle(f) {
   ].filter(has).join(' ');
   const scoreLine = scored(f) && has(opp) && f.scoreUs < 100 && f.scoreThem < 100 ? `${CLUB} ${score(f)} ${opp}` : '';
 
+  // Narrative only from quarter scores: who led after the first quarter and at halftime, how the second half went.
+  const ordinal = ['pierwszą', 'drugą', 'trzecią', 'czwartą'];
+  const standing = (us, them) => (us > them ? 'prowadziliśmy' : us < them ? 'przegrywaliśmy' : 'był remis');
+  const quarterWord = (q, i) => (i < 4 ? `${ordinal[i]} kwartę` : q.label.toLowerCase());
+  const result = (q) => (q.us > q.them ? 'wygraliśmy' : q.us < q.them ? 'przegraliśmy' : 'zremisowaliśmy');
+  const q = r.quarters;
+  const h = r.halftime;
+  const sameLead = q[0] && h && standing(q[0].us, q[0].them) === standing(h.us, h.them) && q[0].us !== q[0].them;
+  const second = q.length >= 4 ? (result(q[2]) === result(q[3]) ? `${capital(quarterWord(q[2], 2))} ${result(q[2])} ${q[2].us}:${q[2].them}, a czwartą ${q[3].us}:${q[3].them}.` : `${capital(quarterWord(q[2], 2))} ${result(q[2])} ${q[2].us}:${q[2].them}, a ${quarterWord(q[3], 3)} ${result(q[3])} ${q[3].us}:${q[3].them}.`) : '';
+  const story = [
+    q[0] && sameLead ? `Po pierwszej kwarcie ${standing(q[0].us, q[0].them)} ${q[0].us}:${q[0].them}, a do przerwy ${h.us}:${h.them}.` : '',
+    q[0] && !sameLead ? `Po pierwszej kwarcie ${standing(q[0].us, q[0].them)} ${q[0].us}:${q[0].them}.` : '',
+    h && !sameLead ? `Do przerwy ${standing(h.us, h.them)} ${h.us}:${h.them}.` : '',
+    second,
+  ]
+    .filter(has)
+    .join(' ');
   const flow = r.quarters.map((q) => `- **${q.label}:** ${q.us}:${q.them}`);
   if (r.halftime) flow.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
   const best = r.quarters.filter((q) => q.us > q.them).sort((a, b) => b.us - b.them - (a.us - a.them))[0];
@@ -249,6 +266,19 @@ function reportArticle(f) {
         .filter(has)
     : [];
 
+  // Players' paragraph: top scorer with his line, then the best passer and rebounder if they are other players.
+  const [scorer] = r.players;
+  const passer = [...r.players].sort((a, b) => b.ast - a.ast)[0];
+  const rebounder = [...r.players].sort((a, b) => b.reb - a.reb)[0];
+  const doubleDigits = r.players.filter((p) => p.pts >= 10).length;
+  const people = [
+    scorer && scorer.pts > 0 ? `Najwięcej punktów zdobył ${scorer.name} – ${scorer.pts}${scorer.reb || scorer.ast ? `, do tego ${[scorer.reb ? count(scorer.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', scorer.ast ? count(scorer.ast, 'asysta', 'asysty', 'asyst') : ''].filter(has).join(' i ')}` : ''}.` : '',
+    passer && passer !== scorer && passer.ast >= 5 ? `${passer.name} zanotował ${count(passer.ast, 'asystę', 'asysty', 'asyst')}.` : '',
+    rebounder && rebounder !== scorer && rebounder !== passer && rebounder.reb >= 5 ? `Najwięcej zbiórek miał ${rebounder.name} (${rebounder.reb}).` : '',
+    doubleDigits > 1 ? `Dwucyfrową liczbę punktów zdobyło ${doubleDigits} zawodników.` : '',
+  ]
+    .filter(has)
+    .join(' ');
   const top = r.players.slice(0, 6).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${playerStat(p)}`);
   const scorers = r.players.filter((p) => p.pts > 0).length;
   const them = r.team?.them;
@@ -272,10 +302,10 @@ function reportArticle(f) {
   return paragraphs(
     lead,
     scoreLine,
-    flow.length >= 2 ? `## Przebieg meczu\n\n${flow.join('\n')}` : '',
+    flow.length >= 2 ? `## Przebieg meczu\n\n${story}\n\n${flow.join('\n')}` : '',
     flowNote,
     strip.length >= 2 ? `BeKaPaKa w liczbach: ${strip.join(' · ')}` : '',
-    top.length >= 2 ? `## Nasi zawodnicy\n\n${top.join('\n')}` : '',
+    top.length >= 2 ? `## Nasi zawodnicy\n\n${people}\n\n${top.join('\n')}` : '',
     scorers > 1 ? `Punkty dla BeKaPaKa zdobyło ${scorers} zawodników.` : '',
     r.mvp ? `MVP meczu: ${r.mvp.name}${r.mvp.eval !== null && r.mvp.eval !== undefined ? ` (eval ${r.mvp.eval})` : ''}.` : '',
     teamRows.length >= 2 ? `## Statystyki zespołów\n\n${teamRows.join('\n')}` : '',
