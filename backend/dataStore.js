@@ -77,6 +77,7 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from './lib/requireEnv.js';
+import { matchHasPlusMinus } from './kalk/v2/util.js';
 
 const SECRET_KEY = getJwtSecret();
 
@@ -503,6 +504,10 @@ function gameLogEntryFromKalkStats(stats, matchMeta) {
     efg,
     ts,
     plusMinus: parseStat(stats.plusMinus ?? stats.plus_minus) || 0,
+    plusMinusAvailable: matchMeta.plusMinusAvailable ?? true,
+    // EVAL z KALK (kolumna typowana lub JSON); null gdy brak — nie liczymy własnego wzoru
+    eval: matchMeta.eval ?? parseStat(stats.eval) ?? null,
+    starter: Boolean(stats.starter),
     dataSource: 'kalk'
   };
 }
@@ -536,7 +541,9 @@ export async function getPlayerStats(playerId, seasonIdParam) {
           date: row.kalkMatch?.date
             ? row.kalkMatch.date.toISOString().split('T')[0]
             : null,
-          opponent: row.opponentName
+          opponent: row.opponentName,
+          eval: typeof row.eval === 'number' ? row.eval : null,
+          plusMinusAvailable: row.kalkMatch?.boxScore ? matchHasPlusMinus(row.kalkMatch.boxScore) : true
         });
       });
 
@@ -550,6 +557,9 @@ export async function getPlayerStats(playerId, seasonIdParam) {
       let totalFtm = 0;
       let totalFta = 0;
       let totalPlusMinus = 0;
+      let plusMinusGames = 0;
+      let totalEval = 0;
+      let evalGames = 0;
       let totalMinutesSeconds = 0;
 
       for (const g of gameLog) {
@@ -562,7 +572,14 @@ export async function getPlayerStats(playerId, seasonIdParam) {
         totalThreePa += g.three_pa;
         totalFtm += g.ftm;
         totalFta += g.fta;
-        totalPlusMinus += g.plusMinus;
+        if (g.plusMinusAvailable) {
+          totalPlusMinus += g.plusMinus;
+          plusMinusGames += 1;
+        }
+        if (typeof g.eval === 'number') {
+          totalEval += g.eval;
+          evalGames += 1;
+        }
         const minParts = String(g.min).split(':');
         totalMinutesSeconds += (Number(minParts[0]) || 0) * 60 + (Number(minParts[1]) || 0);
       }
@@ -574,10 +591,20 @@ export async function getPlayerStats(playerId, seasonIdParam) {
         apg: gamesCount > 0 ? totalAssists / gamesCount : 0,
         efg: gamesCount > 0 && totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : null,
         ts: gamesCount > 0 && (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : null,
-        plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : null,
+        // +/- tylko z meczów, w których KALK go podał; brak takich meczów → null (panel chowa wskaźnik)
+        plusMinusAvg: plusMinusGames > 0 ? totalPlusMinus / plusMinusGames : null,
+        evalAvg: evalGames > 0 ? totalEval / evalGames : (typeof kalkPlayer?.eval === 'number' ? kalkPlayer.eval : null),
         gamesPlayed: gamesCount,
         minutesPlayed: Math.round(totalMinutesSeconds / 60)
       };
+      let kalkProfile = null;
+      if (player.kalkSlug) {
+        try {
+          kalkProfile = await prisma.kalkPlayerProfile.findUnique({ where: { slug: player.kalkSlug }, select: { position: true } });
+        } catch {
+          kalkProfile = null;
+        }
+      }
 
       return {
         season: seasonRow
@@ -595,7 +622,8 @@ export async function getPlayerStats(playerId, seasonIdParam) {
           firstName: player.firstName,
           lastName: player.lastName,
           number: player.number,
-          position: player.position,
+          // Jedno źródło pozycji: profil KALK (jak Kariera), potem skład
+          position: kalkProfile?.position || player.position,
           kalkPlayer: kalkPlayer || null
         },
         leagueKalk: kalkPlayer
@@ -723,6 +751,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
     efg: gamesCount > 0 && totalFga > 0 ? (totalFgm + 0.5 * totalThreePm) / totalFga : null,
     ts: gamesCount > 0 && (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : null,
     plusMinusAvg: gamesCount > 0 ? totalPlusMinus / gamesCount : null,
+    evalAvg: typeof kalkPlayer?.eval === 'number' ? kalkPlayer.eval : null,
     gamesPlayed: gamesCount,
     minutesPlayed: Math.round(totalMinutesSeconds / 60)
   };
@@ -866,6 +895,9 @@ export async function getLeagueRatingBenchmarks(querySeasonId = undefined) {
   };
 }
 
+const TREND_MIN_GAMES = 6;
+const TIER_MIN_GAMES = 3;
+
 /**
  * Zwraca podsumowanie statystyk zespołu do kafelków na Dashboardzie.
  */
@@ -877,7 +909,8 @@ export async function getTeamStatsSummary(querySeasonId = undefined) {
   if (trends.length === 0) {
     return {
       ppg: 0,
-      trend: 0,
+      trend: null,
+      games: 0,
       offRating: 0,
       defRating: 0,
       netRating: 0,
@@ -891,15 +924,18 @@ export async function getTeamStatsSummary(querySeasonId = undefined) {
   const allPpg = trends.map(t => t.scoreUs || 0);
   const ppg = seasonAvg(allPpg);
 
-  // Trend: ostatnie 3 mecze vs sezon
-  const recentPpg = seasonAvg(allPpg.slice(-3));
-  const trend = ppg > 0 ? ((recentPpg - ppg) / ppg) * 100 : 0;
+  // Trend: ostatnie 3 mecze vs wcześniejsze mecze sezonu — dopiero od 6 meczów (inaczej porównanie bez sensu)
+  const earlierPpg = allPpg.length >= TREND_MIN_GAMES ? seasonAvg(allPpg.slice(0, -3)) : 0;
+  const trend = allPpg.length >= TREND_MIN_GAMES && earlierPpg > 0
+    ? ((seasonAvg(allPpg.slice(-3)) - earlierPpg) / earlierPpg) * 100
+    : null;
 
   const offRating = seasonAvg(trends.map((t) => t.offRtg || 0));
   const defRating = seasonAvg(trends.map((t) => t.defRtg || 0));
   const netRating = offRating - defRating;
 
-  const tiers = league
+  // Porównanie z ligą (Słabo / Średnio / Elita) od 3 meczów
+  const tiers = league && trends.length >= TIER_MIN_GAMES
     ? {
         off: ratingLeagueTier(offRating, league.offRating, true),
         def: ratingLeagueTier(defRating, league.defRating, false),
@@ -909,7 +945,8 @@ export async function getTeamStatsSummary(querySeasonId = undefined) {
 
   return {
     ppg: Number(ppg.toFixed(1)),
-    trend: Number(trend.toFixed(1)),
+    trend: trend == null ? null : Number(trend.toFixed(1)),
+    games: trends.length,
     offRating: Number(offRating.toFixed(1)),
     defRating: Number(defRating.toFixed(1)),
     netRating: Number(netRating.toFixed(1)),
@@ -1455,7 +1492,11 @@ export async function listGames(filters = {}, querySeasonId = undefined) {
         dataSource: 'league',
         hasBoxScore: false,
         isFromKalkMatch: false,
-        leagueMatchId: lm.id
+        leagueMatchId: lm.id,
+        isFinished: lm.isFinished,
+        venue: lm.venue ?? null,
+        startsAt: lm.date.toISOString(),
+        roundLabel: lm.roundLabel ?? null
       });
     }
 
@@ -1500,11 +1541,13 @@ export async function getGameById(id, querySeasonId = undefined) {
     return kalkMatchToGameDetail(kalkMatch);
   }
 
+  // Tylko mecze BeKaPaKa — ten sam numer może być w terminarzu innego sezonu (inne drużyny)
   const leagueRow = await prisma.leagueMatch.findFirst({
     where: {
-      OR: [{ id: String(id) }, { kalkMatchId: String(id) }],
+      AND: [{ OR: [{ id: String(id) }, { kalkMatchId: String(id) }] }, { OR: BEKAPAKA_LEAGUE_MATCH_OR }],
       ...(targetSeasonId ? { seasonId: targetSeasonId } : {})
-    }
+    },
+    orderBy: { date: 'desc' }
   });
   if (leagueRow && (isBekapakaTeamName(leagueRow.homeTeam) || isBekapakaTeamName(leagueRow.guestTeam))) {
     const isHome = isBekapakaTeamName(leagueRow.homeTeam);
@@ -1541,7 +1584,12 @@ export async function getGameById(id, querySeasonId = undefined) {
         }
       ],
       hasBoxScore: false,
-      boxScoreMissingHint: 'Brak box score w KALK — uruchom pełny sync w Administracji.'
+      isFinished: leagueRow.isFinished,
+      venue: leagueRow.venue ?? null,
+      startsAt: leagueRow.date.toISOString(),
+      roundLabel: leagueRow.roundLabel ?? null,
+      // Mecz rozegrany bez statystyk w KALK (np. walkower); przed meczem — brak komunikatu
+      boxScoreMissingHint: leagueRow.isFinished ? 'KALK nie opublikował statystyk zawodników tego meczu.' : null
     };
   }
 

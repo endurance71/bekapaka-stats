@@ -88,14 +88,14 @@ function MvpCard({ info }: { info: GameInfoResponse }) {
             {(line || mvp.eval != null) && (
                 <div className="grid grid-cols-4 mt-5 border-t border-bkpk-border-subtle">
                     {[
-                        { label: 'PTS', value: line?.pts },
-                        { label: 'REB', value: line?.reb },
-                        { label: 'AST', value: line?.ast },
-                        { label: 'EVAL', value: line?.eval ?? mvp.eval },
+                        { key: 'pts', label: 'PTS', value: line?.pts },
+                        { key: 'reb', label: 'REB', value: line?.reb },
+                        { key: 'ast', label: 'AST', value: line?.ast },
+                        { key: 'eval', label: 'EVAL', value: line?.eval ?? mvp.eval },
                     ].map((s, i) => (
-                        <div key={s.label} className={cn('pt-3 px-2', i > 0 && 'border-l border-bkpk-border-subtle')}>
+                        <div key={s.key} className={cn('pt-3 px-2', i > 0 && 'border-l border-bkpk-border-subtle')}>
                             <div className="label-caps text-[11px] text-bkpk-text-muted">{s.label}</div>
-                            <div className={cn('font-display font-extrabold text-3xl leading-none tabular-nums mt-1', s.label === 'EVAL' ? 'text-bkpk-medal-gold' : 'text-bkpk-text-primary')}>
+                            <div className={cn('font-display font-extrabold text-3xl leading-none tabular-nums mt-1', s.key === 'eval' ? 'text-bkpk-medal-gold' : 'text-bkpk-text-primary')}>
                                 {s.value ?? '–'}
                             </div>
                         </div>

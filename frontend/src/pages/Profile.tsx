@@ -34,7 +34,20 @@ export default function Profile() {
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [aiMeta, setAiMeta] = useState<{ at?: string | null; model?: string | null }>({});
     const [aiLoading] = useState(false);
-    const { selectedSeason } = useSeasonPreferenceContext();
+    const { selectedSeason, seasonId } = useSeasonPreferenceContext();
+    // Średnie z wybranego sezonu (ta sama ścieżka co profil zawodnika), nie kolumny konta
+    const [seasonAverages, setSeasonAverages] = useState<{ ppg: number; rpg: number; apg: number } | null>(null);
+
+    useEffect(() => {
+        if (!user?.id || !seasonId) return;
+        let active = true;
+        fetchJSON<{ averages?: { ppg: number; rpg: number; apg: number } }>(`/api/players/${user.id}/stats?seasonId=${encodeURIComponent(seasonId)}`)
+            .then((res) => active && setSeasonAverages(res?.averages ?? null))
+            .catch(() => active && setSeasonAverages(null));
+        return () => {
+            active = false;
+        };
+    }, [user?.id, seasonId]);
 
     useEffect(() => {
         if (!user?.id) return;
@@ -129,10 +142,10 @@ export default function Profile() {
                                 number={user.number || 0}
                                 position={user.position}
                                 photoUrl={userPhoto}
-                                ppg={user.ppg}
-                                rpg={user.rpg}
-                                apg={user.apg}
-                                isStarter={(user.kalkPlayer?.rosterPlayer as { starter?: boolean } | undefined)?.starter || false}
+                                ppg={seasonAverages?.ppg ?? 0}
+                                rpg={seasonAverages?.rpg ?? 0}
+                                apg={seasonAverages?.apg ?? 0}
+                                isStarter={Boolean(user.starter)}
                                 onClick={() => navigate(`/players/${user.id}`)}
                             />
                         </div>

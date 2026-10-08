@@ -123,3 +123,14 @@ export function formatMinutes(secondsPlayed) {
   if (s === null || s < 0) return '0:00';
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/** Czy KALK podał +/- w meczu: przynajmniej jeden zawodnik z wartością ≠ 0 (w części meczów KALK go nie liczy). */
+export function matchHasPlusMinus(boxScore) {
+  const teams = Array.isArray(boxScore?.teams) ? boxScore.teams : [];
+  return teams.some((t) =>
+    (Array.isArray(t?.players) ? t.players : []).some((p) => {
+      const pm = Number(p?.plusMinus ?? p?.plus_minus);
+      return Number.isFinite(pm) && pm !== 0;
+    })
+  );
+}

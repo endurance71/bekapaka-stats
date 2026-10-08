@@ -32,6 +32,7 @@ import { getPositionLabel } from '../shared/lib/playerUtils';
 import PlayerCareer, { type PlayerCareerResponse } from '../components/players/PlayerCareer';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
+import { pluralPl } from '../shared/lib/plural';
 
 interface StatSnapshot {
     gameId: string;
@@ -54,6 +55,10 @@ interface StatSnapshot {
     efg: number;
     ts: number;
     plusMinus: number;
+    /** false = KALK nie podał +/- w tym meczu */
+    plusMinusAvailable?: boolean;
+    /** EVAL z KALK (null w starych danych) */
+    eval?: number | null;
 }
 
 interface PlayerStats {
@@ -87,7 +92,9 @@ interface PlayerStats {
         apg: number;
         efg: number;
         ts: number;
-        plusMinusAvg: number;
+        plusMinusAvg: number | null;
+        /** Średni EVAL z KALK */
+        evalAvg?: number | null;
         gamesPlayed: number;
         minutesPlayed?: number;
     };
@@ -182,7 +189,7 @@ export default function PlayerProfile() {
         return <PageLoader fullScreen label="Analizowanie Profilu..." />;
     }
 
-    if (!data) return <div className="p-20 text-center label-caps text-sm text-bkpk-text-muted">Player not found.</div>;
+    if (!data) return <div className="p-20 text-center label-caps text-sm text-bkpk-text-muted">Nie znaleziono zawodnika.</div>;
 
     const { player, averages, gameLog } = data;
 
@@ -244,7 +251,7 @@ export default function PlayerProfile() {
                                     </span>
                                     <span className="hidden md:inline-block w-1 h-1 bg-bkpk-border-strong" aria-hidden="true" />
                                     <span className="flex items-center gap-1.5 text-bkpk-text-primary tabular-nums">
-                                        <Star className="w-3.5 h-3.5" aria-hidden="true" /> {averages.gamesPlayed} meczy
+                                        <Star className="w-3.5 h-3.5" aria-hidden="true" /> {averages.gamesPlayed} {pluralPl(averages.gamesPlayed ?? 0, 'mecz', 'mecze', 'meczów')}
                                         <span className="text-bkpk-text-muted">•</span>
                                         {(averages.minutesPlayed ?? 0)} min
                                     </span>
@@ -257,7 +264,7 @@ export default function PlayerProfile() {
                                     { label: 'PPG', value: formatStatFixed(averages.ppg, 1), color: 'text-bkpk-text-primary' },
                                     { label: 'RPG', value: formatStatFixed(averages.rpg, 1), color: 'text-bkpk-text-primary' },
                                     { label: 'APG', value: formatStatFixed(averages.apg, 1), color: 'text-bkpk-text-primary' },
-                                    { label: 'EVAL', value: formatStatFixed((averages.efg ?? 0) * 100, 0), color: 'text-bkpk-text-primary' },
+                                    { label: 'EVAL', value: formatStatFixed(averages.evalAvg ?? data.leagueKalk?.eval ?? null, 1), color: 'text-bkpk-text-primary' },
                                 ].map((s, idx) => (
                                     <div
                                         key={idx}
@@ -361,9 +368,10 @@ export default function PlayerProfile() {
                         {/* Advanced Box Score (Game Log) */}
                         <section className="space-y-4">
                             <BoxScoreModern
+                                showPlusMinus={gameLog.some((g) => g.plusMinusAvailable !== false && g.plusMinus !== 0)}
                                 playerStats={gameLog.map(g => {
-                                    // Calculate EVAL if not provided directly
-                                    const evalVal = (g.pts + g.reb + g.ast + g.stl + g.blk) - ((g.fga - g.fgm) + (g.fta - g.ftm) + g.tov);
+                                    // EVAL z KALK; wzór uproszczony tylko dla starych danych bez EVAL
+                                    const evalVal = g.eval ?? (g.pts + g.reb + g.ast + g.stl + g.blk) - ((g.fga - g.fgm) + (g.fta - g.ftm) + g.tov);
                                     return {
                                         name: g.opponent,
                                         eval: evalVal,
@@ -373,7 +381,7 @@ export default function PlayerProfile() {
                                         steals: g.stl,
                                         blocks: g.blk,
                                         turnovers: g.tov,
-                                        plusMinus: g.plusMinus,
+                                        plusMinus: g.plusMinusAvailable === false ? null : g.plusMinus,
                                         minutes: g.min,
                                         fg: `${g.fgm}/${g.fga}`,
                                         threeP: `${g.three_pm}/${g.three_pa}`,
@@ -392,7 +400,9 @@ export default function PlayerProfile() {
                                 {[
                                     { label: 'eFG%', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
                                     { label: 'TS%', value: formatStatFixed((averages.ts ?? 0) * 100, 1) + '%', progress: (averages.ts ?? 0) * 100 },
-                                    { label: 'Plus/Minus Avg', value: (averages.plusMinusAvg ?? 0) > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, (averages.plusMinusAvg ?? 0) + 10) * 5 },
+                                    ...(averages.plusMinusAvg != null
+                                        ? [{ label: 'Plus/Minus Avg', value: averages.plusMinusAvg > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 }]
+                                        : []),
                                 ].map((stat, i) => (
                                     <div key={i} className="space-y-2">
                                         <div className="flex justify-between items-end">
@@ -406,7 +416,7 @@ export default function PlayerProfile() {
                                                 transition={{ duration: 0.3, delay: 0.2 + (i * 0.05) }}
                                                 className={cn(
                                                     "h-full",
-                                                    stat.label.includes('Plus') ? (averages.plusMinusAvg >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
+                                                    stat.label.includes('Plus') ? ((averages.plusMinusAvg ?? 0) >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
                                                 )}
                                             />
                                         </div>

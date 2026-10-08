@@ -15,7 +15,7 @@ import BkpkButton from '../shared/ui/BkpkButton';
 import BasketballCourtCanvas from '../components/tactics/BasketballCourtCanvas';
 import PlaybookList, { PlayItem } from '../components/tactics/PlaybookList';
 import AiPlayGeneratorModal from '../components/tactics/AiPlayGeneratorModal';
-import SynergyMatrix, { DuoRecord } from '../components/tactics/SynergyMatrix';
+import SynergyMatrix, { EMPTY_SYNERGY, type SynergyResponse } from '../components/tactics/SynergyMatrix';
 import PreGameMatchCard, { PreGameData } from '../components/tactics/PreGameMatchCard';
 import { fetchJSON } from '../lib/api';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
@@ -39,12 +39,7 @@ export default function TacticsHub() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   // Synergy State
-  const [synergyData, setSynergyData] = useState<{
-    duos: DuoRecord[];
-    bestOffensivePair: DuoRecord | null;
-    bestDefensivePair: DuoRecord | null;
-    gamesAnalyzed: number;
-  }>({ duos: [], bestOffensivePair: null, bestDefensivePair: null, gamesAnalyzed: 0 });
+  const [synergyData, setSynergyData] = useState<SynergyResponse>(EMPTY_SYNERGY);
   const [loadingSynergy, setLoadingSynergy] = useState(false);
 
   // PreGame State
@@ -71,8 +66,8 @@ export default function TacticsHub() {
   const loadSynergy = useCallback(async () => {
     setLoadingSynergy(true);
     try {
-      const res = await fetchJSON<any>(`/api/tactics/synergy?seasonId=${seasonId}`);
-      setSynergyData(res);
+      const res = await fetchJSON<SynergyResponse>(`/api/tactics/synergy?seasonId=${seasonId}`);
+      setSynergyData({ ...EMPTY_SYNERGY, ...res });
     } catch (err) {
       console.error('Error fetching synergy:', err);
     } finally {
@@ -233,13 +228,7 @@ export default function TacticsHub() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
           >
-            <SynergyMatrix
-              duos={synergyData.duos}
-              bestOffensivePair={synergyData.bestOffensivePair}
-              bestDefensivePair={synergyData.bestDefensivePair}
-              gamesAnalyzed={synergyData.gamesAnalyzed}
-              loading={loadingSynergy}
-            />
+            <SynergyMatrix data={synergyData} loading={loadingSynergy} />
           </motion.div>
         )}
 

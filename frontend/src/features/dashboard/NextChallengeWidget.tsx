@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { LucideIcon, AlertCircle } from 'lucide-react';
 import { TrophyIcon as Trophy, CalendarIcon as Calendar, VenueIcon as MapPin } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
@@ -9,9 +8,12 @@ export interface NextChallengeWidgetProps {
     opponent: string;
     date: string;
     time: string;
-    location: string;
-    difficulty: 1 | 2 | 3 | 4 | 5;
-    homeAway: 'Dom' | 'Wyjazd';
+    /** Hala z terminarza KALK; brak → wiersz ukryty */
+    location?: string | null;
+    /** null = rywal bez meczów w sezonie (bez paska) */
+    difficulty: 1 | 2 | 3 | 4 | 5 | null;
+    /** Gospodarz formalny KALK (wszystkie mecze w jednej hali) */
+    host: string;
 }
 
 export function NextChallengeWidget({
@@ -20,7 +22,7 @@ export function NextChallengeWidget({
     time,
     location,
     difficulty,
-    homeAway
+    host
 }: NextChallengeWidgetProps) {
     const navigate = useNavigate();
 
@@ -44,18 +46,20 @@ export function NextChallengeWidget({
                         <Calendar className="w-4 h-4 text-bkpk-text-secondary shrink-0" aria-hidden="true" />
                         <div className="flex flex-col gap-0.5">
                             <span className="label-caps text-xs text-bkpk-text-secondary">Data</span>
-                            <span className="text-sm font-semibold tabular-nums text-bkpk-text-primary">{date} @ {time}</span>
+                            <span className="text-sm font-semibold tabular-nums text-bkpk-text-primary">{date}, {time}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3 text-bkpk-text-muted">
                         <MapPin className="w-4 h-4 text-bkpk-text-secondary shrink-0" aria-hidden="true" />
                         <div className="flex flex-col gap-0.5">
-                            <span className="label-caps text-xs text-bkpk-text-secondary">Lokalizacja</span>
-                            <span className="text-sm font-semibold text-bkpk-text-primary">{location} ({homeAway})</span>
+                            <span className="label-caps text-xs text-bkpk-text-secondary">Hala</span>
+                            <span className="text-sm font-semibold text-bkpk-text-primary">{location || '—'}</span>
+                            <span className="text-xs text-bkpk-text-muted">gospodarz: {host}</span>
                         </div>
                     </div>
                 </div>
 
+                {difficulty != null && (
                 <div className="space-y-2">
                     <div className="flex justify-between items-center label-caps text-xs text-bkpk-text-secondary">
                         <span>Poziom trudności</span>
@@ -72,14 +76,16 @@ export function NextChallengeWidget({
                             />
                         ))}
                     </div>
+                    <p className="text-xs text-bkpk-text-muted">Z bilansu rywala w sezonie i meczów z BeKaPaKa.</p>
                 </div>
+                )}
 
                 <BkpkButton
                     variant="ghost"
                     className="w-full mt-2 group/btn"
                     onClick={() => navigate('/scouting')}
                 >
-                    Zobacz Raport Scoutingu
+                    Raport o rywalu
                     <motion.span
                         className="ml-2"
                         animate={{ x: [0, 5, 0] }}
