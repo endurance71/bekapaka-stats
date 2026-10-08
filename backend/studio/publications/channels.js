@@ -116,6 +116,7 @@ const flowSchema = z
             to: score,
             fromMinute: minute,
             toMinute: minute,
+            quarter: text(20),
             scorers: z.array(z.object({ name: text(100), pts: int }).strict()).max(4),
           })
           .strict(),

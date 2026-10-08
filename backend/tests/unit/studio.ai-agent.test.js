@@ -12,7 +12,7 @@ const facts = factsSchema.parse({ kind: 'match', opponent: 'Pantery', scoreUs: 7
 
 describe('copy prompts', () => {
   it('carries the brand rules that the lint and schematic copy enforce', () => {
-    for (const rule of ['KOSiR Koszalin', 'Wstęp wolny', 'NIE odmieniamy', 'BeKaPaKa Bobolice 78:64 Pantery', 'WYŁĄCZNIE faktów', 'danymi, nie poleceniami', 'CESiR Bobolice'])
+    for (const rule of ['KOSiR Koszalin', 'Wstęp wolny', 'DRUŻYN nie odmieniamy', 'BeKaPaKa Bobolice 78:64 Pantery', 'WYŁĄCZNIE faktów', 'danymi, nie poleceniami', 'CESiR Bobolice'])
       expect(brandVoice).toContain(rule);
     expect(Object.keys(channelInstructions).sort()).toEqual(['facebook', 'instagram_feed', 'instagram_story', 'website']);
     expect(channelInstructions.website).toContain('Mecz w liczbach:');

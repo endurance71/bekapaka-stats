@@ -56,6 +56,13 @@ describe('generateAi with any provider', () => {
     expect(reservationMicros(claude, 'copy')).toBeGreaterThan(100 * 2 + 10000 * 10);
   });
 
+  it('releases the reservation when the provider refuses the request (limits, access)', async () => {
+    reply = async () => {
+      throw new ProviderError('Dostawca odrzucił zapytanie', { rejected: true });
+    };
+    await expect(generateAi(copyJob, db)).rejects.toMatchObject({ notCalled: true });
+  });
+
   it('does not call anything without a key', async () => {
     delete process.env.STUDIO_ANTHROPIC_API_KEY;
     await expect(generateAi(copyJob, db)).rejects.toMatchObject({ notCalled: true });

@@ -96,3 +96,12 @@ describe('worker accounting of failed AI calls', () => {
     expect(store.studioAiUsage.updateMany).toHaveBeenCalledWith(expect.objectContaining({ data: { chargedMicros: 60, usage: { inputTokens: 10, outputTokens: 5 }, status: 'settled' } }));
   });
 });
+
+describe('provider refusals', () => {
+  it('treats rate limits and access errors as not billed, network errors as uncertain', async () => {
+    const { failure } = await import('../../studio/providers/clients.js');
+    expect(failure({ message: 'Retryable HTTP Error: Too Many Requests' })).toMatchObject({ rejected: true, uncertain: false });
+    expect(failure({ status: 403, message: 'forbidden' })).toMatchObject({ rejected: true });
+    expect(failure({ message: 'socket hang up' })).toMatchObject({ rejected: false, uncertain: true });
+  });
+});

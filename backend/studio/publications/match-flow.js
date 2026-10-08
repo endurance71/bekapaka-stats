@@ -14,6 +14,15 @@ export function matchMinute(period, clockSec) {
   return Math.max(1, Math.ceil(elapsed / 60));
 }
 
+// „1. kwarta” or „1.–2. kwarta” for a run that crosses the break between quarters.
+const quarterOf = (minute) => (minute > 40 ? 5 : Math.ceil(minute / 10));
+function quarterSpan(from, to) {
+  const a = quarterOf(from);
+  const b = quarterOf(to);
+  const label = (q) => (q > 4 ? 'dogrywka' : `${q}.`);
+  return a === b ? (a > 4 ? 'dogrywka' : `${a}. kwarta`) : `${label(a)}–${label(b)} kwarta`.replace('dogrywka kwarta', 'dogrywka');
+}
+
 const quarterLabel = (period) => (period > 4 ? `Dogrywka${period > 5 ? ` ${period - 4}` : ''}` : `${period}. kwarta`);
 
 /**
@@ -132,6 +141,7 @@ export function matchFlow(events, usSide, { minRun = 8 } = {}) {
         to: r.to,
         fromMinute: r.fromMinute,
         toMinute: r.toMinute,
+        quarter: quarterSpan(r.fromMinute, r.toMinute),
         scorers: [...r.scorers].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([name, pts]) => ({ name, pts })),
       })),
     largestLead: largest.us,

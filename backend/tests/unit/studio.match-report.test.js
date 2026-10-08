@@ -130,7 +130,7 @@ describe('match flow from play-by-play', () => {
       { label: '1. kwarta', us: 7, them: 3, after: '7:3', topScorer: { name: 'Jan Kowalski', pts: 5 } },
       { label: '2. kwarta', us: 5, them: 2, after: '12:5', topScorer: { name: 'Jan Kowalski', pts: 5 } },
     ]);
-    expect(f.runs).toEqual([{ team: 'us', points: 10, from: '2:3', to: '12:3', fromMinute: 2, toMinute: 12, scorers: [{ name: 'Jan Kowalski', pts: 8 }, { name: 'Adam Nowak', pts: 2 }] }]);
+    expect(f.runs).toEqual([{ team: 'us', points: 10, from: '2:3', to: '12:3', fromMinute: 2, toMinute: 12, quarter: '1.–2. kwarta', scorers: [{ name: 'Jan Kowalski', pts: 8 }, { name: 'Adam Nowak', pts: 2 }] }]);
     expect(f.firstPoints).toEqual({ team: 'us', name: 'Jan Kowalski', minute: 1 });
     expect(f.leadChanges).toBe(2);
     expect(f.largestLead).toEqual({ points: 9, minute: 12, score: '12:3' });

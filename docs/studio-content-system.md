@@ -2,7 +2,7 @@
 
 > Plik generowany z kodu Studio (`node scripts/studio/export-prompts.mjs`). Nie edytuj ręcznie — zmień `backend/studio/publications/*` i wygeneruj ponownie.
 
-Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.3.0 · prompty copy-2026.10-v4 · kontrola marki 1.3.0.
+Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.3.0 · prompty copy-2026.10-v5 · kontrola marki 1.3.0.
 
 ## Jak powstaje publikacja
 
@@ -68,7 +68,7 @@ TON
 
 NAZEWNICTWO
 - Pierwsze użycie: „BeKaPaKa Bobolice”, dalej „BeKaPaKa”. Nigdy „Bekapaka”, „Be Ka Pa Ka”, „BKP”. Skrót „BKPK” tylko w hashtagu #BKPK.
-- Nazw drużyn i osób NIE odmieniamy przez przypadki. Zamiast „z Panterami” piszemy „mecz BeKaPaKa – Pantery” albo „rywal: Pantery”.
+- Nazw DRUŻYN nie odmieniamy przez przypadki: zamiast „z Panterami” piszemy „mecz BeKaPaKa – Pantery”, „rywal: Pantery”, „zespół Kosz-All-In”. Imiona i nazwiska osób odmieniamy normalnie, zgodnie z polszczyzną („skuteczność Filipa Karpińskiego”).
 - W wyniku BeKaPaKa zawsze pierwsza: „BeKaPaKa Bobolice 78:64 Pantery”.
 
 FAKTY STAŁE
@@ -136,7 +136,7 @@ STRONA BEKAPAKA.PL (pole title, excerpt, content, tags, coverAlt)
   • content (2500–4000 znaków), w tej kolejności:
     1. lead — 2–3 zdania: wynik, rywal, kolejka i co rozstrzygnęło mecz (seria, kwarta, lider); termin z TERMINY i miejsce w drugim zdaniu;
     2. linia wyniku;
-    3. „## Przebieg meczu” — 3–5 akapitów opowieści w kolejności zdarzeń. Wybierasz najważniejsze momenty z report.flow (1–2 serie ze strzelcami, największe prowadzenie, przestój rywala, zryw w ostatniej kwarcie) i wplatasz wynik po kwartach; nie każda liczba musi trafić do tekstu. Różnicujesz czasowniki (trafił, dołożył, rzucił, poprowadził, zamknął) i budowę zdań — bez schematu „Pierwszą kwartę wygraliśmy… Drugą kwartę wygraliśmy…”;
+    3. „## Przebieg meczu” — 3–5 akapitów opowieści w kolejności zdarzeń. Serię opisujesz w kwarcie podanej w jej polu „quarter” (seria może przechodzić między kwartami) i z jej minutami — nie przenosisz jej do innej części meczu. Wybierasz najważniejsze momenty z report.flow (1–2 serie ze strzelcami, największe prowadzenie, przestój rywala, zryw w ostatniej kwarcie) i wplatasz wynik po kwartach; nie każda liczba musi trafić do tekstu. Różnicujesz czasowniki (trafił, dołożył, rzucił, poprowadził, zamknął) i budowę zdań; unikasz urzędowych zwrotów („zapisał na swoim koncie”, „zaliczył trafienie”, „odsłona spotkania”) — bez schematu „Pierwszą kwartę wygraliśmy… Drugą kwartę wygraliśmy…”;
     4. „## Bohaterowie meczu” — 1–2 akapity o 2–4 zawodnikach z report.players: rola w meczu i liczby (punkty, skuteczność „fg”, zbiórki, asysty, MVP z report.mvp);
     5. pas „BeKaPaKa w liczbach: 42 zbiórki · 26 asyst · …” z report.team.us;
     6. „## Mecz w danych” — listy „- **Etykieta:** wartość”: kwarty (z report.quarters i „Do przerwy”), potem porównanie zespołów z report.team („- **Rzuty z gry:** BeKaPaKa 38/66 (58%) · Rywal 7/52 (13%)”);

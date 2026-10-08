@@ -135,6 +135,7 @@ export async function generateAi(job, db) {
     try {
       return await fn();
     } catch (err) {
+      if (err instanceof ProviderError && err.rejected) throw notCalled(err.message);
       if (err instanceof ProviderError && !err.uncertain) err.chargedMicros = costMicros(model, err.usage, reserved);
       throw err;
     }
