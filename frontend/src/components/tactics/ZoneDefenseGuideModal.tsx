@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useId, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Shield,
@@ -17,6 +17,7 @@ import {
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton, { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 // Paleta Digital 2.0 — mini-boisko SVG (wartości zgodne z tokens.css, --c-*).
 // Obrońcy = stone (linia górna jaśniejsza, dolna ciemniejsza) + etykieta D1–D5, piłka = złoto.
@@ -154,6 +155,9 @@ export default function ZoneDefenseGuideModal({
 }: ZoneDefenseGuideModalProps) {
   const [selectedZone, setSelectedZone] = useState<'2-3' | '3-2'>(initialZoneType);
   const [activeScenario, setActiveScenario] = useState<'top' | 'wing' | 'corner' | 'high_post'>('top');
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  useFocusTrap(dialogRef, isOpen, onClose);
 
   if (!isOpen) return null;
 
@@ -165,6 +169,11 @@ export default function ZoneDefenseGuideModal({
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto bg-bkpk-overlay-strong">
         <motion.div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -180,14 +189,16 @@ export default function ZoneDefenseGuideModal({
                 <span className="kicker">
                   Poradnik i symulator ruchu
                 </span>
-                <h2 className="text-[22px] sm:text-[26px] leading-tight text-bkpk-text-primary">
+                <h2 id={titleId} className="text-[22px] sm:text-[26px] leading-tight text-bkpk-text-primary">
                   Jak poruszać się w obronie strefowej – dla początkujących
                 </h2>
               </div>
             </div>
 
             <button
+              type="button"
               onClick={onClose}
+              aria-label="Zamknij poradnik"
               className="min-h-[44px] min-w-[44px] flex items-center justify-center shrink-0 border border-transparent text-bkpk-text-muted hover:text-bkpk-text-primary hover:border-bkpk-border-strong transition-colors"
             >
               <X className="w-5 h-5" />

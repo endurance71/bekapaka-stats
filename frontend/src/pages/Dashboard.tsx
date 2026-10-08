@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useIsAdmin } from '../context/AuthContext';
-import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import PageHeader from '../shared/ui/PageHeader';
 import DashboardLayout from '../features/dashboard/DashboardLayout';
@@ -15,6 +14,10 @@ import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { difficultyFromOpponent, formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
 import LoadError from '../shared/ui/LoadError';
+import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
+
+// Leniwie: blok AI ciągnie bibliotekę markdown (~150 kB), a zawodnik zwykle go nie widzi
+const AiAnalysisBlock = lazy(() => import('../components/ai/AiAnalysisBlock'));
 
 type Game = {
   id: string;
@@ -105,6 +108,7 @@ export default function Dashboard() {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
+  useRefetchOnFocus(() => void fetchDashboardData());
 
   const handleGenerateBriefing = async (force = false) => {
     setBriefingLoading(true);
@@ -176,6 +180,7 @@ export default function Dashboard() {
           <FormTrendMiniChart matches={recentForm} loading={loading} />
           {/* Zawodnik nie widzi pustego bloku — tylko gotowe podsumowanie; trener widzi zawsze (przycisk Generuj) */}
           {(isAdmin || briefing?.contentMd) && (
+          <Suspense fallback={null}>
           <AiAnalysisBlock
             title="Podsumowanie tygodnia (AI)"
             errorMessage={aiError}
@@ -189,6 +194,7 @@ export default function Dashboard() {
             emptyHint="Brak podsumowania — użyj „Generuj”."
             playerEmptyHint="Podsumowanie tygodnia pojawi się, gdy trener je przygotuje."
           />
+          </Suspense>
           )}
         </div>
       }

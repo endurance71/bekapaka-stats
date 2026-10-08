@@ -95,6 +95,7 @@ export default function PlaybookList({
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
           <button
+            aria-pressed={selectedCategory === 'all'}
             onClick={() => setSelectedCategory('all')}
             className={cn(
               "px-3.5 py-1.5 label-caps text-[12px] border transition-colors shrink-0 min-h-[44px]",
@@ -108,6 +109,7 @@ export default function PlaybookList({
           {Object.entries(CATEGORY_LABELS).map(([key, config]) => (
             <button
               key={key}
+              aria-pressed={selectedCategory === key}
               onClick={() => setSelectedCategory(key)}
               className={cn(
                 "px-3.5 py-1.5 label-caps text-[12px] border transition-colors shrink-0 min-h-[44px]",
@@ -157,7 +159,18 @@ export default function PlaybookList({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   onClick={() => onSelectPlay(play)}
-                  className="group relative cursor-pointer"
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={`Pokaż zagrywkę: ${play.name}`}
+                  onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) return;
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectPlay(play);
+                    }
+                  }}
+                  className="group relative cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-bkpk-primary"
                 >
                   <BkpkCard
                     variant="glass"

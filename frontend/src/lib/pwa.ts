@@ -18,6 +18,10 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
     });
+    // Aplikacja z ekranu głównego bywa otwarta tygodniami bez przeładowania — sprawdzaj nową wersję po powrocie
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void registration.update().catch(() => undefined);
+    });
     return registration;
   } catch (error) {
     console.warn('Service Worker registration failed:', error);
@@ -149,10 +153,20 @@ export function usePWAUpdate() {
   }, []);
 
   const applyUpdate = useCallback(() => {
+    // Przeładowanie dopiero, gdy nowy worker przejmie stronę (inaczej stara wersja wczytałaby się ponownie)
+    let reloaded = false;
+    const reload = () => {
+      if (reloaded) return;
+      reloaded = true;
+      window.location.reload();
+    };
+    navigator.serviceWorker?.addEventListener('controllerchange', reload, { once: true });
     if (waitingWorker) {
       waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+      setTimeout(reload, 3000);
+    } else {
+      reload();
     }
-    window.location.reload();
   }, [waitingWorker]);
 
   return { updateAvailable, applyUpdate };

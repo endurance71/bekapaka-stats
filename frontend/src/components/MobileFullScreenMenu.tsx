@@ -11,6 +11,7 @@ import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { BrandMark } from '../shared/ui/BrandMark';
 import { JerseyStripes } from '../shared/ui/JerseyStripes';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 /** Must match transition duration in component className */
 const MENU_ANIMATION_MS = 280;
@@ -221,6 +222,8 @@ export default function MobileFullScreenMenu({
 
     useOverlayViewportHeight(isMounted);
     usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' });
+    // Fokus w menu (klawiatura, czytnik ekranu); Esc obsługuje efekt wyżej
+    useFocusTrap(panelRef, isVisible);
 
     const handleLogout = () => {
         handleRequestClose();

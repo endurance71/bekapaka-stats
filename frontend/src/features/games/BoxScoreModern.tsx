@@ -90,7 +90,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                         ) : (
                             <span className="truncate text-xs sm:text-sm">{player.name}</span>
                         )}
-                        {player.isMe && <span className="label-caps text-[10px] text-bkpk-primary shrink-0">Ja</span>}
+                        {player.isMe && <span className="label-caps text-[11px] text-bkpk-primary shrink-0">Ja</span>}
                         {player.starter && (
                             <span className="text-bkpk-primary font-display text-sm leading-none shrink-0" title="Pierwsza piątka">*<span className="sr-only"> (pierwsza piątka)</span></span>
                         )}

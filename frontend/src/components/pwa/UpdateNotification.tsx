@@ -12,7 +12,7 @@ export function UpdateNotification() {
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-6 right-4 sm:right-6 z-50 max-w-sm w-full bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-4 shadow-2xl"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-4 right-4 sm:left-auto sm:right-6 z-50 sm:max-w-sm sm:w-full bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-4 shadow-2xl"
           role="alert"
           aria-live="polite"
         >

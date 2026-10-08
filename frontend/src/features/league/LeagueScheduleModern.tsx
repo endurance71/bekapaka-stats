@@ -229,7 +229,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                             {date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '')}
                                         </span>
                                         {roundLabel && (
-                                            <span className="label-caps text-[10px] text-bkpk-text-muted leading-tight tabular-nums mt-1" title={match.roundLabel ?? undefined}>
+                                            <span className="label-caps text-[11px] text-bkpk-text-muted leading-tight tabular-nums mt-1" title={match.roundLabel ?? undefined}>
                                                 {roundLabel.replace(/^kolejka\s*/i, 'Kol. ')}
                                             </span>
                                         )}

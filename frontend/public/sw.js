@@ -1,9 +1,10 @@
 /**
- * BeKaPaKa Stats Hub — Progressive Web App Service Worker
- * Version: bkpk-stats-v2 (Digital 2.0)
+ * BeKaPaKa — Service Worker panelu.
+ * __BUILD_ID__ podmienia build (vite.config.ts → serviceWorkerVersionPlugin): każde wdrożenie = nowy plik,
+ * przeglądarka wykrywa aktualizację i panel pokazuje „Dostępna nowa wersja”.
  */
 
-const CACHE_NAME = 'bkpk-stats-v2';
+const CACHE_NAME = 'bkpk-stats-__BUILD_ID__';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -20,7 +21,7 @@ self.addEventListener('install', (event) => {
       return cache.addAll(STATIC_ASSETS);
     })
   );
-  self.skipWaiting();
+  // Bez skipWaiting: nowa wersja czeka, aż zawodnik stuknie „Zaktualizuj teraz” (SKIP_WAITING) albo zamknie aplikację
 });
 
 // 2. Activate: Purge obsolete caches

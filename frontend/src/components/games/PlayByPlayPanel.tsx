@@ -59,7 +59,7 @@ const EventRow = memo(function EventRow({ ev, left, leftIsBekapaka, leftName, ri
                     isLeft ? 'sm:col-start-1 sm:items-end sm:text-right' : 'sm:col-start-3 sm:items-start'
                 )}
             >
-                <span className={cn('sm:hidden label-caps text-[10px] truncate max-w-full', isLeft && leftIsBekapaka ? 'text-[var(--brand-text)]' : 'text-bkpk-text-muted')}>
+                <span className={cn('sm:hidden label-caps text-[11px] truncate max-w-full', isLeft && leftIsBekapaka ? 'text-[var(--brand-text)]' : 'text-bkpk-text-muted')}>
                     {isLeft ? leftName : rightName}
                 </span>
                 <span className={cn('flex flex-wrap gap-x-2 text-sm leading-snug', isLeft && 'sm:justify-end')}>
