@@ -68,7 +68,7 @@ export function InstallPromptBanner() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 40 }}
-          className="fixed bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-3 sm:p-4 shadow-2xl"
+          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 md:left-auto md:right-6 md:w-96 z-40 bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-3 sm:p-4 shadow-2xl"
           role="dialog"
           aria-label="Zainstaluj aplikację BeKaPaKa"
         >

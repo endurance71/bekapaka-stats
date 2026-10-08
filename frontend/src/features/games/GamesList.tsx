@@ -59,6 +59,8 @@ export default function GamesList({ games, loading }: GamesListProps) {
                 ].map((f) => (
                     <button
                         key={f.id}
+                        type="button"
+                        aria-pressed={filter === f.id}
                         onClick={() => setFilter(f.id as any)}
                         className={`px-4 py-2.5 min-h-[44px] label-caps text-xs transition-colors touch-manipulation ${filter === f.id
                             ? bkpkActivePillClass

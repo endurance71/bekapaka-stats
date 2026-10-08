@@ -10,6 +10,7 @@ import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
 import StatLabel from '../../shared/ui/StatLabel';
 import LoadError from '../../shared/ui/LoadError';
+import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
 
 interface Team {
     name: string;
@@ -132,6 +133,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
     useEffect(() => {
         fetchTable();
     }, [fetchTable]);
+    useRefetchOnFocus(() => void fetchTable());
 
     useEffect(() => {
         if (!seasonId) return;
@@ -169,12 +171,14 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
             {hasPlayout && (
             <div className="flex gap-2 w-full sm:w-fit">
                 <button
+                    aria-pressed={phase === 'regular'}
                     onClick={() => setPhase('regular')}
                     className={phaseButtonClass(phase === 'regular')}
                 >
                     Sezon zasadniczy
                 </button>
                 <button
+                    aria-pressed={phase === 'playout'}
                     onClick={() => setPhase('playout')}
                     className={phaseButtonClass(phase === 'playout')}
                 >

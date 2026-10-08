@@ -1,23 +1,20 @@
 {
-  "name": "BeKaPaKa Bobolice — Panel statystyk",
-  "short_name": "BeKaPaKa Stats",
+  "id": "/",
+  "name": "BeKaPaKa Bobolice — panel zawodnika",
+  "short_name": "BeKaPaKa",
   "description": "Oficjalny panel statystyk BeKaPaKa Bobolice dla członków klubu",
-  "start_url": "/",
+  "lang": "pl",
+  "dir": "ltr",
+  "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0B0B0B",
   "theme_color": "#0B0B0B",
-  "orientation": "portrait-primary",
   "categories": [
     "sports",
     "productivity"
   ],
   "icons": [
-    {
-      "src": "/favicon.png",
-      "sizes": "32x32",
-      "type": "image/png",
-      "purpose": "any"
-    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -44,8 +41,9 @@
       "url": "/dashboard",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "32x32"
+          "src": "/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
@@ -55,19 +53,21 @@
       "url": "/rywal",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "32x32"
+          "src": "/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Mecze i Statystyki",
+      "name": "Mecze i statystyki",
       "short_name": "Mecze",
       "url": "/games",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "32x32"
+          "src": "/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     },
@@ -77,8 +77,9 @@
       "url": "/profile",
       "icons": [
         {
-          "src": "/favicon.png",
-          "sizes": "32x32"
+          "src": "/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
         }
       ]
     }

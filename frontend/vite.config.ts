@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -10,12 +10,26 @@ const copyEssentialPublicPlugin = () => ({
     const root = resolve(__dirname, 'public');
     const out = resolve(__dirname, 'dist');
     mkdirSync(out, { recursive: true });
-    for (const file of ['manifest.webmanifest', 'favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'] as const) {
+    for (const file of ['manifest.webmanifest', 'favicon.ico', 'favicon.png', 'apple-touch-icon.png', 'icon-96.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png'] as const) {
       const src = resolve(root, file);
       if (existsSync(src)) {
         cpSync(src, resolve(out, file));
       }
     }
+  },
+});
+
+/**
+ * Service worker z numerem builda: `__BUILD_ID__` w dist/sw.js → znacznik czasu builda.
+ * Bez tego plik sw.js był identyczny po każdym wdrożeniu i panel nigdy nie widział nowej wersji.
+ */
+const serviceWorkerVersionPlugin = () => ({
+  name: 'service-worker-version',
+  closeBundle() {
+    const out = resolve(__dirname, 'dist', 'sw.js');
+    if (!existsSync(out)) cpSync(resolve(__dirname, 'public', 'sw.js'), out);
+    const buildId = Date.now().toString(36);
+    writeFileSync(out, readFileSync(out, 'utf8').replaceAll('__BUILD_ID__', buildId));
   },
 });
 
@@ -39,7 +53,7 @@ export default defineConfig(({ mode }) => {
         '@bekapaka/safari-overlay': safariOverlay,
       },
     },
-    plugins: [react(), ...(copyFullPublic ? [] : [copyEssentialPublicPlugin()])],
+    plugins: [react(), ...(copyFullPublic ? [] : [copyEssentialPublicPlugin()]), serviceWorkerVersionPlugin()],
     build: {
       target: 'es2020',
       copyPublicDir: copyFullPublic,
@@ -47,15 +61,14 @@ export default defineConfig(({ mode }) => {
       chunkSizeWarningLimit: 1200,
       rollupOptions: {
         output: {
+          // Bez osobnych grup recharts/markdown: strony z wykresami i blok AI są ładowane leniwie,
+          // więc bundler trzyma je poza wejściem (ręczna grupa wciągała ~420 kB wykresów na start).
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
-            if (id.includes('recharts')) return 'recharts';
+            if (id.includes('recharts') || /[\\/](d3-|victory-vendor|react-smooth|decimal\.js-light|react-markdown|remark|mdast|micromark|unified|hast|unist|vfile)/.test(id)) return;
             if (id.includes('framer-motion')) return 'framer-motion';
             if (id.includes('react-dom')) return 'react-dom';
             if (id.includes('react-router')) return 'react-router';
-            if (id.includes('react-markdown') || id.includes('remark') || id.includes('mdast')) {
-              return 'markdown';
-            }
             return 'vendor';
           },
         },

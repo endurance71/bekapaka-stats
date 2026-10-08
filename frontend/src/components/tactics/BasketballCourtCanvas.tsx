@@ -413,6 +413,21 @@ export default function BasketballCourtCanvas({
 
       const px = (xPct: number) => (xPct / 100) * width;
       const py = (yPct: number) => (yPct / 100) * height;
+      // Podpisy na boisku bez nachodzenia: kolejna etykieta w zajętym miejscu przesuwa się w dół/górę
+      const placedLabels: Array<{ x: number; y: number; w: number; h: number }> = [];
+      const placeLabel = (x: number, y: number, w: number, h: number) => {
+        let ty = y;
+        for (let i = 0; i < 6; i++) {
+          const hit = placedLabels.some((r) => Math.abs(r.x - x) < (r.w + w) / 2 && Math.abs(r.y - ty) < (r.h + h) / 2);
+          if (!hit) break;
+          const step = (h + 3) * (Math.floor(i / 2) + 1);
+          ty = y + (i % 2 === 0 ? step : -step);
+        }
+        placedLabels.push({ x, y: ty, w, h });
+        return ty;
+      };
+      // Telefon: długie podpisy ról obrońców zasłaniałyby boisko — tylko na szerszych ekranach
+      const showRoleTags = width >= 420;
 
       // 1. TŁO PARKIETU (czerń / ink — paleta Digital 2.0)
       const C = COURT_PALETTE;
@@ -616,10 +631,11 @@ export default function BasketballCourtCanvas({
           const textMetrics = ctx.measureText(zone.label);
           const badgeW = textMetrics.width + 18;
           const badgeH = 20;
+          const badgeY = placeLabel(centX, centY, badgeW, badgeH);
 
           ctx.fillStyle = C.badgeBg;
           ctx.beginPath();
-          ctx.roundRect(centX - badgeW / 2, centY - badgeH / 2, badgeW, badgeH, 6);
+          ctx.roundRect(centX - badgeW / 2, badgeY - badgeH / 2, badgeW, badgeH, 6);
           ctx.fill();
 
           ctx.strokeStyle = isBallInZone ? C.zoneStrokeActive : zoneColors.stroke;
@@ -627,7 +643,7 @@ export default function BasketballCourtCanvas({
           ctx.stroke();
 
           ctx.fillStyle = isBallInZone ? C.badgeTextActive : C.badgeText;
-          ctx.fillText(zone.label, centX, centY);
+          ctx.fillText(zone.label, centX, badgeY);
           ctx.restore();
         }
       }
@@ -770,7 +786,7 @@ export default function BasketballCourtCanvas({
             else roleTag = 'KOSZ I TABLICA';
           }
 
-          if (roleTag) {
+          if (roleTag && showRoleTags) {
             ctx.save();
             ctx.font = `800 9.5px ${COURT_FONT}`;
             ctx.textAlign = 'center';
@@ -779,7 +795,7 @@ export default function BasketballCourtCanvas({
             const tagMetrics = ctx.measureText(roleTag);
             const tagW = tagMetrics.width + 10;
             const tagH = 14;
-            const tagY = cy - tokenRadius - 9;
+            const tagY = placeLabel(cx, cy - tokenRadius - 9, tagW, tagH);
 
             ctx.fillStyle = C.badgeBg;
             ctx.beginPath();

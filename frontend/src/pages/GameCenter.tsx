@@ -5,6 +5,7 @@ import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import LoadError from '../shared/ui/LoadError';
+import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
 
 export default function GameCenter() {
   const [games, setGames] = useState<any[]>([]);
@@ -30,6 +31,7 @@ export default function GameCenter() {
   useEffect(() => {
     fetchGames();
   }, [fetchGames]);
+  useRefetchOnFocus(() => void fetchGames());
 
   return (
     <div className="bg-bkpk-bg">

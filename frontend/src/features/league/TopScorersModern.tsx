@@ -175,6 +175,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                     return (
                         <button
                             key={cat.id}
+                            aria-pressed={activeCategory === cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={cn(
                                 "inline-flex items-center gap-2 min-h-[44px] px-4 label-caps text-[12px] sm:text-[13px] transition-colors",

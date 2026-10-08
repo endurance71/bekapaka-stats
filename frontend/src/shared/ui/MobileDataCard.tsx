@@ -57,7 +57,7 @@ function StatCell({ stat }: { stat: MobileStatItem }) {
                 stat.emphasize && 'border-b-2 border-b-bkpk-primary'
             )}
         >
-            <div className="label-caps text-[10px] text-bkpk-text-muted leading-tight">
+            <div className="label-caps text-[11px] text-bkpk-text-muted leading-tight">
                 {stat.label}
             </div>
             <div
@@ -116,7 +116,7 @@ export function MobileDataCard({
                             {title}
                         </div>
                         {subtitle ? (
-                            <div className="label-caps text-[10px] text-bkpk-text-muted mt-1 break-words">
+                            <div className="label-caps text-[11px] text-bkpk-text-muted mt-1 break-words">
                                 {subtitle}
                             </div>
                         ) : null}

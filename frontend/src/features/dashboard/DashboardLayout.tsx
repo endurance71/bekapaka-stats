@@ -28,9 +28,10 @@ export default function DashboardLayout({ header, hero, main, sidebar }: Dashboa
 
                 {/* Main Content Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    <main className="lg:col-span-8 space-y-8">
+                    {/* <div>, nie <main> — Shell ma już jeden <main> na stronę */}
+                    <div className="lg:col-span-8 space-y-8">
                         {main}
-                    </main>
+                    </div>
 
                     {sidebar && (
                         <aside className="lg:col-span-4 space-y-8">
