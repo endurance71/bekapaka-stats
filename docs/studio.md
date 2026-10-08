@@ -17,7 +17,7 @@ Wymagane Node 22, PostgreSQL, Python 3.11+ i środowisko backendu z poprawnym `D
 
 ## Korzystanie
 
-1. Nowy projekt → konkretny typ publikacji → kompozycja dostępna dla wybranego typu. Katalog ma 38 typów i 60 jawnie zdefiniowanych kompozycji, wyszukiwarkę, kategorie i miniatury. Importuj mecz z wybranego sezonu, zawodnika albo opublikowaną treść CMS. Formularz zachowuje migawkę użytych danych. „Sprawdź zmiany” pokazuje aktualne źródło i różnice; aktualizację zatwierdzasz sam.
+1. Nowa grafika → konkretny typ publikacji → kompozycja dostępna dla wybranego typu. Katalog ma 38 typów i 60 jawnie zdefiniowanych kompozycji, wyszukiwarkę, kategorie i miniatury. Importuj mecz z wybranego sezonu, zawodnika albo opublikowaną treść CMS. Formularz zachowuje migawkę użytych danych. „Sprawdź zmiany” pokazuje aktualne źródło i różnice; aktualizację zatwierdzasz sam.
 2. Uzupełnij datę, miejsce, rywala i treści. Wstęp wolny nie jest dopisywany automatycznie. Live/przerwa wymagają ręcznego wyniku i fazy meczu. Wskaż i potwierdź skład/MVP. Zawodnik może mieć do trzech ręcznie potwierdzonych statystyk meczu lub średnich sezonu. Import osoby nie przenosi niesprecyzowanych sezonowo średnich z cache rosteru. Godzina i dzień tygodnia są liczone w Warszawie.
 3. Dodaj materiały w Bibliotece: autor/pochodzenie, osoby, numer stroju, prawa do publikacji i status. Materiał roboczy można oglądać, ale nie eksportować produkcyjnie. Zatwierdzenie obrazu AI jest osobną oceną, obejmującą brak ludzi, znaków i niepożądanych treści.
 4. Wybierz układ i osobno kolorystykę stroju. Granat/pomarańcz wymaga potwierdzenia kontekstu stroju B. Format zmienia kompozycję w natywnych wymiarach. Kadr zachowuje proporcje zdjęcia.
@@ -28,6 +28,21 @@ Wymagane Node 22, PostgreSQL, Python 3.11+ i środowisko backendu z poprawnym `D
 Przy konflikcie dwóch urządzeń Studio nie nadpisuje projektu; pokazuje błąd i pozwala wczytać aktualną rewizję. Niezapisane zmiany pozostają w formularzu. Cofanie dotyczy sesji edycji, a przywrócenie historii tworzy nową rewizję. Archiwum nie usuwa projektu. Zduplikuj projekt, aby ponownie edytować materiał z archiwum.
 
 Partnerzy startują jako zestaw do sprawdzenia. Obowiązuje jeden poziom, porządek alfabetyczny i równe pola optyczne. Nieaktualne „POM-PUI” jest zastąpione plakietką aktualnej nazwy. Warunki umowne zapisuje pole uwag; obecny renderer nie interpretuje swobodnego tekstu jako zmiany hierarchii. Nietypowa ekspozycja wymaga osobnego zatwierdzonego szablonu.
+
+## Studio 2 — publikacje (IG / FB / WWW)
+
+Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wynik, zapowiedź, MVP, turniej, partner, życie klubu) z wariantami kanałów **Instagram · post**, **Instagram · relacja**, **Facebook** i **Strona bekapaka.pl**. Grafiki pozostają zwykłymi projektami Studio (ten sam renderer, zatwierdzenia i eksport).
+
+- **Schematy (playbooki)** — `backend/studio/publications/playbooks.js`: 28 schematów z typem grafiki, formatami per kanał, terminem względem zdarzenia (`offsetHours`), wymaganymi faktami i opisem „co musi paść”.
+- **Fakty** — migawka potwierdzonych, publicznych danych (`factsSchema` w `channels.js`). Z meczu KALK pobierane są wynik, kolejka, sezon i liderzy (`matchFacts`). Teksty — ręczne, ze schematu, AI i od agenta — mogą korzystać wyłącznie z faktów. Każda edycja faktów wymaga ponownego „Potwierdzam fakty”.
+- **Teksty ze schematu** — `templates.js`: deterministyczne szkice per kanał bez AI. Nazw drużyn i osób nie odmieniamy („mecz BeKaPaKa – Pantery”). Artykuł WWW korzysta z konwencji `ArticleMarkdown` (linia wyniku, „… w liczbach:”, lista „**Etykieta:** wartość”).
+- **Lint marki** — `brand-lint.js`: błędy (forma „Bekapaka”, „BKP”, bilety, brak tekstu alternatywnego) blokują zatwierdzenie; ostrzeżenia (liczby spoza faktów, dom/wyjazd, patos, długi hak IG, brak #BKPK, długość zajawki 140–220) wymagają oceny.
+- **Statusy wariantu** — `draft → approved → published` (lub `skipped`). Zatwierdzenie wymaga potwierdzonych faktów, tekstu bez błędów, zatwierdzonej i wyeksportowanej grafiki w danym formacie. Zmiana tekstu, formatu lub grafiki po zatwierdzeniu cofa wariant do roboczego. Opublikowanego wariantu się nie edytuje.
+- **Publikacja — etap 1 (ręcznie)**: „Kopiuj tekst”, „Zapisz w Zdjęciach” albo „Paczka ZIP” (foldery `instagram/`, `relacja/`, `facebook/`, `strona/`, PNG z bieżącego eksportu, teksty, manifest), potem „Oznacz jako opublikowane” z opcjonalnym linkiem. Etapy 2–3 (szkic w Strapi, Meta Graph API) są zaplanowane osobno.
+- **Hashtagi** — Ustawienia. Domyślnie tylko `#BKPK` (jedyny hashtag z księgi marki); pozostałe to propozycje do decyzji klubu.
+- **Pulpit i kalendarz** — podpowiedzi brakujących zapowiedzi/wyników z terminarza KALK (aktywny sezon), wpisy z 7 dni, kalendarz miesięczny z przeciąganiem terminów (czas Europe/Warsaw).
+
+Dane: tabele `StudioPublication`, `StudioPublicationItem`, `StudioPublishEvent` (audyt), `StudioSetting` — migracja addytywna `20261008120000_studio_publications`. Moduły `channels.js`, `playbooks.js`, `templates.js`, `brand-lint.js`, `texts.js` są izomorficzne: frontend importuje je przez `studio/src/lib/publications.ts`, więc szkic zaakceptowany w przeglądarce przechodzi te same kontrole na serwerze. Nie są objęte odciskiem `design-manifest.json`.
 
 ## Marka i renderer
 

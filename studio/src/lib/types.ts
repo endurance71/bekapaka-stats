@@ -1,0 +1,102 @@
+import { z } from 'zod';
+import { projectSchema } from './contracts';
+
+export type Project = z.infer<typeof projectSchema>;
+export type Content = Project['content'];
+export type Source = Content['source'];
+export type Snapshot = { data: Record<string, unknown>; source: Source };
+export type Revision = { id: string; number: number; contentHash: string; templateVersion: string; createdAt: string };
+export type View = {
+  id: string;
+  name: string;
+  family: string;
+  status: string;
+  currentRevision: number;
+  payload: Project;
+  revision: Revision;
+  jobs?: Job[];
+  updatedAt: string;
+};
+export type JobResult = {
+  files?: Output[];
+  expiresAt?: string;
+  revision?: number;
+  caption?: string;
+  summary?: string;
+  altText?: string;
+  assetId?: string;
+};
+export type Job = { id: string; revision: number; status: string; kind: string; error?: string; result?: JobResult };
+export type Output = { key: string; name: string; mime: string; width?: number; height?: number };
+export type Asset = {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+  origin: string;
+  people: string;
+  jerseyNumber: string;
+  consent: string;
+  provenance?: { prompt: string; model: string; generatedAt: string; chargedMicros: number };
+};
+export type Partner = {
+  id: string;
+  name: string;
+  assetId: string | null;
+  seedLogo: string | null;
+  status: string;
+  contractNote: string;
+};
+export type Template = {
+  id: string;
+  family?: string;
+  label: string;
+  description: string;
+  variants: string[];
+  layouts: string[];
+  formats: string[];
+  version: string;
+  status: string;
+};
+export type Report = { valid: boolean; errors: { field: string; message: string }[] };
+export type Budget = {
+  configured: boolean;
+  remainingMicros: number;
+  usedMicros: number;
+  limitMicros: number;
+  month: string;
+};
+export type Design = { style: string; format: string; status: string; kit: string; backgroundAssetId: string | null };
+export type PostType = {
+  id: string;
+  family: string;
+  variant: string;
+  label: string;
+  category: string;
+  version: string;
+  styles: string[];
+  formats: string[];
+  designs?: Design[];
+};
+export type ExportEntry = {
+  id: string;
+  jobId: string;
+  revision: number;
+  files: Output[];
+  project: { name: string };
+  expiresAt: string;
+  createdAt: string;
+};
+export type SourceItem = {
+  id: string;
+  seasonId?: string;
+  name?: string;
+  title?: string;
+  date?: string;
+  opponent?: string;
+  firstName?: string;
+  lastName?: string;
+  number?: string;
+  position?: string;
+};
+export type User = { id?: string; firstName: string; lastName?: string };

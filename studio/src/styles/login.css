@@ -1,0 +1,57 @@
+.login {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.login-art {
+  background: #0b0b0b;
+  color: #f7f6f2;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 50px;
+}
+.login-art img {
+  width: 190px;
+  margin-bottom: 45px;
+}
+.login-art h1 {
+  font-size: 72px;
+  line-height: 0.95;
+  text-align: center;
+}
+.login-art .hero-stripes {
+  width: 130%;
+  opacity: 0.5;
+}
+.login-form {
+  align-self: center;
+  width: min(370px, calc(100% - 48px));
+  margin: auto;
+  padding: 35px 0;
+}
+.login-form h2 {
+  font-size: 46px;
+  margin: 20px 0 13px;
+}
+.login-form > p {
+  font-size: 14px;
+  color: #77746b;
+}
+.login-form form {
+  margin-top: 32px;
+}
+.login-form form .primary {
+  width: 100%;
+  margin-top: 15px;
+  justify-content: space-between;
+}
+.login-form > small {
+  display: block;
+  color: #918c81;
+  font-size: 11px;
+  margin-top: 45px;
+}

@@ -12,8 +12,9 @@ import { hash, saveImage, filePath } from './storage.js';
 import { seedStudio } from './seed.js';
 import { projectView, createProject, updateProject, validation, queueJob, context } from './service.js';
 import { budget, queueAi } from './ai.js';
-import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope } from './sources.js';
+import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope, roundOptions } from './sources.js';
 import { createLoginThrottle } from '../lib/loginThrottle.js';
+import { publicationRoutes } from './publications/routes.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
 const jid = value => z.string().uuid().parse(value);
@@ -89,7 +90,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.get('/sources/matches', async (req, res) => res.json(await matches(db, String(req.query.seasonId || ''))));
   router.get('/sources/statistical-matches',async(req,res)=>res.json((await db.kalkMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true},orderBy:{date:'desc'},take:300})).filter(m=>/bekapaka|bobolice/i.test(m.homeTeamName+' '+m.guestTeamName)).map(matchSnapshot)));
   router.get('/sources/statistics', async (req,res)=> { const q=z.object({kind:z.enum(['standings','round','season','match-statistics']),seasonId:z.string().min(1),id:z.string().default(''),subjectId:z.string().max(128).default(''),view:z.enum(['team','player','leaders']).default('team')}).parse(req.query); res.json(sourceEnvelope(q.kind,await statisticalSnapshot(db,q.kind,q.seasonId,q.id,q.subjectId,q.view))); });
-  router.get('/sources/rounds',async(req,res)=>res.json((await db.leagueMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true,phaseLabel:{not:null}},select:{phaseLabel:true},distinct:['phaseLabel'],orderBy:{phaseLabel:'asc'}})).map(r=>({id:r.phaseLabel,title:'Kolejka '+r.phaseLabel}))));
+  router.get('/sources/rounds',async(req,res)=>res.json(roundOptions((await db.leagueMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true,phaseLabel:{not:null}},select:{phaseLabel:true},distinct:['phaseLabel']})).map(r=>r.phaseLabel))));
   router.get('/sources/players', async (_req, res) => res.json((await db.rosterPlayer.findMany({ orderBy: { lastName: 'asc' }, select: { id: true, firstName: true, lastName: true, number: true, position: true } })).map(p => ({ ...p, number: String(p.number ?? ''), position: p.position || '' }))));
   router.get('/sources/cms/:kind', async (req, res) => { const kind = z.enum(['event', 'news']).parse(req.params.kind); res.json(await cms(kind)); });
   router.get('/sources/snapshot', async (req, res) => {
@@ -172,6 +173,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.post('/partners', async (req, res) => { const data = partnerSchema.parse(req.body); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.create({ data: { ...data, id: crypto.randomUUID(), ownerId: req.studioOwner } })); });
   router.put('/partners/:id', async (req, res) => { const data = partnerSchema.parse(req.body); const p = await db.studioPartner.findFirst({ where: { id: req.params.id, ownerId: req.studioOwner } }); if (!p) fail(404, 'Partner nie istnieje'); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.update({ where: { id: p.id }, data })); });
   router.get('/ai/budget', async (req, res) => res.json(await budget(db, req.studioOwner)));
+  publicationRoutes(router, db);
   router.use((err, _req, res, _next) => {
     if (err instanceof ZodError) return res.status(400).json({ error: 'Sprawdź pola formularza', details: err.issues.map(i => ({ field: i.path.join('.'), message: i.message })) });
     if (err.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ error: 'Plik przekracza 20 MB' });
