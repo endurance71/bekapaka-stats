@@ -49,6 +49,14 @@ Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wyn
 - **Agent przez MCP** — `/api/studio/v1/mcp` (Streamable HTTP bez sesji, tylko POST), token Bearer z Ustawień (patrz [security-rotation.md](./security-rotation.md#9-tokeny-agenta-studio-mcp)). Narzędzia: `list_playbooks`, `get_prompts`, `list_publications`, `get_publication`, `schematic_copy`, `create_publication`, `propose_copy` (tylko kanały robocze; zapis z `actor: agent` w historii). Brak narzędzi do potwierdzania faktów, zatwierdzania, publikacji, paczek i ustawień.
 - **Kontrola marki 1.1.0** — dodatkowo ostrzega, gdy dzień tygodnia w tekście nie zgadza się z datą w faktach.
 
+### Strona bekapaka.pl przez CMS (Studio 2, etap 3)
+
+- Wariant „Strona” publikacji ma przyciski **Utwórz/Odśwież szkic na stronie**, **Podgląd na bekapaka.pl** i — po zatwierdzeniu — **Opublikuj na stronie** (`backend/studio/publications/website.js`).
+- Szkic: okładka z bieżącego eksportu grafiki (format wariantu: 16:9 → `imageFit: cover`, 4:5 → `contain`), opublikowany rekord `media-record` (alt, autor „BeKaPaKa Studio · źródła zdjęć”, zgoda z manifestu eksportu — bez niego strona ukrywa okładkę), `news-post` z tytułem, adresem, zajawką, treścią, tagami i datą wydarzenia. Ponowny zapis aktualizuje ten sam dokument i nie wysyła okładki drugi raz, jeśli plik się nie zmienił.
+- **Strapi 5 REST bez `?status=draft` publikuje od razu.** Writer wysyła `status=draft` przy każdym tworzeniu i aktualizacji; publikuje wyłącznie jawne `PUT …?status=published` po zatwierdzeniu wariantu. Test `studio.website.integration.test.js` pilnuje tej zasady i jednej operacji naraz na wariant.
+- Podgląd to ten sam mechanizm co przycisk podglądu w CMS (`/api/preview` strony, tryb draft). Publikacja ustawia `publishedAtCustom`, wywołuje rewalidację strony (`SITE_REVALIDATE_SECRET`/`PREVIEW_SECRET`; bez niej strona odświeży się w ok. 60 s) i oznacza wariant jako opublikowany z adresem artykułu. Opublikowanego artykułu Studio już nie nadpisuje — poprawki w CMS.
+- Konfiguracja: `STUDIO_CMS_WRITE_TOKEN` (patrz [security-rotation.md](./security-rotation.md#10-token-zapisu-cms-dla-studio-studio_cms_write_token)), `STUDIO_SITE_URL`, `STUDIO_SITE_PREVIEW_SECRET` (z `PREVIEW_SECRET`). Bez tokenu wariant strony działa jak w etapie 1 (paczka i „Oznacz jako opublikowane”).
+
 Dane: tabele `StudioPublication`, `StudioPublicationItem`, `StudioPublishEvent` (audyt), `StudioSetting` — migracja addytywna `20261008120000_studio_publications`. Moduły `channels.js`, `playbooks.js`, `templates.js`, `brand-lint.js`, `texts.js` są izomorficzne: frontend importuje je przez `studio/src/lib/publications.ts`, więc szkic zaakceptowany w przeglądarce przechodzi te same kontrole na serwerze. Nie są objęte odciskiem `design-manifest.json`.
 
 ## Marka i renderer

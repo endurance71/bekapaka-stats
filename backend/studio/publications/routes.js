@@ -9,6 +9,7 @@ import { createAgentToken, listAgentTokens, revokeAgentToken } from '../agent/to
 import { contentSystemDocument } from './document.js';
 import { tools as agentTools } from '../agent/mcp.js';
 import { origin } from '../config.js';
+import { publishWebsite, syncWebsiteDraft, websiteConfigured, websitePreviewUrl } from './website.js';
 import {
   applyTemplates,
   approveItem,
@@ -101,6 +102,17 @@ export function publicationRoutes(router, db) {
     await revokeAgentToken(db, req.studioOwner, req.params.id);
     res.json({ ok: true });
   });
+  // Website variant ↔ Strapi news-post: draft, draft-mode preview on bekapaka.pl, publish after approval.
+  router.get('/website/config', (_req, res) => res.json(websiteConfigured()));
+  router.post('/publications/:id/items/:itemId/website/draft', async (req, res) =>
+    res.json(await syncWebsiteDraft(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId))),
+  );
+  router.get('/publications/:id/items/:itemId/website/preview', async (req, res) =>
+    res.redirect(302, await websitePreviewUrl(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId))),
+  );
+  router.post('/publications/:id/items/:itemId/website/publish', async (req, res) =>
+    res.json(await publishWebsite(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), revision.parse(req.body).expectedRevision)),
+  );
   router.get('/settings', async (req, res) => res.json(await getSettings(db, req.studioOwner)));
   router.put('/settings', async (req, res) => res.json(await saveSettings(db, req.studioOwner, req.body)));
 }

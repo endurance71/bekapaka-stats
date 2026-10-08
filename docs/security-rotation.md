@@ -110,3 +110,13 @@ Tokeny `bkpk_agent_…` dają zewnętrznemu agentowi (Claude, Cursor) dostęp do
 - Po wycieku: Studio → Ustawienia → Agent → **Odwołaj** (działa od następnego żądania), utwórz nowy token i podmień go w konfiguracji klienta MCP (`~/.cursor/mcp.json`, konfiguracja Claude). Tokenu nie zapisuj w repozytorium.
 - Zmiana `STUDIO_OWNER_ID` unieważnia wszystkie tokeny poprzedniego właściciela.
 - Limit: 5 aktywnych tokenów, 120 żądań na minutę na token.
+
+## 10. Token zapisu CMS dla Studio (`STUDIO_CMS_WRITE_TOKEN`)
+
+Studio tworzy szkice aktualności w Strapi i publikuje je dopiero po zatwierdzeniu wariantu „Strona” przez właściciela.
+
+- Utwórz w panelu Strapi (Settings → API Tokens) token typu **Custom**, bez daty wygaśnięcia lub z rotacją, z uprawnieniami wyłącznie: `News-post`: find, findOne, create, update · `Media-record`: find, create, update · `Upload`: upload. Bez delete, bez innych typów treści.
+- Wpisz go tylko w `/opt/bekapaka-stats/.env` jako `STUDIO_CMS_WRITE_TOKEN=…` i odtwórz backend: `docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend`.
+- Po wycieku: odwołaj token w Strapi (natychmiast blokuje zapis), utwórz nowy, podmień w `.env`, odtwórz backend. Szkice już utworzone pozostają w CMS.
+- Podgląd na stronie używa istniejącego `PREVIEW_SECRET` (przekazywanego do backendu jako `STUDIO_SITE_PREVIEW_SECRET`). Rotacja `PREVIEW_SECRET` wymaga odtworzenia `bkpk-site`, `bkpk-cms` i `bkpk-backend`.
+- Odczytowy `STUDIO_CMS_TOKEN` (import treści z CMS) to osobny token typu **Read-only**.

@@ -176,7 +176,10 @@ export async function publicationView(db, owner, id) {
     const graphic = await graphicState(db, owner, item, cache).catch(() => null);
     const issues = lintCopy(item.channel, item.copy, p.facts);
     const stale = item.status === 'approved' && item.approvedHash !== approvalHash(item, graphic);
-    items.push({ ...itemView(item), graphic, issues, stale, ready: readiness(p, item, graphic, issues) });
+    // Website variant: state of the CMS draft (events are newest first).
+    const synced = item.channel === 'website' ? item.events.find((e) => e.action === 'cms-draft')?.payload : null;
+    const cms = synced ? { slug: synced.slug, documentId: synced.documentId, syncedAt: item.events.find((e) => e.action === 'cms-draft').createdAt, upToDate: synced.copyHash === hash(item.copy) } : null;
+    items.push({ ...itemView(item), graphic, issues, stale, cms, ready: readiness(p, item, graphic, issues) });
   }
   return { ...p, items, factsConfirmed: factsConfirmed(p), playbookDef: playbook(p.playbook) || null };
 }

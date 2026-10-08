@@ -34,6 +34,10 @@ services:
       STUDIO_STORAGE_DIR: /data/studio
       STUDIO_CMS_URL: http://bkpk-cms:1337
       STUDIO_CMS_TOKEN: ${STUDIO_CMS_TOKEN:-}
+      # Studio → szkice aktualności w Strapi (custom API token: news-post, upload, media-record). Pusty = funkcja wyłączona.
+      STUDIO_CMS_WRITE_TOKEN: ${STUDIO_CMS_WRITE_TOKEN:-}
+      STUDIO_SITE_URL: https://bekapaka.pl
+      STUDIO_SITE_PREVIEW_SECRET: ${PREVIEW_SECRET:-}
       STUDIO_GEMINI_API_KEY: ${STUDIO_GEMINI_API_KEY:-}
       STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
       KALK_CRON_SECRET: ${KALK_CRON_SECRET}

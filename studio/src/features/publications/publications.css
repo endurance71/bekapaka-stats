@@ -994,3 +994,30 @@ a.primary.is-disabled {
     flex-direction: column;
   }
 }
+
+/* F3 — website channel via CMS */
+.website-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+.website-actions > p {
+  flex-basis: 100%;
+  margin: 0;
+}
+.website-actions .secondary,
+.website-actions .primary {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.website-actions code {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
