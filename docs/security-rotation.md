@@ -120,3 +120,12 @@ Studio tworzy szkice aktualności w Strapi i publikuje je dopiero po zatwierdzen
 - Po wycieku: odwołaj token w Strapi (natychmiast blokuje zapis), utwórz nowy, podmień w `.env`, odtwórz backend. Szkice już utworzone pozostają w CMS.
 - Podgląd na stronie używa istniejącego `PREVIEW_SECRET` (przekazywanego do backendu jako `STUDIO_SITE_PREVIEW_SECRET`). Rotacja `PREVIEW_SECRET` wymaga odtworzenia `bkpk-site`, `bkpk-cms` i `bkpk-backend`.
 - Odczytowy `STUDIO_CMS_TOKEN` (import treści z CMS) to osobny token typu **Read-only**.
+
+## 11. Klucze API dostawców AI w Studio (`STUDIO_SECRETS_KEY`)
+
+Klucze Google Gemini, Anthropic Claude i OpenAI właściciel wpisuje w Studio → Ustawienia → Klucze API i modele. Baza (`StudioSecret`) przechowuje je zaszyfrowane AES-256-GCM kluczem serwera `STUDIO_SECRETS_KEY`; przeglądarka widzi tylko 4 ostatnie znaki.
+
+- `STUDIO_SECRETS_KEY` generuje się raz na VPS i dopisuje do `/opt/bekapaka-stats/.env` (bez wyświetlania): `grep -q '^STUDIO_SECRETS_KEY=' .env || echo "STUDIO_SECRETS_KEY=$(openssl rand -base64 32)" >> .env`, potem `docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-backend bkpk-studio-worker`.
+- **Wyciek klucza dostawcy**: unieważnij klucz w konsoli dostawcy (Google AI Studio, platform.claude.com, platform.openai.com), utwórz nowy z limitem wydatków i wklej go w Studio („Zapisz i sprawdź”). Zapisany klucz można też usunąć przyciskiem „Usuń klucz”.
+- **Wyciek `STUDIO_SECRETS_KEY` lub kopii bazy**: zrotuj wszystkie klucze dostawców (jak wyżej) i wygeneruj nowy `STUDIO_SECRETS_KEY` (usuń starą linię z `.env`, dopisz nową, odtwórz backend i worker). Po zmianie klucza szyfrowania zapisane klucze są nieczytelne — Studio prosi o ich ponowne wpisanie; zadania AI w kolejce kończą się bez wywołania i bez kosztu.
+- Klucze zapasowe w `.env` (`STUDIO_GEMINI_API_KEY`, `STUDIO_ANTHROPIC_API_KEY`, `STUDIO_OPENAI_API_KEY`) rotuje się podmianą w `.env` i odtworzeniem backendu oraz workera. Klucz zapisany w Studio ma pierwszeństwo przed `.env`.

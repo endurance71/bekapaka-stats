@@ -6,6 +6,7 @@ import { keys, useSettings } from '../lib/queries';
 import type { Settings } from '../lib/publications';
 import { HashtagInput } from '../features/publications/bits';
 import AgentTokens from '../features/publications/AgentTokens';
+import AiProviders from '../features/ai/AiProviders';
 import '../features/publications/publications.css';
 
 // Proposals only: the brand defines #BKPK; anything else needs the owner's decision.
@@ -31,7 +32,7 @@ export default function SettingsPage() {
   }
   return (
     <>
-      <PageHeader title="Ustawienia publikacji" kind="publication" />
+      <PageHeader title="Ustawienia" kind="publication" />
       <section className="settings-card">
         <h2>Hashtagi</h2>
         <p className="muted">
@@ -65,6 +66,7 @@ export default function SettingsPage() {
           </p>
         )}
       </section>
+      <AiProviders />
       <AgentTokens />
     </>
   );

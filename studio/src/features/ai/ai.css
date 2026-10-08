@@ -1,0 +1,107 @@
+/* Settings → Klucze API i modele */
+.ai-settings h3 {
+  margin: 18px 0 8px;
+  font-size: 15px;
+}
+.ai-warning {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #fff6dc;
+  border-left: 3px solid #f4a816;
+  padding: 10px 12px;
+}
+.ai-keys {
+  display: grid;
+  gap: 10px;
+}
+.ai-key {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.ai-key-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ai-key-head b {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.ai-key-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ai-chip {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+.ai-chip.is-ok {
+  background: #e7f5ea;
+  border-color: #9ccfa6;
+}
+.ai-chip.is-bad {
+  background: #fde8eb;
+  border-color: var(--red);
+}
+.ai-chip.is-off {
+  color: var(--muted);
+}
+.ai-tasks {
+  display: grid;
+  gap: 10px;
+}
+.ai-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+  gap: 10px;
+  align-items: center;
+}
+.ai-task span {
+  display: flex;
+  flex-direction: column;
+}
+.ai-task small {
+  color: var(--muted);
+}
+.ai-task select,
+.ai-model select {
+  width: 100%;
+  min-width: 0;
+}
+.ai-custom {
+  margin-top: 14px;
+}
+.ai-custom summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.ai-custom-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.ai-model {
+  display: grid;
+  gap: 4px;
+}
+@media (max-width: 900px) {
+  .ai-task,
+  .ai-custom-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

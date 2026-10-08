@@ -13,7 +13,7 @@ import {
 import { ChannelBadge } from '../features/publications/bits';
 import '../features/publications/publications.css';
 
-// Read-only view of what Gemini and external agents receive. Changing it is a code release with a new version.
+// Read-only view of what Studio AI models and external agents receive. Changing it is a code release with a new version.
 export default function PromptsPage() {
   return (
     <>
@@ -27,8 +27,9 @@ export default function PromptsPage() {
         }
       />
       <p className="muted">
-        Wersja promptów <b>{PROMPT_VERSION}</b>. Te same zasady stosują: Gemini w Studio, agent przez MCP i kontrola
-        marki. Zmiana wymaga nowego wydania Studio — dzięki temu każdy tekst AI ma zapisaną wersję, z której powstał.
+        Wersja promptów <b>{PROMPT_VERSION}</b>. Te same zasady stosują: modele AI w Studio (Gemini, Claude, OpenAI),
+        agent przez MCP i kontrola marki. Zmiana wymaga nowego wydania Studio — dzięki temu każdy tekst AI ma zapisaną
+        wersję, z której powstał.
       </p>
       <section className="prompt-block">
         <h2>Zasady marki</h2>

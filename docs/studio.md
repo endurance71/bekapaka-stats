@@ -1,6 +1,6 @@
 # BeKaPaKa Studio
 
-Studio jest osobną, prywatną aplikacją React/Vite w `studio/`. API `/api/studio/v1` działa w obecnym backendzie. Render i żądania Gemini obsługuje `backend/studio/worker.js`. Strona publiczna, panel, modele KALK i CMS zachowują swoje funkcje.
+Studio jest osobną, prywatną aplikacją React/Vite w `studio/`. API `/api/studio/v1` działa w obecnym backendzie. Render i żądania AI (Gemini, Claude, OpenAI) obsługuje `backend/studio/worker.js`. Strona publiczna, panel, modele KALK i CMS zachowują swoje funkcje.
 
 ## Uruchomienie lokalne
 
@@ -45,7 +45,7 @@ Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wyn
 ### Teksty AI i agent (Studio 2, etap 2)
 
 - **Biblioteka promptów** — `backend/studio/publications/prompts.js` (`PROMPT_VERSION`): zasady marki (prompt systemowy) i instrukcje kanałów. Ten sam tekst trafia do Gemini, na stronę Studio „Schematy i prompty”, do agenta (`get_prompts`) i do [docs/studio-content-system.md](./studio-content-system.md), generowanego przez `node scripts/studio/export-prompts.mjs` (test pilnuje aktualności). Każda zmiana tekstu wymaga podbicia wersji.
-- **Teksty AI** — „Teksty AI” / „Zaproponuj AI” w publikacji. Wymagają potwierdzonych faktów i `STUDIO_GEMINI_API_KEY`. Zadanie `ai-copy` w kolejce AI workera: rezerwacja 0,05 USD (najgorszy przypadek 24 KB wejścia i 3500 tokenów wyjścia, bez „myślenia” — 0,0495 USD), odpowiedź w schemacie JSON walidowana kontraktami kanałów; niepoprawna nie jest stosowana częściowo. Identyczny prompt i fakty są zwracane z `StudioCopyCache` bez kosztu. Propozycje nie zapisują się same — właściciel stosuje je per kanał (`copyOrigin: ai`, zapisana wersja promptu) i dalej obowiązuje kontrola marki oraz zatwierdzenie.
+- **Teksty AI** — „Teksty AI” / „Zaproponuj AI” w publikacji. Wymagają potwierdzonych faktów i klucza API dostawcy wybranego modelu (patrz „AI i koszty”). Zadanie `ai-copy` w kolejce AI workera: rezerwacja najgorszego przypadku modelu (domyślny Gemini 3.5 Flash: 0,072 USD), odpowiedź w schemacie JSON walidowana kontraktami kanałów; niepoprawna nie jest stosowana częściowo. Identyczny prompt, fakty i model są zwracane z `StudioCopyCache` bez kosztu. Propozycje nie zapisują się same — właściciel stosuje je per kanał (`copyOrigin: ai`, zapisana wersja promptu) i dalej obowiązuje kontrola marki oraz zatwierdzenie.
 - **Agent przez MCP** — `/api/studio/v1/mcp` (Streamable HTTP bez sesji, tylko POST), token Bearer z Ustawień (patrz [security-rotation.md](./security-rotation.md#9-tokeny-agenta-studio-mcp)). Narzędzia: `list_playbooks`, `get_prompts`, `list_publications`, `get_publication`, `schematic_copy`, `create_publication`, `propose_copy` (tylko kanały robocze; zapis z `actor: agent` w historii). Brak narzędzi do potwierdzania faktów, zatwierdzania, publikacji, paczek i ustawień.
 - **Kontrola marki 1.1.0** — dodatkowo ostrzega, gdy dzień tygodnia w tekście nie zgadza się z datą w faktach.
 
@@ -77,9 +77,16 @@ Miniatury są ilustracyjne i nie stanowią zatwierdzenia ani źródła danych pr
 
 ## AI i koszty
 
-`STUDIO_GEMINI_API_KEY` jest osobnym kluczem. Modele są konfigurowane na serwerze, ale model bez znanej ceny jest blokowany do aktualizacji `pricing.json`. Cennik ma wersję, źródło i datę weryfikacji. Budżet jest ograniczony do maksymalnie 10 USD miesięcznie, z możliwością ustawienia niższego limitu.
+Studio obsługuje trzech dostawców: **Google Gemini**, **Anthropic Claude** i **OpenAI**. Klucze API właściciel wkleja w **Ustawienia → Klucze API i modele** (`backend/studio/providers/`):
 
-Rezerwacja tekstu: 0,05 USD (wejście ograniczone bajtowo, wynik 1200 tokenów). Rezerwacja obrazu: 0,30 USD (2K, wynik maks. 4096 tokenów). Rezerwacje korzystają z transakcyjnej blokady PostgreSQL. Zużycie jest rozliczane według metadanych odpowiedzi; brak wiarygodnych metadanych zachowuje pełną rezerwację. Timeout, odmowa i niepoprawna odpowiedź nie wywołują automatycznej regeneracji ani ponowienia. Niepewne koszty pozostają zarezerwowane. Sprawdzenie i ewentualne uwolnienie takiej rezerwacji wymaga potwierdzenia rachunku dostawcy przez administratora; UI nie ma przycisku omijania limitu.
+- Klucz jest szyfrowany AES-256-GCM kluczem serwera `STUDIO_SECRETS_KEY` (32 bajty base64, wspólny dla backendu i workera) i zapisywany w `StudioSecret`. Do przeglądarki wracają tylko dostawca, 4 ostatnie znaki i wynik testu („Sprawdź połączenie” listuje modele — bezpłatnie). Bez `STUDIO_SECRETS_KEY` zapis kluczy w Studio jest wyłączony.
+- Zapasowo działają klucze ze środowiska serwera: `STUDIO_GEMINI_API_KEY`, `STUDIO_ANTHROPIC_API_KEY`, `STUDIO_OPENAI_API_KEY`. Klucz zapisany w Studio ma pierwszeństwo.
+- **Model per zadanie**: teksty publikacji (`copy`), opis i alt grafiki (`text`), tła AI (`image`). Przy generowaniu można jednorazowo wybrać inny model. Tła tworzą tylko modele obrazowe Gemini. Domyślnie: Gemini 3.5 Flash i Gemini 3.1 Flash Image (lub `STUDIO_AI_TEXT_MODEL` / `STUDIO_AI_IMAGE_MODEL`).
+- **Katalog** `providers/catalog.js` (`CATALOG_VERSION`, ceny standardowe USD za 1M tokenów, źródła i data weryfikacji w komentarzu). Model bez ceny nie może być użyty. **Własne modele tekstowe**: identyfikator z API dostawcy i ceny wpisane przez właściciela — budżet liczy rezerwację z tych cen (`pricingVersion: custom/…`).
+
+Budżet jest wspólny dla wszystkich dostawców i ograniczony do maksymalnie 10 USD miesięcznie (`STUDIO_AI_BUDGET_USD` może go obniżyć). Przed każdym wywołaniem rezerwowany jest najgorszy przypadek wybranego modelu: wejście = limit bajtów zadania / 2 tokeny, wyjście = limit tokenów zadania (teksty publikacji 24 KB / 6000, opis 16 KB / 2000, tło 4 KB / 4096 + 1,5 × cena obrazu 2K). Ceny modelu są kopiowane do zadania, więc późniejsza zmiana własnego modelu nie zmienia kosztu zadania w kolejce. Ustawienia pokazują maksymalny koszt jednego wywołania każdego modelu. Rezerwacje korzystają z transakcyjnej blokady PostgreSQL.
+
+Rozliczenie: poprawna odpowiedź — według zużycia tokenów zgłoszonego przez dostawcę (nie więcej niż rezerwacja). Odpowiedź ucięta, odmowa lub niezgodna z kontraktem — zadanie `failed`, koszt według zgłoszonego zużycia (bez zużycia: pełna rezerwacja). Brak klucza lub nieczytelny klucz w workerze — nic nie zostało wysłane, rezerwacja zwolniona (`released`). Timeout lub zerwane połączenie — `uncertain`, pełna rezerwacja zostaje. Żadne wywołanie nie jest ponawiane automatycznie. Sprawdzenie i ewentualne uwolnienie niepewnej rezerwacji wymaga potwierdzenia rachunku dostawcy przez administratora; UI nie ma przycisku omijania limitu.
 
 Tekst AI otrzymuje wyłącznie białą listę pól z potwierdzonej rewizji: publiczne informacje wpisane do materiału. Nie pobiera notatek trenera, analiz, scoutingu ani danych logowania. Użytkownik powinien wpisywać w pola publikacyjne wyłącznie treści publiczne. Tła mają trzy zamknięte tryby: faktura, pusty parkiet, martwa natura. Zdjęcia ludzi nie są wysyłane ani edytowane przez AI. Wyniki obrazu startują jako niezatwierdzone zasoby i zapisują prompt/model/datę/koszt. Brak API nie blokuje edytora i eksportów.
 
@@ -87,7 +94,7 @@ Tekst AI otrzymuje wyłącznie białą listę pól z potwierdzonej rewizji: publ
 
 Przed operacjami przeczytaj runbook VPS, optymalizację, rotację sekretów, scraping, plan analiz AI i Docker deploy. W checkoutcie brak `VPS-dane/README.md`; nie zastępuj go domysłami o dostępie. MOYA pozostaje poza zakresem.
 
-1. Ustal właściciela i odczytaj ID konta bez haseł/tokenów. Na VPS ustaw prywatnie `STUDIO_OWNER_ID`, `STUDIO_CMS_TOKEN` (Strapi read-only, nie Admin/MCP), `STUDIO_GEMINI_API_KEY` oraz budżet. Backend musi mieć `STUDIO_ORIGIN=https://studio.bekapaka.pl`.
+1. Ustal właściciela i odczytaj ID konta bez haseł/tokenów. Na VPS ustaw prywatnie `STUDIO_OWNER_ID`, `STUDIO_CMS_TOKEN` (Strapi read-only, nie Admin/MCP), `STUDIO_SECRETS_KEY` (`openssl rand -base64 32`; klucze API dostawców właściciel wpisuje potem w Studio) oraz budżet. Backend musi mieć `STUDIO_ORIGIN=https://studio.bekapaka.pl`.
 2. Sprawdź RAM ≥ 1,5 GiB wolnej, dysk <75%, wolny localhost:8083, działające backupy DB. Dodaj rekord DNS A Studio do istniejącego IP VPS.
 3. CI `.github/workflows/studio.yml` sprawdza API, PostgreSQL, renderer i aplikację, buduje obrazy `studio:<SHA>` i `studio-worker:<SHA>`. Istniejący pipeline wdraża backend z migracjami addytywnymi. Te same SHA muszą być użyte razem. Studio nie jest automatycznie uruchamiane zwykłym deployem, bo ma profil Compose `studio`.
 4. Przenieś zweryfikowane skrypty i Compose na VPS z czystego checkoutu zgodnie z zasadami repo, bez zwykłego `git pull` w starym checkoutcie po przepisaniu historii. `scripts/studio/deploy.sh <pełne SHA>` sprawdza właściciela, obraz backendu, port i zdrowie. Aktualizuje wyłącznie dwie usługi Studio.

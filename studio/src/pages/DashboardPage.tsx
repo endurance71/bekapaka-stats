@@ -101,7 +101,7 @@ export default function DashboardPage() {
         <p className="muted small dash-budget">
           Budżet AI: {(budget.data.remainingMicros / 1e6).toFixed(2)} z {(budget.data.limitMicros / 1e6).toFixed(2)} USD
           w {budget.data.month}
-          {!budget.data.configured && ' · klucz Gemini nieskonfigurowany (schematy działają bez AI)'}
+          {!budget.data.configured && ' · brak kluczy API (schematy działają bez AI)'}
         </p>
       )}
     </>

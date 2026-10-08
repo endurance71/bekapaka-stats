@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createStudioRouter } from '../../studio/routes.js';
 import { claimJob, processJob } from '../../studio/worker.js';
+import { findModel, reservationMicros } from '../../studio/providers/catalog.js';
 
 const enabled = !!process.env.STUDIO_TEST_DATABASE_URL;
 const owner = `studio-agent-${crypto.randomUUID()}`;
@@ -49,6 +50,8 @@ describe.skipIf(!enabled)('Studio AI copy and MCP agent on isolated PostgreSQL',
   }, 20_000);
   afterAll(async () => {
     delete process.env.STUDIO_GEMINI_API_KEY;
+    await db.studioSecret.deleteMany({ where: { ownerId: owner } });
+    await db.studioSetting.deleteMany({ where: { ownerId: owner } });
     await new Promise((resolve) => server.close(resolve));
     await db.studioPublication.deleteMany({ where: { ownerId: owner } });
     await db.studioAgentToken.deleteMany({ where: { ownerId: owner } });
@@ -116,7 +119,7 @@ describe.skipIf(!enabled)('Studio AI copy and MCP agent on isolated PostgreSQL',
     expect(queued.res.status).toBe(202);
     expect(queued.value.job.kind).toBe('ai-copy');
     expect(queued.value.job.payload).toBeUndefined();
-    expect((await db.studioAiUsage.findUnique({ where: { jobId: queued.value.job.id } })).reservedMicros).toBe(50000);
+    expect((await db.studioAiUsage.findUnique({ where: { jobId: queued.value.job.id } })).reservedMicros).toBe(reservationMicros(findModel('gemini-3.5-flash'), 'copy'));
 
     const job = await claimJob(db, 'ai', owner);
     expect(job.id).toBe(queued.value.job.id);
@@ -133,6 +136,54 @@ describe.skipIf(!enabled)('Studio AI copy and MCP agent on isolated PostgreSQL',
     expect(again.res.status).toBe(200);
     expect(again.value).toMatchObject({ cached: true, result: { copy: { instagram_feed: copy } } });
     expect(await db.studioAiUsage.count({ where: { ownerId: owner } })).toBe(1);
+  });
+
+  it('stores provider keys encrypted, never returns them and lets the owner pick a model per task or per call', async () => {
+    const savedSecret = process.env.STUDIO_SECRETS_KEY;
+    delete process.env.STUDIO_SECRETS_KEY;
+    const apiKey = `sk-ant-test-${crypto.randomUUID()}`;
+    expect((await request('/ai/keys/anthropic', { apiKey }, 'PUT')).res.status).toBe(503);
+    process.env.STUDIO_SECRETS_KEY = crypto.randomBytes(32).toString('base64');
+    try {
+      expect((await request('/ai/keys/mistral', { apiKey }, 'PUT')).res.status).toBe(400);
+      expect((await request('/ai/keys/anthropic', { apiKey: 'za krótki' }, 'PUT')).res.status).toBe(400);
+      const saved = await request('/ai/keys/anthropic', { apiKey }, 'PUT');
+      expect(saved.res.status).toBe(200);
+      expect(JSON.stringify(saved.value)).not.toContain(apiKey);
+      expect(saved.value.keys.find((k) => k.provider === 'anthropic')).toMatchObject({ source: 'studio', last4: apiKey.slice(-4) });
+      expect(saved.value.keys.find((k) => k.provider === 'google').source).toBe('env');
+      const row = await db.studioSecret.findUnique({ where: { ownerId_provider: { ownerId: owner, provider: 'anthropic' } } });
+      expect(row.ciphertext).not.toContain('sk-ant');
+
+      // Task model: only a model of the matching kind.
+      expect((await request('/ai/tasks', { task: 'copy', model: 'gemini-3-pro-image' }, 'PUT')).res.status).toBe(422);
+      const chosen = await request('/ai/tasks', { task: 'copy', model: 'claude-haiku-5-5' }, 'PUT');
+      expect(chosen.value.tasks.find((t) => t.id === 'copy')).toMatchObject({ model: 'claude-haiku-5-5', available: true, maxCallMicros: reservationMicros(findModel('claude-haiku-5-5'), 'copy') });
+
+      // Per-call override needs that provider's key; the reservation follows the chosen model's prices.
+      expect((await request(`/publications/${publication.id}/ai-copy`, { channels: ['facebook'], model: 'gpt-6-luna' }, 'POST')).res.status).toBe(503);
+      const queued = await request(`/publications/${publication.id}/ai-copy`, { channels: ['facebook'] }, 'POST');
+      expect(queued.res.status).toBe(202);
+      const usage = await db.studioAiUsage.findUnique({ where: { jobId: queued.value.job.id } });
+      expect(usage).toMatchObject({ model: 'claude-haiku-5-5', reservedMicros: reservationMicros(findModel('claude-haiku-5-5'), 'copy') });
+      expect((await db.studioJob.findUnique({ where: { id: queued.value.job.id } })).payload.model).toMatchObject({ id: 'claude-haiku-5-5', provider: 'anthropic', input: 0.1, output: 0.5 });
+      await db.studioJob.update({ where: { id: queued.value.job.id }, data: { status: 'superseded' } });
+
+      // Custom text model with owner prices; removing it resets the task to the default.
+      expect((await request('/ai/custom-models', { id: 'claude-haiku-5-5', provider: 'anthropic', label: 'Dup', input: 1, output: 1 }, 'POST')).res.status).toBe(409);
+      const custom = await request('/ai/custom-models', { id: 'claude-test-next', provider: 'anthropic', label: 'Claude test', input: 0.5, output: 2 }, 'POST');
+      expect(custom.res.status).toBe(201);
+      expect(custom.value.models.find((m) => m.id === 'claude-test-next')).toMatchObject({ custom: true, kind: 'text', available: true });
+      await request('/ai/tasks', { task: 'text', model: 'claude-test-next' }, 'PUT');
+      const removed = await request('/ai/custom-models/claude-test-next', null, 'DELETE');
+      expect(removed.value.tasks.find((t) => t.id === 'text').model).toBe('gemini-3.5-flash');
+
+      const deleted = await request('/ai/keys/anthropic', null, 'DELETE');
+      expect(deleted.value.keys.find((k) => k.provider === 'anthropic').source).toBe(null);
+      expect(deleted.value.tasks.find((t) => t.id === 'copy').available).toBe(false);
+    } finally {
+      process.env.STUDIO_SECRETS_KEY = savedSecret ?? '';
+    }
   });
 
   it('stops a revoked token immediately', async () => {

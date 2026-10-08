@@ -29,10 +29,10 @@ export async function processJob(db, job, { generate = generateAi, render = rend
   try {
     let result;
     if (job.kind.startsWith('ai-')) {
-      const response = await generate(job);
+      const response = await generate(job, db);
       if (job.kind === 'ai-image') {
         const image = await saveImage(response.buffer);
-        const asset = await db.studioAsset.create({ data: { ownerId: job.ownerId, name: `Tło AI · ${new Date().toLocaleDateString('pl-PL')}`, kind: 'background', origin: 'Gemini API · ilustracja AI', consent: 'not_required', ...image, provenance: { ...response.provenance, chargedMicros: response.chargedMicros } } });
+        const asset = await db.studioAsset.create({ data: { ownerId: job.ownerId, name: `Tło AI · ${new Date().toLocaleDateString('pl-PL')}`, kind: 'background', origin: `${response.provenance?.model || "Gemini"} · ilustracja AI`, consent: 'not_required', ...image, provenance: { ...response.provenance, chargedMicros: response.chargedMicros } } });
         result = { assetId: asset.id, requiresReview: true };
       } else result = response.result;
       if (job.kind === 'ai-copy') await db.studioCopyCache.upsert({ where: { id: job.payload.cacheKey }, create: { id: job.payload.cacheKey, ownerId: job.ownerId, model: response.result.model, promptVersion: response.result.promptVersion, result }, update: {} });
@@ -41,8 +41,15 @@ export async function processJob(db, job, { generate = generateAi, render = rend
     await db.studioJob.updateMany({ where: { id: job.id, leaseToken: job.leaseToken, status: 'running' }, data: { status: 'completed', result, finishedAt: new Date(), leaseToken: null, leaseUntil: null, error: null } });
   } catch (err) {
     const ai = job.kind.startsWith('ai-');
-    await db.studioJob.updateMany({ where: { id: job.id, leaseToken: job.leaseToken, status: 'running' }, data: { status: ai ? 'uncertain' : 'failed', error: String(err.message).slice(0, 3000), finishedAt: new Date(), leaseToken: null, leaseUntil: null } });
-    if (ai) await db.studioAiUsage.updateMany({ where: { jobId: job.id, status: 'reserved' }, data: { status: 'uncertain' } });
+    // AI: nothing sent → release the reservation; known usage → settle it; otherwise the outcome is uncertain
+    // and the full reservation stays (no automatic retry of a possibly billed call).
+    const settled = ai && Number.isFinite(err.chargedMicros);
+    const status = !ai || err.notCalled || settled ? 'failed' : 'uncertain';
+    await db.studioJob.updateMany({ where: { id: job.id, leaseToken: job.leaseToken, status: 'running' }, data: { status, error: String(err.message).slice(0, 3000), finishedAt: new Date(), leaseToken: null, leaseUntil: null } });
+    if (ai) {
+      const data = err.notCalled ? { chargedMicros: 0, status: 'released' } : settled ? { chargedMicros: err.chargedMicros, usage: err.usage ?? undefined, status: 'settled' } : { status: 'uncertain' };
+      await db.studioAiUsage.updateMany({ where: { jobId: job.id, status: 'reserved' }, data });
+    }
   } finally { clearInterval(heartbeat); }
 }
 export async function cleanup(db) {

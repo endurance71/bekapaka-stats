@@ -59,12 +59,56 @@ export type Template = {
   status: string;
 };
 export type Report = { valid: boolean; errors: { field: string; message: string }[] };
+export type AiTaskId = 'copy' | 'text' | 'image';
+export type AiProviderId = 'google' | 'anthropic' | 'openai';
+export type AiModel = {
+  id: string;
+  provider: AiProviderId;
+  kind: 'text' | 'image';
+  label: string;
+  input: number;
+  output: number;
+  imageOutput?: number;
+  perImage2K?: number;
+  custom?: boolean;
+  available: boolean;
+  maxCallMicros?: Partial<Record<AiTaskId, number>>;
+};
+export type AiTask = {
+  id: AiTaskId;
+  label: string;
+  kind: 'text' | 'image';
+  model: string;
+  available: boolean;
+  maxCallMicros: number;
+};
+export type AiKey = {
+  provider: AiProviderId;
+  label: string;
+  hint: string;
+  source: 'studio' | 'env' | null;
+  last4: string | null;
+  updatedAt: string | null;
+  lastTestOk: boolean | null;
+  lastTestedAt: string | null;
+  lastError: string | null;
+};
+export type CustomModel = { id: string; provider: AiProviderId; label: string; input: number; output: number };
+export type AiOverview = {
+  keys: AiKey[];
+  models: AiModel[];
+  tasks: AiTask[];
+  customModels: CustomModel[];
+  secretsConfigured: boolean;
+};
 export type Budget = {
   configured: boolean;
   remainingMicros: number;
   usedMicros: number;
   limitMicros: number;
   month: string;
+  tasks: AiTask[];
+  models: AiModel[];
 };
 export type Design = { style: string; format: string; status: string; kit: string; backgroundAssetId: string | null };
 export type PostType = {
