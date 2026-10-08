@@ -229,8 +229,8 @@ export default function Shell({ children }: { children: ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-        {/* Mobile header — górny odstęp pod pasek statusu (PWA na iOS: black-translucent) */}
-        <header className="md:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 pb-1 pt-[max(0.375rem,env(safe-area-inset-top,0px))] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
+        {/* Mobile header — pasek statusu + 0,5 rem (jak nagłówek MobileFullScreenMenu, PWA na iOS: black-translucent) */}
+        <header className="md:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
