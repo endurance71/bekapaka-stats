@@ -1,6 +1,7 @@
 import { TrophyIcon as Trophy, CalendarIcon as Calendar, VenueIcon as MapPin } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export interface NextChallengeWidgetProps {
@@ -17,6 +18,8 @@ export interface NextChallengeWidgetProps {
     difficulty: 1 | 2 | 3 | 4 | 5 | null;
     /** Gospodarz formalny KALK (wszystkie mecze w jednej hali) */
     host: string;
+    /** Dzień meczowy (zbiórka, strój, kalendarz) pod datą i halą */
+    children?: ReactNode;
 }
 
 export function NextChallengeWidget({
@@ -27,7 +30,8 @@ export function NextChallengeWidget({
     time,
     location,
     difficulty,
-    host
+    host,
+    children
 }: NextChallengeWidgetProps) {
     const navigate = useNavigate();
 
@@ -64,6 +68,8 @@ export function NextChallengeWidget({
                         </div>
                     </div>
                 </div>
+
+                {children}
 
                 {difficulty != null && (
                 <div className="space-y-2">

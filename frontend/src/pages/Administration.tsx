@@ -23,6 +23,7 @@ import {
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
+import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
 // Digital 2.0 — wspólne klasy pól formularzy (płasko, linia ink-500; fokus 3 px złoty daje global.css).
 const fieldClass =
@@ -372,6 +373,8 @@ type AdminUser = {
     data?: { photo?: string };
     lastActivityAt?: string | null;
     lastActivityIp?: string | null;
+    /** Sezony, w których zawodnik nie gra (ukryty w składzie sezonu) */
+    inactiveSeasonIds?: string[];
 };
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -642,6 +645,11 @@ function UserManagement() {
     const [editRole, setEditRole] = useState<'USER' | 'ADMIN'>('USER');
     const [editPhoto, setEditPhoto] = useState<string | null>(null);
     const [editError, setEditError] = useState<string | null>(null);
+    // „Nie gra w tym sezonie” — dotyczy sezonu wybranego w menu
+    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
+    const seasonName = selectedSeason ? selectedSeason.label.replace(/^Sezon\s*/i, '').replace(/\s*\(.*\)$/, '') : '';
+    const [editInactive, setEditInactive] = useState(false);
+    const isInactiveNow = (user: AdminUser) => Boolean(seasonId && user.inactiveSeasonIds?.includes(seasonId));
     const [showEditPassword, setShowEditPassword] = useState(false);
 
     const fetchUsers = useCallback(() => {
@@ -713,6 +721,7 @@ function UserManagement() {
         setEditPassword('');
         setEditRole(user.role || 'USER');
         setEditPhoto(user.photo || user.data?.photo || null);
+        setEditInactive(isInactiveNow(user));
         setEditError(null);
         setIsEditModalOpen(true);
     };
@@ -736,6 +745,10 @@ function UserManagement() {
                 role: editRole,
                 photo: editPhoto
             };
+            if (seasonId) {
+                const others = (selectedUser.inactiveSeasonIds || []).filter((id) => id !== seasonId);
+                body.inactiveSeasonIds = editInactive ? [...others, seasonId] : others;
+            }
 
             if (editEnableLogin) {
                 if (!editUsername.trim()) {
@@ -905,7 +918,7 @@ function UserManagement() {
                             <MobileDataCard
                                 key={user.id}
                                 title={`${user.firstName} ${user.lastName}`}
-                                subtitle={user.username ? `@${user.username}` : 'Brak konta logowania'}
+                                subtitle={`${user.username ? `@${user.username}` : 'Brak konta logowania'}${isInactiveNow(user) ? ` · nie gra ${seasonName}` : ''}`}
                                 leading={
                                     <div className="w-10 h-10 overflow-hidden bg-bkpk-bg border border-bkpk-border-strong shrink-0">
                                         <PlayerAvatar player={user} className="w-full h-full" />
@@ -996,6 +1009,7 @@ function UserManagement() {
                                             <PlayerAvatar player={user} className="w-full h-full" />
                                         </div>
                                         <span>{user.firstName} {user.lastName}</span>
+                                        {isInactiveNow(user) && <span className="status-flag text-bkpk-text-muted">Nie gra {seasonName}</span>}
                                         </div>
                                     </td>
                                     <td className="py-3 px-4 text-bkpk-text-secondary tabular-nums">
@@ -1366,6 +1380,23 @@ function UserManagement() {
                             <option value="ADMIN">Admin</option>
                         </select>
                     </div>
+
+                    {seasonId && (
+                        <div className="pt-2 border-t border-bkpk-border-subtle">
+                            <label className="flex items-start gap-3 min-h-[48px] py-2 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    className={cn(checkboxClass, 'mt-0.5')}
+                                    checked={editInactive}
+                                    onChange={(e) => setEditInactive(e.target.checked)}
+                                />
+                                <span>
+                                    <span className="block text-sm font-semibold text-bkpk-text-primary">Nie gra w sezonie {seasonName}</span>
+                                    <span className="block text-xs text-bkpk-text-muted">Ukryty w Drużynie, rankingach i w składzie na stronie WWW w tym sezonie. Konto, kariera i dawne mecze zostają.</span>
+                                </span>
+                            </label>
+                        </div>
+                    )}
 
                     <div className="pt-2 border-t border-bkpk-border-subtle">
                         <label className="flex items-center gap-3 min-h-[48px] cursor-pointer select-none">

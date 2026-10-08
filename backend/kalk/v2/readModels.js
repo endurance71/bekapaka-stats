@@ -459,6 +459,9 @@ export function summarizeGameLogs(logs, matchDates = new Map()) {
   let doubleDoubles = 0;
   let bestPts = null;
   let bestEval = null;
+  let bestReb = null;
+  let bestAst = null;
+  let bestThreePm = null;
   for (const log of logs) {
     if (log.isWin === true) wins += 1;
     else if (log.isWin === false) losses += 1;
@@ -475,10 +478,14 @@ export function summarizeGameLogs(logs, matchDates = new Map()) {
       opponent: log.opponentName,
       date: matchDates.get(`${log.seasonId}|${log.kalkMatchId}`) ?? null
     };
+    const threePm = logStat(log, 'threePm', 'three_pm');
     if (!bestPts || pts > bestPts.value) bestPts = { value: pts, ...game };
     if (!bestEval || ev > bestEval.value) bestEval = { value: ev, ...game };
+    if (!bestReb || reb > bestReb.value) bestReb = { value: reb, ...game };
+    if (!bestAst || ast > bestAst.value) bestAst = { value: ast, ...game };
+    if (!bestThreePm || threePm > bestThreePm.value) bestThreePm = { value: threePm, ...game };
   }
-  return { games: logs.length, wins, losses, starts, doubleDoubles, bestPts, bestEval };
+  return { games: logs.length, wins, losses, starts, doubleDoubles, bestPts, bestEval, bestReb, bestAst, bestThreePm };
 }
 
 /** Slug KALK z RosterPlayer (kalkSlug lub `{sezon}__{slug}` w kalkPlayerId). */
@@ -515,7 +522,8 @@ export async function getPlayerCareer(prisma, id, { firstSeasonSlug = CAREER_FIR
       rosterPlayerId: roster.id,
       profile: { fullName: `${roster.firstName} ${roster.lastName}`.trim(), position: roster.position ?? null, heightCm: roster.heightCm ?? null, birthYear: null, lastNumber: roster.number ?? null },
       seasons: [],
-      gameLogSummary: []
+      gameLogSummary: [],
+      careerRecords: null
     };
   }
 
@@ -572,6 +580,9 @@ export async function getPlayerCareer(prisma, id, { firstSeasonSlug = CAREER_FIR
       return { seasonId: sid, seasonSlug: season.slug, seasonLabel: seasonLabelFromSlug(season.slug), ...summarizeGameLogs(list, matchDates) };
     })
     .sort((a, b) => a.seasonSlug.localeCompare(b.seasonSlug));
+  // Rekordy kariery (od 2023/24): najlepszy mecz w punktach, zbiórkach, asystach, trójkach i Eval
+  const careerLogs = [...logsBySeason.values()].flat();
+  const careerRecords = careerLogs.length ? summarizeGameLogs(careerLogs, matchDates) : null;
 
   if (!roster && !profile && rows.length === 0 && logs.length === 0) return null;
 
@@ -586,7 +597,8 @@ export async function getPlayerCareer(prisma, id, { firstSeasonSlug = CAREER_FIR
       lastNumber: profile?.lastNumber ?? roster?.number ?? null
     },
     seasons: rows,
-    gameLogSummary
+    gameLogSummary,
+    careerRecords
   };
 }
 

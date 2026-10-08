@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { resolvePlayerImage, getPositionLabel } from '../shared/lib/playerUtils';
 import PlayerCard from '../shared/ui/PlayerCard';
@@ -12,6 +13,13 @@ import PageHeader from '../shared/ui/PageHeader';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import GoalsCard from '../features/me/GoalsCard';
+import { RankCard, RecordsCard, SeasonCompareCard, ShootingTrendCard, type CareerRecords, type RankInfo } from '../features/me/MeSections';
+import { rankOf, seasonValues, seasonVsPrevious, shootingSeries, type GameLogEntry, type Goals } from '../features/me/meStats';
+import type { CareerSeasonRow } from '../components/players/PlayerCareer';
+
+type TeamPlayer = { id: string; ppg?: number | null; rpg?: number | null; apg?: number | null; gamesPlayed?: number | null };
+type LeagueLeader = { id: string; pointsAverage?: number | null; rosterPlayer?: { id: string } | null };
 
 export default function Profile() {
     const { user } = useAuth();
@@ -37,13 +45,34 @@ export default function Profile() {
     const { selectedSeason, seasonId } = useSeasonPreferenceContext();
     // Średnie z wybranego sezonu (ta sama ścieżka co profil zawodnika), nie kolumny konta
     const [seasonAverages, setSeasonAverages] = useState<{ ppg: number; rpg: number; apg: number } | null>(null);
+    const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
+    const [careerRows, setCareerRows] = useState<CareerSeasonRow[]>([]);
+    const [careerRecords, setCareerRecords] = useState<CareerRecords | null>(null);
+    const [goals, setGoals] = useState<Goals | null>(null);
+    const [teamPlayers, setTeamPlayers] = useState<TeamPlayer[]>([]);
+    const [leagueLeaders, setLeagueLeaders] = useState<LeagueLeader[]>([]);
 
     useEffect(() => {
         if (!user?.id || !seasonId) return;
         let active = true;
-        fetchJSON<{ averages?: { ppg: number; rpg: number; apg: number } }>(`/api/players/${user.id}/stats?seasonId=${encodeURIComponent(seasonId)}`)
-            .then((res) => active && setSeasonAverages(res?.averages ?? null))
-            .catch(() => active && setSeasonAverages(null));
+        const q = `seasonId=${encodeURIComponent(seasonId)}`;
+        fetchJSON<{ averages?: { ppg: number; rpg: number; apg: number }; gameLog?: GameLogEntry[] }>(`/api/players/${user.id}/stats?${q}`)
+            .then((res) => {
+                if (!active) return;
+                setSeasonAverages(res?.averages ?? null);
+                setGameLog(res?.gameLog ?? []);
+            })
+            .catch(() => {
+                if (!active) return;
+                setSeasonAverages(null);
+                setGameLog([]);
+            });
+        fetchJSON<TeamPlayer[]>(`/api/players?${q}`)
+            .then((res) => active && setTeamPlayers(res || []))
+            .catch(() => active && setTeamPlayers([]));
+        fetchJSON<LeagueLeader[]>(`/api/league/leaders?category=points&limit=100&${q}`)
+            .then((res) => active && setLeagueLeaders(res || []))
+            .catch(() => active && setLeagueLeaders([]));
         return () => {
             active = false;
         };
@@ -51,10 +80,50 @@ export default function Profile() {
 
     useEffect(() => {
         if (!user?.id) return;
+        let active = true;
+        fetchJSON<{ seasons?: CareerSeasonRow[]; careerRecords?: CareerRecords | null }>(`/api/players/${user.id}/career`)
+            .then((res) => {
+                if (!active) return;
+                setCareerRows(res?.seasons ?? []);
+                setCareerRecords(res?.careerRecords ?? null);
+            })
+            .catch(() => active && setCareerRows([]));
+        return () => {
+            active = false;
+        };
+    }, [user?.id]);
+
+    const values = useMemo(() => seasonValues(gameLog), [gameLog]);
+    const compare = useMemo(() => seasonVsPrevious(careerRows, seasonId), [careerRows, seasonId]);
+    const series = useMemo(() => shootingSeries(gameLog), [gameLog]);
+    const ranks = useMemo<RankInfo[]>(() => {
+        if (!user?.id || !gameLog.length) return [];
+        const played = teamPlayers.filter((p) => (p.gamesPlayed ?? 0) > 0);
+        const isMe = (p: TeamPlayer) => p.id === user.id;
+        const out: RankInfo[] = [];
+        const team: [string, (p: TeamPlayer) => number | null | undefined][] = [
+            ['Punkty/m w drużynie', (p) => p.ppg],
+            ['Zbiórki/m w drużynie', (p) => p.rpg],
+            ['Asysty/m w drużynie', (p) => p.apg]
+        ];
+        for (const [label, get] of team) {
+            const r = rankOf(played, isMe, get);
+            if (r) out.push({ label, ...r });
+        }
+        // Liderzy ligi są już posortowani (KALK, punkty na mecz); lista ucięta do 100
+        const slug = user.kalkSlug ?? null;
+        const idx = leagueLeaders.findIndex((l) => l.rosterPlayer?.id === user.id || (slug != null && l.id.endsWith(`__${slug}`)));
+        if (idx >= 0) out.push({ label: 'Punkty/m w lidze', rank: idx + 1, of: leagueLeaders.length < 100 ? leagueLeaders.length : null });
+        return out;
+    }, [user?.id, user?.kalkSlug, gameLog.length, teamPlayers, leagueLeaders]);
+
+    useEffect(() => {
+        if (!user?.id) return;
         const fetchAiData = async () => {
             try {
                 const playerRow = await fetchJSON<any>(`/api/players/${user.id}`);
                 setAiSummary(playerRow?.aiDevelopmentSummary || null);
+                setGoals(playerRow?.goals ?? { items: [] });
                 setAiMeta({
                     at: playerRow?.aiDevelopmentAt,
                     model: playerRow?.aiDevelopmentModel
@@ -113,10 +182,20 @@ export default function Profile() {
             <PageContainer width="narrow">
                 {/* Header */}
                 <PageHeader
-                    kicker="Konto Zawodnika"
-                    title={<>Mój Profil <span className="text-bkpk-primary">& Karta</span></>}
-                    description="Zarządzaj kontem i zobacz podgląd karty. Sezon wybierasz w menu nawigacji."
+                    kicker="Ja"
+                    title={`${user.firstName} ${user.lastName}`.trim() || 'Mój profil'}
+                    description={`Twój sezon, rekordy i cele${selectedSeason ? ` — ${selectedSeason.label}` : ''}. Sezon wybierasz w menu.`}
                 />
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <SeasonCompareCard current={compare.current} previous={compare.previous} />
+                    <RankCard ranks={ranks} />
+                    <GoalsCard playerId={user.id} goals={goals} values={values} canEdit={goals !== null} />
+                    <RecordsCard records={careerRecords} />
+                    <div className="lg:col-span-2">
+                        <ShootingTrendCard series={series} />
+                    </div>
+                </div>
 
                 <AiAnalysisBlock
                     title="Twój plan rozwoju (AI)"
@@ -133,7 +212,7 @@ export default function Profile() {
                     <div className="lg:col-span-5 flex flex-col items-center gap-6">
                         <div className="w-full max-w-[320px]">
                             <h2 className="kicker text-bkpk-text-primary mb-4 w-full justify-center lg:justify-start">
-                                Moja Karta Zawodnika
+                                Moja karta zawodnika
                             </h2>
                             <PlayerCard
                                 id={user.id}
@@ -167,7 +246,7 @@ export default function Profile() {
                     <div className="lg:col-span-7 space-y-6">
                         {/* Change Password Form */}
                         <BkpkCard
-                            title="Bezpieczeństwo Konta"
+                            title="Bezpieczeństwo konta"
                             icon={<Key className="w-5 h-5 text-bkpk-primary" />}
                             animateEntrance={false}
                         >
@@ -235,6 +314,10 @@ export default function Profile() {
                             </form>
                         </BkpkCard>
 
+                        <p className="text-sm text-bkpk-text-secondary">
+                            Nie wiesz, co znaczy skrót?{' '}
+                            <Link to="/slowniczek" className="text-bkpk-text-primary underline underline-offset-2 hover:text-bkpk-primary">Słowniczek statystyk</Link>
+                        </p>
                     </div>
 
                 </div>

@@ -98,13 +98,15 @@ export interface PbpFilter {
     category?: PbpCategory;
     /** @deprecated = category 'score' */
     scoringOnly?: boolean;
+    /** „Moje akcje”: tylko zdarzenia zawodnika o tym slugu KALK */
+    playerSlug?: string | null;
 }
 
-const passesScope = (ev: PbpEvent, { period = 'all', side = 'all' }: PbpFilter) =>
-    (period === 'all' || ev.period === period) && (side === 'all' || ev.side === side);
+const passesScope = (ev: PbpEvent, { period = 'all', side = 'all', playerSlug = null }: PbpFilter) =>
+    (period === 'all' || ev.period === period) && (side === 'all' || ev.side === side) && (!playerSlug || ev.playerSlug === playerSlug);
 
 /** Liczba zdarzeń w każdym rodzaju akcji dla bieżącej kwarty i drużyny (licznik w filtrze). */
-export function countPbpCategories(events: PbpEvent[], filter: Pick<PbpFilter, 'period' | 'side'> = {}): Record<PbpCategory, number> {
+export function countPbpCategories(events: PbpEvent[], filter: Pick<PbpFilter, 'period' | 'side' | 'playerSlug'> = {}): Record<PbpCategory, number> {
     const counts = Object.fromEntries(PBP_CATEGORIES.map((c) => [c.key, 0])) as Record<PbpCategory, number>;
     for (const ev of events) {
         if (isNeutralEvent(ev) || !passesScope(ev, filter)) continue;
@@ -118,7 +120,7 @@ export function countPbpCategories(events: PbpEvent[], filter: Pick<PbpFilter, '
  * wynik po okresie liczony ze wszystkich zdarzeń okresu.
  */
 export function groupEventsByPeriod(events: PbpEvent[], filter: PbpFilter = {}): PbpPeriodGroup[] {
-    const { period = 'all', side = 'all' } = filter;
+    const { period = 'all', side = 'all', playerSlug = null } = filter;
     const category: PbpCategory = filter.category ?? (filter.scoringOnly ? 'score' : 'all');
     const groups = new Map<number, PbpPeriodGroup>();
     for (const ev of events) {
@@ -131,6 +133,7 @@ export function groupEventsByPeriod(events: PbpEvent[], filter: PbpFilter = {}):
         g.endScore = { home: ev.scoreHome, away: ev.scoreAway };
         if (isNeutralEvent(ev)) continue;
         if (side !== 'all' && ev.side !== side) continue;
+        if (playerSlug && ev.playerSlug !== playerSlug) continue;
         if (!matchesPbpCategory(ev, category)) continue;
         g.events.push(ev);
     }

@@ -1,4 +1,5 @@
 import { MatchPresentationEditor } from '../components/games/MatchPresentationEditor';
+import MatchDayCard from '../features/match/MatchDayCard';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
@@ -320,6 +321,10 @@ export default function GameDetail() {
           ) : null}
         </section>
 
+        {isUpcoming && game.dataSource === 'league' && (
+          <MatchDayCard matchId={String(game.id)} seasonId={game.seasonId} matchDay={game.matchDay} />
+        )}
+
         {isUpcoming && (
           <BkpkCard variant="glass" className="space-y-3">
             <p className="text-bkpk-text-secondary">Mecz jeszcze się nie odbył — statystyki i analiza pojawią się po meczu.</p>
@@ -371,7 +376,7 @@ export default function GameDetail() {
         )}
 
         {mainTab === 'pbp' && (
-          pbp?.available ? <PlayByPlayPanel data={pbp} /> : (
+          pbp?.available ? <PlayByPlayPanel data={pbp} mySlug={user?.kalkSlug ?? null} /> : (
             <TabPlaceholder
               state={pbp && !pbp.available ? 'empty' : pbpState}
               loadingLabel="Pobieranie akcji po akcji..."

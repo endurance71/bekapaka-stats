@@ -78,6 +78,9 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from './lib/requireEnv.js';
 import { matchHasPlusMinus } from './kalk/v2/util.js';
+import { resolveMatchDay } from './lib/matchDay.js';
+import { rosterKalkSlug } from './kalk/v2/readModels.js';
+import { linkRosterFromHistory } from './kalk/v2/rosterHistory.js';
 
 const SECRET_KEY = getJwtSecret();
 
@@ -297,16 +300,23 @@ function rosterGameFromKalkLog(entry, stats) {
   };
 }
 
-export async function getRoster(querySeasonId = undefined) {
+/**
+ * Skład w sezonie. Zawodnicy oznaczeni „nie gra w tym sezonie” (inactiveSeasonIds) są pomijani,
+ * chyba że includeInactive (np. mapa slug → profil dla box score z dawnych sezonów).
+ */
+export async function getRoster(querySeasonId = undefined, { includeInactive = false } = {}) {
   await ensureSeeded();
   await ensureDefaultSeason();
   const targetSeasonId = await resolveSeasonId(querySeasonId);
   const targetSeason = await getSeasonById(targetSeasonId);
 
-  const rows = await prisma.rosterPlayer.findMany({
+  const allRows = await prisma.rosterPlayer.findMany({
     include: { kalkPlayer: true },
     orderBy: { number: 'asc' }
   });
+  const rows = includeInactive || !targetSeason?.id
+    ? allRows
+    : allRows.filter((r) => !(r.inactiveSeasonIds || []).includes(targetSeason.id));
 
   return Promise.all(
     rows.map(async (r) => {
@@ -422,6 +432,8 @@ export async function getRoster(querySeasonId = undefined) {
       number: r.number,
       position: r.position,
       starter: r.starter,
+      // Slug KALK (link z box score do profilu): kolumna albo `{sezon}__{slug}` z powiązania
+      kalkSlug: rosterKalkSlug({ kalkSlug: r.kalkSlug, kalkPlayerId }),
       ppg,
       rpg,
       apg,
@@ -1588,6 +1600,8 @@ export async function getGameById(id, querySeasonId = undefined) {
       venue: leagueRow.venue ?? null,
       startsAt: leagueRow.date.toISOString(),
       roundLabel: leagueRow.roundLabel ?? null,
+      matchDay: resolveMatchDay(leagueRow.matchDay, leagueRow.date),
+      matchDayRaw: leagueRow.matchDay ?? null,
       // Mecz rozegrany bez statystyk w KALK (np. walkower); przed meczem — brak komunikatu
       boxScoreMissingHint: leagueRow.isFinished ? 'KALK nie opublikował statystyk zawodników tego meczu.' : null
     };
@@ -2069,6 +2083,29 @@ export async function syncPlayersFromKalk(options = {}) {
     }
   }
 
+  // Zawodnicy bez meczu w bieżącym sezonie: powiązanie z ich wcześniejszych sezonów w BeKaPaKa
+  const unlinked = allRoster.filter((r) => !r.kalkSlug);
+  if (unlinked.length && activeSeason) {
+    const [profiles, seasonStats, kalkPlayersAll] = await Promise.all([
+      prisma.kalkPlayerProfile.findMany({ select: { slug: true, fullName: true, firstName: true, lastName: true } }),
+      prisma.kalkPlayerSeasonStat.findMany({ select: { playerSlug: true, teamName: true, seasonId: true } }),
+      prisma.kalkPlayer.findMany({ select: { id: true, seasonId: true } })
+    ]);
+    const updates = linkRosterFromHistory(allRoster, { profiles: profiles || [], seasonStats: seasonStats || [], kalkPlayers: kalkPlayersAll || [] });
+    for (const u of updates) {
+      const existing = allRoster.find((r) => r.id === u.rosterId);
+      // Stare powiązanie z dawnego importu zastępujemy wierszem v2, jeśli istnieje
+      const data = { kalkSlug: u.kalkSlug, ...(u.kalkPlayerId ? { kalkPlayerId: u.kalkPlayerId } : {}) };
+      try {
+        await prisma.rosterPlayer.update({ where: { id: u.rosterId }, data });
+        if (existing) Object.assign(existing, data);
+        linked += 1;
+      } catch (e) {
+        errors.push({ id: u.kalkPlayerId, error: e.message });
+      }
+    }
+  }
+
   await updateRosterStatsFromKalk();
 
   return { synced, linked, errors, total: ourKalkPlayers.length };
@@ -2220,8 +2257,8 @@ export async function updateRosterStats() {
   console.log('[Info] Roster stats updated.');
 }
 
-export async function listAllPlayers(querySeasonId = undefined) {
-  return await getRoster(querySeasonId);
+export async function listAllPlayers(querySeasonId = undefined, options = {}) {
+  return await getRoster(querySeasonId, options);
 }
 
 // ZAWODNICY - Pobierz pojedynczego zawodnika

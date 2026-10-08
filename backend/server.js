@@ -82,6 +82,9 @@ import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponse
 import { createLoginThrottle } from './lib/loginThrottle.js';
 import { getGameInfo, getGamePlayByPlay, getPlayerCareer, getTeamsAllTime } from './kalk/v2/readModels.js';
 import { getPlayerHome } from './kalk/v2/home.js';
+import { resolveMatchDay, validateMatchDay } from './lib/matchDay.js';
+import { buildIcsCalendar, leagueMatchToEvent, selectTeamMatches } from './lib/calendarIcs.js';
+import { normalizeGoals, validateGoals } from './lib/playerGoals.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -307,7 +310,26 @@ app.get(['/api/games/:id/info', '/games/:id/info'], async (req, res) => {
   }
 });
 
-app.patch('/api/admin/matches/:source/:seasonId/:id/presentation', authenticateToken, requireAdmin, async (req, res) => {
+// Dzień meczowy (zbiórka, strój, uwagi) — mecz z terminarza BeKaPaKa, tylko trener
+// Panel woła przez proxy, które ucina „/api” (vite, nginx.prod.conf) — obie ścieżki
+app.patch(['/api/admin/matches/:seasonId/:id/match-day', '/admin/matches/:seasonId/:id/match-day'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const matchDay = validateMatchDay(req.body?.matchDay ?? null);
+    const row = await prisma.leagueMatch.findFirst({
+      where: { seasonId: req.params.seasonId, OR: [{ id: req.params.id }, { kalkMatchId: req.params.id }] }
+    });
+    if (!row) return res.status(404).json({ error: 'Mecz nie znaleziony w terminarzu' });
+    const updated = await prisma.leagueMatch.update({
+      where: { id: row.id },
+      data: { matchDay: matchDay ?? Prisma.DbNull, matchDayUpdatedAt: new Date() }
+    });
+    res.json({ matchDay: resolveMatchDay(updated.matchDay, updated.date), updatedAt: updated.matchDayUpdatedAt });
+  } catch (err) {
+    res.status(400).json({ error: err.message || 'Nieprawidłowe dane dnia meczowego' });
+  }
+});
+
+app.patch(['/api/admin/matches/:source/:seasonId/:id/presentation', '/admin/matches/:source/:seasonId/:id/presentation'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await updateMatchPresentation({ game: prisma.game, kalkMatch: prisma.kalkMatch, jsonNull: Prisma.DbNull }, { ...req.params, presentation: req.body.presentation });
     if (!result) return res.status(404).json({ error: 'Nie znaleziono meczu w tym sezonie' });
@@ -347,9 +369,25 @@ app.delete(['/api/games/:id', '/games/:id'], authenticateToken, requireAdmin, as
 });
 
 // --- PLAYERS API ---
+// Cele sezonu: zawodnik ustawia swoje, trener (admin) może poprawić
+app.put(['/api/players/:id/goals', '/players/:id/goals'], authenticateToken, async (req, res) => {
+  if (req.user?.role !== 'ADMIN' && req.user?.id !== req.params.id) {
+    return res.status(403).json({ error: 'Możesz zmieniać tylko swoje cele' });
+  }
+  try {
+    const { items } = validateGoals(req.body);
+    const goals = { items, updatedAt: new Date().toISOString(), updatedBy: req.user.role === 'ADMIN' && req.user.id !== req.params.id ? 'coach' : 'player' };
+    const updated = await prisma.rosterPlayer.update({ where: { id: req.params.id }, data: { goals }, select: { id: true, goals: true } });
+    res.json({ goals: updated.goals });
+  } catch (err) {
+    if (err?.code === 'P2025') return res.status(404).json({ error: 'Zawodnik nie znaleziony' });
+    res.status(400).json({ error: err.message || 'Nieprawidłowe cele' });
+  }
+});
+
 app.get(['/api/roster', '/roster'], async (req, res) => {
   try {
-    const roster = await getRoster(req.query.seasonId);
+    const roster = await getRoster(req.query.seasonId, { includeInactive: req.query.includeInactive === '1' });
     res.json(roster.map(toPublicRosterPlayer));
   } catch (err) {
     console.error('Roster error:', err);
@@ -359,7 +397,7 @@ app.get(['/api/roster', '/roster'], async (req, res) => {
 
 app.get(['/api/players', '/players'], async (req, res) => {
   try {
-    const players = await listAllPlayers(req.query.seasonId);
+    const players = await listAllPlayers(req.query.seasonId, { includeInactive: req.query.includeInactive === '1' });
     res.json(players.map(toPublicRosterPlayer));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania zawodników' });
@@ -379,6 +417,26 @@ app.get(['/api/players/:id', '/players/:id'], authenticateToken, async (req, res
 });
 
 // Kariera zawodnika (KALK v2): profil + sezony od 2023/24 + podsumowanie logów meczowych.
+// Kalendarz .ics meczów BeKaPaKa (publiczny — subskrypcja w telefonie nie wysyła tokenu; bez danych wewnętrznych).
+app.get(['/api/calendar.ics', '/calendar.ics'], async (req, res) => {
+  try {
+    const seasonId = await resolveSeasonId(typeof req.query.seasonId === 'string' ? req.query.seasonId : undefined);
+    if (!seasonId) return res.status(404).send('Brak sezonu');
+    const matchId = typeof req.query.match === 'string' && /^[\w-]{1,64}$/.test(req.query.match) ? req.query.match : null;
+    const rows = await prisma.leagueMatch.findMany({ where: { seasonId }, orderBy: { date: 'asc' } });
+    const matches = selectTeamMatches(rows, matchId);
+    if (matchId && !matches.length) return res.status(404).send('Mecz nie znaleziony');
+    const ics = buildIcsCalendar(matches.map(leagueMatchToEvent), { name: matchId ? 'BeKaPaKa — mecz' : 'BeKaPaKa Bobolice — mecze' });
+    res.set('Content-Type', 'text/calendar; charset=utf-8');
+    res.set('Cache-Control', 'public, max-age=900');
+    res.set('Content-Disposition', `${matchId ? 'attachment' : 'inline'}; filename="${matchId ? `bekapaka-mecz-${matchId}` : 'bekapaka-mecze'}.ics"`);
+    res.send(ics);
+  } catch (err) {
+    console.error('Calendar error:', err);
+    res.status(500).send('Błąd kalendarza');
+  }
+});
+
 // Start zawodnika: następny mecz drużyny, mój ostatni mecz, miejsce w tabeli.
 app.get(['/api/me/home', '/me/home'], authenticateToken, async (req, res) => {
   try {
@@ -959,7 +1017,7 @@ app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, 
 app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, number, position, username, password, role, photo } = req.body;
+    const { firstName, lastName, number, position, username, password, role, photo, inactiveSeasonIds } = req.body;
 
     const existingUser = await prisma.rosterPlayer.findUnique({
       where: { id }
@@ -977,6 +1035,15 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
     }
     if (position !== undefined) updateData.position = position || null;
     if (role !== undefined) updateData.role = role;
+    if (inactiveSeasonIds !== undefined) {
+      if (!Array.isArray(inactiveSeasonIds) || inactiveSeasonIds.some((v) => typeof v !== 'string')) {
+        return res.status(400).json({ error: 'inactiveSeasonIds: oczekiwano listy ID sezonów' });
+      }
+      const ids = [...new Set(inactiveSeasonIds)];
+      const known = await prisma.kalkSeason.count({ where: { id: { in: ids } } });
+      if (known !== ids.length) return res.status(400).json({ error: 'Nieznany sezon' });
+      updateData.inactiveSeasonIds = ids;
+    }
 
     if (username !== undefined) {
       if (username === null || username.trim() === '') {
@@ -1026,33 +1093,9 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
 });
 
 // --- USER PROFILE API (SELF SERVICE) ---
-app.put(['/api/profile', '/profile'], authenticateToken, async (req, res) => {
-  try {
-    const { photo } = req.body;
-    const existingUser = await prisma.rosterPlayer.findUnique({
-      where: { id: req.user.id }
-    });
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
-    }
-
-    const updated = await prisma.rosterPlayer.update({
-      where: { id: req.user.id },
-      data: {
-        data: {
-          ...(existingUser.data || {}),
-          photo: photo !== undefined ? photo : (existingUser.data?.photo || null)
-        }
-      }
-    });
-
-    const { password: _, ...safeUser } = updated;
-    res.json(safeUser);
-  } catch (err) {
-    console.error('Failed to update profile photo:', err);
-    res.status(500).json({ error: 'Błąd aktualizacji zdjęcia profilowego' });
-  }
+// Zdjęcia zawodników zmienia tylko trener (Administracja → edycja zawodnika: PUT /api/admin/users/:id)
+app.put(['/api/profile', '/profile'], authenticateToken, (req, res) => {
+  res.status(403).json({ error: 'Zdjęcie zmienia trener w Administracji.' });
 });
 
 app.put(['/api/profile/password', '/profile/password'], authenticateToken, async (req, res) => {

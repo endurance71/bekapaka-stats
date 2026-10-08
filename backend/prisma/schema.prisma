@@ -90,6 +90,8 @@ model RosterPlayer {
   kalkPlayer   KalkPlayer? @relation(fields: [kalkPlayerId], references: [id])
   /// Stała tożsamość KALK v2 (slug zawodnika, ten sam we wszystkich sezonach)
   kalkSlug     String?  @unique
+  /// Sezony (KalkSeason.id), w których zawodnik nie gra — ukryty w składzie, rankingach i na stronie WWW
+  inactiveSeasonIds String[] @default([])
   
   // Statystyki (obliczane z meczów)
   gamesPlayed  Int      @default(0)
@@ -679,6 +681,9 @@ model LeagueMatch {
   homeRecordBefore  String?
   guestRecordBefore String?
   venue             String?
+  /// Dzień meczowy (wewnętrzne, nie dla strony publicznej): zbiórka, strój, uwagi trenera
+  matchDay          Json?
+  matchDayUpdatedAt DateTime?
   
   updatedAt   DateTime @updatedAt
 

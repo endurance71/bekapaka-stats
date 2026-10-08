@@ -85,10 +85,14 @@ const EventRow = memo(function EventRow({ ev, left, leftIsBekapaka, leftName, ri
 });
 
 /** Zakładka „Akcja po akcji” meczu (KALK v2). */
-export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) {
+export default function PlayByPlayPanel({ data, mySlug = null }: { data: PlayByPlayResponse; /** slug KALK zalogowanego zawodnika → filtr „Moje akcje” */ mySlug?: string | null }) {
     const [period, setPeriod] = useState<number | 'all'>('all');
     const [side, setSide] = useState<Side | 'all'>('all');
     const [category, setCategory] = useState<PbpCategory>('all');
+    const [onlyMine, setOnlyMine] = useState(false);
+    // „Moje akcje” tylko, gdy zawodnik zagrał w tym meczu
+    const iPlayed = Boolean(mySlug && data.events.some((ev) => ev.playerSlug === mySlug));
+    const playerSlug = onlyMine && iPlayed ? mySlug : null;
 
     const left = leftSideOf(data.bekapakaSide);
     const right = otherSide(left);
@@ -97,9 +101,9 @@ export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) 
     const leftName = shortTeamName(leftTeam.name);
     const rightName = shortTeamName(rightTeam.name);
 
-    const groups = useMemo(() => groupEventsByPeriod(data.events, { period, side, category }), [data.events, period, side, category]);
-    const counts = useMemo(() => countPbpCategories(data.events, { period, side }), [data.events, period, side]);
-    const filtered = period !== 'all' || side !== 'all' || category !== 'all';
+    const groups = useMemo(() => groupEventsByPeriod(data.events, { period, side, category, playerSlug }), [data.events, period, side, category, playerSlug]);
+    const counts = useMemo(() => countPbpCategories(data.events, { period, side, playerSlug }), [data.events, period, side, playerSlug]);
+    const filtered = period !== 'all' || side !== 'all' || category !== 'all' || playerSlug != null;
     const runIndex = useMemo(() => runsByEndSeq(data.runs), [data.runs]);
     const shown = groups.reduce((n, g) => n + g.events.length, 0);
 
@@ -158,6 +162,16 @@ export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) 
                         </button>
                     ))}
                 </div>
+                {iPlayed && (
+                    <button
+                        type="button"
+                        aria-pressed={onlyMine}
+                        onClick={() => setOnlyMine((v) => !v)}
+                        className={cn(segBtn, 'border border-bkpk-border-strong', onlyMine ? bkpkActivePillClass : segIdle)}
+                    >
+                        Moje akcje
+                    </button>
+                )}
                 <label className="relative">
                     <span className="sr-only">Rodzaj akcji</span>
                     <select
@@ -180,6 +194,7 @@ export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) 
                             setPeriod('all');
                             setSide('all');
                             setCategory('all');
+                            setOnlyMine(false);
                         }}
                         className={cn(segBtn, 'border border-bkpk-border-strong', segIdle)}
                     >
