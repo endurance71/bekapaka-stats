@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { Check, ClipboardCopy, ExternalLink, FileText, RotateCcw, SkipForward, Undo2 } from 'lucide-react';
+import { Check, ClipboardCopy, ExternalLink, FileText, RotateCcw, SkipForward, Sparkles, Undo2 } from 'lucide-react';
 import { api, fileUrl, message, query, send } from '../../lib/api';
 import { formatSpec } from '../../lib/contracts';
 import { warsawInput, warsawIso } from '../../lib/dates';
@@ -43,6 +43,7 @@ function useGraphicImage(graphic: Graphic | null) {
 }
 
 type Props = {
+  onAi: () => void;
   publication: Publication;
   item: Item;
   settings?: Settings;
@@ -50,7 +51,7 @@ type Props = {
   onError: (m: string) => void;
 };
 
-export default function ChannelPanel({ publication, item, settings, apply, onError }: Props) {
+export default function ChannelPanel({ publication, item, settings, apply, onError, onAi }: Props) {
   const { draft, change, saving, dirty } = useItemDraft(publication.id, item, apply, onError);
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState(item.externalUrl || '');
@@ -163,6 +164,16 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
               }
             >
               <FileText size={14} /> Wypełnij ze schematu
+            </button>
+            <button
+              className="text-button"
+              disabled={locked || item.status !== 'draft' || dirty}
+              title={
+                publication.factsConfirmed ? 'Propozycja Gemini z potwierdzonych faktów' : 'Najpierw potwierdź fakty'
+              }
+              onClick={onAi}
+            >
+              <Sparkles size={14} /> Zaproponuj AI
             </button>
             <button
               className="text-button"

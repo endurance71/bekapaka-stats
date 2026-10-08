@@ -5,6 +5,7 @@ import { message, send } from '../lib/api';
 import { keys, useSettings } from '../lib/queries';
 import type { Settings } from '../lib/publications';
 import { HashtagInput } from '../features/publications/bits';
+import AgentTokens from '../features/publications/AgentTokens';
 import '../features/publications/publications.css';
 
 // Proposals only: the brand defines #BKPK; anything else needs the owner's decision.
@@ -64,6 +65,7 @@ export default function SettingsPage() {
           </p>
         )}
       </section>
+      <AgentTokens />
     </>
   );
 }

@@ -17,6 +17,7 @@ import CalendarPage from '../pages/CalendarPage';
 import PublicationsPage from '../pages/PublicationsPage';
 import PublicationPage from '../pages/PublicationPage';
 import SettingsPage from '../pages/SettingsPage';
+import PromptsPage from '../pages/PromptsPage';
 
 function SessionGate() {
   const client = useQueryClient();
@@ -53,6 +54,7 @@ const router = createBrowserRouter([
           { path: 'publikacje', element: <PublicationsPage /> },
           { path: 'publikacje/:id/:kanal?', element: <PublicationPage /> },
           { path: 'ustawienia', element: <SettingsPage /> },
+          { path: 'prompty', element: <PromptsPage /> },
           { path: 'grafiki', element: <ProjectsPage /> },
           { path: 'grafiki/:id', element: <ProjectPage /> },
           { path: 'materialy', element: <AssetsPage /> },

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Archive, ArrowLeft, Check, Download, Image as ImageIcon, LayoutGrid } from 'lucide-react';
+import { Archive, ArrowLeft, Check, Download, Image as ImageIcon, LayoutGrid, Sparkles } from 'lucide-react';
 import { API, message, send } from '../../lib/api';
 import { formatSpec } from '../../lib/contracts';
 import { warsawInput, warsawIso } from '../../lib/dates';
@@ -15,6 +15,7 @@ import {
   type Publication,
 } from '../../lib/publications';
 import ChannelPanel from './ChannelPanel';
+import AiCopyDialog from './AiCopyDialog';
 import FactsPanel from './FactsPanel';
 import { ChannelBadge, formatDateTime, StatusPill } from './bits';
 import './publications.css';
@@ -99,6 +100,7 @@ export default function PublicationEditor({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [title, setTitle] = useState(publication.title);
+  const [aiFor, setAiFor] = useState<ChannelId[] | null>(null);
   const def = playbook(publication.playbook);
   const tab =
     kanal && slugToChannel[kanal]
@@ -164,6 +166,10 @@ export default function PublicationEditor({
               }}
             />
           </label>
+          <button className="secondary" onClick={() => setAiFor(publication.items.map((i) => i.channel))}>
+            <Sparkles size={16} />
+            <span>Teksty AI</span>
+          </button>
           <a
             className={`primary ${packable ? '' : 'is-disabled'}`}
             aria-disabled={!packable}
@@ -190,7 +196,7 @@ export default function PublicationEditor({
             </button>
             {publication.items.map((i) => (
               <button key={i.id} aria-pressed={tab === i.channel} onClick={() => go(tabSlugs[i.channel])}>
-                <ChannelBadge channel={i.channel} status={i.status} /> {channels[i.channel].short}
+                <ChannelBadge channel={i.channel} status={i.status} decorative /> {channels[i.channel].short}
                 {i.ready.length === 0 && i.status === 'draft' && (
                   <i className="dot-ready" title="Gotowe do zatwierdzenia" />
                 )}
@@ -201,6 +207,7 @@ export default function PublicationEditor({
             <GraphicsOverview publication={publication} />
           ) : (
             <ChannelPanel
+              onAi={() => setAiFor([item.channel])}
               key={item.id}
               publication={publication}
               item={item}
@@ -219,7 +226,7 @@ export default function PublicationEditor({
             {publication.items.map((i) => (
               <li key={i.id}>
                 <button className="checklist-row" onClick={() => go(tabSlugs[i.channel])}>
-                  <ChannelBadge channel={i.channel} status={i.status} />
+                  <ChannelBadge channel={i.channel} status={i.status} decorative />
                   <span>
                     <b>{channels[i.channel].label}</b>
                     <small>{formatDateTime(i.plannedAt)}</small>
@@ -250,6 +257,9 @@ export default function PublicationEditor({
           </button>
         </aside>
       </div>
+      {aiFor && (
+        <AiCopyDialog publication={publication} initialChannels={aiFor} apply={apply} onClose={() => setAiFor(null)} />
+      )}
     </div>
   );
 }

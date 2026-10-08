@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useMatch, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  BookText,
   CalendarDays,
   Download,
   Home,
@@ -30,6 +31,7 @@ const nav = [
   ['/materialy', 'Materiały', Image],
   ['/eksporty', 'Eksporty', Download],
   ['/marka', 'Marka i partnerzy', ShieldCheck],
+  ['/prompty', 'Schematy i prompty', BookText],
   ['/ustawienia', 'Ustawienia', Settings],
 ] as const;
 

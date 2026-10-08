@@ -15,6 +15,7 @@ import { budget, queueAi } from './ai.js';
 import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope, roundOptions } from './sources.js';
 import { createLoginThrottle } from '../lib/loginThrottle.js';
 import { publicationRoutes } from './publications/routes.js';
+import { mcpRoutes } from './agent/mcp.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
 const jid = value => z.string().uuid().parse(value);
@@ -22,6 +23,8 @@ const safeAsset = a => { const { storageKey, ...rest } = a; return rest; };
 const safeJob = j => { const { leaseToken, payload, ...rest } = j; return rest; };
 export function createStudioRouter({ db, loginUser }) {
   const router = express.Router(); const throttle = createLoginThrottle({ limit: 10 });
+  // Agents use Bearer tokens instead of the owner's cookie, so MCP sits before the CSRF and session checks.
+  mcpRoutes(router, db);
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store'); res.set('X-Content-Type-Options', 'nosniff');
     if (!ownerId()) return res.status(503).json({ error: 'Studio czeka na konfigurację właściciela' });

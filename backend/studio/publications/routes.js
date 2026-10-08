@@ -3,6 +3,12 @@ import { channelIds, channels, itemStatuses, PUBLICATION_VERSION } from './chann
 import { playbooks, PLAYBOOK_VERSION } from './playbooks.js';
 import { TEMPLATE_VERSION } from './templates.js';
 import { LINT_VERSION } from './brand-lint.js';
+import { PROMPT_VERSION } from './prompts.js';
+import { queueCopy } from '../ai.js';
+import { createAgentToken, listAgentTokens, revokeAgentToken } from '../agent/tokens.js';
+import { contentSystemDocument } from './document.js';
+import { tools as agentTools } from '../agent/mcp.js';
+import { origin } from '../config.js';
 import {
   applyTemplates,
   approveItem,
@@ -28,7 +34,7 @@ const revision = z.object({ expectedRevision: z.number().int().min(1) }).strict(
 export function publicationRoutes(router, db) {
   router.get('/playbooks', (_req, res) =>
     res.json({
-      versions: { publication: PUBLICATION_VERSION, playbooks: PLAYBOOK_VERSION, templates: TEMPLATE_VERSION, lint: LINT_VERSION },
+      versions: { publication: PUBLICATION_VERSION, playbooks: PLAYBOOK_VERSION, templates: TEMPLATE_VERSION, lint: LINT_VERSION, prompts: PROMPT_VERSION },
       channels,
       itemStatuses,
       playbooks,
@@ -69,6 +75,31 @@ export function publicationRoutes(router, db) {
   router.get('/publications/:id/package', async (req, res) => {
     const { name, zip } = await publicationPackage(db, req.studioOwner, uuid(req.params.id));
     res.type('application/zip').attachment(name).send(Buffer.from(zip));
+  });
+  // AI copy for chosen channels; identical facts and prompt are served from cache without a new charge.
+  router.post('/publications/:id/ai-copy', async (req, res) => {
+    const input = z.object({ channels: z.array(z.enum(channelIds)).min(1), brief: z.string().trim().max(500).default('') }).strict().parse(req.body);
+    const view = await publicationView(db, req.studioOwner, uuid(req.params.id));
+    const wanted = input.channels.filter((c) => view.items.some((i) => i.channel === c));
+    if (!wanted.length) return res.status(422).json({ error: 'Publikacja nie ma wybranych kanałów' });
+    const queued = await queueCopy(db, req.studioOwner, view, wanted, {
+      brief: input.brief,
+      hashtags: (await getSettings(db, req.studioOwner)).hashtags,
+      aiArtwork: view.items.some((i) => i.graphic?.aiAssets),
+    });
+    if (queued.cached) return res.json({ cached: true, result: queued.result });
+    const { leaseToken, payload, ...job } = queued.job;
+    res.status(202).json({ cached: false, job });
+  });
+  router.get('/prompts/document', (_req, res) => {
+    const doc = contentSystemDocument({ tools: agentTools, mcpUrl: `${origin()}/api/studio/v1/mcp` });
+    res.type('text/markdown; charset=utf-8').attachment('bekapaka-system-tresci.md').send(doc);
+  });
+  router.get('/agent-tokens', async (req, res) => res.json(await listAgentTokens(db, req.studioOwner)));
+  router.post('/agent-tokens', async (req, res) => res.status(201).json(await createAgentToken(db, req.studioOwner, req.body)));
+  router.post('/agent-tokens/:id/revoke', async (req, res) => {
+    await revokeAgentToken(db, req.studioOwner, req.params.id);
+    res.json({ ok: true });
   });
   router.get('/settings', async (req, res) => res.json(await getSettings(db, req.studioOwner)));
   router.put('/settings', async (req, res) => res.json(await saveSettings(db, req.studioOwner, req.body)));

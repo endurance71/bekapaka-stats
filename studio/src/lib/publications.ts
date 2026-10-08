@@ -12,6 +12,7 @@ export { playbooks, playbook, playbookCategories } from '../../../backend/studio
 export { schematicCopy, when, shortDate } from '../../../backend/studio/publications/templates.js';
 export { lintCopy, hasErrors } from '../../../backend/studio/publications/brand-lint.js';
 export { channelTexts, mainText } from '../../../backend/studio/publications/texts.js';
+export { brandVoice, channelInstructions, PROMPT_VERSION } from '../../../backend/studio/publications/prompts.js';
 
 import { z } from 'zod';
 import { channels, copySchemas, factsSchema } from '../../../backend/studio/publications/channels.js';
