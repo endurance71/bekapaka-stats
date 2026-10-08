@@ -30,7 +30,7 @@ function warsawWeekday(iso) {
 }
 
 function factNumbers(facts) {
-  const raw = JSON.stringify(facts) + ' ' + [facts.date, facts.originalDate].map((d) => `${shortDate(d)} ${when(d)}`).join(' ');
+  const raw = JSON.stringify(facts) + ' ' + [facts.date, facts.originalDate, facts.report?.nextMatch?.date].map((d) => `${shortDate(d)} ${when(d)}`).join(' ');
   return new Set((raw.match(/\d+/g) || []).map((n) => String(Number(n))));
 }
 
