@@ -55,7 +55,7 @@ describe('pbpFormat', () => {
 
     it('indexes runs by end sequence', () => {
         const map = runsByEndSeq([{ side: 'home', points: 10, startSeq: 3, endSeq: 9, period: 1, endPeriod: 1, fromScore: { home: 0, away: 0 }, toScore: { home: 10, away: 0 } }]);
-        expect(runLabel(map.get(9)!)).toBe('Run 10:0');
+        expect(runLabel(map.get(9)!)).toBe('Seria 10:0');
     });
 
     it('categories by actionType: misses include blocked shots and missed FT; counts respect side', () => {

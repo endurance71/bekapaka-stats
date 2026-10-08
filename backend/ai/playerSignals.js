@@ -14,9 +14,12 @@ function positive(v) {
  * @param {{ averages: object, gameLog: object[], teamAverages?: { ppg?: number | null, turnoversPerGame?: number | null } }} input
  * @returns {Array<{ code: string, severity: string, message: string }>}
  */
+export const MIN_SIGNAL_GAMES = 3;
+
 export function computePlayerSignals({ averages, gameLog, teamAverages = {} }) {
   const signals = [];
-  if (!averages || !gameLog?.length) return signals;
+  // Z 1–2 meczów nie wyciągamy wniosków (sygnały trafiają do planu rozwoju AI)
+  if (!averages || !gameLog?.length || gameLog.length < MIN_SIGNAL_GAMES) return signals;
 
   const last3 = gameLog.slice(0, 3);
   const prev3 = gameLog.slice(3, 6);

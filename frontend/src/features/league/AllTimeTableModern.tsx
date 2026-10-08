@@ -194,7 +194,7 @@ export default function AllTimeTableModern() {
                                     { label: 'Z', value: team.wins, tone: 'success' },
                                     { label: 'P', value: team.losses, tone: 'danger' },
                                     { label: 'Pkt/m', value: fmt1(team.pointsForPerGame), tone: 'muted' },
-                                    { label: 'Str/m', value: fmt1(team.pointsAgainstPerGame), tone: 'muted' },
+                                    { label: 'Strac./m', value: fmt1(team.pointsAgainstPerGame), tone: 'muted' },
                                     { label: 'Kwarty', value: wl(team.quartersWon, team.quartersLost), tone: 'muted' },
                                 ]}
                                 footer={
@@ -221,7 +221,7 @@ export default function AllTimeTableModern() {
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="Porażki">P</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]" title="Procent zwycięstw">%Z</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Punkty zdobyte na mecz">Pkt/m</th>
-                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Punkty stracone na mecz">Str/m</th>
+                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Punkty stracone na mecz">Strac./m</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Kwarty wygrane–przegrane">Kwarty</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Dogrywki wygrane–przegrane">Dogr.</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Bilans meczów z BeKaPaKa (od 2023/24)">Z BeKaPaKa</th>

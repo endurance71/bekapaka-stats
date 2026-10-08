@@ -46,12 +46,12 @@ interface Scorer {
 type LeaderCategory = 'points' | 'three' | 'assists' | 'rebounds' | 'steals' | 'blocks';
 
 const categories: { id: LeaderCategory; label: string; unit: string; totalLabel: string; icon: any }[] = [
-    { id: 'points', label: 'Punkty', unit: 'PPG', totalLabel: 'Suma', icon: Trophy },
-    { id: 'three', label: 'Rzuty za 3', unit: 'Celne', totalLabel: 'Skuteczność', icon: Target },
-    { id: 'assists', label: 'Asysty', unit: 'APG', totalLabel: 'Suma', icon: Sparkles },
-    { id: 'rebounds', label: 'Zbiórki', unit: 'RPG', totalLabel: 'Suma', icon: Award },
-    { id: 'steals', label: 'Przechwyty', unit: 'SPG', totalLabel: 'Suma', icon: Zap },
-    { id: 'blocks', label: 'Bloki', unit: 'BPG', totalLabel: 'Suma', icon: Shield },
+    { id: 'points', label: 'Punkty', unit: 'pkt/m', totalLabel: 'Suma', icon: Trophy },
+    { id: 'three', label: 'Rzuty za 3', unit: 'celne', totalLabel: 'Skuteczność', icon: Target },
+    { id: 'assists', label: 'Asysty', unit: 'as/m', totalLabel: 'Suma', icon: Sparkles },
+    { id: 'rebounds', label: 'Zbiórki', unit: 'zb/m', totalLabel: 'Suma', icon: Award },
+    { id: 'steals', label: 'Przechwyty', unit: 'prz/m', totalLabel: 'Suma', icon: Zap },
+    { id: 'blocks', label: 'Bloki', unit: 'bl/m', totalLabel: 'Suma', icon: Shield },
 ];
 
 interface TopScorersModernProps {
@@ -99,37 +99,37 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                 return {
                     main: player.pointsAverage ? player.pointsAverage.toFixed(1) : '0.0',
                     sub: player.pointsTotal ? `${player.pointsTotal} pkt` : '0 pkt',
-                    label: 'PPG'
+                    label: 'pkt/m'
                 };
             case 'three':
                 return {
                     main: player.threePointsMade ? `${player.threePointsMade}` : '0',
                     sub: player.threePointsPct != null ? `${Number(player.threePointsPct).toFixed(1)}% (${player.threePointsMade ?? 0}/${player.threePointsAttempted ?? 0})` : '0%',
-                    label: 'CELNE'
+                    label: 'celne'
                 };
             case 'assists':
                 return {
                     main: player.assistsAverage ? player.assistsAverage.toFixed(1) : '0.0',
                     sub: player.assistsTotal ? `${player.assistsTotal} ast` : '0 ast',
-                    label: 'APG'
+                    label: 'as/m'
                 };
             case 'rebounds':
                 return {
                     main: player.reboundsAverage ? player.reboundsAverage.toFixed(1) : '0.0',
                     sub: player.reboundsTotal ? `${player.reboundsTotal} zb` : '0 zb',
-                    label: 'RPG'
+                    label: 'zb/m'
                 };
             case 'steals':
                 return {
                     main: player.stealsAverage ? player.stealsAverage.toFixed(1) : '0.0',
                     sub: player.stealsTotal ? `${player.stealsTotal} prz` : '0 prz',
-                    label: 'SPG'
+                    label: 'prz/m'
                 };
             case 'blocks':
                 return {
                     main: player.blocksAverage ? player.blocksAverage.toFixed(1) : '0.0',
                     sub: player.blocksTotal ? `${player.blocksTotal} bl` : '0 bl',
-                    label: 'BPG'
+                    label: 'bl/m'
                 };
             default:
                 return { main: '0.0', sub: '0', label: '' };

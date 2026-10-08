@@ -181,7 +181,7 @@ export default function PlayerProfile() {
         if (!data?.gameLog) return [];
         return [...data.gameLog].reverse().map(g => ({
             ...g,
-            formattedDate: new Date(g.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+            formattedDate: new Date(g.date).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' })
         }));
     }, [data]);
 
@@ -261,10 +261,10 @@ export default function PlayerProfile() {
                             {/* Key Stats Bar */}
                             <div className="grid grid-cols-2 lg:grid-cols-4 max-w-2xl w-full border-t-2 border-bkpk-text-primary">
                                 {[
-                                    { label: 'PPG', value: formatStatFixed(averages.ppg, 1), color: 'text-bkpk-text-primary' },
-                                    { label: 'RPG', value: formatStatFixed(averages.rpg, 1), color: 'text-bkpk-text-primary' },
-                                    { label: 'APG', value: formatStatFixed(averages.apg, 1), color: 'text-bkpk-text-primary' },
-                                    { label: 'EVAL', value: formatStatFixed(averages.evalAvg ?? data.leagueKalk?.eval ?? null, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'Pkt/m', value: formatStatFixed(averages.ppg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'Zb/m', value: formatStatFixed(averages.rpg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'As/m', value: formatStatFixed(averages.apg, 1), color: 'text-bkpk-text-primary' },
+                                    { label: 'Eval', value: formatStatFixed(averages.evalAvg ?? data.leagueKalk?.eval ?? null, 1), color: 'text-bkpk-text-primary' },
                                 ].map((s, idx) => (
                                     <div
                                         key={idx}
@@ -294,7 +294,8 @@ export default function PlayerProfile() {
                         canGenerate={isAdmin}
                         loading={aiLoading}
                         onGenerate={handleGenerateAi}
-                        emptyHint="Brak planu rozwoju AI. Administrator może go wygenerować (min. 3 mecze w bazie)."
+                        emptyHint="Brak planu rozwoju — użyj „Generuj” (potrzebne min. 3 mecze)."
+                        playerEmptyHint="Plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach)."
                     />
                 )}
 
@@ -320,7 +321,7 @@ export default function PlayerProfile() {
                                         title="Brak statystyk meczowych"
                                         message={
                                             selectedSeason
-                                                ? `Brak występów w sezonie ${selectedSeason.label}. Wybierz inny sezon w menu lub uruchom import meczów.`
+                                                ? `Brak występów w sezonie ${selectedSeason.label}. Wybierz inny sezon w menu.`
                                                 : 'Ten zawodnik nie ma jeszcze zarejestrowanych występów w tym sezonie.'
                                         }
                                         className="bg-transparent border-none p-0"
@@ -352,6 +353,7 @@ export default function PlayerProfile() {
                                             <Area
                                                 type="monotone"
                                                 dataKey="pts"
+                                                name="Punkty"
                                                 stroke={chartColors.team}
                                                 strokeWidth={3}
                                                 fill={chartColors.team}
@@ -398,10 +400,10 @@ export default function PlayerProfile() {
                             <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Efektywność Sezonowa</h3>
                             <div className="space-y-6">
                                 {[
-                                    { label: 'eFG%', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
-                                    { label: 'TS%', value: formatStatFixed((averages.ts ?? 0) * 100, 1) + '%', progress: (averages.ts ?? 0) * 100 },
+                                    { label: 'Skuteczność rzutów', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
+                                    { label: 'Skuteczność ogólna', value: formatStatFixed((averages.ts ?? 0) * 100, 1) + '%', progress: (averages.ts ?? 0) * 100 },
                                     ...(averages.plusMinusAvg != null
-                                        ? [{ label: 'Plus/Minus Avg', value: averages.plusMinusAvg > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 }]
+                                        ? [{ label: 'Średni bilans +/-', value: averages.plusMinusAvg > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 }]
                                         : []),
                                 ].map((stat, i) => (
                                     <div key={i} className="space-y-2">

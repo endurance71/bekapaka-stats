@@ -119,21 +119,3 @@ export function generateGameInsights(game, bekapakaStats, opponentStats, extras 
 
     return insights;
 }
-
-export function generateTrendInsights(trends) {
-    const insights = [];
-    if (!trends || trends.length < 3) return insights;
-
-    const last3 = trends.slice(-3);
-    const avgEfg = last3.reduce((sum, g) => sum + (g.efg || 0), 0) / 3;
-
-    if (avgEfg > 0.55) {
-        insights.push({
-            type: 'success',
-            text: 'Zespół utrzymuje wysoką formę rzutową w ostatnich 3 meczach.',
-            category: 'trend'
-        });
-    }
-
-    return insights;
-}

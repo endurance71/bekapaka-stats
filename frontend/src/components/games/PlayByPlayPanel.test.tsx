@@ -55,7 +55,7 @@ describe('PlayByPlayPanel', () => {
     it('renders periods, BeKaPaKa-first scores and run badges', () => {
         render(<PlayByPlayPanel data={data} />);
         expect(screen.getByRole('region', { name: 'Kwarta 1' })).toBeInTheDocument();
-        expect(screen.getByText('Run 8:0')).toBeInTheDocument();
+        expect(screen.getByText('Seria 8:0')).toBeInTheDocument();
         // Wynik w perspektywie BeKaPaKa (lewa strona) — 8:0, nie 0:8
         const q1 = screen.getByRole('region', { name: 'Kwarta 1' });
         expect(within(q1).getAllByText('8:0').length).toBeGreaterThan(0);

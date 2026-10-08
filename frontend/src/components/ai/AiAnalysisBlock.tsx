@@ -148,7 +148,10 @@ interface AiAnalysisBlockProps {
   canGenerate?: boolean;
   loading: boolean;
   onGenerate?: (force?: boolean) => void;
+  /** Pusty stan dla admina (może wygenerować) */
   emptyHint?: string;
+  /** Pusty stan dla zawodnika — bez instrukcji dla admina */
+  playerEmptyHint?: string;
   /** Etykieta źródła, np. „Gemini” / „Szablon” */
   sourceLabel?: string | null;
   /** Krótki komunikat gdy cache jest nieaktualny (re-import, scrape KALK) */
@@ -174,7 +177,8 @@ export default function AiAnalysisBlock({
   canGenerate = false,
   loading,
   onGenerate,
-  emptyHint = 'Brak analizy AI. Administrator może ją wygenerować.',
+  emptyHint = 'Brak analizy AI — użyj „Generuj”.',
+  playerEmptyHint = 'Analiza pojawi się, gdy trener ją przygotuje.',
   sourceLabel,
   staleHint,
   compactActions = false
@@ -211,9 +215,11 @@ export default function AiAnalysisBlock({
     };
   }, [modalOpen]);
 
+  // Model i źródło (Gemini / szablon) tylko dla admina; zawodnik widzi datę
   const metaLine = generatedAt
-    ? `Wygenerowano ${new Date(generatedAt).toLocaleString('pl-PL')}${model ? ` · ${model}` : ''}${sourceLabel ? ` · ${sourceLabel}` : ''}`
-    : sourceLabel ?? null;
+    ? `Wygenerowano ${new Date(generatedAt).toLocaleString('pl-PL')}${canGenerate && model ? ` · ${model}` : ''}${canGenerate && sourceLabel ? ` · ${sourceLabel}` : ''}`
+    : canGenerate ? sourceLabel ?? null : null;
+  const shownEmptyHint = canGenerate ? emptyHint : playerEmptyHint;
 
   const handleOpenModal = () => {
     if (hasContent) setModalOpen(true);
@@ -249,7 +255,7 @@ export default function AiAnalysisBlock({
                     {hasContent ? 'Raport dostępny' : 'Brak raportu'}
                   </p>
                 )}
-                {staleHint && hasContent ? (
+                {canGenerate && staleHint && hasContent ? (
                   <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-danger">{staleHint}</p>
                 ) : null}
               </div>
@@ -320,7 +326,7 @@ export default function AiAnalysisBlock({
 
         {!hasContent && !loading ? (
           <div className="px-4 sm:px-5 pb-4 sm:pb-5">
-            <p className="text-sm text-bkpk-text-muted leading-relaxed">{emptyHint}</p>
+            <p className="text-sm text-bkpk-text-muted leading-relaxed">{shownEmptyHint}</p>
           </div>
         ) : null}
       </BkpkCard>

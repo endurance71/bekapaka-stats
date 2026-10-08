@@ -108,18 +108,18 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="text-2xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">
-                                        {formatStatFixed(player.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">PPG</span>
+                                        {formatStatFixed(player.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">pkt/m</span>
                                     </div>
                                     {(player.rpg ?? 0) > 0 && (
                                         <div className="text-sm font-semibold tabular-nums text-bkpk-text-secondary">
-                                            {formatStatFixed(player.rpg)} <span className="label-caps text-[11px] text-bkpk-text-muted">REB</span>
+                                            {formatStatFixed(player.rpg)} <span className="label-caps text-[11px] text-bkpk-text-muted">zb/m</span>
                                         </div>
                                     )}
                                     <div className="text-sm font-semibold tabular-nums text-bkpk-text-secondary">
                                         {evalVal != null && evalVal > 0
                                             ? formatStatFixed(evalVal)
                                             : '—'}{' '}
-                                        <span className="label-caps text-[11px] text-bkpk-text-muted">EVAL</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-muted">eval</span>
                                     </div>
                                 </div>
                             </div>

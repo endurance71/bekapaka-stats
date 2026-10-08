@@ -40,11 +40,15 @@ interface TeamTrend {
   secondChancePoints: number;
 }
 
+const MIN_GAMES_FOR_CONCLUSIONS = 3;
+
 interface LeagueComparison {
   bekapaka: {
     ppg: number;
     oppg: number;
     winPct: number;
+    /** Rozegrane mecze BeKaPaKa w sezonie */
+    matches?: number;
   };
   league: {
     ppg: number;
@@ -75,7 +79,7 @@ export default function Trends() {
     ]).then(([trendsData, compData]) => {
       setTrends((trendsData || []).filter(t => t !== null && t !== undefined).map(t => ({
         ...t,
-        formattedDate: new Date(t.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        formattedDate: new Date(t.date).toLocaleDateString('pl-PL', { month: 'short', day: 'numeric' }),
         benchPoints: Number(t.benchPoints || 0),
         fastBreakPoints: Number(t.fastBreakPoints || 0),
         pointsOffTO: Number(t.pointsOffTO || 0),
@@ -90,13 +94,16 @@ export default function Trends() {
     if (!comparison) return [];
     return [
       { subject: 'Atak (PPG)', A: (comparison.bekapaka.ppg / (comparison.league.ppg || 1)) * 100, fullMark: 150 },
-      { subject: 'Obrona (pPPG)', A: (comparison.league.oppg / (comparison.bekapaka.oppg || 1)) * 100, fullMark: 150 },
+      { subject: 'Obrona (stracone/m)', A: (comparison.league.oppg / (comparison.bekapaka.oppg || 1)) * 100, fullMark: 150 },
       { subject: '% Zwycięstw', A: (comparison.bekapaka.winPct / (comparison.league.winPct || 1)) * 100, fullMark: 150 },
     ];
   }, [comparison]);
 
   const hasTrends = trends.length > 0;
   const hasLeagueData = Boolean(comparison && (comparison.bekapaka.ppg > 0 || comparison.league.ppg > 0));
+  // Wnioski i ocena „powyżej / poniżej średniej” dopiero od 3 meczów BeKaPaKa
+  const bkMatches = comparison?.bekapaka.matches ?? 0;
+  const enoughGames = bkMatches >= MIN_GAMES_FOR_CONCLUSIONS;
 
   if (loading) {
     return <PageLoader fullScreen label="Analizowanie DNA wyników..." />;
@@ -129,7 +136,7 @@ export default function Trends() {
                 <div className="flex gap-5">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-[3px]" style={{ backgroundColor: chartColors.team }} aria-hidden="true" />
-                    <span className="label-caps text-[11px] text-bkpk-text-secondary">Rtg Ofensywny</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-secondary">Atak na 100 akcji</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-0 border-t-2 border-dashed" style={{ borderColor: chartColors.secondary }} aria-hidden="true" />
@@ -173,6 +180,7 @@ export default function Trends() {
                       yAxisId="left"
                       type="monotone"
                       dataKey="offRtg"
+                      name="Atak na 100 akcji"
                       stroke={chartColors.team}
                       strokeWidth={3}
                       fill={chartColors.team}
@@ -182,6 +190,7 @@ export default function Trends() {
                       yAxisId="right"
                       type="monotone"
                       dataKey="pace"
+                      name="Tempo"
                       stroke={chartColors.secondary}
                       strokeWidth={2}
                       strokeDasharray="5 5"
@@ -294,12 +303,12 @@ export default function Trends() {
 
           {/* Efficiency Summary */}
           <BkpkCard variant="flat" className="space-y-5">
-            <h3 className="text-[22px] text-bkpk-text-primary border-b border-bkpk-border-subtle pb-4">Kwadrant Efektywności</h3>
+            <h3 className="text-[22px] text-bkpk-text-primary border-b border-bkpk-border-subtle pb-4">Na tle ligi</h3>
             <div className="divide-y divide-bkpk-border-subtle border-y border-bkpk-border-subtle">
               <div className="flex items-center justify-between gap-4 py-4">
                 <div className="space-y-1">
                   <div className="label-caps text-[11px] text-bkpk-text-secondary">Status Ataku</div>
-                  <div className="text-base font-semibold text-bkpk-text-primary">{hasLeagueData ? comparison?.rankings.points : 'Brak danych'}</div>
+                  <div className="text-base font-semibold text-bkpk-text-primary">{hasLeagueData && enoughGames ? comparison?.rankings.points : 'Za mało meczów'}</div>
                 </div>
                 <span className={sectionIconClass}>
                   <Target className={cn("w-5 h-5", hasLeagueData && comparison?.rankings.points === 'Powyżej średniej' ? "text-bkpk-success" : "text-bkpk-text-muted")} />
@@ -309,7 +318,7 @@ export default function Trends() {
               <div className="flex items-center justify-between gap-4 py-4">
                 <div className="space-y-1">
                   <div className="label-caps text-[11px] text-bkpk-text-secondary">Status Obrony</div>
-                  <div className="text-base font-semibold text-bkpk-text-primary">{hasLeagueData ? comparison?.rankings.defense : 'Brak danych'}</div>
+                  <div className="text-base font-semibold text-bkpk-text-primary">{hasLeagueData && enoughGames ? comparison?.rankings.defense : 'Za mało meczów'}</div>
                 </div>
                 <span className={sectionIconClass}>
                   <Zap className={cn("w-5 h-5", hasLeagueData && comparison?.rankings.defense === 'Lepsza niż średnia' ? "text-bkpk-success" : "text-bkpk-text-muted")} />
@@ -320,8 +329,8 @@ export default function Trends() {
             <div className="pl-4 border-l-2 border-bkpk-primary space-y-3">
               <span className="kicker">Wnioski Trenerskie</span>
               <p className="text-sm text-bkpk-text-secondary leading-relaxed">
-                {!hasLeagueData
-                  ? "Brak danych meczowych do wyciągnięcia wniosków taktycznych. Rozegraj pierwsze mecze w sezonie, aby aktywować analizę kwadrantu."
+                {!hasLeagueData || !enoughGames
+                  ? `Za mało meczów (${bkMatches}/${MIN_GAMES_FOR_CONCLUSIONS}) — wnioski pokażemy po ${MIN_GAMES_FOR_CONCLUSIONS}. meczu.`
                   : comparison?.rankings.points === 'Powyżej średniej' && comparison?.rankings.defense === 'Lepsza niż średnia'
                     ? "Wykryto dominację. Drużyna radzi sobie lepiej niż reszta ligi po obu stronach parkietu. Utrzymać tempo."
                     : comparison?.rankings.points === 'Powyżej średniej'
@@ -336,12 +345,12 @@ export default function Trends() {
           {/* KPI Overview */}
           <div className="grid grid-cols-2 gap-4">
             <BkpkCard variant="flat" className="text-center py-6">
-              <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Śr. Punktów</div>
+              <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Punkty / mecz</div>
               <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.ppg ? comparison.bekapaka.ppg.toFixed(1) : '0.0'}</div>
               <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {hasLeagueData && comparison?.league.ppg ? comparison.league.ppg.toFixed(1) : '0.0'}</div>
             </BkpkCard>
             <BkpkCard variant="flat" className="text-center py-6">
-              <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Obrona</div>
+              <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Stracone / mecz</div>
               <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.oppg ? comparison.bekapaka.oppg.toFixed(1) : '0.0'}</div>
               <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {hasLeagueData && comparison?.league.oppg ? comparison.league.oppg.toFixed(1) : '0.0'}</div>
             </BkpkCard>

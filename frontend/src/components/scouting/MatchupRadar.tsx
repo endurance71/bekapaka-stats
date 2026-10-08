@@ -57,7 +57,7 @@ function buildRadarSeries(bekapaka: Stats, opponent: Stats) {
       fullMark: 100
     },
     {
-      subject: '3PT%',
+      subject: 'Za 3 %',
       A: normalizeRadarValue(bekapaka.threePtPct, threeMax),
       B: normalizeRadarValue(opponent.threePtPct, threeMax),
       fullMark: 100

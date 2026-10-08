@@ -18,11 +18,11 @@ interface MatchupStatCardsProps {
 }
 
 const METRICS = [
-  { key: 'ppg', label: 'PPG', format: (v: number) => formatStatFixed(v) },
+  { key: 'ppg', label: 'Pkt/m', format: (v: number) => formatStatFixed(v) },
   { key: 'oppg', label: 'Stracone', format: (v: number) => formatStatFixed(v), invertBetter: true },
   { key: 'winPct', label: 'Wygrane %', format: (v: number) => `${v ?? 0}%` },
   { key: 'pace', label: 'Tempo', format: (v: number) => (v > 0 ? formatStatFixed(v) : '—') },
-  { key: 'threePtPct', label: '3PT %', format: (v: number) => (v > 0 ? `${formatStatFixed(v)}%` : '—') }
+  { key: 'threePtPct', label: 'Za 3 %', format: (v: number) => (v > 0 ? `${formatStatFixed(v)}%` : '—') }
 ] as const;
 
 export function MatchupStatCards({ opponent, bekapaka, compact = false }: MatchupStatCardsProps) {

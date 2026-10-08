@@ -404,7 +404,7 @@ export default function GameDetail() {
               onGenerate={handleGenerateAi}
               staleHint={
                 game.aiSummaryStale
-                  ? 'Analiza może być nieaktualna (zmieniły się statystyki meczu). Admin: użyj Odśwież lub wymuszenia.'
+                  ? 'Analiza może być nieaktualna (zmieniły się statystyki meczu) — odśwież.'
                   : null
               }
             />
@@ -416,7 +416,7 @@ export default function GameDetail() {
                   <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
                     <BarChart2 className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
                   </div>
-                  <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki Zawodników (Box Score)</h3>
+                  <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki zawodników</h3>
                 </div>
 
                 <div className="flex shrink-0 border border-bkpk-border-strong">

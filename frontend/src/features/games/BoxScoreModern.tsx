@@ -4,6 +4,9 @@ import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import useIsMobile from '../../hooks/useIsMobile';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
+import { Link } from 'react-router-dom';
+import StatLabel from '../../shared/ui/StatLabel';
+import type { StatKey } from '../../shared/lib/statGlossary';
 
 export interface PlayerStat {
     name: string;
@@ -110,25 +113,25 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
     );
 });
 
-type Header = { label: string; className: string; title?: string; extended?: boolean; plusMinus?: boolean };
+type Header = { label: string; key?: StatKey; className: string; title?: string; extended?: boolean; plusMinus?: boolean };
 
 const headers: Header[] = [
     { label: 'Zawodnik', className: 'text-left min-w-[120px] sticky left-0 z-20 bg-[var(--table-head-bg)] border-r border-bkpk-border-strong' },
-    { label: 'MIN', className: 'text-center whitespace-nowrap' },
-    { label: 'PTS', className: 'text-center whitespace-nowrap' },
-    { label: 'REB', className: 'text-center whitespace-nowrap' },
-    { label: 'ZB A/O', title: 'Zbiórki w ataku / w obronie', className: 'text-center whitespace-nowrap hidden sm:table-cell', extended: true },
-    { label: 'AST', className: 'text-center whitespace-nowrap' },
-    { label: 'STL', className: 'text-center whitespace-nowrap hidden sm:table-cell' },
-    { label: 'BLK', className: 'text-center whitespace-nowrap hidden sm:table-cell' },
-    { label: 'TO', className: 'text-center whitespace-nowrap' },
+    { label: 'Min', key: 'min', className: 'text-center whitespace-nowrap' },
+    { label: 'Pkt', key: 'pts', className: 'text-center whitespace-nowrap' },
+    { label: 'Zb', key: 'reb', className: 'text-center whitespace-nowrap' },
+    { label: 'Zb A/O', title: 'Zbiórki w ataku / w obronie', className: 'text-center whitespace-nowrap hidden sm:table-cell', extended: true },
+    { label: 'As', key: 'ast', className: 'text-center whitespace-nowrap' },
+    { label: 'Prz', key: 'stl', className: 'text-center whitespace-nowrap hidden sm:table-cell' },
+    { label: 'Bl', key: 'blk', className: 'text-center whitespace-nowrap hidden sm:table-cell' },
+    { label: 'Str', key: 'tov', className: 'text-center whitespace-nowrap' },
     { label: 'F/Fw', title: 'Faule popełnione / wymuszone', className: 'text-center whitespace-nowrap hidden sm:table-cell', extended: true },
-    { label: 'Bl o', title: 'Bloki otrzymane', className: 'text-center whitespace-nowrap hidden lg:table-cell', extended: true },
-    { label: 'FG', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
-    { label: '3P', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
-    { label: 'FT', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
-    { label: '+/-', title: 'Bilans punktów, gdy zawodnik był na parkiecie', className: 'text-center whitespace-nowrap', plusMinus: true },
-    { label: 'VAL', className: 'text-center whitespace-nowrap' },
+    { label: 'Bl o', key: 'blkAgainst', className: 'text-center whitespace-nowrap hidden lg:table-cell', extended: true },
+    { label: 'Z gry', key: 'fg', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
+    { label: 'Za 3', key: 'three', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
+    { label: 'Wolne', key: 'ft', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
+    { label: '+/-', key: 'plusMinus', className: 'text-center whitespace-nowrap', plusMinus: true },
+    { label: 'Eval', key: 'eval', className: 'text-center whitespace-nowrap' },
 ];
 
 function BoxScoreTable({ playerStats, compact, showPlusMinus }: { playerStats: PlayerStat[]; compact?: boolean; showPlusMinus: boolean }) {
@@ -148,7 +151,7 @@ function BoxScoreTable({ playerStats, compact, showPlusMinus }: { playerStats: P
                                 h.className
                             )}
                         >
-                            {h.label}
+                            {h.key ? <StatLabel k={h.key} /> : h.label}
                         </th>
                     ))}
                 </tr>
@@ -186,7 +189,7 @@ export default function BoxScore({ playerStats, loading, showPlusMinus }: BoxSco
 
     const legend = hasExtendedBoxColumns(playerStats) ? (
         <p className="mt-2 text-[11px] text-bkpk-text-muted">
-            <span className="text-bkpk-primary">*</span> pierwsza piątka · ZB A/O — zbiórki w ataku/obronie · F/Fw — faule popełnione/wymuszone · Bl o — bloki otrzymane
+            <span className="text-bkpk-primary">*</span> pierwsza piątka · Zb A/O — zbiórki w ataku/obronie · F/Fw — faule popełnione/wymuszone · Bl o — bloki otrzymane · <Link to="/slowniczek" className="underline">słowniczek</Link>
         </p>
     ) : null;
 

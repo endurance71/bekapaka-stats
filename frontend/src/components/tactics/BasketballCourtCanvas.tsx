@@ -747,22 +747,22 @@ export default function BasketballCourtCanvas({
           if (player.action === 'dribble' || renderedBall.holderId === player.id) {
             roleTag = 'PRZECHWYT';
           } else if (distToBall < 15) {
-            if (renderedBall.y > 64) roleTag = 'ON-BALL PRESJA';
+            if (renderedBall.y > 64) roleTag = 'PRESJA NA PIŁCE';
             else if (renderedBall.y < 30) roleTag = 'ZAMKNIĘCIE ROGU';
-            else roleTag = 'CLOSEOUT';
+            else roleTag = 'DOSKOK';
           } else if (player.id === 'D1') {
-            if (renderedBall.x > 62 || renderedBall.x < 38) roleTag = 'NAIL HELP';
+            if (renderedBall.x > 62 || renderedBall.x < 38) roleTag = 'POMOC ZE ŚRODKA';
             else roleTag = 'SZCZYT 3PT';
           } else if (player.id === 'D2') {
-            if (renderedBall.x < 38) roleTag = 'NAIL HELP';
-            else if (renderedBall.x > 65 && renderedBall.y > 45) roleTag = 'CLOSEOUT';
+            if (renderedBall.x < 38) roleTag = 'POMOC ZE ŚRODKA';
+            else if (renderedBall.x > 65 && renderedBall.y > 45) roleTag = 'DOSKOK';
             else roleTag = 'PRAWE SKRZYDŁO';
           } else if (player.id === 'D3') {
-            if (renderedBall.x > 62) roleTag = 'WEAK-SIDE DROP';
+            if (renderedBall.x > 62) roleTag = 'ZEJŚCIE SŁABEJ STRONY';
             else roleTag = 'LEWE SKRZYDŁO';
           } else if (player.id === 'D4') {
             if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ZAMKNIĘCIE ROGU';
-            else if (renderedBall.x < 38) roleTag = 'WEAK-SIDE DROP';
+            else if (renderedBall.x < 38) roleTag = 'ZEJŚCIE SŁABEJ STRONY';
             else roleTag = 'PRAWE SKRZYDŁO / DÓŁ';
           } else if (player.id === 'D5') {
             if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ODCIĘCIE LINII';
