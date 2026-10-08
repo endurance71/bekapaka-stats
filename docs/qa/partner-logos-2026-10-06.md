@@ -30,7 +30,6 @@ Pierwszeństwo miały witryny partnerów i oryginalne wektory. Przejrzano nagł�
 | Piotr Adamus | Dokładne imię i nazwisko, Bobolice, usługi muzyczne, oficjalne [materiały gminy](https://bobolice.pl/cms/5144). | Nie potwierdzono znaku ani wyboru konkretnej marki; pełna nazwa partnera osobowego. |
 | Remek / Remigiusz Klimek | Skup Aut, Autolaweta, RK-TRANS; [profil właściwego przedsiębiorcy](https://www.orlymotoryzacji.pl/profile-1852024-skup-aut-autolaweta-auto-handel-remigiusz-klimek) i oficjalne materiały turniejowe. | Brak potwierdzonego logo. Plik marki `logo-04.png` przedstawia **POM-PUI, K. Błażejak**, inny podmiot; nie użyto go, zgodnie z adnotacją w `partnerzy.json`. |
 | Emil Jaświg | Auto-Części i Oleje, Bobolice, katalogi firm oraz [materiały powiatu](https://powiat.koszalin.pl/wp-content/uploads/2020/05/gaz-ziemska-10-2019-int.pdf). | Tożsamość firmy potwierdzona, pliku znaku nie znaleziono; pełna nazwa. |
-| Insight Data Consulting Izabela Kaszubowska | Dokładna nazwa, Bobolice/Głodowa, [profil firmy w Oferteo](https://www.oferteo.pl/insight-data-consulting-izabela-kaszubowska/firma/6139645) i katalogi. Profil ma awatar literowy, bez własnego logotypu. | Pełna nazwa; odrzucono logo portalu oraz zagranicznych firm Insight Data o podobnej nazwie. |
 
 Oryginały od powyższych pięciu partnerów umożliwią uzupełnienie grafiki bez zgadywania. Dla CERTE, Contemy i Fem-Tech warto docelowo pozyskać aktualne SVG/PDF/EPS bezpośrednio od firm — obecnie użyte rastry są najlepszymi potwierdzonymi materiałami dostępnymi w ramach tego przeglądu.
 
@@ -57,3 +56,15 @@ Konwersja EPS: Ghostscript `pdfwrite` z `-dSAFER -dEPSCrop`, następnie `pdftoca
 ## Uzupełnienie po wskazaniu użytkownika: ShipApp
 
 W pierwszym przeglądzie zachowano 14 rekordów istniejących w danych strony i pominięto ShipApp obecny w systemie partnerów marki. Na prośbę użytkownika dodano 15. rekord, `s-15`, z nazwą ShipApp, linkiem `https://shipapp.pl` oraz niezmienionym oryginalnym transparentnym PNG 1884×366 z `02_system/partnerzy/logo-raster/logo-10.png`. Plik dostępny lokalnie jako `/images/partners/shipapp.png`. Nie użyto przygotowanego wcześniej SVG jako rzekomego oryginału. Homepage pobiera 18 partnerów, a `/sponsorzy` 60, więc oba widoki pokazują nowy rekord. Osobna sygnatura Powered by w stopce pozostaje. Aktualnie lista liczy **15 partnerów i 10 znaków (5 wektorów oraz 5 rastrów)**. Manifest uzupełniono o pochodzenie i SHA-256 nowego pliku.
+
+## Aktualizacja 8.10.2026 — Insight Data Consulting Izabela Kaszubowska
+
+Partner dostarczył 7 wariantów logo (PNG z przezroczystością): poziomy miedziany, poziomy biały, poziomy czarny, pionowy z podpisem „Izabela Kaszubowska” (3 kadry) i sam monogram IDC. Każdy wariant sprawdzono w faktycznym polu logo kafla (150 × 52 px, ekran 2×):
+
+- **wybrany: poziomy miedziany** — najlepiej wypełnia szeroki kafel, „Insight Data Consulting” pozostaje czytelne, zachowany firmowy kolor;
+- pionowe — podpis „Izabela Kaszubowska” ma w kaflu 2–3 px, nieczytelny;
+- sam monogram — bez nazwy firmy;
+- czarny — czytelny, ale traci kolor marki; biały — do ciemnego tła, którego ściana partnerów nie używa.
+
+Plik WWW: `site/public/images/partners/insight-data-consulting.webp` — przycięty przezroczysty margines (z prawie przezroczystą poświatą, alfa ≤ 8, która zawyżała obrys), 1050 × 174 px (zapas na ekrany 3×), bezstratny WebP z kanałem alfa, 75 KB. W kaflu `logoCardScale: 1.25` → ok. 187 × 31 px, jak inne szerokie znaki (ShipApp, ALAB). Oryginały pozostają u klubu.
+

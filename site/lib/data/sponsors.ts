@@ -130,7 +130,12 @@ export const sponsors: SponsorItem[] = [
     name: 'Insight Data Consulting Izabela Kaszubowska',
     slug: 'insight-data-consulting',
     websiteUrl: '',
-    order: 14
+    order: 14,
+    logoUrl: '/images/partners/insight-data-consulting.webp',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain',
+    // Znak poziomy ~6:1 — przy 150 px podpis „Insight Data Consulting” byłby za drobny.
+    logoCardScale: 1.25
   },
   {
     id: 's-15',
