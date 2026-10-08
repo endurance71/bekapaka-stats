@@ -67,7 +67,7 @@ export async function buildSyncState(prisma, season) {
   return state;
 }
 
-function runScraper(args, { onProgress, onLog, pythonBin = 'python3' }) {
+function runScraper(args, { onProgress, onLog, pythonBin = process.env.KALK_PYTHON || 'python3' }) {
   return new Promise((resolve, reject) => {
     const child = spawn(pythonBin, [KALK_SYNC_SCRIPT, ...args], {
       cwd: path.dirname(KALK_SYNC_SCRIPT),
