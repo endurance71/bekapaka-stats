@@ -5,9 +5,9 @@ type RosterRow = { id: string; kalkSlug?: string | null };
 
 let cache: Promise<Map<string, string>> | null = null;
 
-/** slug KALK → ID zawodnika w składzie (link do profilu). Jedno pobranie `/api/roster` na sesję. */
+/** slug KALK → ID zawodnika w składzie (link do profilu), także tych, którzy nie grają w tym sezonie. Jedno pobranie na sesję. */
 export function loadRosterLinks(): Promise<Map<string, string>> {
-    cache ??= fetchJSON<RosterRow[]>('/api/roster')
+    cache ??= fetchJSON<RosterRow[]>('/api/roster?includeInactive=1')
         .then((rows) => new Map((rows || []).filter((r) => r.kalkSlug).map((r) => [r.kalkSlug as string, r.id])))
         .catch(() => {
             cache = null;

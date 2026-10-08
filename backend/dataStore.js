@@ -300,16 +300,23 @@ function rosterGameFromKalkLog(entry, stats) {
   };
 }
 
-export async function getRoster(querySeasonId = undefined) {
+/**
+ * Skład w sezonie. Zawodnicy oznaczeni „nie gra w tym sezonie” (inactiveSeasonIds) są pomijani,
+ * chyba że includeInactive (np. mapa slug → profil dla box score z dawnych sezonów).
+ */
+export async function getRoster(querySeasonId = undefined, { includeInactive = false } = {}) {
   await ensureSeeded();
   await ensureDefaultSeason();
   const targetSeasonId = await resolveSeasonId(querySeasonId);
   const targetSeason = await getSeasonById(targetSeasonId);
 
-  const rows = await prisma.rosterPlayer.findMany({
+  const allRows = await prisma.rosterPlayer.findMany({
     include: { kalkPlayer: true },
     orderBy: { number: 'asc' }
   });
+  const rows = includeInactive || !targetSeason?.id
+    ? allRows
+    : allRows.filter((r) => !(r.inactiveSeasonIds || []).includes(targetSeason.id));
 
   return Promise.all(
     rows.map(async (r) => {
@@ -2250,8 +2257,8 @@ export async function updateRosterStats() {
   console.log('[Info] Roster stats updated.');
 }
 
-export async function listAllPlayers(querySeasonId = undefined) {
-  return await getRoster(querySeasonId);
+export async function listAllPlayers(querySeasonId = undefined, options = {}) {
+  return await getRoster(querySeasonId, options);
 }
 
 // ZAWODNICY - Pobierz pojedynczego zawodnika

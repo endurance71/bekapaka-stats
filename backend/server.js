@@ -387,7 +387,7 @@ app.put(['/api/players/:id/goals', '/players/:id/goals'], authenticateToken, asy
 
 app.get(['/api/roster', '/roster'], async (req, res) => {
   try {
-    const roster = await getRoster(req.query.seasonId);
+    const roster = await getRoster(req.query.seasonId, { includeInactive: req.query.includeInactive === '1' });
     res.json(roster.map(toPublicRosterPlayer));
   } catch (err) {
     console.error('Roster error:', err);
@@ -397,7 +397,7 @@ app.get(['/api/roster', '/roster'], async (req, res) => {
 
 app.get(['/api/players', '/players'], async (req, res) => {
   try {
-    const players = await listAllPlayers(req.query.seasonId);
+    const players = await listAllPlayers(req.query.seasonId, { includeInactive: req.query.includeInactive === '1' });
     res.json(players.map(toPublicRosterPlayer));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania zawodników' });
@@ -1017,7 +1017,7 @@ app.post(['/api/admin/users', '/admin/users'], authenticateToken, requireAdmin, 
 app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { firstName, lastName, number, position, username, password, role, photo } = req.body;
+    const { firstName, lastName, number, position, username, password, role, photo, inactiveSeasonIds } = req.body;
 
     const existingUser = await prisma.rosterPlayer.findUnique({
       where: { id }
@@ -1035,6 +1035,15 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
     }
     if (position !== undefined) updateData.position = position || null;
     if (role !== undefined) updateData.role = role;
+    if (inactiveSeasonIds !== undefined) {
+      if (!Array.isArray(inactiveSeasonIds) || inactiveSeasonIds.some((v) => typeof v !== 'string')) {
+        return res.status(400).json({ error: 'inactiveSeasonIds: oczekiwano listy ID sezonów' });
+      }
+      const ids = [...new Set(inactiveSeasonIds)];
+      const known = await prisma.kalkSeason.count({ where: { id: { in: ids } } });
+      if (known !== ids.length) return res.status(400).json({ error: 'Nieznany sezon' });
+      updateData.inactiveSeasonIds = ids;
+    }
 
     if (username !== undefined) {
       if (username === null || username.trim() === '') {
