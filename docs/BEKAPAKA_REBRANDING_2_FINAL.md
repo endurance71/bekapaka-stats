@@ -243,3 +243,13 @@ Strona nadchodzącego meczu (`/mecze/kalk-<id>`) ma pod hero sekcję „Przed me
 - Drużyna bez meczu w sezonie: zdanie zamiast pustych słupków; błąd lub brak danych — sekcja się nie pokazuje.
 - **Backend:** publiczny `GET /api/league/matchup?opponent=<nazwa>` (`getMatchup` w `dataStore.js`, czyste funkcje w `backend/lib/matchup.js` + testy).
 - **Wspólne słupki** `CompareBars` także w „Porównaniu zespołowym” meczu zakończonego — przy meczu wyjazdowym wartości BeKaPaKa i rywala nie są już zamienione miejscami.
+
+### Zapowiedź meczu 2 — „kto ma przewagę” (7.10.2026)
+
+Pierwsza wersja była zbyt uboga (małe herby, słupki czytane na krzyż, porównanie zawodników tylko w punktach). Teraz w stylu programu meczowego:
+
+- **Para drużyn** jak w hero: duże herby i nazwy po bokach, V pośrodku; miejsce, bilans, forma.
+- **Lustrzane porównanie** w jednej kolumnie, w trzech blokach — **Atak** (punkty, asysty, FG%, za 2, za 3, rzuty wolne), **Zbiórki** (łącznie, w ataku, w obronie), **Obrona** (punkty stracone, przechwyty, bloki, straty). Paski od środka (dłuższy = większa wartość), lepsza strona w kolorze marki, pod każdą wartością **miejsce w lidze**.
+- **Liderzy na mecz** — pojedynki zawodników w punktach, zbiórkach, asystach, przechwytach, blokach i EVAL (średnie z box score, pełne nazwiska z profili KALK).
+- **Mecze bezpośrednie** jako karty wyników.
+- Backend: `leagueRanks`, `playerAverages`, `leaderDuels` w `backend/lib/matchup.js` (+ testy).

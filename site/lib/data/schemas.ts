@@ -236,14 +236,21 @@ const matchupTeamSchema = z.object({
   form: z.array(z.string()).default([]),
   streak: z.string().nullable().optional(),
   boxScoreGames: z.number(),
-  perGame: z.object({ pts: z.number(), opp: z.number(), reb: z.number(), ast: z.number(), stl: z.number(), blk: z.number(), tov: z.number() }).nullable(),
-  pct: z.object({ fg: z.number().nullable(), three: z.number().nullable(), ft: z.number().nullable() }).nullable()
+  perGame: z
+    .object({ pts: z.number(), opp: z.number(), reb: z.number(), orb: z.number().optional(), drb: z.number().optional(), ast: z.number(), stl: z.number(), blk: z.number(), tov: z.number() })
+    .nullable(),
+  pct: z.object({ fg: z.number().nullable(), two: z.number().nullable().optional(), three: z.number().nullable(), ft: z.number().nullable() }).nullable(),
+  /** Miejsce w lidze dla statystyki (klucze perGame oraz fgPct, twoPct, threePct, ftPct). */
+  ranks: z.record(z.string(), z.number()).nullable().optional(),
+  leagueTeams: z.number().optional()
 })
+const matchupLeaderSchema = z.object({ name: z.string(), number: z.number().nullable().optional(), value: z.number(), games: z.number() })
 const matchupScorerSchema = z.object({ name: z.string(), pointsAverage: z.number(), matchesPlayed: z.number() })
 export const matchupSchema = z.object({
   season: z.object({ id: z.string(), label: z.string() }).nullable(),
   teams: z.object({ us: matchupTeamSchema, them: matchupTeamSchema }),
   scorers: z.object({ us: z.array(matchupScorerSchema), them: z.array(matchupScorerSchema) }),
+  leaders: z.array(z.object({ category: z.string(), us: matchupLeaderSchema.nullable(), them: matchupLeaderSchema.nullable() })).default([]),
   headToHead: z.array(
     z.object({ gameId: z.string(), date: z.string(), seasonId: z.string(), seasonLabel: z.string().nullable(), scoreUs: z.number(), scoreThem: z.number() })
   )

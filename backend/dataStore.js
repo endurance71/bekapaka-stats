@@ -2211,7 +2211,7 @@ export async function getMatchup(opponentName, seasonIdParam) {
     getLeagueTable('regular', seasonId),
     listSeasons(),
     prisma.kalkMatch.findMany({ where: { isFinished: true }, orderBy: { date: 'desc' } }),
-    prisma.kalkPlayer.findMany({ where: { seasonId }, select: { name: true, team: true, pointsAverage: true, matchesPlayed: true } })
+    prisma.kalkPlayer.findMany({ where: { seasonId }, select: { name: true, profileUrl: true } })
   ]);
   const season = seasons.find((item) => item.id === seasonId) || null;
   const seasonLabels = Object.fromEntries(seasons.map((item) => [item.id, item.label]));
