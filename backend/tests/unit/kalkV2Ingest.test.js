@@ -242,7 +242,7 @@ describe('KALK v2 — skład (syncPlayersFromKalk przez ingest)', () => {
       rosterPlayer: [
         // istniejący zawodnik z poprawną kolejnością imię/nazwisko, powiązany ze starym ID
         { id: 'rp-karp', firstName: 'Filip', lastName: 'Karpiński', kalkPlayerId: '2025-2026__zawodnikfilip-karpinski4310html', kalkSlug: null, gamesPlayed: 0, ppg: 0, rpg: 0, apg: 0, threePercentage: 0, ftPercentage: 0 },
-        // zapisany odwrotnie (np. ręcznie) — nie może zostać „poprawiony”
+        // zapisany odwrotnie (stara strona KALK: „Nazwisko Imię”) — kolejność z profilu KALK
         { id: 'rp-ol', firstName: 'Olearczyk', lastName: 'Dawid', kalkPlayerId: null, kalkSlug: null, gamesPlayed: 0, ppg: 0, rpg: 0, apg: 0 }
       ]
     });
@@ -255,7 +255,7 @@ describe('KALK v2 — skład (syncPlayersFromKalk przez ingest)', () => {
     vi.resetModules();
   });
 
-  it('aktywny sezon: łączy po slug/imieniu bez zamiany kolejności, tworzy brakujących z profilu', async () => {
+  it('aktywny sezon: łączy po slug/imieniu, odwraca zamienione imię i nazwisko wg profilu, tworzy brakujących', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { ingestKalkV2Bundle: ingest } = await import('../../kalk/v2/ingestSeason.js');
     const res = await ingest(bundle(), { prisma, logger: quiet });
@@ -267,7 +267,7 @@ describe('KALK v2 — skład (syncPlayersFromKalk przez ingest)', () => {
     expect(karp.rpg).toBe(3);
     expect(karp.apg).toBe(1);
     const ol = roster.find((r) => r.id === 'rp-ol');
-    expect(ol).toMatchObject({ firstName: 'Olearczyk', lastName: 'Dawid', kalkSlug: 'dawid-olearczyk' });
+    expect(ol).toMatchObject({ firstName: 'Dawid', lastName: 'Olearczyk', kalkSlug: 'dawid-olearczyk' });
 
     // Nowi z BeKaPaKa: „Imię Nazwisko” z profilu/katalogu
     const bortnik = roster.find((r) => r.kalkSlug === 'jedrzej-bortnik');
@@ -277,12 +277,12 @@ describe('KALK v2 — skład (syncPlayersFromKalk przez ingest)', () => {
     expect(roster).toHaveLength(5);
     expect(res.rosterSync).toMatchObject({ created: 3, linked: 2, errors: 0 });
 
-    // Drugi sync nie zmienia nazw ani liczby zawodników
+    // Drugi sync nie zmienia już nazw ani liczby zawodników
     prisma.$resetWrites();
     const again = await dataStore.syncPlayersFromKalk({ seasonId: 'season_2026-2027' });
     expect(again.synced).toHaveLength(0);
     expect(prisma.$writes.filter((w) => w.model === 'rosterPlayer' && w.op === 'create')).toHaveLength(0);
-    expect(prisma.$tables.rosterPlayer.find((r) => r.id === 'rp-ol').firstName).toBe('Olearczyk');
+    expect(prisma.$tables.rosterPlayer.find((r) => r.id === 'rp-ol').firstName).toBe('Dawid');
   });
 
   it('sezon nieaktywny: nie tworzy ani nie łączy zawodników w składzie', async () => {

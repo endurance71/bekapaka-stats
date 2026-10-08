@@ -63,6 +63,29 @@ describe('P0/P1: KALK 2026/2027 Safe Sync & Player Stats', () => {
     consoleWarnSpy.mockRestore();
   });
 
+  it('restores first/last name order from the KALK profile only when exactly swapped', async () => {
+    prismaMock.kalkSeason.findFirst.mockResolvedValue({ id: 'season_2026-2027', slug: '2026-2027', isActive: true });
+    prismaMock.kalkPlayer.findMany.mockResolvedValue([
+      { id: '2026-2027__pawel-samusionek', slug: 'pawel-samusionek', name: 'Paweł Samusionek', team: 'BeKaPaKa Bobolice' },
+      { id: '2026-2027__damian-motylinski', slug: 'damian-motylinski', name: 'Damian Motyliński', team: 'BeKaPaKa Bobolice' }
+    ]);
+    prismaMock.kalkPlayerProfile.findMany.mockResolvedValue([
+      { slug: 'pawel-samusionek', firstName: 'Paweł', lastName: 'Samusionek' },
+      { slug: 'damian-motylinski', firstName: 'Damian', lastName: 'Motyliński' }
+    ]);
+    prismaMock.rosterPlayer.findMany.mockResolvedValue([
+      { id: 'rp-3', firstName: 'Samusionek', lastName: 'Paweł', kalkPlayerId: '2026-2027__pawel-samusionek', kalkSlug: 'pawel-samusionek' },
+      // ręcznie zmienione (nie zamienione) — bez zmian
+      { id: 'rp-24', firstName: 'Damian', lastName: 'Motyliński-Kowalski', kalkPlayerId: '2026-2027__damian-motylinski', kalkSlug: 'damian-motylinski' }
+    ]);
+    prismaMock.kalkPlayerGameLog.findMany.mockResolvedValue([]);
+
+    await dataStore.syncPlayersFromKalk();
+
+    const updates = prismaMock.rosterPlayer.update.mock.calls.map(([arg]) => arg).filter((a) => a.data.firstName || a.data.lastName);
+    expect(updates).toEqual([{ where: { id: 'rp-3' }, data: { firstName: 'Paweł', lastName: 'Samusionek' } }]);
+  });
+
   it('Test 2: Repeated sync is idempotent (no changes, no duplicates, no unlinking)', async () => {
     prismaMock.kalkSeason.findFirst.mockResolvedValue({
       id: 'season_2026-2027',
