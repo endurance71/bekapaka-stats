@@ -167,6 +167,28 @@
   .art-cover--contain .article-gallery__image {
     object-fit: contain;
   }
+  /* Grafiki z tekstem (wynik, stopka): bez ściętego rogu, bez powiększenia przy najechaniu,
+     ikona lightboxa w górnym rogu — nie zasłania stopki grafiki. */
+  .art-cover--contain .article-gallery__image-button {
+    clip-path: none;
+  }
+  .art-cover--contain .article-gallery__image-button:hover .article-gallery__image {
+    transform: none;
+  }
+  .art-cover--contain .article-gallery__zoom {
+    top: var(--space-3);
+    bottom: auto;
+    opacity: 0;
+  }
+  .art-cover--contain .article-gallery__image-button:hover .article-gallery__zoom,
+  .art-cover--contain .article-gallery__image-button:focus-visible .article-gallery__zoom {
+    opacity: 0.85;
+  }
+  @media (hover: none) {
+    .art-cover--contain .article-gallery__zoom {
+      opacity: 0.6;
+    }
+  }
   .article-gallery__zoom {
     position: absolute;
     right: var(--space-3);

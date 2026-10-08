@@ -73,6 +73,44 @@ export const copySchemas = {
 };
 export const emptyCopy = (channel) => copySchemas[channel].parse({});
 
+// Full public statistics of a played KALK match (box score, quarters, team totals), filled by the stats system.
+// Every number a match report may quote lives here, so the brand lint can verify it.
+const int = z.number().int().min(-999).max(9999);
+const pct = z.number().int().min(0).max(100).nullable();
+const teamLine = z
+  .object({
+    fg: text(12),
+    fgPct: pct,
+    three: text(12),
+    threePct: pct,
+    ft: text(12),
+    ftPct: pct,
+    reb: int.nullable(),
+    ast: int.nullable(),
+    stl: int.nullable(),
+    tov: int.nullable(),
+    blk: int.nullable(),
+    benchPts: int.nullable(),
+    fastBreakPts: int.nullable(),
+    ptsOffTurnovers: int.nullable(),
+  })
+  .strict();
+const playerLine = z
+  .object({ name: text(100), number: int.nullable(), pts: int, reb: int, ast: int, stl: int, three: text(12), eval: int.nullable() })
+  .strict();
+export const matchReportSchema = z
+  .object({
+    quarters: z.array(z.object({ label: text(20), us: int, them: int }).strict()).max(8).default([]),
+    halftime: z.object({ us: int, them: int }).strict().nullable().default(null),
+    overtimes: z.number().int().min(0).max(5).default(0),
+    team: z.object({ us: teamLine, them: teamLine }).strict().nullable().default(null),
+    players: z.array(playerLine).max(16).default([]),
+    opponentTop: z.array(z.object({ name: text(100), pts: int, reb: int }).strict()).max(3).default([]),
+    mvp: z.object({ name: text(100), eval: int.nullable() }).strict().nullable().default(null),
+    nextMatch: z.object({ opponent: text(100), date: text(40), venue: text(100) }).strict().nullable().default(null),
+  })
+  .strict();
+
 // Public, confirmed facts of the event. Copy (manual, AI or agent) may only use these.
 export const factsSchema = z
   .object({
@@ -97,6 +135,7 @@ export const factsSchema = z
     edition: text(10),
     notes: text(1500),
     link: z.string().trim().max(500).url().or(z.literal('')).default(''),
+    report: matchReportSchema.nullable().default(null),
   })
   .strict();
 export const emptyFacts = () => factsSchema.parse({});

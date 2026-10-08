@@ -1021,3 +1021,16 @@ a.primary.is-disabled {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
+
+/* Facts: read-only summary of the KALK match statistics used by the match report */
+.report-summary {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--paper);
+}
+.report-summary small {
+  color: var(--muted);
+}

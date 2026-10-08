@@ -114,8 +114,8 @@ function newsData(view, item, slug, coverId) {
     content: item.graphic?.aiAssets ? `${c.content}\n\n_Ilustracja tła wygenerowana przy użyciu AI._` : c.content,
     tags: c.tags,
     coverImage: coverId,
-    // Portrait covers (4:5) are shown whole on the site; landscape fills the frame.
-    imageFit: item.format === 'landscape' ? 'cover' : 'contain',
+    // Studio graphics carry text up to their margins (score, wordmark, footer): always shown whole, never cropped.
+    imageFit: 'contain',
     ...(date ? { eventDate: date } : {}),
   };
 }

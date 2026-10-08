@@ -2,7 +2,7 @@
 // Missing facts drop whole sentences instead of leaving placeholders. Isomorphic (shared with the browser).
 import { copySchemas } from './channels.js';
 
-export const TEMPLATE_VERSION = '1.0.1';
+export const TEMPLATE_VERSION = '1.1.0';
 const CLUB = 'BeKaPaKa Bobolice';
 const ZONE = 'Europe/Warsaw';
 
@@ -73,6 +73,7 @@ const core = {
       : '',
     lines: [
       roundLabel(f) ? `${capital(roundLabel(f))}${has(f.venue) ? `, ${f.venue}` : ''}.` : '',
+      f.report?.halftime ? `Do przerwy ${f.report.halftime.us}:${f.report.halftime.them}.` : '',
       f.leaders.length ? sentence(`Najlepsi: ${leaders(f)}`) : '',
       won(f) ? 'Dziękujemy za doping!' : 'Dziękujemy za doping. Pracujemy dalej.',
     ],
@@ -211,9 +212,83 @@ const factList = (f) =>
     .filter(Boolean)
     .map(([k, v]) => `- **${k}:** ${v}`);
 
+// Polish plural: 1 zbiórka, 2–4 zbiórki, 5+ zbiórek.
+const plural = (n, one, few, many) => {
+  const a = Math.abs(n);
+  if (a === 1) return one;
+  return a % 10 >= 2 && a % 10 <= 4 && (a % 100 < 12 || a % 100 > 14) ? few : many;
+};
+const count = (n, one, few, many) => (Number.isFinite(n) ? `${n} ${plural(n, one, few, many)}` : '');
+const shot = (ratio, p) => (has(ratio) ? `${ratio}${p !== null && p !== undefined ? ` (${p}%)` : ''}` : '');
+const pair = (label, us, them, opp) => (has(us) && has(them) ? `- **${label}:** BeKaPaKa ${us} · ${opp} ${them}` : '');
+const playerStat = (p) =>
+  [`${p.pts} pkt`, `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : '']
+    .filter(has)
+    .join(', ');
+
+// Full match report for bekapaka.pl from the KALK statistics in facts.report. Only facts, no narrative guesses.
+function reportArticle(f) {
+  const r = f.report;
+  const opp = f.opponent;
+  const lead = [
+    valid(f.date) && has(f.venue) ? `${capital(dayOnly(f.date))} w ${f.venue} rozegraliśmy mecz${has(f.round) ? ` ${f.round}. kolejki` : ''} ${f.competition || 'KALK'}${has(f.seasonLabel) ? ` (${f.seasonLabel.replace(/^Sezon/, 'sezon')})` : ''}.` : '',
+    has(opp) ? `Rywalem był zespół ${opp}.` : '',
+    scored(f) ? (won(f) ? `Wygraliśmy ${score(f)}.` : f.scoreUs === f.scoreThem ? `Mecz zakończył się remisem ${score(f)}.` : `Przegraliśmy ${score(f)}.`) : '',
+    r.overtimes ? `O wyniku zdecydowała dogrywka.` : '',
+  ].filter(has).join(' ');
+  const scoreLine = scored(f) && has(opp) && f.scoreUs < 100 && f.scoreThem < 100 ? `${CLUB} ${score(f)} ${opp}` : '';
+
+  const flow = r.quarters.map((q) => `- **${q.label}:** ${q.us}:${q.them}`);
+  if (r.halftime) flow.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
+  const best = r.quarters.filter((q) => q.us > q.them).sort((a, b) => b.us - b.them - (a.us - a.them))[0];
+  const flowNote = best && r.quarters.length > 1 ? `Najwyżej wygraną kwartą była ${best.label.toLowerCase()} (${best.us}:${best.them}).` : '';
+
+  const t = r.team?.us;
+  const strip = t
+    ? [count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek'), count(t.ast, 'asysta', 'asysty', 'asyst'), count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów'), Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : '']
+        .filter(has)
+    : [];
+
+  const top = r.players.slice(0, 6).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${playerStat(p)}`);
+  const scorers = r.players.filter((p) => p.pts > 0).length;
+  const them = r.team?.them;
+  const teamRows = r.team
+    ? [
+        pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
+        pair('Za 3 punkty', shot(t.three, t.threePct), shot(them.three, them.threePct), opp),
+        pair('Rzuty wolne', shot(t.ft, t.ftPct), shot(them.ft, them.ftPct), opp),
+        pair('Zbiórki', t.reb, them.reb, opp),
+        pair('Asysty', t.ast, them.ast, opp),
+        pair('Przechwyty', t.stl, them.stl, opp),
+        pair('Straty', t.tov, them.tov, opp),
+        pair('Punkty z ławki', t.benchPts, them.benchPts, opp),
+      ].filter(has)
+    : [];
+  const next = r.nextMatch;
+  const nextRows = next
+    ? [`- **Rywal:** ${next.opponent}`, valid(next.date) ? `- **Termin:** ${when(next.date)}` : '', has(next.venue) ? `- **Miejsce:** ${next.venue}` : '', has(f.entryInfo) ? `- **Wstęp:** ${f.entryInfo}` : ''].filter(has)
+    : [];
+
+  return paragraphs(
+    lead,
+    scoreLine,
+    flow.length >= 2 ? `## Przebieg meczu\n\n${flow.join('\n')}` : '',
+    flowNote,
+    strip.length >= 2 ? `BeKaPaKa w liczbach: ${strip.join(' · ')}` : '',
+    top.length >= 2 ? `## Nasi zawodnicy\n\n${top.join('\n')}` : '',
+    scorers > 1 ? `Punkty dla BeKaPaKa zdobyło ${scorers} zawodników.` : '',
+    r.mvp ? `MVP meczu: ${r.mvp.name}${r.mvp.eval !== null && r.mvp.eval !== undefined ? ` (eval ${r.mvp.eval})` : ''}.` : '',
+    teamRows.length >= 2 ? `## Statystyki zespołów\n\n${teamRows.join('\n')}` : '',
+    r.opponentTop.length ? `Najskuteczniejsi w zespole ${opp}: ${r.opponentTop.map((p) => `${p.name} ${p.pts} pkt`).join(', ')}.` : '',
+    nextRows.length >= 2 ? `## Następny mecz\n\n${nextRows.join('\n')}` : '',
+    'Dziękujemy kibicom za doping.',
+  );
+}
+
 // Article for bekapaka.pl, using the conventions of the site's ArticleMarkdown
 // (standalone score line, „… w liczbach:” strip, „**Etykieta:** wartość” fact list).
 function article(id, f, c) {
+  if (f.report && ['match-result', 'match-report'].includes(id)) return reportArticle(f);
   const facts = factList(f);
   const scoreLine = scored(f) && has(f.opponent) && f.scoreUs < 100 && f.scoreThem < 100 ? `${CLUB} ${score(f)} ${f.opponent}` : '';
   const numbers = f.leaders.length >= 2 ? `Mecz w liczbach: ${f.leaders.slice(0, 4).map((l) => `${l.value} ${statWord[l.stat] || l.stat} ${l.name}`).join(' · ')}` : '';
@@ -224,6 +299,17 @@ function article(id, f, c) {
     numbers,
     facts.length >= 2 ? `## Najważniejsze informacje\n\n${facts.join('\n')}` : '',
   );
+}
+
+const isReport = (id, f) => !!f.report && scored(f) && has(f.opponent) && ['match-result', 'match-report'].includes(id);
+const reportTitle = (id, f) => (isReport(id, f) ? `${CLUB} ${score(f)} ${f.opponent}${has(f.round) ? ` – relacja z ${f.round}. kolejki ${f.competition || 'KALK'}` : ' – relacja'}` : '');
+function reportExcerpt(id, f) {
+  if (!isReport(id, f)) return '';
+  const top = f.report.players[0];
+  const text = [`${won(f) ? 'Wygrana' : f.scoreUs === f.scoreThem ? 'Remis' : 'Porażka'} BeKaPaKa Bobolice ${score(f)} z zespołem ${f.opponent}${has(f.venue) ? ` w ${f.venue}` : ''}.`, top ? `Najwięcej punktów: ${top.name} (${top.pts}).` : '', 'Przebieg kwart, statystyki zawodników i zespołów.']
+    .filter(has)
+    .join(' ');
+  return text.length <= 220 ? text : text.slice(0, 217).replace(/\s+\S*$/, '') + '…';
 }
 
 // On bekapaka.pl itself „more on bekapaka.pl / link in bio” sentences make no sense.
@@ -252,8 +338,8 @@ export function schematicCopy(playbookDef, facts, settings = {}) {
     instagram_story: { stickerText: (c.sticker || '').slice(0, 60), sticker: playbookDef.id === 'match-preview' ? 'countdown' : 'none', link: '', altText: alt },
     facebook: { text: body, hashtags: fbTags, link: facts.link || '', altText: alt },
     website: {
-      title: (c.hook || facts.title || playbookDef.label).replace(/[.!]$/, '').slice(0, 90),
-      excerpt: excerpt(c),
+      title: (reportTitle(playbookDef.id, facts) || c.hook || facts.title || playbookDef.label).replace(/[.!]$/, '').slice(0, 90),
+      excerpt: reportExcerpt(playbookDef.id, facts) || excerpt(c),
       content: article(playbookDef.id, facts, c),
       tags: websiteTags[playbookDef.category] || ['klub'],
       coverAlt: alt.slice(0, 300),
