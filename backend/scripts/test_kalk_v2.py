@@ -236,6 +236,11 @@ class BoxScoreTests(unittest.TestCase):
         quarters = [{'period': i, 'label': f'Kw. {i}', 'home': 10, 'away': 10 + (i == 4)} for i in range(1, 5)]
         self.assertEqual(quarter_errors(quarters, (40, 41)), [])
         overtime = quarters + [{'period': 5, 'label': 'OT 1', 'home': 5, 'away': 2}]
+        # Walkower / brak protokołu: brak box score to nie błąd parsera (np. mecz 3438, 20:0)
+        from bs4 import BeautifulSoup
+        from kalk.boxscore import NoBoxScore, parse_boxscore
+        with self.assertRaises(NoBoxScore):
+            parse_boxscore(BeautifulSoup('<main><p>Statystyki zawodników nie zostały jeszcze dodane do tego meczu.</p></main>', 'html.parser'))
         # Dogrywka bez remisu to niespójność źródła KALK (np. mecz 3205) — ostrzeżenie, mecz nie jest odrzucany
         self.assertEqual(quarter_errors(overtime, (45, 43)), [])
         self.assertTrue(any('bez remisu' in w for w in quarter_warnings(overtime)))

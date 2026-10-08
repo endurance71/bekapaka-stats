@@ -440,10 +440,21 @@ export async function auditSeasonIntegrity(prisma, season, opts = {}) {
       guestTeam: l.guestTeam,
       url: l.kalkMatchId ? kalkMatchUrl(l.kalkMatchId) : null
     }));
-  if (missing.length || finishedSchedule.length !== finishedKalk.length) {
+  // Walkower KALK (20:0 / 0:20) zwykle nie ma protokołu — brak box score to wtedy ostrzeżenie, nie błąd
+  const isWalkover = (l) => {
+    const h = Number(l.scoreHome);
+    const a = Number(l.scoreAway);
+    return (h === 20 && a === 0) || (h === 0 && a === 20);
+  };
+  const walkovers = missing.filter((m) => isWalkover(finishedSchedule.find((l) => l.id === m.leagueMatchId) || {}));
+  const realMissing = missing.filter((m) => !walkovers.includes(m));
+  if (walkovers.length) {
+    issues.push(issue('warn', 'S1', `Walkowery bez box score: ${walkovers.length}`, { details: { missing: walkovers } }));
+  }
+  if (realMissing.length || finishedSchedule.length - walkovers.length !== finishedKalk.length) {
     issues.push(
-      issue('error', 'S1', `Zakończone mecze: terminarz ${finishedSchedule.length}, KalkMatch ${finishedKalk.length}, brak box score: ${missing.length}`, {
-        details: { missing }
+      issue('error', 'S1', `Zakończone mecze: terminarz ${finishedSchedule.length}, KalkMatch ${finishedKalk.length}, brak box score: ${realMissing.length}`, {
+        details: { missing: realMissing }
       })
     );
   }

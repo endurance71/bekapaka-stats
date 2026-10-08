@@ -6,7 +6,7 @@ from typing import Optional
 
 from bs4 import BeautifulSoup, Tag
 
-from .common import ParseError, clock_seconds, made_attempted, player_slug_from_url, text, to_int
+from .common import ParseError, clock_seconds, fold, made_attempted, player_slug_from_url, text, to_int
 
 # Kolejność kolumn <td> w wierszu zawodnika (thead: Nr, Zawodnik, Min, Pkt, Za 2 C/O %, Za 3 C/O %,
 # Z gry C/O %, Za 1 C/O %, Zbiórki A O S, As, Prz, Str, F, Fw, Bl, Bl o, EVAL, +/-).
@@ -18,6 +18,13 @@ MIN_COLUMNS = 24
 
 STAT_KEYS = ['secondsPlayed', 'pts', 'twoPm', 'twoPa', 'threePm', 'threePa', 'fgm', 'fga', 'ftm', 'fta',
              'orb', 'drb', 'reb', 'ast', 'stl', 'tov', 'pf', 'pfDrawn', 'blk', 'blkAgainst', 'eval']
+
+
+class NoBoxScore(ParseError):
+    """Mecz bez statystyk zawodników na KALK (walkower / nieuzupełniony protokół) — nie jest błędem parsera."""
+
+
+NO_STATS_MARKER = fold('Statystyki zawodników nie zostały jeszcze dodane')
 
 
 def _stats(cells: list[Tag]) -> dict:
@@ -87,6 +94,8 @@ def parse_boxscore(soup: BeautifulSoup) -> dict:
     """Zwraca {'teams': [{name, players, totals, footer, startersPts, benchPts}] ×2} (bez side/teamKalkId)."""
     sections = soup.select('section.game-boxscore')
     if len(sections) != 2:
+        if not sections and NO_STATS_MARKER in fold(soup.get_text(' ', strip=True)):
+            raise NoBoxScore('Statystyki zawodników nie zostały dodane do meczu (np. walkower)')
         raise ParseError(f'Oczekiwano 2 tabel box score KALK, jest {len(sections)}')
     teams = []
     for section in sections:

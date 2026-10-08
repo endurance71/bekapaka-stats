@@ -250,6 +250,10 @@ class SeasonSync:
                                          team_ids={'home': game['homeTeamKalkId'], 'away': game['guestTeamKalkId']})
         except BudgetExceeded:
             raise
+        except boxscore.NoBoxScore as exc:
+            self.warnings.append({'url': url, 'kalkMatchId': match_id, 'warning': f'brak box score: {exc}', 'noBoxScore': True})
+            log.warning('Mecz %s: %s', match_id, exc)
+            return None
         except (KalkFetchError, ParseError) as exc:
             self._fail(url, section, exc, match_id)
             self.counts['matchesFailed'] += 1
