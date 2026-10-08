@@ -1,117 +1,86 @@
 /**
- * Audyt wszystkich analiz AI w bazie — wykrywa ucięte / niekompletne raporty.
+ * Audyt wszystkich analiz AI w bazie: mecze (KalkMatch + Game), plany zawodników, scouting per sezon,
+ * briefingi per sezon (nie tylko `default`), odprawy, zagrywki AI.
+ * Sprawdza: kompletność, aktualność (hash bieżących danych + wersja promptu), szablon vs Gemini,
+ * kontrolę faktów (liczby i nazwiska z tekstu muszą być w aktualnym payloadzie).
+ * Nie generuje niczego — regeneracja tylko ręcznie (przyciski w panelu AI).
  *
- * Uruchomienie (VPS):
+ * Uruchomienie:
+ *   npm run audit:ai
+ *   node scripts/audit-ai-analyses.js --season season_2026-2027 --json
+ *   node scripts/audit-ai-analyses.js --types match,player --no-fact-check
+ * VPS:
  *   docker compose -f docker-compose.prod.yml exec -T bkpk-backend node scripts/audit-ai-analyses.js
+ *
+ * Kod wyjścia: 1 gdy jest analiza niekompletna lub z podejrzanymi faktami, 0 w przeciwnym razie.
  */
 import { prisma } from '../lib/prisma.js';
-import { auditMatchAnalysisMarkdown } from '../ai/matchAnalysisMarkdown.js';
-import { auditBriefingMarkdown, hasCompleteBriefingMarkdown } from '../ai/briefingMarkdown.js';
-import { hasDetailedPlayerPlanMarkdown } from '../ai/playerDevelopmentMarkdown.js';
-import { getActiveSeason } from '../seasonService.js';
+import { auditHasFailures, runAiAudit, summarizeAiAudit } from '../ai/audit.js';
 
-function printSection(title, rows) {
-  console.log(`\n=== ${title} (${rows.length}) ===`);
-  for (const row of rows) {
-    console.log(JSON.stringify(row));
+/**
+ * @param {string[]} argv
+ */
+function parseArgs(argv) {
+  const args = { json: false, seasonId: undefined, factCheck: true, types: undefined };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--json') args.json = true;
+    else if (a === '--no-fact-check') args.factCheck = false;
+    else if (a === '--season') args.seasonId = argv[++i];
+    else if (a.startsWith('--season=')) args.seasonId = a.slice('--season='.length);
+    else if (a === '--types') args.types = argv[++i]?.split(',').filter(Boolean);
+    else if (a.startsWith('--types=')) args.types = a.slice('--types='.length).split(',').filter(Boolean);
   }
+  return args;
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof runAiAudit>>['rows'][number]} r
+ */
+function formatRow(r) {
+  const flags = [
+    r.complete ? null : 'NIEKOMPLETNA',
+    r.stale === true ? 'NIEAKTUALNA' : r.stale === null ? `aktualność?(${r.staleReason || '—'})` : null,
+    r.isTemplate ? 'SZABLON' : null,
+    r.factCheck?.suspicious ? 'PODEJRZANE' : null
+  ].filter(Boolean);
+  const lines = [`- [${r.type}] ${r.label} (${r.id}) ${r.seasonId ? `· ${r.seasonId}` : ''} · ${r.model || '—'} · ${r.generatedAt || '—'}${flags.length ? `  → ${flags.join(', ')}` : '  → OK'}`];
+  for (const issue of r.issues) lines.push(`    • ${issue}`);
+  for (const n of r.factCheck?.suspiciousNumbers || []) lines.push(`    ? liczba ${n.value}: „${n.context}”`);
+  for (const n of r.factCheck?.suspiciousNames || []) lines.push(`    ? nazwisko ${n.name}: „${n.context}”`);
+  return lines.join('\n');
 }
 
 async function main() {
-  const season = await getActiveSeason();
-  const kalkMatches = season
-    ? await prisma.kalkMatch.findMany({
-        where: { seasonId: season.id, aiSummary: { not: null } },
-        select: { id: true, homeTeamName: true, guestTeamName: true, aiSummary: true, aiSummaryAt: true }
-      })
-    : [];
+  const args = parseArgs(process.argv.slice(2));
+  const report = await runAiAudit({ seasonId: args.seasonId, factCheck: args.factCheck, types: args.types });
+  const summary = summarizeAiAudit(report);
+  const failed = auditHasFailures(report);
 
-  const legacyGames = await prisma.game.findMany({
-    where: { aiSummary: { not: null } },
-    select: { id: true, opponent: true, aiSummary: true, aiSummaryAt: true }
-  });
-
-  const players = await prisma.rosterPlayer.findMany({
-    where: { aiDevelopmentSummary: { not: null } },
-    select: { id: true, firstName: true, lastName: true, aiDevelopmentSummary: true, aiDevelopmentAt: true }
-  });
-
-  const scouting = await prisma.scoutingAiReport.findMany({
-    select: { opponentKey: true, opponentName: true, summaryMd: true, generatedAt: true }
-  });
-
-  const briefing = await prisma.teamBriefing.findUnique({ where: { id: 'default' } });
-
-  const matchRows = [
-    ...kalkMatches.map((m) => ({
-      source: 'kalk',
-      id: m.id,
-      label: `${m.homeTeamName} vs ${m.guestTeamName}`,
-      generatedAt: m.aiSummaryAt?.toISOString() ?? null,
-      tail: m.aiSummary?.slice(-80) ?? '',
-      ...auditMatchAnalysisMarkdown(m.aiSummary)
-    })),
-    ...legacyGames.map((g) => ({
-      source: 'legacy',
-      id: g.id,
-      label: g.opponent,
-      generatedAt: g.aiSummaryAt?.toISOString() ?? null,
-      tail: g.aiSummary?.slice(-80) ?? '',
-      ...auditMatchAnalysisMarkdown(g.aiSummary)
-    }))
-  ];
-
-  const playerRows = players.map((p) => {
-    const text = p.aiDevelopmentSummary ?? '';
-    return {
-      id: p.id,
-      name: `${p.firstName} ${p.lastName}`.trim(),
-      generatedAt: p.aiDevelopmentAt?.toISOString() ?? null,
-      length: text.length,
-      complete: hasDetailedPlayerPlanMarkdown(text),
-      tail: text.slice(-60)
-    };
-  });
-
-  const scoutingRows = scouting.map((s) => {
-    const text = s.summaryMd ?? '';
-    const endsCleanly = text.trim() ? /[.!?)\]]\s*$/.test(text.trim()) : false;
-    return {
-      opponentKey: s.opponentKey,
-      name: s.opponentName,
-      generatedAt: s.generatedAt?.toISOString() ?? null,
-      length: text.length,
-      complete: text.length >= 400 && endsCleanly,
-      tail: text.slice(-60)
-    };
-  });
-
-  printSection('MECZE', matchRows);
-  printSection('ZAWODNICY', playerRows);
-  printSection('SCOUTING', scoutingRows);
-
-  if (briefing?.contentMd) {
-    printSection('BRIEFING', [
-      {
-        generatedAt: briefing.generatedAt?.toISOString() ?? null,
-        tail: briefing.contentMd.slice(-80),
-        ...auditBriefingMarkdown(briefing.contentMd)
-      }
-    ]);
+  if (args.json) {
+    console.log(JSON.stringify({ ...summary, rows: report.rows, failed }, null, 2));
+  } else {
+    const byType = new Map();
+    for (const r of report.rows) {
+      if (!byType.has(r.type)) byType.set(r.type, []);
+      byType.get(r.type).push(r);
+    }
+    for (const [type, rows] of byType) {
+      console.log(`\n=== ${type.toUpperCase()} (${rows.length}) ===`);
+      for (const r of rows) console.log(formatRow(r));
+    }
+    const c = summary.counts;
+    console.log(
+      `\nPodsumowanie: ${c.total} analiz · do regeneracji ${c.needsRegeneration} · nieaktualne ${c.stale} · niekompletne ${c.incomplete} · szablony ${c.templates} · podejrzane fakty ${c.suspicious}`
+    );
   }
 
-  const broken =
-    matchRows.filter((r) => !r.complete).length +
-    playerRows.filter((r) => !r.complete).length +
-    scoutingRows.filter((r) => !r.complete).length +
-    (briefing?.contentMd && !hasCompleteBriefingMarkdown(briefing.contentMd) ? 1 : 0);
-
-  console.log(`\nPodsumowanie: ${broken} niekompletnych analiz`);
+  process.exitCode = failed ? 1 : 0;
 }
 
 main()
   .catch((err) => {
     console.error(err);
-    process.exit(1);
+    process.exitCode = 1;
   })
   .finally(() => prisma.$disconnect());

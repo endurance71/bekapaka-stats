@@ -1,9 +1,10 @@
 import { prisma } from './lib/prisma.js';
 import { hashGameForAi } from './ai/buildMatchContext.js';
 import { hasCompleteMatchAnalysisMarkdown } from './ai/matchAnalysisMarkdown.js';
-import { hashPayload } from './ai/hash.js';
-import { normalizeOpponentKey } from './ai/normalizeOpponent.js';
+import { hashAiPayload } from './ai/hash.js';
 import { buildPersonnelMdFromAnalysis } from './ai/scoutingPersonnel.js';
+import { buildScoutingAiPayload, findScoutingReport, loadScoutingExtras } from './ai/scoutingData.js';
+import { sanitizeAiPayload } from './ai/payloadUtils.js';
 import {
   analysisFromSummaryMdField,
   buildScoutingSummaryMd,
@@ -31,6 +32,8 @@ import {
   resolveLeagueTeamFromList
 } from './lib/leagueTeamResolve.js';
 import { kalkMatchToGameDetail, kalkMatchToListItem } from './kalk/kalkGameView.js';
+import { resolveKalkMatchById } from './kalk/v2/resolveMatch.js';
+import { splitPlayerName } from './kalk/v2/mapPlayer.js';
 import { enrichKalkTeamStats, isBekapakaTeamName } from './kalk/parseMatchBoxScore.js';
 import { buildMatchup } from './lib/matchup.js';
 
@@ -919,10 +922,21 @@ export async function getTeamStatsSummary(querySeasonId = undefined) {
  * Agreguje trendy zespołowe (Four Factors) na przestrzeni sezonu.
  */
 function teamTrendFromBekapakaTeam(bekapaka, meta) {
+  // withShootingMetrics zwraca efg / tovPct / ftRate (ułamki) — bez ORB%; ORB% liczony z DRB rywala.
   const ff = buildTeamShootingMetrics(bekapaka, {
     pts: meta.scoreUs,
     oppPts: meta.scoreThem
   });
+  const source = bekapaka?.fourFactors || bekapaka || {};
+  const orb = Number(source.orb ?? source.oreb);
+  const oppDrb = Number(meta.oppDrb);
+  const orbPct =
+    Number.isFinite(orb) && Number.isFinite(oppDrb) && orb + oppDrb > 0
+      ? Math.round((orb / (orb + oppDrb)) * 1000) / 1000
+      : null;
+  const totals = meta.teamTotals || null;
+  const fromTotals = (key) =>
+    typeof totals?.[key] === 'number' && Number.isFinite(totals[key]) ? totals[key] : null;
   return {
     gameId: meta.gameId,
     date: meta.date,
@@ -930,12 +944,17 @@ function teamTrendFromBekapakaTeam(bekapaka, meta) {
     scoreUs: meta.scoreUs ?? null,
     scoreThem: meta.scoreThem ?? null,
     efg: parseStat(ff.efg) || 0,
-    tov: parseStat(ff.tov) || 0,
-    orb: parseStat(ff.orb) || 0,
-    ftr: parseStat(ff.ftr) || 0,
+    tovPct: parseStat(ff.tovPct) || 0,
+    orbPct,
+    ftRate: parseStat(ff.ftRate) || 0,
     offRtg: parseStat(ff.offRtg) || 0,
     defRtg: parseStat(ff.defRtg) || 0,
     pace: parseStat(ff.pace) || 0,
+    // Źródła punktów — tylko z KalkTeamGameStat (null = brak danych w KALK)
+    fastBreakPoints: fromTotals('fastBreakPts'),
+    pointsOffTO: fromTotals('ptsOffTurnovers'),
+    secondChancePoints: fromTotals('secondChancePts'),
+    benchPoints: fromTotals('benchPts'),
     dataSource: meta.dataSource || 'kalk'
   };
 }
@@ -956,17 +975,31 @@ export async function getTeamTrends(querySeasonId = undefined) {
     });
 
     if (kalkMatches.length) {
+      // KALK v2: typowane sumy drużyn (szybki atak, ławka, …) — brak tabeli/wierszy = null w trendach.
+      const teamGameStats = await Promise.resolve()
+        .then(() =>
+          prisma.kalkTeamGameStat.findMany({
+            where: { seasonId: targetSeasonId, kalkMatchId: { in: kalkMatches.map((m) => m.id) } }
+          })
+        )
+        .catch(() => []);
+      const statsByMatchSide = new Map((teamGameStats || []).map((r) => [`${r.kalkMatchId}|${r.side}`, r]));
+
       const trends = kalkMatches
         .map((km) => {
           const view = kalkMatchToGameDetail(km);
           const bekapaka = view.teams?.find((t) => t.isBekapaka);
           if (!bekapaka) return null;
+          const opponentTeam = view.teams?.find((t) => !t.isBekapaka);
+          const usSide = isBekapakaTeamName(km.homeTeamName) ? 'home' : 'away';
           return teamTrendFromBekapakaTeam(bekapaka, {
             gameId: km.id,
             date: km.date.toISOString().split('T')[0],
             opponent: view.opponent,
             scoreUs: view.scoreUs,
             scoreThem: view.scoreThem,
+            oppDrb: opponentTeam?.fourFactors?.drb ?? opponentTeam?.drb,
+            teamTotals: statsByMatchSide.get(`${km.id}|${usSide}`) || null,
             dataSource: 'kalk'
           });
         })
@@ -1219,29 +1252,42 @@ export async function getTrainingPriorities(querySeasonId = undefined) {
     if (team.fourFactors && opp.fourFactors) {
       const teamTotalPF = (team.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
       const oppTotalPF = (opp.players || []).reduce((sum, p) => sum + (p.pf || 0), 0);
+      // enrichKalkTeamStats zwraca klucze tov/orb/drb (nie turnovers/oreb) — patrz parseMatchBoxScore.
+      const ff = (t) => {
+        const f = t.fourFactors || {};
+        const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+        const orb = num(f.orb ?? f.oreb);
+        const drb = typeof f.drb === 'number' ? f.drb : Math.max(num(f.reb) - orb, 0);
+        return {
+          ftm: num(f.ftm), fta: num(f.fta), tov: num(f.tov ?? f.turnovers), ast: num(f.ast),
+          fga: num(f.fga), fgm: num(f.fgm), three_pm: num(f.three_pm), orb, drb
+        };
+      };
+      const tf = ff(team);
+      const of = ff(opp);
 
-      teamStatsSum.ftm += team.fourFactors.ftm;
-      teamStatsSum.fta += team.fourFactors.fta;
-      teamStatsSum.tov += team.fourFactors.turnovers;
-      teamStatsSum.ast += team.fourFactors.ast;
-      teamStatsSum.fga += team.fourFactors.fga;
-      teamStatsSum.fgm += team.fourFactors.fgm;
-      teamStatsSum.three_pm += team.fourFactors.three_pm;
-      teamStatsSum.orb += team.fourFactors.oreb;
-      teamStatsSum.oppDrb += (opp.fourFactors.reb - opp.fourFactors.oreb);
+      teamStatsSum.ftm += tf.ftm;
+      teamStatsSum.fta += tf.fta;
+      teamStatsSum.tov += tf.tov;
+      teamStatsSum.ast += tf.ast;
+      teamStatsSum.fga += tf.fga;
+      teamStatsSum.fgm += tf.fgm;
+      teamStatsSum.three_pm += tf.three_pm;
+      teamStatsSum.orb += tf.orb;
+      teamStatsSum.oppDrb += of.drb;
       teamStatsSum.pf += teamTotalPF;
       teamStatsSum.ptsAgainst += oppPts;
       teamStatsSum.count++;
 
-      oppStatsSum.ftm += opp.fourFactors.ftm;
-      oppStatsSum.fta += opp.fourFactors.fta;
-      oppStatsSum.tov += opp.fourFactors.turnovers;
-      oppStatsSum.ast += opp.fourFactors.ast;
-      oppStatsSum.fga += opp.fourFactors.fga;
-      oppStatsSum.fgm += opp.fourFactors.fgm;
-      oppStatsSum.three_pm += opp.fourFactors.three_pm;
-      oppStatsSum.orb += opp.fourFactors.oreb;
-      oppStatsSum.oppDrb += (team.fourFactors.reb - team.fourFactors.oreb);
+      oppStatsSum.ftm += of.ftm;
+      oppStatsSum.fta += of.fta;
+      oppStatsSum.tov += of.tov;
+      oppStatsSum.ast += of.ast;
+      oppStatsSum.fga += of.fga;
+      oppStatsSum.fgm += of.fgm;
+      oppStatsSum.three_pm += of.three_pm;
+      oppStatsSum.orb += of.orb;
+      oppStatsSum.oppDrb += tf.drb;
       oppStatsSum.pf += oppTotalPF;
       oppStatsSum.ptsAgainst += teamPts;
       oppStatsSum.count++;
@@ -1250,6 +1296,7 @@ export async function getTrainingPriorities(querySeasonId = undefined) {
 
   if (teamStatsSum.count === 0) return empty;
 
+  const round1 = (v) => Math.round(v * 10) / 10;
   const calcAvg = (sum) => {
     const fga = sum.fga / sum.count;
     const fta = sum.fta / sum.count;
@@ -1258,13 +1305,15 @@ export async function getTrainingPriorities(querySeasonId = undefined) {
     const orbD = (sum.orb + sum.oppDrb) / sum.count;
 
     return {
-      ftPercentage: sum.fta > 0 ? (sum.ftm / sum.fta) * 100 : 0,
-      turnovers: sum.tov / sum.count,
-      assists: sum.ast / sum.count,
-      tsPercentage: tsD > 0 ? (pts / tsD) * 100 : 0,
-      orbPercentage: orbD > 0 ? ((sum.orb / sum.count) / orbD) * 100 : 0,
-      fouls: sum.pf / sum.count,
-      pointsAgainst: sum.ptsAgainst / sum.count
+      ftPercentage: round1(sum.fta > 0 ? (sum.ftm / sum.fta) * 100 : 0),
+      turnovers: round1(sum.tov / sum.count),
+      assists: round1(sum.ast / sum.count),
+      efgPercentage: round1(sum.fga > 0 ? ((sum.fgm + 0.5 * sum.three_pm) / sum.fga) * 100 : 0),
+      tsPercentage: round1(tsD > 0 ? (pts / tsD) * 100 : 0),
+      orbPercentage: round1(orbD > 0 ? ((sum.orb / sum.count) / orbD) * 100 : 0),
+      fouls: round1(sum.pf / sum.count),
+      pointsAgainst: round1(sum.ptsAgainst / sum.count),
+      games: sum.count
     };
   };
 
@@ -1445,12 +1494,8 @@ export async function getGameById(id, querySeasonId = undefined) {
   await ensureDefaultSeason();
   const targetSeasonId = querySeasonId ? await resolveSeasonId(querySeasonId) : null;
 
-  const kalkMatch = await prisma.kalkMatch.findFirst({
-    where: {
-      id: String(id),
-      ...(targetSeasonId ? { seasonId: targetSeasonId } : {})
-    }
-  });
+  // Ten sam mecz (ID) może istnieć w kilku sezonach → preferuj aktywny; stare ID 2025/26 → alias.
+  const kalkMatch = await resolveKalkMatchById(prisma, id, { seasonId: targetSeasonId });
   if (kalkMatch) {
     return kalkMatchToGameDetail(kalkMatch);
   }
@@ -1660,15 +1705,15 @@ export async function ingestKalkPlayers(entries) {
       eval: parseStat(entry.eval_srednia || entry.eval),
       profileUrl: entry.profile_url || null,
       
-      // Nowe kategorie
-      stealsTotal: parseStat(entry.steals_suma),
-      stealsAverage: parseStat(entry.steals_srednia),
-      blocksTotal: parseStat(entry.blocks_suma),
-      blocksAverage: parseStat(entry.blocks_srednia),
-      reboundsTotal: parseStat(entry.rebounds_suma),
-      reboundsAverage: parseStat(entry.rebounds_srednia),
-      assistsTotal: parseStat(entry.assists_suma),
-      assistsAverage: parseStat(entry.assists_srednia),
+      // Nowe kategorie (stara strona: rebounds_/assists_/steals_/blocks_; nowa: zbiorki_/asysty_/prz_/bl_)
+      stealsTotal: parseStat(entry.steals_suma ?? entry.prz_suma),
+      stealsAverage: parseStat(entry.steals_srednia ?? entry.prz_srednia),
+      blocksTotal: parseStat(entry.blocks_suma ?? entry.bl_suma),
+      blocksAverage: parseStat(entry.blocks_srednia ?? entry.bl_srednia),
+      reboundsTotal: parseStat(entry.rebounds_suma ?? entry.zbiorki_suma),
+      reboundsAverage: parseStat(entry.rebounds_srednia ?? entry.zbiorki_srednia),
+      assistsTotal: parseStat(entry.assists_suma ?? entry.asysty_suma),
+      assistsAverage: parseStat(entry.assists_srednia ?? entry.asysty_srednia),
       threePointsMade: entry.three_made ? parseInt(entry.three_made) : null,
       threePointsAttempted: entry.three_attempted ? parseInt(entry.three_attempted) : null,
       threePointsPct: parseStat(entry.three_pct),
@@ -1841,11 +1886,24 @@ export async function getKalkDataAuditReport(querySeasonId = undefined) {
 // NOWE FUNKCJE DLA FAZY 1 REFAKTORYZACJI
 // ============================================
 
-// ZAWODNICY - Synchronizacja KalkPlayer z RosterPlayer
-export async function syncPlayersFromKalk() {
+// ZAWODNICY - Synchronizacja KalkPlayer z RosterPlayer (tylko aktywny sezon)
+//
+// Zasady (KALK v2):
+// - dopasowanie: kalkSlug → kalkPlayerId (także ten sam slug z innego sezonu) → imię+nazwisko (obie kolejności),
+// - imię/nazwisko z KalkPlayerProfile (nowa strona: „Imię Nazwisko”), ustawiane TYLKO przy tworzeniu,
+//   nigdy nie nadpisujemy nazw w istniejącym składzie,
+// - sezony nieaktywne (historia) nie tworzą zawodników w składzie.
+export async function syncPlayersFromKalk(options = {}) {
   await ensureSeeded();
 
   const activeSeason = await getActiveSeason();
+  if (options.seasonId && activeSeason && options.seasonId !== activeSeason.id) {
+    console.warn(
+      `[kalk-sync] Pominięto sync składu dla nieaktywnego sezonu ${options.seasonId} (aktywny: ${activeSeason.id}).`
+    );
+    return { synced: [], linked: 0, errors: [], total: 0, status: 'skipped_inactive_season' };
+  }
+
   const kalkPlayers = await prisma.kalkPlayer.findMany({
     where: activeSeason ? { seasonId: activeSeason.id } : undefined
   });
@@ -1872,15 +1930,25 @@ export async function syncPlayersFromKalk() {
 
   const synced = [];
   const errors = [];
+  let linked = 0;
 
   // Pobierz wszystkich aktualnych roster graczy, żeby móc wyszukiwać ich w pamięci
   const allRoster = await prisma.rosterPlayer.findMany();
 
-  const findRosterMatch = (fName, lName) => {
+  const slugOf = (kp) => kp.slug || (kp.id.includes('__') ? kp.id.slice(kp.id.indexOf('__') + 2) : null);
+  const slugs = ourKalkPlayers.map(slugOf).filter(Boolean);
+  const profiles = slugs.length
+    ? (await prisma.kalkPlayerProfile.findMany({ where: { slug: { in: slugs } } })) || []
+    : [];
+  const profileBySlug = new Map(profiles.map((p) => [p.slug, p]));
+
+  const findRosterByName = (fName, lName, slug) => {
     const cleanFirst = stripDiacritics(fName);
     const cleanLast = stripDiacritics(lName);
+    if (!cleanFirst && !cleanLast) return null;
 
     return allRoster.find(r => {
+      if (slug && r.kalkSlug && r.kalkSlug !== slug) return false; // inny zawodnik o tym samym nazwisku
       const rFirst = stripDiacritics(r.firstName);
       const rLast = stripDiacritics(r.lastName);
 
@@ -1889,68 +1957,55 @@ export async function syncPlayersFromKalk() {
     });
   };
 
-  // SYNCHRONIZACJA: Dodaj/Aktualizuj tylko naszych (BEZ destrukcyjnego czyszczenia kalkPlayerId)
+  // Nazwy przy tworzeniu: profil > „Imię Nazwisko” (v2) > „Nazwisko Imię” (stara strona)
+  const namesFor = (kp, profile) => {
+    if (profile?.firstName && profile?.lastName) return splitPlayerName(profile);
+    if (activeSeason?.sourceSite === 'legacy') {
+      const parts = kp.name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return { firstName: parts[parts.length - 1], lastName: parts.slice(0, -1).join(' ') };
+      }
+    }
+    return splitPlayerName(profile, kp.name);
+  };
+
+  // SYNCHRONIZACJA: Dodaj/połącz tylko naszych (BEZ destrukcyjnego czyszczenia kalkPlayerId)
   for (const kalkPlayer of ourKalkPlayers) {
     try {
-      // FIX: Kalk name is often "Surname Name"
-      const nameParts = kalkPlayer.name.trim().split(/\s+/);
-      let firstName = kalkPlayer.name;
-      let lastName = "";
+      const slug = slugOf(kalkPlayer);
+      const profile = slug ? profileBySlug.get(slug) : null;
+      const { firstName, lastName } = namesFor(kalkPlayer, profile);
 
-      if (nameParts.length >= 2) {
-        // Assume format: Surname Name
-        firstName = nameParts[nameParts.length - 1];
-        lastName = nameParts.slice(0, nameParts.length - 1).join(' ');
-      }
-
-      // Proboj znalezc po kalkPlayerId w pamięci
-      let existing = allRoster.find(r => r.kalkPlayerId === kalkPlayer.id);
-
-      // Jesli nie ma po ID, sprawdz po imieniu i nazwisku (diacritic-insensitive) w pamięci
-      if (!existing) {
-        existing = findRosterMatch(firstName, lastName);
-
-        if (existing) {
-          if (existing.kalkPlayerId !== kalkPlayer.id) {
-            // Polacz istniejacego zawodnika ze zaktualizowanym KALK ID
-            await prisma.rosterPlayer.update({
-              where: { id: existing.id },
-              data: { kalkPlayerId: kalkPlayer.id }
-            });
-            existing.kalkPlayerId = kalkPlayer.id; // update local object reference
-          }
-        }
-      }
+      let existing =
+        (slug && allRoster.find(r => r.kalkSlug === slug)) ||
+        allRoster.find(r => r.kalkPlayerId === kalkPlayer.id) ||
+        (slug && allRoster.find(r => r.kalkPlayerId && !r.kalkSlug && r.kalkPlayerId.includes('__') &&
+          r.kalkPlayerId.slice(r.kalkPlayerId.indexOf('__') + 2) === slug)) ||
+        findRosterByName(firstName, lastName, slug) ||
+        null;
 
       if (!existing) {
-        // FIX: Kalk name is "Surname Name" (e.g. "Karpiński Filip")
-        const nameParts = kalkPlayer.name.trim().split(/\s+/);
-        let firstName = nameParts[0] || '';
-        let lastName = nameParts.slice(1).join(' ') || '';
-
-        if (nameParts.length === 2) {
-          firstName = nameParts[1];
-          lastName = nameParts[0];
-        }
-
         const newPlayer = await prisma.rosterPlayer.create({
           data: {
             firstName,
             lastName,
             kalkPlayerId: kalkPlayer.id,
+            ...(slug ? { kalkSlug: slug } : {})
           }
         });
         allRoster.push(newPlayer); // Keep local cache updated
         synced.push(newPlayer);
-      } else {
-        // Zawsze upewnij sie, ze imie i nazwisko sa w dobrej kolejnosci z KALK
-        await prisma.rosterPlayer.update({
-          where: { id: existing.id },
-          data: {
-            firstName,
-            lastName
-          }
-        });
+        continue;
+      }
+
+      // Istniejący zawodnik: tylko powiązania KALK — imię i nazwisko zostają bez zmian.
+      const link = {};
+      if (existing.kalkPlayerId !== kalkPlayer.id) link.kalkPlayerId = kalkPlayer.id;
+      if (slug && !existing.kalkSlug) link.kalkSlug = slug;
+      if (Object.keys(link).length) {
+        await prisma.rosterPlayer.update({ where: { id: existing.id }, data: link });
+        Object.assign(existing, link);
+        linked += 1;
       }
     } catch (e) {
       errors.push({ id: kalkPlayer.id, error: e.message });
@@ -1959,7 +2014,7 @@ export async function syncPlayersFromKalk() {
 
   await updateRosterStatsFromKalk();
 
-  return { synced, errors, total: ourKalkPlayers.length };
+  return { synced, linked, errors, total: ourKalkPlayers.length };
 }
 
 /** Statystyki kadry z agregatów KalkPlayer (bez protokołów Game). */
@@ -2619,12 +2674,13 @@ async function getOpponentAdvancedStats(opponentName, seasonIdParam = undefined)
 
   if (!matchesWithDetails.length) {
     if (!latestFinished) return null;
+    // Brak protokołów: null = brak danych (nie 0 — AI cytowałoby zera jako statystyki).
     return {
       matchesScraped: 0,
-      pace: 0,
-      shotProfile: { two: 0, three: 0, ft: 0 },
-      fourFactors: { efg: 0, tov: 0, orb: 0, ftr: 0 },
-      situational: { fourthQuarterDiff: 0, clutchPlay: '?' },
+      pace: null,
+      shotProfile: { two: null, three: null, ft: null },
+      fourFactors: { efg: null, tov: null, orb: null, ftr: null },
+      situational: { fourthQuarterDiff: null, clutchPlay: null },
       personnel: { shooters: [], paintProtectors: [], playmakers: [] },
       fallbackFromPreviousMatch: true,
       fallbackBasicOnly: true,
@@ -2633,7 +2689,7 @@ async function getOpponentAdvancedStats(opponentName, seasonIdParam = undefined)
         ? latestFinished.date.toISOString().split('T')[0]
         : null,
       sourceMatchLabel: `${latestFinished.homeTeam} — ${latestFinished.guestTeam} (${latestFinished.scoreHome ?? '–'}:${latestFinished.scoreAway ?? '–'})`,
-      threePointAccuracy: 0
+      threePointAccuracy: null
     };
   }
 
@@ -2768,7 +2824,7 @@ async function getOpponentAdvancedStats(opponentName, seasonIdParam = undefined)
   stats.situational.clutchPlay = stats.situational.fourthQuarterDiff > 2 ? 'Dominujący (Mocne końcówki)' : (stats.situational.fourthQuarterDiff < -2 ? 'Wrażliwy (Traci przewagi)' : 'Stabilny (Równa gra)');
 
   // 3PT Accuracy
-  stats.threePointAccuracy = total3PA > 0 ? Number(((total3PM / total3PA) * 100).toFixed(2)) : 0;
+  stats.threePointAccuracy = total3PA > 0 ? Number(((total3PM / total3PA) * 100).toFixed(2)) : null;
 
   const minGamesForPersonnel =
     stats.fallbackFromPreviousMatch && stats.matchesScraped === 1 ? 1 : 2;
@@ -2802,7 +2858,12 @@ async function getOpponentAdvancedStats(opponentName, seasonIdParam = undefined)
   return stats;
 }
 
-export async function getDetailedScouting(opponentName, seasonIdParam = undefined) {
+/**
+ * @param {string | undefined} opponentName
+ * @param {string | undefined} seasonIdParam
+ * @param {{ includeAiPayload?: boolean }} [options] — includeAiPayload: zwraca też payload/hash dla Gemini
+ */
+export async function getDetailedScouting(opponentName, seasonIdParam = undefined, options = {}) {
   await ensureSeeded();
 
   let seasonId = await resolveSeasonId(seasonIdParam);
@@ -2862,30 +2923,50 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
     getOpponentAdvancedStats(bekapaka?.name || 'BeKaPaKa', seasonId)
   ]);
 
+  // KALK v2: forma z KalkMatch, kluczowi zawodnicy z KalkPlayerSeasonStat, PBP, H2H, poprzednie sezony.
+  const scoutingExtras = await loadScoutingExtras({ opponentName, seasonId });
+
+  const leagueForm = oppMatches.map((m) => {
+    const isHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
+    const own = isHome ? m.scoreHome : m.scoreAway;
+    const other = isHome ? m.scoreAway : m.scoreHome;
+    return {
+      opponent: isHome ? m.guestTeam : m.homeTeam,
+      score: `${own}:${other}`,
+      result: own > other ? 'W' : 'L',
+      date: m.date.toISOString().split('T')[0]
+    };
+  });
+  /** Forma rywala (score z perspektywy rywala): KalkMatch, fallback terminarz LeagueMatch. */
+  const form = scoutingExtras.form?.length ? scoutingExtras.form : leagueForm;
+
   const oppPpg = opponent?.matches > 0 ? (opponent.pointsFor / opponent.matches) : 0;
   const oppOppg = opponent?.matches > 0 ? (opponent.pointsAgainst / opponent.matches) : 0;
   const bkPpg = bekapaka?.matches > 0 ? (bekapaka.pointsFor / bekapaka.matches) : 0;
   const bkOppg = bekapaka?.matches > 0 ? (bekapaka.pointsAgainst / bekapaka.matches) : 0;
 
   const pace = advancedStats?.pace || 0;
-  const paceDesc = pace > 84 ? 'grająca bardzo szybko (run & gun)' : (pace < 78 ? 'preferująca wolne, pozycyjne tempo' : 'grająca w zrównoważonym tempie');
+  const paceDesc = pace <= 0
+    ? 'o nieznanym tempie gry (brak protokołów)'
+    : pace > 84 ? 'grająca bardzo szybko (run & gun)' : (pace < 78 ? 'preferująca wolne, pozycyjne tempo' : 'grająca w zrównoważonym tempie');
 
   const shotProfile = advancedStats?.shotProfile;
   const styleDesc = shotProfile?.three > 35 ? 'i opierająca siłę ataku na rzutach za 3 punkty' : (shotProfile?.two > 60 ? 'i dominująca w strefie podkoszowej' : 'z uniwersalnym stylem gry');
 
-  const recentWins = oppMatches.filter(m => {
-    const isHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
-    const scoreUs = isHome ? m.scoreHome : m.scoreAway;
-    const scoreThem = isHome ? m.scoreAway : m.scoreHome;
-    return scoreUs > scoreThem;
-  }).length;
+  const recentWins = form.filter((f) => f.result === 'W').length;
 
-  const formDesc = recentWins >= 3 ? 'Są obecnie na fali wznoszącej (seria zwycięstw).' : (recentWins === 0 ? 'Przeżywają obecnie kryzys formy.' : 'Grają w kratkę, przeplatając dobre mecze słabymi.');
+  const formDesc = form.length === 0
+    ? 'Brak rozegranych meczów w tym sezonie.'
+    : recentWins >= 3 ? 'Są obecnie na fali wznoszącej (seria zwycięstw).' : (recentWins === 0 ? 'Przeżywają obecnie kryzys formy.' : 'Grają w kratkę, przeplatając dobre mecze słabymi.');
 
   const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
   const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
   const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
-  const weakPoint = advancedStats?.fourFactors?.tov > 20 ? 'Często gubią piłkę pod presją' : (advancedStats?.fourFactors?.orb < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
+  const oppTovPct = advancedStats?.fourFactors?.tov;
+  const oppOrbPct = advancedStats?.fourFactors?.orb;
+  const weakPoint = typeof oppTovPct === 'number' && oppTovPct > 20
+    ? 'Często gubią piłkę pod presją'
+    : (typeof oppOrbPct === 'number' && oppOrbPct < 20 ? 'Słabo zbierają w ataku' : 'Można ich skontrować');
 
   /** Szablon z danych ligi — gdy brak cache lub uzupełnienie ubogiego raportu Gemini */
   const templateAnalysis = {
@@ -2909,10 +2990,8 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
   let aiAnalysis = templateAnalysis;
   let aiMeta = { fromGemini: false, needsRegeneration: false };
 
-  const opponentKey = normalizeOpponentKey(opponentName);
-  const cachedReport = await prisma.scoutingAiReport.findUnique({
-    where: { opponentKey }
-  });
+  // Raport per sezon (klucz `{seasonId}::{rywal}`), fallback: stary klucz bez sezonu.
+  const { report: cachedReport, legacy: cachedReportLegacy } = await findScoutingReport(opponentName, seasonId);
 
   if (cachedReport?.analysisJson || cachedReport?.summaryMd) {
     let fromCache = cachedReport.analysisJson
@@ -2949,81 +3028,55 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
     };
   }));
 
-  const scoutingPayloadForHash = {
-    teamInfo: {
-      opponent: {
-        name: opponentName,
-        rank: oppRank,
-        record: `${opponent?.wins || 0}-${opponent?.losses || 0}`,
-        ppg: oppPpg,
-        oppg: oppOppg
-      },
-      bekapaka: {
-        name: bekapaka?.name || 'BeKaPaKa',
-        rank: bkRank,
-        record: `${bekapaka?.wins || 0}-${bekapaka?.losses || 0}`,
-        ppg: bkPpg,
-        oppg: bekapaka?.matches > 0 ? (bekapaka.pointsAgainst / bekapaka.matches) : 0
-      }
+  const teamInfo = {
+    opponent: {
+      name: opponentName,
+      rank: oppRank,
+      record: `${opponent?.wins || 0}-${opponent?.losses || 0}`,
+      ppg: oppPpg,
+      oppg: oppOppg
     },
-    keyPlayers: enrichedKeyPlayers,
-    form: oppMatches.map((m) => {
-      const isHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
-      return {
-        opponent: isHome ? m.guestTeam : m.homeTeam,
-        score: `${m.scoreHome}:${m.scoreAway}`,
-        result: (isHome ? m.scoreHome : m.scoreAway) > (isHome ? m.scoreAway : m.scoreHome) ? 'W' : 'L',
-        date: m.date.toISOString().split('T')[0]
-      };
-    }),
-    advancedStats,
-    bekapakaAdvancedStats
+    bekapaka: {
+      name: bekapaka?.name || 'BeKaPaKa',
+      rank: bkRank,
+      record: `${bekapaka?.wins || 0}-${bekapaka?.losses || 0}`,
+      ppg: bkPpg,
+      oppg: bkOppg
+    }
   };
-  const scoutingCurrentHash = hashPayload(scoutingPayloadForHash);
 
-  if (cachedReport?.sourceHash && cachedReport.sourceHash !== scoutingCurrentHash) {
+  // Payload Gemini (ten sam builder co buildScoutingContext) → hash z wersją promptu.
+  const aiPayload = sanitizeAiPayload(
+    buildScoutingAiPayload(
+      { seasonId, teamInfo, keyPlayers: enrichedKeyPlayers, form, advancedStats, bekapakaAdvancedStats },
+      scoutingExtras
+    )
+  );
+  const scoutingCurrentHash = hashAiPayload('scouting', aiPayload);
+
+  if (cachedReport && (!cachedReport.sourceHash || cachedReport.sourceHash !== scoutingCurrentHash)) {
     aiMeta = {
       ...aiMeta,
       stale: true,
-      needsRegeneration: true
+      needsRegeneration: true,
+      legacyReport: Boolean(cachedReportLegacy)
     };
   } else if (cachedReport?.sourceHash) {
-    aiMeta = { ...aiMeta, stale: false };
+    aiMeta = { ...aiMeta, stale: false, legacyReport: Boolean(cachedReportLegacy) };
   }
 
   return {
+    seasonId,
     advancedStats, // Opponent Data
     bekapakaAdvancedStats, // BeKaPaKa Data
-    teamInfo: {
-      opponent: {
-        name: opponentName,
-        rank: oppRank,
-        record: `${opponent?.wins || 0}-${opponent?.losses || 0}`,
-        ppg: oppPpg,
-        oppg: oppOppg
-      },
-      bekapaka: {
-        name: bekapaka?.name || 'BeKaPaKa',
-        rank: bkRank,
-        record: `${bekapaka?.wins || 0}-${bekapaka?.losses || 0}`,
-        ppg: bkPpg,
-        oppg: bekapaka?.matches > 0 ? (bekapaka.pointsAgainst / bekapaka.matches) : 0
-      }
-    },
+    teamInfo,
     keyPlayers: enrichedKeyPlayers,
-    form: oppMatches.map(m => {
-      const isHome = m.homeTeam.toLowerCase().includes(opponentName.toLowerCase());
-      return {
-        opponent: isHome ? m.guestTeam : m.homeTeam,
-        score: `${m.scoreHome}:${m.scoreAway}`,
-        result: (isHome ? m.scoreHome : m.scoreAway) > (isHome ? m.scoreAway : m.scoreHome) ? 'W' : 'L',
-        date: m.date.toISOString().split('T')[0]
-      };
-    }),
+    form,
     aiAnalysis,
     aiMeta,
     scoutingSummaryMd: buildScoutingSummaryMd(aiAnalysis),
-    personnelMd: buildPersonnelMdFromAnalysis(aiAnalysis)
+    personnelMd: buildPersonnelMdFromAnalysis(aiAnalysis),
+    ...(options.includeAiPayload ? { aiPayload, aiPayloadHash: scoutingCurrentHash } : {})
   };
 }
 

@@ -58,7 +58,7 @@ export default function GameDetail() {
         aiSummaryAt: string;
         model?: string;
         cached?: boolean;
-      }>(`/api/games/${id}/analyze`, { force });
+      }>(`/api/games/${id}/analyze`, { force, seasonId: game?.seasonId });
       setGame((prev: any) => ({
         ...prev,
         aiSummary: result.aiSummary,

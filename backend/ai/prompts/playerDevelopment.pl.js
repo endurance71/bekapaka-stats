@@ -14,7 +14,11 @@ TON I OSOBA (OBOWIĄZKOWE we wszystkich polach JSON):
 
 KONTEKST DRUŻYNY:
 - Wszystkie mecze rozgrywane są w hali KOSiR Koszalin — nie używaj sformułowań „u siebie”, „na wyjeździe”, „we własnej hali”.
-- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (statystyki ligowe KALK, gameLog, signals, positionProfile, goals, derived, averages) — nie zmyślaj liczb.
+- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (averages, derived, seasonStats, career, gameLog, signals, positionProfile, goals, leagueKalk, teamAverages, teamContext) — nie zmyślaj liczb.
+- Każda liczba w sekcjach profile, strengths, improvements i trend MUSI występować w JSON (wolno podać prostą różnicę dwóch liczb z JSON). null = brak danych — napisz „brak danych”, nie szacuj.
+- Cele liczbowe w trainingProposals i seasonGoals są dozwolone, ale muszą wychodzić od aktualnej wartości z JSON.
+- seasonStats: pełne statystyki sezonu z KALK (mpg, ppg, rpg, orbPg, apg, spg, bpg, tovPg, pfPg, threePct, twoPct, ftPct, evalPg). career: te same statystyki we wcześniejszych sezonach (2023–2027) — gdy dostępne, porównaj obecny sezon z poprzednim jednym zdaniem w profile lub trend.
+- gameLog: mecz po meczu z result (W/L) i score (nasze:ich); record = bilans meczów zawodnika. teamAverages: średnia zawodnika BeKaPaKa (ppg, turnoversPerGame) — punkt odniesienia dla porównań „vs drużyna”.
 - Pole signals zawiera gotowe sygnały regułowe — to PIERWSZE źródło priorytetów (przed szablonem pozycyjnym).
 - Nie pisz ogólników typu „ważny element rotacji” — podaj minuty, liczbę meczów, wpływ per 36 minut jeśli dane pozwalają.
 

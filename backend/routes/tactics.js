@@ -6,11 +6,14 @@ import {
   buildTacticalPlayUserPrompt
 } from '../ai/prompts/tacticalPlayGenerator.pl.js';
 import {
+  DEFAULT_PREGAME_VENUE,
   buildPreGameCardSystemInstruction,
   buildPreGameCardUserPrompt
 } from '../ai/prompts/pregameBriefingCard.pl.js';
+import { PREGAME_CARD_SCHEMA, TACTICAL_PLAY_SCHEMA, validatePlayDiagram } from '../ai/responseSchemas.js';
+import { findScoutingReport } from '../ai/scoutingData.js';
 import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
-import { getRoster, getNextOpponentScouting } from '../dataStore.js';
+import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
 import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
 
 export const tacticsRouter = express.Router();
@@ -151,12 +154,17 @@ tacticsRouter.post('/plays/generate', async (req, res) => {
     const rawJson = await generateText({
       system,
       user,
-      jsonMode: true
+      jsonMode: true,
+      responseJsonSchema: TACTICAL_PLAY_SCHEMA
     });
 
     const parsed = JSON.parse(rawJson);
     if (!parsed || !parsed.name) {
       throw new Error('Nieprawidłowa odpowiedź AI');
+    }
+    const diagramIssues = validatePlayDiagram(parsed.diagramData);
+    if (diagramIssues.length) {
+      throw new Error(`Nieprawidłowy diagram zagrywki AI: ${diagramIssues.slice(0, 3).join('; ')} — spróbuj ponownie`);
     }
 
     const saved = await prisma.play.create({
@@ -384,17 +392,33 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
       }
     }
 
-    const [roster, scoutingReport] = await Promise.all([
+    const [roster, scoutingLookup, scoutingData] = await Promise.all([
       getRoster(targetSeasonId),
-      prisma.scoutingAiReport.findFirst({
-        where: { opponentName: { contains: String(opponent), mode: 'insensitive' } }
-      })
+      // Raport scoutingu tego sezonu (klucz sezonowy, fallback: stary klucz bez sezonu)
+      findScoutingReport(String(opponent), targetSeasonId).catch(() => ({ report: null })),
+      getDetailedScouting(String(opponent), targetSeasonId, { includeAiPayload: true }).catch(() => null)
     ]);
+    const scoutingReport = scoutingLookup?.report || null;
+
+    // Statystyki rywala z tych samych danych co scouting (bez tekstu Gemini) — źródło liczb dla odprawy.
+    const ai = scoutingData?.aiPayload || null;
+    const opponentStats = ai
+      ? {
+          teamInfo: ai.teamInfo,
+          keyPlayers: ai.keyPlayers,
+          form: ai.form,
+          formNote: ai.formNote,
+          teamSeasonAverages: ai.teamSeasonAverages,
+          headToHead: ai.headToHead,
+          playByPlayTendencies: ai.playByPlayTendencies
+        }
+      : null;
 
     const system = buildPreGameCardSystemInstruction();
     const user = buildPreGameCardUserPrompt({
       opponentName: opponent,
       scoutingReport,
+      opponentStats,
       roster,
       nextMatch
     });
@@ -402,10 +426,30 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
     const rawJson = await generateText({
       system,
       user,
-      jsonMode: true
+      jsonMode: true,
+      responseJsonSchema: PREGAME_CARD_SCHEMA
     });
 
     const parsed = JSON.parse(rawJson);
+    // Anty-halucynacja: w piątce tylko zawodnicy z kadry (dopasowanie po playerId lub imieniu i nazwisku).
+    const rosterById = new Map((roster || []).map((p) => [String(p.id), p]));
+    const rosterByName = new Map(
+      (roster || []).map((p) => [`${p.firstName} ${p.lastName}`.trim().toLowerCase(), p])
+    );
+    parsed.startingFive = (Array.isArray(parsed.startingFive) ? parsed.startingFive : [])
+      .map((slot) => {
+        const match =
+          rosterById.get(String(slot?.playerId)) ||
+          rosterByName.get(String(slot?.name || '').trim().toLowerCase());
+        if (!match) return null;
+        return {
+          ...slot,
+          playerId: match.id,
+          name: `${match.firstName} ${match.lastName}`.trim(),
+          number: match.number ?? null
+        };
+      })
+      .filter(Boolean);
 
     const matchDate = nextMatch?.date ? new Date(nextMatch.date) : new Date();
     const isHome = nextMatch?.homeTeam?.toLowerCase().includes('bekapaka') ?? true;
@@ -434,7 +478,7 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
         gatheringTime: gathering,
         tipoffTime: tipoff,
         jerseyColor: isHome ? 'Czarne' : 'Białe',
-        venue: 'Hala Sportowa, Bobolice',
+        venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
         tacticalKeys: parsed.tacticalKeys || [],
         startingFive: parsed.startingFive || [],
         benchKeys: parsed.benchKeys || null,
@@ -443,6 +487,7 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
       },
       update: {
         matchDate,
+        venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
         gatheringTime: gathering,
         tipoffTime: tipoff,
         jerseyColor: isHome ? 'Czarne' : 'Białe',

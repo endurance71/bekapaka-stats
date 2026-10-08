@@ -11,6 +11,7 @@
     "db:seed": "node scripts/seed.js",
     "seed:users": "node scripts/seed-users.js",
     "test": "vitest",
+    "audit:ai": "node scripts/audit-ai-analyses.js",
     "studio:worker": "node studio/worker.js",
     "studio:seed": "node studio/seed.js"
   },

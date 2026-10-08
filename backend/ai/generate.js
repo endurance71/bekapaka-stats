@@ -3,8 +3,10 @@ import { buildBriefingContext } from './buildBriefingContext.js';
 import { buildMatchContext } from './buildMatchContext.js';
 import { buildPlayerContext } from './buildPlayerContext.js';
 import { buildScoutingContext } from './buildScoutingContext.js';
-import { generateText, getGeminiModelName } from './geminiClient.js';
+import { TEMPLATE_MODEL_NAME, generateText, getGeminiModelName } from './geminiClient.js';
+import { PLAYER_DEVELOPMENT_SCHEMA, SCOUTING_SCHEMA } from './responseSchemas.js';
 import { withAiLock } from './locks.js';
+import { resolveKalkMatchById } from '../kalk/v2/resolveMatch.js';
 import { MATCH_ANALYSIS_SYSTEM, buildMatchAnalysisUser } from './prompts/matchAnalysis.pl.js';
 import {
   buildPlayerDevelopmentMarkdown,
@@ -31,18 +33,24 @@ const aiSummarySelect = {
   aiSummaryModel: true
 };
 
-async function findMatchAiTarget(gameId) {
+/**
+ * Wiersz docelowy analizy meczu: legacy Game albo KalkMatch (z sezonem, gdy podany).
+ * @param {string} gameId
+ * @param {string | null | undefined} [seasonId]
+ */
+async function findMatchAiTarget(gameId, seasonId = undefined) {
   const game = await prisma.game.findUnique({
     where: { id: gameId },
     select: aiSummarySelect
   });
   if (game) return { kind: 'game', id: gameId, existing: game };
 
-  const kalk = await prisma.kalkMatch.findFirst({
-    where: { id: String(gameId) },
-    select: { ...aiSummarySelect, seasonId: true }
+  // Ten sam resolver co getGameById (sezon aktywny przy duplikatach ID, aliasy starych ID 2025/26).
+  const kalk = await resolveKalkMatchById(prisma, String(gameId), {
+    seasonId: seasonId || null,
+    select: aiSummarySelect
   });
-  if (kalk) return { kind: 'kalk', id: String(gameId), seasonId: kalk.seasonId, existing: kalk };
+  if (kalk) return { kind: 'kalk', id: String(kalk.id), seasonId: kalk.seasonId, existing: kalk };
 
   return null;
 }
@@ -91,7 +99,7 @@ function buildFallbackPlayerPlan(payload) {
       : 'za mało meczów do pełnego trendu';
 
   const recentTrend = recentGames.length
-    ? recentGames.map((game) => `- ${game.date} vs ${game.opponent}: **${game.pts || 0}** pkt, **${game.reb || 0}** zb, **${game.ast || 0}** as, eFG **${formatStat((game.efg || 0) * 100)}%**.`).join('\n')
+    ? recentGames.map((game) => `- ${game.date} vs ${game.opponent}${game.result ? ` (${game.result} ${game.score ?? ''})` : ''}: **${game.pts || 0}** pkt, **${game.reb || 0}** zb, **${game.ast || 0}** as, eFG **${game.efgPct == null ? 'brak danych' : `${formatStat(game.efgPct)}%`}**.`).join('\n')
     : '- Brak szczegółowych danych z ostatnich meczów.';
 
   const focusPoints = improvements.length
@@ -149,29 +157,27 @@ function buildFallbackPlayerPlan(payload) {
 /**
  * @param {string} raw
  * @param {object} payload
- * @returns {string}
+ * @returns {{ text: string, isTemplate: boolean }}
  */
-function resolvePlayerDevelopmentText(raw, payload) {
+export function resolvePlayerDevelopmentText(raw, payload) {
   try {
     const sections = parsePlayerDevelopmentJson(raw);
     const markdown = buildPlayerDevelopmentMarkdown(sections);
-    if (hasDetailedPlayerPlanMarkdown(markdown)) return markdown;
+    if (hasDetailedPlayerPlanMarkdown(markdown)) return { text: markdown, isTemplate: false };
   } catch {
     // fallback poniżej
   }
-  const fallback = buildFallbackPlayerPlan(payload);
-  if (hasDetailedPlayerPlanMarkdown(fallback)) return fallback;
-  return fallback;
+  return { text: buildFallbackPlayerPlan(payload), isTemplate: true };
 }
 
 /**
  * @param {string} gameId
- * @param {{ force?: boolean }} options
+ * @param {{ force?: boolean, seasonId?: string | null }} options
  */
 export async function generateGameAnalysis(gameId, options = {}) {
-  return withAiLock(`game:${gameId}`, async () => {
-    const ctx = await buildMatchContext(gameId);
-    const target = await findMatchAiTarget(gameId);
+  return withAiLock(`game:${options.seasonId || 'any'}:${gameId}`, async () => {
+    const ctx = await buildMatchContext(gameId, { seasonId: options.seasonId });
+    const target = await findMatchAiTarget(ctx.kalkMatchId || gameId, ctx.seasonId ?? options.seasonId);
     const existing = target?.existing;
 
     if (
@@ -225,11 +231,11 @@ export async function generateGameAnalysis(gameId, options = {}) {
 
 /**
  * @param {string} playerId
- * @param {{ force?: boolean }} options
+ * @param {{ force?: boolean, seasonId?: string | null }} options
  */
 export async function generatePlayerDevelopment(playerId, options = {}) {
   return withAiLock(`player:${playerId}`, async () => {
-    const ctx = await buildPlayerContext(playerId);
+    const ctx = await buildPlayerContext(playerId, { seasonId: options.seasonId });
     const existing = await prisma.rosterPlayer.findUnique({
       where: { id: playerId },
       select: {
@@ -244,13 +250,15 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
       !options.force &&
       existing?.aiDevelopmentSummary &&
       existing.aiDevelopmentHash === ctx.hash &&
+      existing.aiDevelopmentModel !== TEMPLATE_MODEL_NAME &&
       hasDetailedPlayerPlanMarkdown(existing.aiDevelopmentSummary)
     ) {
       return {
         cached: true,
         aiDevelopmentSummary: existing.aiDevelopmentSummary,
         aiDevelopmentAt: existing.aiDevelopmentAt,
-        model: existing.aiDevelopmentModel
+        model: existing.aiDevelopmentModel,
+        isTemplate: false
       };
     }
 
@@ -258,11 +266,13 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
       system: PLAYER_DEVELOPMENT_SYSTEM,
       user: buildPlayerDevelopmentUser(ctx.payload),
       jsonMode: true,
+      responseJsonSchema: PLAYER_DEVELOPMENT_SCHEMA,
       maxOutputTokens: 4096
     });
-    const finalText = resolvePlayerDevelopmentText(raw, ctx.payload);
+    const { text: finalText, isTemplate } = resolvePlayerDevelopmentText(raw, ctx.payload);
 
-    const model = getGeminiModelName();
+    // Szablon (fallback) zapisywany z modelem „template” — odróżnialny od odpowiedzi Gemini w audycie i katalogu.
+    const model = isTemplate ? TEMPLATE_MODEL_NAME : getGeminiModelName();
     const now = new Date();
     await prisma.rosterPlayer.update({
       where: { id: playerId },
@@ -278,18 +288,21 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
       cached: false,
       aiDevelopmentSummary: finalText,
       aiDevelopmentAt: now,
-      model
+      model,
+      isTemplate
     };
   });
 }
 
 /**
  * @param {string | undefined} opponentQuery
- * @param {{ force?: boolean }} options
+ * @param {{ force?: boolean, seasonId?: string | null }} options
  */
 export async function generateScoutingReport(opponentQuery, options = {}) {
-  const ctx = await buildScoutingContext(opponentQuery);
+  const targetSeasonId = await resolveSeasonId(options.seasonId || undefined);
+  const ctx = await buildScoutingContext(opponentQuery, targetSeasonId);
   return withAiLock(`scouting:${ctx.opponentKey}`, async () => {
+    // Klucz sezonowy `{seasonId}::{rywal}` — raporty z różnych sezonów się nie nadpisują.
     const existing = await prisma.scoutingAiReport.findUnique({
       where: { opponentKey: ctx.opponentKey }
     });
@@ -299,6 +312,7 @@ export async function generateScoutingReport(opponentQuery, options = {}) {
         cached: true,
         opponentKey: ctx.opponentKey,
         opponentName: ctx.opponentName,
+        seasonId: ctx.seasonId,
         aiAnalysis: existing.analysisJson,
         summaryMd: existing.summaryMd,
         personnelMd: buildPersonnelMdFromAnalysis(existing.analysisJson),
@@ -311,6 +325,7 @@ export async function generateScoutingReport(opponentQuery, options = {}) {
       system: SCOUTING_SYSTEM,
       user: buildScoutingUser(ctx.payload),
       jsonMode: true,
+      responseJsonSchema: SCOUTING_SCHEMA,
       maxOutputTokens: 4096
     });
 
@@ -345,6 +360,7 @@ export async function generateScoutingReport(opponentQuery, options = {}) {
       cached: false,
       opponentKey: ctx.opponentKey,
       opponentName: ctx.opponentName,
+      seasonId: ctx.seasonId,
       aiAnalysis: analysisJson,
       summaryMd,
       personnelMd,

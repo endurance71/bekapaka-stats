@@ -74,7 +74,9 @@ import {
   getTeamBriefingCached
 } from './ai/generate.js';
 import { getAiAnalysesCatalog } from './ai/catalog.js';
-import { isGeminiConfigured } from './ai/geminiClient.js';
+import { runAiAudit, summarizeAiAudit } from './ai/audit.js';
+import { getMatchAiStaleness } from './ai/buildMatchContext.js';
+import { AiTimeoutError, isGeminiConfigured } from './ai/geminiClient.js';
 import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -264,6 +266,16 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
   try {
     const game = await getGameById(req.params.id, req.query.seasonId);
     if (!game) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    // Mecze KALK: aktualność analizy AI liczona z pełnego kontekstu (typowane sumy, PBP, wersja promptu).
+    if (game.aiSummary && (game.isFromKalkMatch || game.dataSource === 'kalk')) {
+      const st = await getMatchAiStaleness({
+        gameId: String(game.kalkMatchId || game.id),
+        seasonId: game.seasonId,
+        aiSummary: game.aiSummary,
+        aiSummaryHash: game.aiSummaryHash
+      });
+      game.aiSummaryStale = st.stale;
+    }
     res.json(game);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania meczu' });
@@ -495,6 +507,9 @@ const handleAiRouteError = (err, res) => {
   if (err instanceof AiBusyError) {
     return res.status(409).json({ error: err.message });
   }
+  if (err instanceof AiTimeoutError) {
+    return res.status(504).json({ error: err.message });
+  }
   console.error('[AI]', err);
   return res.status(500).json({ error: err.message || 'Błąd generacji AI' });
 };
@@ -548,7 +563,10 @@ app.post(['/api/ai/briefing/generate', '/ai/briefing/generate'], authenticateTok
 
 app.post(['/api/games/:id/analyze', '/games/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await generateGameAnalysis(req.params.id, { force: Boolean(req.body?.force) });
+    const result = await generateGameAnalysis(req.params.id, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
   } catch (err) {
     handleAiRouteError(err, res);
@@ -557,7 +575,10 @@ app.post(['/api/games/:id/analyze', '/games/:id/analyze'], authenticateToken, re
 
 app.post(['/api/players/:id/analyze', '/players/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await generatePlayerDevelopment(req.params.id, { force: Boolean(req.body?.force) });
+    const result = await generatePlayerDevelopment(req.params.id, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
   } catch (err) {
     handleAiRouteError(err, res);
@@ -567,8 +588,24 @@ app.post(['/api/players/:id/analyze', '/players/:id/analyze'], authenticateToken
 app.post(['/api/scouting/analyze', '/scouting/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const opponent = req.query.opponent || req.body?.opponent;
-    const result = await generateScoutingReport(opponent, { force: Boolean(req.body?.force) });
+    const result = await generateScoutingReport(opponent, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+// Audyt analiz AI (aktualność, szablon vs Gemini, kontrola faktów) — lista „Do regeneracji” w hubie AI.
+app.get(['/api/ai/audit', '/ai/audit'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const report = await runAiAudit({
+      seasonId: req.query.seasonId ? String(req.query.seasonId) : undefined,
+      factCheck: req.query.factCheck !== 'false'
+    });
+    res.json(summarizeAiAudit(report));
   } catch (err) {
     handleAiRouteError(err, res);
   }
