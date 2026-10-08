@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.1.0';
+export const LINT_VERSION = '1.2.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -19,7 +19,18 @@ const rules = [
   { re: /bilet/i, level: 'error', message: 'Mecze są bezpłatne — piszemy „Wstęp wolny”, bez biletów.' },
   { re: /\b(na wyjeździe|wyjazdow\w*|u siebie|mecz\w* domow\w*|w roli gospodarza)\b/i, level: 'warning', message: 'Mecze KALK są w jednej hali — bez oznaczeń dom/wyjazd, podaj miejsce.' },
   { re: /\b(najlepsz\w+ w historii|legendarn\w+|niesamowit\w+|epick\w+)\b/i, level: 'warning', message: 'Fakty zamiast patosu.' },
+  {
+    re: /(kontrolowa\p{L}*|od (samego )?początku (meczu|spotkania)?|narzuci\p{L}* (swój|nasz)|solidn\p{L}+|dobr\p{L}+ obron\p{L}*|świetn\p{L}+|walk\p{L}* do (samego )?końca|dominowa\p{L}*|pod dyktando)/iu,
+    level: 'warning',
+    message: 'Opis przebiegu gry bez pokrycia w faktach — zostaw liczby (kwarty, statystyki).',
+  },
 ];
+// „o 14:40”, „godz. 14:40” — clock times must be the Warsaw times of the dates in facts.
+const clock = /(?<![\p{L}\p{N}])(?:o|godz\.?|godzinie)\s+(\d{1,2})[:.](\d{2})(?![\p{N}])/giu;
+const localTime = (iso) =>
+  iso && Number.isFinite(Date.parse(iso))
+    ? new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso))
+    : '';
 const emoji = /\p{Extended_Pictographic}/gu;
 // Weekday stems (all cases): „sobota”, „w sobotę”, „we wtorek”. Index matches Date#getDay in Warsaw.
 const weekdayStems = ['niedziel', 'poniedział', 'wtor', 'środ', 'czwart', 'piąt', 'sobot'];
@@ -48,6 +59,9 @@ export function lintCopy(channel, copy, facts) {
     );
     if (unknown.length) add('warning', field, `Liczby spoza potwierdzonych faktów: ${unknown.join(', ')}. Sprawdź źródło.`);
     if ((value.match(emoji) || []).length > 2) add('warning', field, 'Maksymalnie 2 emoji.');
+    const times = new Set([facts?.date, facts?.originalDate, facts?.report?.nextMatch?.date].map(localTime).filter(Boolean));
+    const wrong = [...value.matchAll(clock)].map((m) => `${m[1].padStart(2, '0')}:${m[2]}`).filter((t) => !times.has(t));
+    if (wrong.length) add('warning', field, `Godzina ${[...new Set(wrong)].join(', ')} nie zgadza się z terminami w faktach (czas polski).`);
     const day = warsawWeekday(facts?.date);
     if (day !== null && day >= 0) {
       const mentioned = weekdayStems.map((stem, i) => (new RegExp(`(^|[^\\p{L}])${stem}\\p{L}*`, 'iu').test(value) ? i : -1)).filter((i) => i >= 0);

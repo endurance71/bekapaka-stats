@@ -96,7 +96,38 @@ const teamLine = z
   })
   .strict();
 const playerLine = z
-  .object({ name: text(100), number: int.nullable(), pts: int, reb: int, ast: int, stl: int, three: text(12), eval: int.nullable() })
+  .object({ name: text(100), number: int.nullable(), pts: int, reb: int, ast: int, stl: int, fg: text(12), three: text(12), eval: int.nullable() })
+  .strict();
+const score = z.string().trim().regex(/^\d{1,3}:\d{1,3}$/);
+const minute = z.number().int().min(1).max(70);
+// Play-by-play: how the match unfolded (match-flow.js). Scores „us:them”.
+const flowSchema = z
+  .object({
+    quarters: z
+      .array(z.object({ label: text(20), us: int, them: int, after: score, topScorer: z.object({ name: text(100), pts: int }).strict().nullable() }).strict())
+      .max(8),
+    runs: z
+      .array(
+        z
+          .object({
+            team: z.enum(['us', 'them']),
+            points: int,
+            from: score,
+            to: score,
+            fromMinute: minute,
+            toMinute: minute,
+            scorers: z.array(z.object({ name: text(100), pts: int }).strict()).max(4),
+          })
+          .strict(),
+      )
+      .max(5),
+    largestLead: z.object({ points: int, minute, score }).strict().nullable(),
+    largestDeficit: z.object({ points: int, minute, score }).strict().nullable(),
+    leadChanges: int,
+    ties: int,
+    rivalDrought: z.object({ minutes: int, fromMinute: minute, toMinute: minute, run: score }).strict().nullable(),
+    firstPoints: z.object({ team: z.enum(['us', 'them']), name: text(100), minute }).strict().nullable(),
+  })
   .strict();
 export const matchReportSchema = z
   .object({
@@ -108,6 +139,7 @@ export const matchReportSchema = z
     opponentTop: z.array(z.object({ name: text(100), pts: int, reb: int }).strict()).max(3).default([]),
     mvp: z.object({ name: text(100), eval: int.nullable() }).strict().nullable().default(null),
     nextMatch: z.object({ opponent: text(100), date: text(40), venue: text(100) }).strict().nullable().default(null),
+    flow: flowSchema.nullable().default(null),
   })
   .strict();
 

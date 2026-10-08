@@ -3,10 +3,12 @@
 // Internal data (match-day notes, gathering time, kit) never enters public facts.
 import { isClub } from '../sources.js';
 import { matchReportSchema } from './channels.js';
+import { matchFlow } from './match-flow.js';
 
 const num = (v) => (Number.isFinite(Number(v)) && v !== null && v !== '' ? Math.round(Number(v)) : null);
 const pct = (made, att) => (num(att) > 0 ? Math.round((num(made) / num(att)) * 100) : null);
-const ratio = (made, att) => (num(att) !== null && num(made) !== null ? `${num(made)}/${num(att)}` : '');
+// „0/0” says nothing — an attempt-less line stays empty.
+const ratio = (made, att) => (num(att) > 0 && num(made) !== null ? `${num(made)}/${num(att)}` : '');
 
 function teamLine(t) {
   if (!t) return null;
@@ -26,6 +28,13 @@ function teamLine(t) {
     fastBreakPts: num(t.fastBreakPts),
     ptsOffTurnovers: num(t.ptsOffTurnovers),
   };
+}
+
+// An incomplete play-by-play would contradict the box score: the narrative is used only when it ends on the final score.
+function consistentFlow(flow, km, usSide) {
+  if (!flow?.quarters.length) return null;
+  const final = usSide === 'home' ? `${km.scoreHome}:${km.scoreAway}` : `${km.scoreAway}:${km.scoreHome}`;
+  return flow.quarters.at(-1).after === final ? flow : null;
 }
 
 const quarterLabel = (period, label) => (period > 4 || /^(ot|dog)/i.test(label || '') ? `Dogrywka${period > 5 ? ` ${period - 4}` : ''}` : `${period}. kwarta`);
@@ -49,8 +58,13 @@ export async function matchReport(db, match, schedule = []) {
     .map((q) => ({ label: quarterLabel(q.period, q.label), us: q.us, them: q.them }));
   const halftime = quarters.length >= 2 ? { us: quarters[0].us + quarters[1].us, them: quarters[0].them + quarters[1].them } : null;
 
-  const [stats, logs] = await Promise.all([
+  const [stats, events, logs] = await Promise.all([
     db.kalkTeamGameStat.findMany({ where: { seasonId: match.seasonId, kalkMatchId: km.id } }),
+    db.kalkPlayByPlayEvent.findMany({
+      where: { seasonId: match.seasonId, kalkMatchId: km.id },
+      select: { seq: true, period: true, clockSec: true, side: true, playerName: true, scoreHome: true, scoreAway: true, isScoring: true },
+      orderBy: { seq: 'asc' },
+    }),
     db.kalkPlayerGameLog.findMany({ where: { seasonId: match.seasonId, kalkMatchId: km.id }, include: { kalkPlayer: { select: { name: true } } } }),
   ]);
   const us = stats.find((s) => s.side === usSide);
@@ -70,6 +84,7 @@ export async function matchReport(db, match, schedule = []) {
       reb: num(l.reb) ?? 0,
       ast: num(l.ast) ?? 0,
       stl: num(l.stl) ?? 0,
+      fg: ratio(l.fgm, l.fga),
       three: ratio(l.threePm, l.threePa),
       eval: num(l.eval),
     }));
@@ -96,5 +111,6 @@ export async function matchReport(db, match, schedule = []) {
     opponentTop,
     mvp,
     nextMatch: next ? { opponent: next.opponent, date: next.date, venue: next.venue } : null,
+    flow: consistentFlow(events.length ? matchFlow(events, usSide) : null, km, usSide),
   });
 }

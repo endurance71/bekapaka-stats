@@ -2,7 +2,7 @@
 // Missing facts drop whole sentences instead of leaving placeholders. Isomorphic (shared with the browser).
 import { copySchemas } from './channels.js';
 
-export const TEMPLATE_VERSION = '1.2.0';
+export const TEMPLATE_VERSION = '1.3.0';
 const CLUB = 'BeKaPaKa Bobolice';
 const ZONE = 'Europe/Warsaw';
 
@@ -226,62 +226,95 @@ const playerStat = (p) =>
     .filter(has)
     .join(', ');
 
-// Full match report for bekapaka.pl from the KALK statistics in facts.report. Only facts, no narrative guesses.
+// Full match report for bekapaka.pl from the KALK statistics and play-by-play in facts.report.
+// Prose is built only from numbers present in facts (no arithmetic beyond what match-flow.js stored).
+const quarterNames = ['pierwsza', 'druga', 'trzecia', 'czwarta'];
+const quarterAcc = ['pierwszą', 'drugą', 'trzecią', 'czwartą'];
+const names = (list) => (list.length > 1 ? `${list.slice(0, -1).join(', ')} i ${list.at(-1)}` : list[0] || '');
+const scorerList = (scorers) => names(scorers.map((p) => `${p.name} ${p.pts}`));
+const minuteSpan = (a, b) => (a === b ? `w ${a}. minucie` : `od ${a}. do ${b}. minuty`);
+
+function flowParagraphs(f) {
+  const r = f.report;
+  const flow = r.flow;
+  const q = flow?.quarters?.length ? flow.quarters : r.quarters;
+  const runsIn = (i) => (flow?.runs || []).filter((run) => Math.min(4, Math.ceil(run.fromMinute / 10)) === i + 1);
+  const runText = (run) =>
+    `${capital(minuteSpan(run.fromMinute, run.toMinute))} ${run.team === 'us' ? 'zanotowaliśmy serię' : 'rywale zanotowali serię'} ${run.points}:0 – z ${run.from} na ${run.to}${run.team === 'us' && run.scorers.length ? ` (punkty: ${scorerList(run.scorers)})` : ''}.`;
+  return q.map((x, i) => {
+    const won = x.us > x.them;
+    const tied = x.us === x.them;
+    const word = i < 4 ? quarterNames[i] : x.label.toLowerCase();
+    const after = x.after && i > 0 && i < q.length - 1 ? (i === 1 ? ` Do przerwy było ${x.after}.` : i === 2 ? ` Po trzech kwartach: ${x.after}.` : '') : '';
+    const first =
+      i === 0 && flow?.firstPoints
+        ? `${flow.firstPoints.team === 'us' ? `Pierwsze punkty meczu zdobył ${flow.firstPoints.name}` : 'Pierwsze punkty zdobyli rywale'}${flow.firstPoints.minute <= 1 ? ' już w 1. minucie' : ` w ${flow.firstPoints.minute}. minucie`}. `
+        : '';
+    const opening = tied
+      ? `${capital(word)} kwarta zakończyła się remisem ${x.us}:${x.them}.`
+      : i === 0
+        ? `${capital(quarterAcc[0])} kwartę ${won ? 'wygraliśmy' : 'przegraliśmy'} ${x.us}:${x.them}.`
+        : `${capital(i < 4 ? quarterAcc[i] : word)} ${i < 4 ? 'kwartę ' : ''}${won ? 'wygraliśmy' : 'przegraliśmy'} ${x.us}:${x.them}.`;
+    const topLines = [`Najwięcej punktów w tej kwarcie zdobył ${x.topScorer?.name} (${x.topScorer?.pts}).`, `Najskuteczniejszy był ${x.topScorer?.name} – ${x.topScorer?.pts} pkt.`, `Najwięcej punktów: ${x.topScorer?.name} (${x.topScorer?.pts}).`, `${x.topScorer?.name} zdobył w niej ${count(x.topScorer?.pts, 'punkt', 'punkty', 'punktów')}.`];
+    const top = x.topScorer ? ` ${topLines[i % topLines.length]}` : '';
+    const runs = runsIn(i).map(runText).join(' ');
+    return [first + opening + after + top, runs].filter(has).join(' ');
+  });
+}
+
 function reportArticle(f) {
   const r = f.report;
   const opp = f.opponent;
+  const flow = r.flow;
+  const t = r.team?.us;
+  const them = r.team?.them;
+  const wire = flow && flow.leadChanges === 0 && flow.ties === 0 && flow.firstPoints?.team === 'us' && won(f);
   const lead = [
-    valid(f.date) && has(f.venue) ? `${capital(dayOnly(f.date))} w ${f.venue} rozegraliśmy mecz${has(f.round) ? ` ${f.round}. kolejki` : ''} ${f.competition || 'KALK'}${has(f.seasonLabel) ? ` (${f.seasonLabel.replace(/^Sezon/, 'sezon')})` : ''}.` : '',
-    has(opp) ? `Rywalem był zespół ${opp}.` : '',
-    scored(f) ? (won(f) ? `Wygraliśmy ${score(f)}.` : f.scoreUs === f.scoreThem ? `Mecz zakończył się remisem ${score(f)}.` : `Przegraliśmy ${score(f)}.`) : '',
-    r.overtimes ? `O wyniku zdecydowała dogrywka.` : '',
+    valid(f.date) ? `${capital(when(f.date).replace(/, o \d\d:\d\d$/, ''))}${has(f.venue) ? `, w ${f.venue},` : ''} rozegraliśmy mecz${has(f.round) ? ` ${f.round}. kolejki` : ''} ${f.competition || 'KALK'}${has(f.seasonLabel) ? ` (${f.seasonLabel.replace(/^Sezon/, 'sezon')})` : ''}.` : '',
+    scored(f) && has(opp) ? (won(f) ? `Wygraliśmy z zespołem ${opp} ${score(f)}.` : f.scoreUs === f.scoreThem ? `Mecz z zespołem ${opp} zakończył się remisem ${score(f)}.` : `Przegraliśmy z zespołem ${opp} ${score(f)}.`) : '',
+    wire ? 'Prowadziliśmy od pierwszych punktów do końcowej syreny.' : '',
+    r.mvp ? `MVP meczu został ${r.mvp.name}${r.mvp.eval !== null && r.mvp.eval !== undefined ? ` (eval ${r.mvp.eval})` : ''}.` : '',
+    r.overtimes ? 'O wyniku zdecydowała dogrywka.' : '',
   ].filter(has).join(' ');
   const scoreLine = scored(f) && has(opp) && f.scoreUs < 100 && f.scoreThem < 100 ? `${CLUB} ${score(f)} ${opp}` : '';
 
-  // Narrative only from quarter scores: who led after the first quarter and at halftime, how the second half went.
-  const ordinal = ['pierwszą', 'drugą', 'trzecią', 'czwartą'];
-  const standing = (us, them) => (us > them ? 'prowadziliśmy' : us < them ? 'przegrywaliśmy' : 'był remis');
-  const quarterWord = (q, i) => (i < 4 ? `${ordinal[i]} kwartę` : q.label.toLowerCase());
-  const result = (q) => (q.us > q.them ? 'wygraliśmy' : q.us < q.them ? 'przegraliśmy' : 'zremisowaliśmy');
-  const q = r.quarters;
-  const h = r.halftime;
-  const sameLead = q[0] && h && standing(q[0].us, q[0].them) === standing(h.us, h.them) && q[0].us !== q[0].them;
-  const second = q.length >= 4 ? (result(q[2]) === result(q[3]) ? `${capital(quarterWord(q[2], 2))} ${result(q[2])} ${q[2].us}:${q[2].them}, a czwartą ${q[3].us}:${q[3].them}.` : `${capital(quarterWord(q[2], 2))} ${result(q[2])} ${q[2].us}:${q[2].them}, a ${quarterWord(q[3], 3)} ${result(q[3])} ${q[3].us}:${q[3].them}.`) : '';
-  const story = [
-    q[0] && sameLead ? `Po pierwszej kwarcie ${standing(q[0].us, q[0].them)} ${q[0].us}:${q[0].them}, a do przerwy ${h.us}:${h.them}.` : '',
-    q[0] && !sameLead ? `Po pierwszej kwarcie ${standing(q[0].us, q[0].them)} ${q[0].us}:${q[0].them}.` : '',
-    h && !sameLead ? `Do przerwy ${standing(h.us, h.them)} ${h.us}:${h.them}.` : '',
-    second,
-  ]
-    .filter(has)
-    .join(' ');
-  const flow = r.quarters.map((q) => `- **${q.label}:** ${q.us}:${q.them}`);
-  if (r.halftime) flow.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
-  const best = r.quarters.filter((q) => q.us > q.them).sort((a, b) => b.us - b.them - (a.us - a.them))[0];
-  const flowNote = best && r.quarters.length > 1 ? `Najwyżej wygraną kwartą była ${best.label.toLowerCase()} (${best.us}:${best.them}).` : '';
+  const flowText = flowParagraphs(f);
+  const extra = [
+    flow?.rivalDrought && !flow.runs.some((run) => run.team === 'us' && run.toMinute === flow.rivalDrought.toMinute && `${run.points}:0` === flow.rivalDrought.run)
+      ? `Rywale nie zdobyli punktu ${minuteSpan(flow.rivalDrought.fromMinute, flow.rivalDrought.toMinute)} – w tym czasie zdobyliśmy ${count(Number(flow.rivalDrought.run.split(':')[0]), 'punkt', 'punkty', 'punktów')}.`
+      : '',
+    flow?.largestLead ? `Najwyższe prowadzenie – ${count(flow.largestLead.points, 'punkt', 'punkty', 'punktów')} – mieliśmy w ${flow.largestLead.minute}. minucie, przy stanie ${flow.largestLead.score}.` : '',
+    flow?.largestDeficit ? `Największa strata do rywala wynosiła ${count(flow.largestDeficit.points, 'punkt', 'punkty', 'punktów')} (${flow.largestDeficit.minute}. minuta, ${flow.largestDeficit.score}).` : '',
+    flow && flow.leadChanges > 0 ? `Prowadzenie zmieniało się ${flow.leadChanges} ${plural(flow.leadChanges, 'raz', 'razy', 'razy')}.` : '',
+  ].filter(has).join(' ');
+  const quarterRows = r.quarters.map((x) => `- **${x.label}:** ${x.us}:${x.them}`);
+  if (r.halftime) quarterRows.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
 
-  const t = r.team?.us;
   const strip = t
-    ? [count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek'), count(t.ast, 'asysta', 'asysty', 'asyst'), count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów'), Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : '']
+    ? [t.reb ? count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', t.ast ? count(t.ast, 'asysta', 'asysty', 'asyst') : '', t.stl ? count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów') : '', Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : '']
         .filter(has)
     : [];
 
-  // Players' paragraph: top scorer with his line, then the best passer and rebounder if they are other players.
+  // Players: top scorer with shooting, best passer and rebounder, other double-digit scorers.
   const [scorer] = r.players;
   const passer = [...r.players].sort((a, b) => b.ast - a.ast)[0];
   const rebounder = [...r.players].sort((a, b) => b.reb - a.reb)[0];
-  const doubleDigits = r.players.filter((p) => p.pts >= 10).length;
+  const others = r.players.filter((p) => p.pts >= 10 && p !== scorer && p !== passer);
   const people = [
-    scorer && scorer.pts > 0 ? `Najwięcej punktów zdobył ${scorer.name} – ${scorer.pts}${scorer.reb || scorer.ast ? `, do tego ${[scorer.reb ? count(scorer.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', scorer.ast ? count(scorer.ast, 'asysta', 'asysty', 'asyst') : ''].filter(has).join(' i ')}` : ''}.` : '',
-    passer && passer !== scorer && passer.ast >= 5 ? `${passer.name} zanotował ${count(passer.ast, 'asystę', 'asysty', 'asyst')}.` : '',
+    scorer && scorer.pts > 0 ? `${scorer.name} zdobył ${count(scorer.pts, 'punkt', 'punkty', 'punktów')}${has(scorer.fg) ? ` (${scorer.fg} z gry)` : ''}${scorer.reb || scorer.ast ? `, miał też ${[scorer.reb ? count(scorer.reb, 'zbiórkę', 'zbiórki', 'zbiórek') : '', scorer.ast ? count(scorer.ast, 'asystę', 'asysty', 'asyst') : ''].filter(has).join(' i ')}` : ''}.` : '',
+    passer && passer !== scorer && passer.ast >= 5 ? `${passer.name} rozdał ${count(passer.ast, 'asystę', 'asysty', 'asyst')}${passer.pts ? ` i dołożył ${count(passer.pts, 'punkt', 'punkty', 'punktów')}` : ''}.` : '',
+    others.length ? `Dwucyfrową liczbę punktów zdobyli także: ${names(others.map((p) => `${p.name} (${p.pts})`))}.` : '',
     rebounder && rebounder !== scorer && rebounder !== passer && rebounder.reb >= 5 ? `Najwięcej zbiórek miał ${rebounder.name} (${rebounder.reb}).` : '',
-    doubleDigits > 1 ? `Dwucyfrową liczbę punktów zdobyło ${doubleDigits} zawodników.` : '',
-  ]
-    .filter(has)
-    .join(' ');
-  const top = r.players.slice(0, 6).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${playerStat(p)}`);
-  const scorers = r.players.filter((p) => p.pts > 0).length;
-  const them = r.team?.them;
+  ].filter(has).join(' ');
+  const playerRows = r.players.slice(0, 8).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${[`${p.pts} pkt`, has(p.fg) ? `${p.fg} z gry` : '', `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : ''].filter(has).join(', ')}`);
+
+  const teamText = t && them
+    ? [
+        has(t.fg) && has(them.fg) ? `Trafiliśmy ${t.fg.replace('/', ' z ')} rzutów z gry${t.fgPct !== null ? ` (${t.fgPct}%)` : ''}, rywale ${them.fg.replace('/', ' z ')}${them.fgPct !== null ? ` (${them.fgPct}%)` : ''}.` : '',
+        Number.isFinite(them.tov) && Number.isFinite(t.ptsOffTurnovers) && t.ptsOffTurnovers > 0 ? `Rywale popełnili ${count(them.tov, 'stratę', 'straty', 'strat')}, a po stratach zdobyliśmy ${count(t.ptsOffTurnovers, 'punkt', 'punkty', 'punktów')}.` : '',
+        Number.isFinite(t.reb) && Number.isFinite(them.reb) ? `Zbiórki: ${t.reb} do ${them.reb}.` : '',
+      ].filter(has).join(' ')
+    : '';
   const teamRows = r.team
     ? [
         pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
@@ -302,16 +335,14 @@ function reportArticle(f) {
   return paragraphs(
     lead,
     scoreLine,
-    flow.length >= 2 ? `## Przebieg meczu\n\n${story}\n\n${flow.join('\n')}` : '',
-    flowNote,
+    flowText.length ? `## Przebieg meczu\n\n${flowText.join('\n\n')}` : '',
+    extra,
+    quarterRows.length >= 2 ? quarterRows.join('\n') : '',
     strip.length >= 2 ? `BeKaPaKa w liczbach: ${strip.join(' · ')}` : '',
-    top.length >= 2 ? `## Nasi zawodnicy\n\n${people}\n\n${top.join('\n')}` : '',
-    scorers > 1 ? `Punkty dla BeKaPaKa zdobyło ${scorers} zawodników.` : '',
-    r.mvp ? `MVP meczu: ${r.mvp.name}${r.mvp.eval !== null && r.mvp.eval !== undefined ? ` (eval ${r.mvp.eval})` : ''}.` : '',
-    teamRows.length >= 2 ? `## Statystyki zespołów\n\n${teamRows.join('\n')}` : '',
-    r.opponentTop.length ? `Najskuteczniejsi w zespole ${opp}: ${r.opponentTop.map((p) => `${p.name} ${p.pts} pkt`).join(', ')}.` : '',
+    playerRows.length >= 2 ? `## Nasi zawodnicy\n\n${people}\n\n${playerRows.join('\n')}` : '',
+    teamRows.length >= 2 ? `## Statystyki zespołów\n\n${teamText}\n\n${teamRows.join('\n')}` : '',
+    r.opponentTop.length ? `Najwięcej punktów dla ${opp}: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '',
     nextRows.length >= 2 ? `## Następny mecz\n\n${nextRows.join('\n')}` : '',
-    'Dziękujemy kibicom za doping.',
   );
 }
 
