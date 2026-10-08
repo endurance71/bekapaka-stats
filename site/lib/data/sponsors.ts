@@ -134,7 +134,7 @@ export const sponsors: SponsorItem[] = [
     logoUrl: '/images/partners/insight-data-consulting.webp',
     logoBgColor: '#ffffff',
     logoFit: 'contain',
-    // Znak poziomy ~6:1 — przy 150 px podpis „Insight Data Consulting” byłby za drobny.
+    // Znak poziomy ~5:1 — przy 150 px nazwa „Insight Data Consulting” byłaby za drobna.
     logoCardScale: 1.25
   },
   {

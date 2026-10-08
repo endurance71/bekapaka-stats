@@ -68,3 +68,12 @@ Partner dostarczył 7 wariantów logo (PNG z przezroczystością): poziomy miedz
 
 Plik WWW: `site/public/images/partners/insight-data-consulting.webp` — przycięty przezroczysty margines (z prawie przezroczystą poświatą, alfa ≤ 8, która zawyżała obrys), 1050 × 174 px (zapas na ekrany 3×), bezstratny WebP z kanałem alfa, 75 KB. W kaflu `logoCardScale: 1.25` → ok. 187 × 31 px, jak inne szerokie znaki (ShipApp, ALAB). Oryginały pozostają u klubu.
 
+
+### Druga dostawa (8.10.2026, popołudnie)
+
+Doszły dwa pliki (każdy w dwóch identycznych kopiach): nowy układ poziomy — monogram IDC, nazwa w dwóch liniach, kreska i „Izabela Kaszubowska” — oraz okrągła pieczęć.
+
+- **wybrany: nowy poziomy** — przy tej samej wysokości monogramu nazwa „Insight Data Consulting” jest w kaflu ok. 2,5× większa niż w jednoliniowym znaku; podpis „Izabela Kaszubowska” mieści się w wysokości monogramu, więc nie zmniejsza logo (drobny podpis jak w BAUMAL);
+- pieczęć — kwadratowa, w polu 65 px napisy po okręgu mają ok. 4 px.
+
+Oba nowe pliki mają kremowe tło (253, 249, 246) bez przezroczystości — usunięte metodą color-to-alpha (jak w GIMP), z odcięciem alfa < 3%. Plik WWW zastąpiony: 1050 × 202 px, proporcje 5,2 : 1, bezstratny WebP z kanałem alfa, 103 KB; `logoCardScale: 1.25` bez zmian.
