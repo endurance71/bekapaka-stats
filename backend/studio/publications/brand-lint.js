@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.0.0';
+export const LINT_VERSION = '1.1.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -21,6 +21,13 @@ const rules = [
   { re: /\b(najlepsz\w+ w historii|legendarn\w+|niesamowit\w+|epick\w+)\b/i, level: 'warning', message: 'Fakty zamiast patosu.' },
 ];
 const emoji = /\p{Extended_Pictographic}/gu;
+// Weekday stems (all cases): „sobota”, „w sobotę”, „we wtorek”. Index matches Date#getDay in Warsaw.
+const weekdayStems = ['niedziel', 'poniedział', 'wtor', 'środ', 'czwart', 'piąt', 'sobot'];
+function warsawWeekday(iso) {
+  if (!iso || !Number.isFinite(Date.parse(iso))) return null;
+  const name = new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', weekday: 'long' }).format(new Date(iso));
+  return weekdayStems.findIndex((stem) => name.startsWith(stem.slice(0, 4)));
+}
 
 function factNumbers(facts) {
   const raw = JSON.stringify(facts) + ' ' + [facts.date, facts.originalDate].map((d) => `${shortDate(d)} ${when(d)}`).join(' ');
@@ -41,6 +48,12 @@ export function lintCopy(channel, copy, facts) {
     );
     if (unknown.length) add('warning', field, `Liczby spoza potwierdzonych faktów: ${unknown.join(', ')}. Sprawdź źródło.`);
     if ((value.match(emoji) || []).length > 2) add('warning', field, 'Maksymalnie 2 emoji.');
+    const day = warsawWeekday(facts?.date);
+    if (day !== null && day >= 0) {
+      const mentioned = weekdayStems.map((stem, i) => (new RegExp(`(^|[^\\p{L}])${stem}\\p{L}*`, 'iu').test(value) ? i : -1)).filter((i) => i >= 0);
+      if (mentioned.length && !mentioned.includes(day))
+        add('warning', field, `Dzień tygodnia nie zgadza się z datą w faktach (${new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', weekday: 'long' }).format(new Date(facts.date))}).`);
+    }
     const shouting = (value.match(/\b[A-ZĄĆĘŁŃÓŚŹŻ]{5,}\b/g) || []).filter((w) => !allowedCaps.has(w));
     if (shouting.length) add('warning', field, `Bez wersalików w tekście: ${[...new Set(shouting)].slice(0, 3).join(', ')}.`);
   }

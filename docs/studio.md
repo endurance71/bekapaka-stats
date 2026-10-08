@@ -42,6 +42,13 @@ Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wyn
 - **Hashtagi** — Ustawienia. Domyślnie tylko `#BKPK` (jedyny hashtag z księgi marki); pozostałe to propozycje do decyzji klubu.
 - **Pulpit i kalendarz** — podpowiedzi brakujących zapowiedzi/wyników z terminarza KALK (aktywny sezon), wpisy z 7 dni, kalendarz miesięczny z przeciąganiem terminów (czas Europe/Warsaw).
 
+### Teksty AI i agent (Studio 2, etap 2)
+
+- **Biblioteka promptów** — `backend/studio/publications/prompts.js` (`PROMPT_VERSION`): zasady marki (prompt systemowy) i instrukcje kanałów. Ten sam tekst trafia do Gemini, na stronę Studio „Schematy i prompty”, do agenta (`get_prompts`) i do [docs/studio-content-system.md](./studio-content-system.md), generowanego przez `node scripts/studio/export-prompts.mjs` (test pilnuje aktualności). Każda zmiana tekstu wymaga podbicia wersji.
+- **Teksty AI** — „Teksty AI” / „Zaproponuj AI” w publikacji. Wymagają potwierdzonych faktów i `STUDIO_GEMINI_API_KEY`. Zadanie `ai-copy` w kolejce AI workera: rezerwacja 0,05 USD (najgorszy przypadek 24 KB wejścia i 3500 tokenów wyjścia, bez „myślenia” — 0,0495 USD), odpowiedź w schemacie JSON walidowana kontraktami kanałów; niepoprawna nie jest stosowana częściowo. Identyczny prompt i fakty są zwracane z `StudioCopyCache` bez kosztu. Propozycje nie zapisują się same — właściciel stosuje je per kanał (`copyOrigin: ai`, zapisana wersja promptu) i dalej obowiązuje kontrola marki oraz zatwierdzenie.
+- **Agent przez MCP** — `/api/studio/v1/mcp` (Streamable HTTP bez sesji, tylko POST), token Bearer z Ustawień (patrz [security-rotation.md](./security-rotation.md#9-tokeny-agenta-studio-mcp)). Narzędzia: `list_playbooks`, `get_prompts`, `list_publications`, `get_publication`, `schematic_copy`, `create_publication`, `propose_copy` (tylko kanały robocze; zapis z `actor: agent` w historii). Brak narzędzi do potwierdzania faktów, zatwierdzania, publikacji, paczek i ustawień.
+- **Kontrola marki 1.1.0** — dodatkowo ostrzega, gdy dzień tygodnia w tekście nie zgadza się z datą w faktach.
+
 Dane: tabele `StudioPublication`, `StudioPublicationItem`, `StudioPublishEvent` (audyt), `StudioSetting` — migracja addytywna `20261008120000_studio_publications`. Moduły `channels.js`, `playbooks.js`, `templates.js`, `brand-lint.js`, `texts.js` są izomorficzne: frontend importuje je przez `studio/src/lib/publications.ts`, więc szkic zaakceptowany w przeglądarce przechodzi te same kontrole na serwerze. Nie są objęte odciskiem `design-manifest.json`.
 
 ## Marka i renderer

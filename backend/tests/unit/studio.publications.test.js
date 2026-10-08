@@ -108,6 +108,11 @@ describe('brand lint', () => {
     expect(issues.map((i) => i.field)).toEqual(expect.arrayContaining(['caption', 'hashtags']));
     expect(issues.filter((i) => i.level === 'warning').length).toBeGreaterThanOrEqual(3);
   });
+  it('warns when a weekday contradicts the date in the facts', () => {
+    // 2026-10-18 is a Sunday in Warsaw.
+    expect(lintCopy('instagram_feed', ig('W sobotę gramy!'), match).map((i) => i.message)).toContain('Dzień tygodnia nie zgadza się z datą w faktach (niedziela).');
+    expect(lintCopy('instagram_feed', ig('W niedzielę gramy, trening we wtorek.'), match).some((i) => i.message.startsWith('Dzień tygodnia'))).toBe(false);
+  });
   it('checks the website excerpt length and required alt texts', () => {
     expect(lintCopy('website', { title: 'T', excerpt: 'krótko', content: 'x', tags: [], coverAlt: '' }, match)[0]).toMatchObject({ level: 'warning', field: 'excerpt' });
     expect(hasErrors(lintCopy('facebook', { text: 'Tekst', hashtags: [], link: '', altText: '' }, match))).toBe(true);

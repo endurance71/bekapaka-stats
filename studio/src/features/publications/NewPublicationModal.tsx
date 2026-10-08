@@ -98,7 +98,7 @@ function SourceStep({
               disabled={channelSet.length === 1 && channelSet.includes(c)}
               onChange={(e) => setChannelSet(e.target.checked ? [...channelSet, c] : channelSet.filter((x) => x !== c))}
             />
-            <ChannelBadge channel={c} /> {channels[c].label}
+            <ChannelBadge channel={c} decorative /> {channels[c].label}
           </label>
         ))}
       </fieldset>

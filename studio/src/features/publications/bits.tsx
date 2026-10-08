@@ -9,15 +9,25 @@ export const channelIcons = {
   website: Globe,
 };
 
-export function ChannelBadge({ channel, status }: { channel: ChannelId; status?: string }) {
+// `decorative` when the channel name is already written next to the badge (no double announcement).
+export function ChannelBadge({
+  channel,
+  status,
+  decorative,
+}: {
+  channel: ChannelId;
+  status?: string;
+  decorative?: boolean;
+}) {
   const Icon = channelIcons[channel];
   return (
     <span
       className={`channel-badge channel-${channel} ${status ? `is-${status}` : ''}`}
       title={`${channels[channel].label}${status ? ` · ${itemStatuses[status as keyof typeof itemStatuses]}` : ''}`}
+      aria-hidden={decorative || undefined}
     >
       <Icon size={13} aria-hidden="true" />
-      <span className="sr-only">{channels[channel].label}</span>
+      {!decorative && <span className="sr-only">{channels[channel].label}</span>}
     </span>
   );
 }

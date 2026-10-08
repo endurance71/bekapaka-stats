@@ -889,6 +889,30 @@ model StudioSetting {
   @@id([ownerId, key])
 }
 
+// AI copy for identical prompt and facts is reused instead of paid for twice.
+model StudioCopyCache {
+  id String @id
+  ownerId String
+  model String
+  promptVersion String
+  result Json
+  createdAt DateTime @default(now())
+  @@index([ownerId, createdAt])
+}
+
+// Bearer tokens of external agents (MCP). Only the SHA-256 is stored; agents can draft, never approve or publish.
+model StudioAgentToken {
+  id String @id
+  ownerId String
+  name String
+  prefix String
+  scopes String[]
+  lastUsedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+  @@index([ownerId])
+}
+
 model StudioSession {
   credentialHash String?
   id String @id

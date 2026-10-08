@@ -6,7 +6,7 @@ import { generateAi } from './ai.js';
 import { filePath, saveImage } from './storage.js';
 import crypto from 'node:crypto';
 export async function claimJob(db, lane, owner = ownerId()) {
-  const kinds = lane === 'render' ? ['preview', 'export'] : ['ai-text', 'ai-image'];
+  const kinds = lane === 'render' ? ['preview', 'export'] : ['ai-text', 'ai-image', 'ai-copy'];
   return db.$transaction(async tx => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`studio-worker:${lane}`}))`;
     const active = await tx.studioJob.count({ where: { kind: { in: kinds }, status: 'running', leaseUntil: { gt: new Date() } } });
@@ -35,6 +35,7 @@ export async function processJob(db, job, { generate = generateAi, render = rend
         const asset = await db.studioAsset.create({ data: { ownerId: job.ownerId, name: `Tło AI · ${new Date().toLocaleDateString('pl-PL')}`, kind: 'background', origin: 'Gemini API · ilustracja AI', consent: 'not_required', ...image, provenance: { ...response.provenance, chargedMicros: response.chargedMicros } } });
         result = { assetId: asset.id, requiresReview: true };
       } else result = response.result;
+      if (job.kind === 'ai-copy') await db.studioCopyCache.upsert({ where: { id: job.payload.cacheKey }, create: { id: job.payload.cacheKey, ownerId: job.ownerId, model: response.result.model, promptVersion: response.result.promptVersion, result }, update: {} });
       await db.studioAiUsage.update({ where: { jobId: job.id }, data: { chargedMicros: response.chargedMicros, usage: response.usage, status: 'settled' } });
     } else result = await render(db, job);
     await db.studioJob.updateMany({ where: { id: job.id, leaseToken: job.leaseToken, status: 'running' }, data: { status: 'completed', result, finishedAt: new Date(), leaseToken: null, leaseUntil: null, error: null } });

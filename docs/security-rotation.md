@@ -101,3 +101,12 @@ curl -sI http://127.0.0.1:8081/ | head -5
 ## 8. Sesje BeKaPaKa Studio
 
 Studio używa własnych niejawnych sesji w `StudioSession`, a nie JWT panelu. Zmiana hasła istniejącego właściciela automatycznie unieważnia jego sesje Studio przy następnym żądaniu (weryfikacja odcisku aktualnych danych konta). Zmiana `STUDIO_OWNER_ID` odbiera dostęp wcześniejszemu właścicielowi. Sama rotacja `JWT_SECRET` nie usuwa sesji Studio. Po podejrzeniu wycieku sesji usuń rekordy `StudioSession` dla właściciela w bazie BeKaPaKa i zrotuj osobne `STUDIO_GEMINI_API_KEY` / `STUDIO_CMS_TOKEN`, jeśli wyciek dotyczył także tych sekretów. Pliki `data/studio` i kopie zapasowe zawierają prywatne materiały; nie dodawaj ich do Git.
+
+## 9. Tokeny agenta Studio (MCP)
+
+Tokeny `bkpk_agent_…` dają zewnętrznemu agentowi (Claude, Cursor) dostęp do `https://studio.bekapaka.pl/api/studio/v1/mcp`: odczyt schematów, faktów i publikacji, tworzenie roboczych publikacji i propozycje tekstów kanałów roboczych. Nie pozwalają potwierdzać faktów, zatwierdzać, publikować ani zmieniać ustawień.
+
+- Baza przechowuje wyłącznie SHA-256 tokenu; wartość widać jeden raz przy tworzeniu (Studio → Ustawienia → Agent).
+- Po wycieku: Studio → Ustawienia → Agent → **Odwołaj** (działa od następnego żądania), utwórz nowy token i podmień go w konfiguracji klienta MCP (`~/.cursor/mcp.json`, konfiguracja Claude). Tokenu nie zapisuj w repozytorium.
+- Zmiana `STUDIO_OWNER_ID` unieważnia wszystkie tokeny poprzedniego właściciela.
+- Limit: 5 aktywnych tokenów, 120 żądań na minutę na token.
