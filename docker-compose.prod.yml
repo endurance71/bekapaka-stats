@@ -37,12 +37,14 @@ services:
       STUDIO_GEMINI_API_KEY: ${STUDIO_GEMINI_API_KEY:-}
       STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
       KALK_CRON_SECRET: ${KALK_CRON_SECRET}
+      KALK_DATA_DIR: /data/kalk
       # Zapis prezentacji meczu w panelu odświeża stronę przez sieć Docker (backend/matchPresentation.js).
       SITE_BASE_URL: http://bkpk-site:3000
       SITE_REVALIDATE_SECRET: ${SITE_REVALIDATE_SECRET:-${PREVIEW_SECRET:-}}
       TZ: Europe/Warsaw
     volumes:
       - ./data/studio:/data/studio
+      - ./data/kalk:/data/kalk
     depends_on:
       - bkpk-db
     ports:

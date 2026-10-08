@@ -17,7 +17,7 @@ from .common import (CONTRACT_VERSION, DEFAULT_LEAGUE, LEAGUE_COMPETITION, PARSE
                      fold, league_url, match_url, now_iso, player_url, soup_of, stable_hash, team_url, unique)
 from .http import BudgetExceeded, CacheMiss, KalkFetchError, KalkHttp
 from .resolve import NameResolver
-from .validate import match_errors, unknown_actions
+from .validate import match_errors, quarter_warnings, unknown_actions
 
 log = logging.getLogger('kalk.pipeline')
 
@@ -149,6 +149,7 @@ class SeasonSync:
         self.season = dict(season)
         self.run_id = run_id
         self.failures: list[dict] = []
+        self.warnings: list[dict] = []
         self.truncated = False
         self.started_at = now_iso()
         self.counts = {'matchesNew': 0, 'matchesUpdated': 0, 'matchesUnchanged': 0, 'matchesFailed': 0,
@@ -265,6 +266,9 @@ class SeasonSync:
             self._fail(match_url(match_id), 'matches', '; '.join(errors[:8]), match_id)
             self.counts['matchesFailed'] += 1
             return None
+        for warning in quarter_warnings(info.get('quarters') or []):
+            self.warnings.append({'url': match_url(match_id), 'kalkMatchId': match_id, 'warning': warning})
+            log.warning('Mecz %s: %s', match_id, warning)
         unknown = unknown_actions(pbp_data)
         if unknown:
             log.warning('Mecz %s: nieznane akcje akcja-po-akcji %s', match_id, unknown)
@@ -503,6 +507,7 @@ class SeasonSync:
             'truncated': self.truncated,
             'counts': dict(self.counts),
             'failures': list(self.failures),
+            'warnings': list(self.warnings),
             'startedAt': self.started_at,
             'finishedAt': now_iso(),
             'sectionSnapshots': dict(self.snapshots),

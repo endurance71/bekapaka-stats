@@ -168,13 +168,17 @@ export function checkMatch(km, ctx = {}) {
     if (ot.length) {
       const rh = regular.reduce((a, q) => a + q.home, 0);
       const ra = regular.reduce((a, q) => a + q.away, 0);
-      if (rh !== ra) add('error', 'E5', `Dogrywka mimo braku remisu po 4. kwarcie (${rh}:${ra})`);
+      // Niespójność źródła KALK (np. mecz 3205: kwarty 46:45 + „dogrywka” 10:0) — ostrzeżenie
+      if (rh !== ra) add('warn', 'E5', `Dogrywka mimo braku remisu po 4. kwarcie (${rh}:${ra}) — dane źródła KALK`);
     }
     if (isV2 && n(km.overtimes) !== ot.length) add('error', 'E5', `overtimes=${km.overtimes}, okresy OT w kwartach: ${ot.length}`);
   }
 
   // E6 — przebieg co 5 min
-  const flow = Array.isArray(km.info?.flow5) ? km.info.flow5 : [];
+  // Punkty bez wyniku (null) — historyczne mecze mają tylko punkty co 10 min
+  const flow = (Array.isArray(km.info?.flow5) ? km.info.flow5 : []).filter(
+    (f) => f && f.home != null && f.away != null
+  );
   if (flow.length) {
     let ph = 0;
     let pa = 0;

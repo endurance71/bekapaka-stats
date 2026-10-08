@@ -120,6 +120,7 @@ describe('Audyt KALK v2 — kontrole meczu (czyste funkcje)', () => {
     km.info.quarters = [...km.info.quarters.slice(0, 3), { period: 4, home: 1, away: 0 }, { period: 5, home: 2, away: 0 }];
     const issues = checkMatch(km, ctx);
     expect(issues.filter((i) => i.code === 'E5').map((i) => i.message).join(' | ')).toMatch(/Dogrywka mimo braku remisu.*overtimes=0/);
+    expect(issues.find((i) => /Dogrywka mimo/.test(i.message)).severity).toBe('warn');
   });
 
   it('E7: końcowy wynik PBP i Σ punktów ze zdarzeń', async () => {
@@ -152,6 +153,13 @@ describe('Audyt KALK v2 — kontrole meczu (czyste funkcje)', () => {
     const issues = checkMatch(km, ctx);
     expect(issues.find((i) => i.code === 'E6').message).toMatch(/maleje/);
     expect(issues.find((i) => i.code === 'E12').message).toMatch(/info/);
+  });
+
+  it('E6: punkty przebiegu bez wyniku (null) nie są błędem', async () => {
+    const { km, ctx } = await matchRow();
+    km.info.flow5[2] = { minute: 15, home: null, away: null };
+    const issues = checkMatch(km, ctx);
+    expect(issues.filter((i) => i.code === 'E6')).toHaveLength(0);
   });
 
   it('recomputeStandings: 2 pkt za zwycięstwo, 1 za porażkę', () => {

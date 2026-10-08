@@ -18,7 +18,7 @@ from kalk.http import BudgetExceeded, KalkFetchError, KalkHttp
 from kalk.pipeline import (Progress, SyncOptions, normalize_sections, output_paths, plan, run_sync,
                            select_matches)
 from kalk.resolve import NameResolver
-from kalk.validate import box_errors, match_errors, pbp_errors, quarter_errors
+from kalk.validate import box_errors, match_errors, pbp_errors, quarter_errors, quarter_warnings
 import kalk_sync
 
 FIXTURES = Path(__file__).resolve().parent / 'tests' / 'fixtures' / 'kalk_v2'
@@ -236,7 +236,9 @@ class BoxScoreTests(unittest.TestCase):
         quarters = [{'period': i, 'label': f'Kw. {i}', 'home': 10, 'away': 10 + (i == 4)} for i in range(1, 5)]
         self.assertEqual(quarter_errors(quarters, (40, 41)), [])
         overtime = quarters + [{'period': 5, 'label': 'OT 1', 'home': 5, 'away': 2}]
-        self.assertTrue(any('bez remisu' in e for e in quarter_errors(overtime, (45, 43))))
+        # Dogrywka bez remisu to niespójność źródła KALK (np. mecz 3205) — ostrzeżenie, mecz nie jest odrzucany
+        self.assertEqual(quarter_errors(overtime, (45, 43)), [])
+        self.assertTrue(any('bez remisu' in w for w in quarter_warnings(overtime)))
         self.assertTrue(quarter_errors(quarters, (40, 40)))
 
 

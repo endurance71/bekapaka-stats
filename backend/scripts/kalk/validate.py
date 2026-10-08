@@ -70,13 +70,19 @@ def quarter_errors(quarters: list[dict], score: Optional[tuple[int, int]]) -> li
     away = sum(q['away'] for q in quarters)
     if score is not None and (home, away) != tuple(score):
         errors.append(f'kwarty: Σ {home}:{away} ≠ wynik {score[0]}:{score[1]}')
+    return errors
+
+
+def quarter_warnings(quarters: list[dict]) -> list[str]:
+    """Niespójności źródła, które nie blokują meczu (np. KALK wpisał „dogrywkę” mimo braku remisu)."""
+    warnings = []
     running_home = running_away = 0
-    for q in quarters:
+    for q in quarters or []:
         if q['period'] > 4 and running_home != running_away:
-            errors.append(f'kwarty: dogrywka {q["label"]} bez remisu ({running_home}:{running_away})')
+            warnings.append(f'kwarty: dogrywka {q["label"]} bez remisu ({running_home}:{running_away}) — dane źródła KALK')
         running_home += q['home']
         running_away += q['away']
-    return errors
+    return warnings
 
 
 def pbp_errors(pbp: Optional[dict], score: Optional[tuple[int, int]]) -> list[str]:
