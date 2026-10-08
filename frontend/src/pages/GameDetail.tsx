@@ -191,7 +191,7 @@ export default function GameDetail() {
               <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-primary flex items-center justify-center shrink-0">
                 <span className="font-display text-xl md:text-4xl leading-none text-bkpk-text-primary">BK</span>
               </div>
-              <h2 className="text-base sm:text-xl md:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-primary w-full text-center md:text-left break-words [text-wrap:balance]">
+              <h2 className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-primary w-full text-center md:text-left [overflow-wrap:normal] [word-break:keep-all] hyphens-none [text-wrap:balance]">
                 {bekapaka.name}
               </h2>
             </div>
@@ -214,7 +214,7 @@ export default function GameDetail() {
               <div className="w-12 h-12 md:w-20 md:h-20 bg-bkpk-surface-elevated border-[1.5px] border-bkpk-border-strong flex items-center justify-center shrink-0">
                 <span className="font-display text-xl md:text-4xl leading-none text-bkpk-text-secondary">OP</span>
               </div>
-              <h2 className="text-base sm:text-xl md:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-secondary w-full text-center md:text-right break-words [text-wrap:balance]">
+              <h2 className="text-base sm:text-xl md:text-2xl lg:text-3xl xl:text-5xl leading-[0.95] text-bkpk-text-secondary w-full text-center md:text-right [overflow-wrap:normal] [word-break:keep-all] hyphens-none [text-wrap:balance]">
                 {opponentTeam.name}
               </h2>
             </div>
