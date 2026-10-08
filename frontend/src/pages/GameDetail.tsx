@@ -5,16 +5,9 @@ import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ChevronLeft,
-  Calendar,
-  MapPin,
-  Trophy,
-  Zap,
-  BarChart2,
-  Info,
-  ListOrdered,
-} from 'lucide-react';
+import { ChevronLeft, Zap, BarChart2, ListOrdered } from 'lucide-react';
+import { CalendarIcon as Calendar, VenueIcon as MapPin, TrophyIcon as Trophy, InfoIcon as Info } from '../shared/ui/BrandIcon';
+import type { IconComponent } from '../shared/ui/BrandIcon';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import PageContainer from '../shared/ui/PageContainer';
@@ -30,7 +23,7 @@ import type { GameInfoResponse, PlayByPlayResponse } from '../components/games/k
 
 type MainTab = 'stats' | 'info' | 'pbp';
 
-const mainTabs: { id: MainTab; label: string; icon: typeof BarChart2 }[] = [
+const mainTabs: { id: MainTab; label: string; icon: IconComponent }[] = [
   { id: 'stats', label: 'Statystyki', icon: BarChart2 },
   { id: 'info', label: 'Info', icon: Info },
   { id: 'pbp', label: 'Akcja po akcji', icon: ListOrdered },

@@ -4,9 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import MobileFullScreenMenu from './MobileFullScreenMenu';
 import {
   LayoutDashboard,
-  CalendarRange,
-  Trophy,
-  Users,
   ShieldCheck,
   Activity,
   Bot,
@@ -20,7 +17,6 @@ import {
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
 import SidebarProfile from './SidebarProfile';
-import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { AppFooter } from './AppFooter';
@@ -29,14 +25,16 @@ import { useBreakpoint } from '../hooks/useIsMobile';
 import { OfflineIndicator } from './pwa/OfflineIndicator';
 import { InstallPromptBanner } from './pwa/InstallPromptBanner';
 import { UpdateNotification } from './pwa/UpdateNotification';
+import PlayerAvatar from '../shared/ui/PlayerAvatar';
+import { JerseyIcon, MatchIcon, TrophyIcon } from '../shared/ui/BrandIcon';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
 const allLinks = [
   { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
-  { to: '/games', label: 'Mecze', icon: CalendarRange, public: true },
-  { to: '/league', label: 'Liga KALK', icon: Trophy, public: true },
-  { to: '/roster', label: 'Skład', icon: Users, public: true },
+  { to: '/games', label: 'Mecze', icon: MatchIcon, public: true },
+  { to: '/league', label: 'Liga KALK', icon: TrophyIcon, public: true },
+  { to: '/roster', label: 'Skład', icon: JerseyIcon, public: true },
   { to: '/tactics', label: 'Taktyka', icon: Target, public: true },
   { to: '/trends', label: 'Analizy', icon: Activity, public: true },
   { to: '/ai', label: 'AI', icon: Bot, public: false, adminOnly: true },
@@ -241,12 +239,7 @@ export default function Shell({ children }: { children: ReactNode }) {
               className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0 touch-manipulation"
               aria-label="Mój profil"
             >
-              <img
-                src={resolvePlayerPhoto(user)}
-                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                className="w-full h-full object-cover"
-                alt=""
-              />
+              <PlayerAvatar player={user} className="w-full h-full" />
             </Link>
           ) : (
             <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />

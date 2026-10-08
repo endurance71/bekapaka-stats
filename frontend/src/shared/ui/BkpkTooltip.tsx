@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Info } from 'lucide-react';
+import { InfoIcon as Info } from './BrandIcon';
 import { cn } from '../lib/utils';
 
 interface BkpkTooltipProps {

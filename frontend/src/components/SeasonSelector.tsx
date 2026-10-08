@@ -1,4 +1,4 @@
-import { Calendar } from 'lucide-react';
+import { CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import type { KalkSeasonOption } from '../hooks/useSeasonPreference';
 import { cn } from '../shared/lib/utils';
 

@@ -68,7 +68,23 @@ describe('PlayByPlayPanel', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Q2' }));
         expect(screen.queryByRole('region', { name: 'Kwarta 1' })).not.toBeInTheDocument();
         expect(screen.getByText('2 zdarzenia')).toBeInTheDocument();
-        fireEvent.click(screen.getByRole('button', { name: 'Punkty' }));
+        fireEvent.change(screen.getByLabelText('Rodzaj akcji'), { target: { value: 'score' } });
         expect(screen.getByText('1 zdarzenie')).toBeInTheDocument();
+    });
+
+    it('filters by team and action type with counts, and resets', () => {
+        render(<PlayByPlayPanel data={data} />);
+        const select = screen.getByLabelText('Rodzaj akcji') as HTMLSelectElement;
+        // liczniki dla całego meczu; kategorie z zerem ukryte
+        expect([...select.options].map((o) => o.textContent)).toEqual(['Wszystkie akcje (6)', 'Punkty (5)', 'Zbiórki (1)']);
+        fireEvent.click(screen.getByRole('button', { name: 'Kosz-All-In' }));
+        expect(screen.getByText('1 zdarzenie')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'BeKaPaKa' }));
+        fireEvent.change(select, { target: { value: 'rebound' } });
+        expect(screen.getByText('1 zdarzenie')).toBeInTheDocument();
+        expect(screen.getByText('Zbiórka w obronie')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Resetuj' }));
+        expect(screen.getByText('6 zdarzeń')).toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Resetuj' })).not.toBeInTheDocument();
     });
 });

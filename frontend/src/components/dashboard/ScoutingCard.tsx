@@ -1,5 +1,6 @@
 import { BkpkCard } from '../../shared/ui/BkpkCard';
-import { Target, TrendingUp, TrendingDown, Users, Calendar, ChevronRight } from 'lucide-react';
+import { Target, TrendingUp, TrendingDown, Users, ChevronRight } from 'lucide-react';
+import { CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 import { cn } from '../../shared/lib/utils';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { InfoIcon as Info } from '../../shared/ui/BrandIcon';
 
 interface ScoutingProtocolBannerProps {
   fallbackBasicOnly?: boolean;

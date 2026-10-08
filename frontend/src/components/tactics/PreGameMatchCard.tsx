@@ -1,19 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Sparkles,
-  Printer,
-  Copy,
-  Check,
-  Shield,
-  Target,
-  Zap,
-  Clock,
-  MapPin,
-  Shirt,
-  Calendar,
-  AlertCircle
-} from 'lucide-react';
+import { Sparkles, Printer, Copy, Check, Shield, Target, Zap, Shirt, AlertCircle } from 'lucide-react';
+import { ClockIcon as Clock, VenueIcon as MapPin, CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';

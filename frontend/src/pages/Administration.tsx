@@ -11,7 +11,6 @@ import PageHeader from '../shared/ui/PageHeader';
 import SectionHeading from '../shared/ui/SectionHeading';
 import { cn } from '../shared/lib/utils';
 import { compressImage } from '../shared/lib/imageCompression';
-import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
@@ -23,6 +22,7 @@ import {
     activityRecencyClass
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
+import PlayerAvatar from '../shared/ui/PlayerAvatar';
 
 // Digital 2.0 — wspólne klasy pól formularzy (płasko, linia ink-500; fokus 3 px złoty daje global.css).
 const fieldClass =
@@ -908,14 +908,7 @@ function UserManagement() {
                                 subtitle={user.username ? `@${user.username}` : 'Brak konta logowania'}
                                 leading={
                                     <div className="w-10 h-10 overflow-hidden bg-bkpk-bg border border-bkpk-border-strong shrink-0">
-                                        <img
-                                            src={resolvePlayerPhoto(user)}
-                                            onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                            className="w-full h-full object-cover"
-                                            loading="lazy"
-                                            decoding="async"
-                                            alt=""
-                                        />
+                                        <PlayerAvatar player={user} className="w-full h-full" />
                                     </div>
                                 }
                                 highlight={
@@ -1000,12 +993,7 @@ function UserManagement() {
                                     <td className="py-3 px-4 font-semibold text-bkpk-text-primary">
                                         <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 overflow-hidden bg-bkpk-bg border border-bkpk-border-strong shrink-0">
-                                            <img
-                                                src={resolvePlayerPhoto(user)}
-                                                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                                className="w-full h-full object-cover"
-                                                alt=""
-                                            />
+                                            <PlayerAvatar player={user} className="w-full h-full" />
                                         </div>
                                         <span>{user.firstName} {user.lastName}</span>
                                         </div>

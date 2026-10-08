@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
-import { Activity, Database, Calendar } from 'lucide-react';
+import { Activity, Database } from 'lucide-react';
+import { CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import BkpkCard from '../shared/ui/BkpkCard';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import PageHeader from '../shared/ui/PageHeader';
@@ -18,6 +19,7 @@ import TopPlayersCard from '../components/dashboard/TopPlayersCard';
 import ScoutingCard from '../components/dashboard/ScoutingCard';
 import DashboardMomentum from '../components/games/DashboardMomentum';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 
 type Game = {
   id: string;
@@ -77,7 +79,7 @@ export default function Dashboard() {
         settled[idx].status === 'fulfilled' ? (settled[idx] as PromiseFulfilledResult<T>).value : fallback;
 
       const gamesData = pick<Game[]>(0, []);
-      const playersData = pick<Player[]>(1, []);
+      const playersData = pick<Player[]>(1, []).map((p) => normalizePlayerIdentity(p));
       const scheduleData = pick<any[]>(2, []);
       const scouting = pick<any>(3, null);
       const tStats = pick<any>(4, null);

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
-import { Calendar } from 'lucide-react';
+import { CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 import MatchCard from '../../shared/ui/MatchCard';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PbpEvent } from './kalkMatchTypes';
-import { describeEvent, formatClock, groupEventsByPeriod, periodShortLabel, runLabel, runsByEndSeq } from './pbpFormat';
+import { countPbpCategories, describeEvent, formatClock, groupEventsByPeriod, matchesPbpCategory, periodShortLabel, runLabel, runsByEndSeq } from './pbpFormat';
 
 const ev = (seq: number, period: number, extra: Partial<PbpEvent> = {}): PbpEvent => ({
     seq,
@@ -56,5 +56,20 @@ describe('pbpFormat', () => {
     it('indexes runs by end sequence', () => {
         const map = runsByEndSeq([{ side: 'home', points: 10, startSeq: 3, endSeq: 9, period: 1, endPeriod: 1, fromScore: { home: 0, away: 0 }, toScore: { home: 10, away: 0 } }]);
         expect(runLabel(map.get(9)!)).toBe('Run 10:0');
+    });
+
+    it('categories by actionType: misses include blocked shots and missed FT; counts respect side', () => {
+        const events = [
+            ev(1, 1),
+            ev(2, 1, { actionType: 'shot_blocked', isScoring: false }),
+            ev(3, 1, { actionType: 'ft_missed', isScoring: false, side: 'away' }),
+            ev(4, 2, { actionType: 'foul', isScoring: false }),
+            ev(5, 2, { actionType: 'period_start', side: null, isScoring: false }),
+        ];
+        expect(matchesPbpCategory(events[1], 'miss')).toBe(true);
+        expect(countPbpCategories(events)).toMatchObject({ all: 4, score: 1, miss: 2, foul: 1, rebound: 0 });
+        expect(countPbpCategories(events, { side: 'home' })).toMatchObject({ all: 3, miss: 1 });
+        const misses = groupEventsByPeriod(events, { category: 'miss', side: 'away' });
+        expect(misses.flatMap((g) => g.events.map((e) => e.seq))).toEqual([3]);
     });
 });

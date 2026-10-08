@@ -19,6 +19,7 @@ const PORTRAIT_NUMBERS: Readonly<Record<string, number>> = {
     'przemyslaw-klimek': 16,
     'robert-kulik': 21,
     'emil-klos': 23,
+    'damian-motylinski': 24,
     'filip-karpinski': 69,
 };
 

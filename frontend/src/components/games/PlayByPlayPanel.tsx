@@ -3,7 +3,18 @@ import { cn } from '../../shared/lib/utils';
 import { pluralPl } from '../../shared/lib/plural';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { leftSideOf, otherSide, shortTeamName, type PbpEvent, type PbpRun, type PlayByPlayResponse, type Side } from './kalkMatchTypes';
-import { describeEvent, formatClock, groupEventsByPeriod, periodLongLabel, periodShortLabel, runLabel, runsByEndSeq } from './pbpFormat';
+import {
+    PBP_CATEGORIES,
+    countPbpCategories,
+    describeEvent,
+    formatClock,
+    groupEventsByPeriod,
+    periodLongLabel,
+    periodShortLabel,
+    runLabel,
+    runsByEndSeq,
+    type PbpCategory,
+} from './pbpFormat';
 
 const segBtn = 'px-3 sm:px-4 min-h-[44px] min-w-[44px] label-caps text-xs transition-colors shrink-0';
 const segIdle = 'text-bkpk-text-secondary hover:text-bkpk-text-primary';
@@ -76,7 +87,8 @@ const EventRow = memo(function EventRow({ ev, left, leftIsBekapaka, leftName, ri
 /** Zakładka „Akcja po akcji” meczu (KALK v2). */
 export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) {
     const [period, setPeriod] = useState<number | 'all'>('all');
-    const [scoringOnly, setScoringOnly] = useState(false);
+    const [side, setSide] = useState<Side | 'all'>('all');
+    const [category, setCategory] = useState<PbpCategory>('all');
 
     const left = leftSideOf(data.bekapakaSide);
     const right = otherSide(left);
@@ -85,7 +97,9 @@ export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) 
     const leftName = shortTeamName(leftTeam.name);
     const rightName = shortTeamName(rightTeam.name);
 
-    const groups = useMemo(() => groupEventsByPeriod(data.events, { period, scoringOnly }), [data.events, period, scoringOnly]);
+    const groups = useMemo(() => groupEventsByPeriod(data.events, { period, side, category }), [data.events, period, side, category]);
+    const counts = useMemo(() => countPbpCategories(data.events, { period, side }), [data.events, period, side]);
+    const filtered = period !== 'all' || side !== 'all' || category !== 'all';
     const runIndex = useMemo(() => runsByEndSeq(data.runs), [data.runs]);
     const shown = groups.reduce((n, g) => n + g.events.length, 0);
 
@@ -127,14 +141,51 @@ export default function PlayByPlayPanel({ data }: { data: PlayByPlayResponse }) 
                         </button>
                     ))}
                 </div>
-                <div className="flex border border-bkpk-border-strong" role="group" aria-label="Rodzaj akcji">
-                    <button type="button" aria-pressed={!scoringOnly} onClick={() => setScoringOnly(false)} className={cn(segBtn, !scoringOnly ? bkpkActivePillClass : segIdle)}>
-                        Wszystkie
-                    </button>
-                    <button type="button" aria-pressed={scoringOnly} onClick={() => setScoringOnly(true)} className={cn(segBtn, scoringOnly ? bkpkActivePillClass : segIdle)}>
-                        Punkty
-                    </button>
+                <div className="flex max-w-full overflow-x-auto no-scrollbar border border-bkpk-border-strong" role="group" aria-label="Drużyna">
+                    {([
+                        { key: 'all', label: 'Obie' },
+                        { key: left, label: leftName },
+                        { key: right, label: rightName },
+                    ] as const).map((opt) => (
+                        <button
+                            key={opt.key}
+                            type="button"
+                            aria-pressed={side === opt.key}
+                            onClick={() => setSide(opt.key)}
+                            className={cn(segBtn, 'max-w-[11rem] truncate', side === opt.key ? bkpkActivePillClass : segIdle)}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
                 </div>
+                <label className="relative">
+                    <span className="sr-only">Rodzaj akcji</span>
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value as PbpCategory)}
+                        className="min-h-[44px] pl-3 pr-9 bg-bkpk-bg border border-bkpk-border-strong text-sm text-bkpk-text-primary appearance-none cursor-pointer focus:outline-none focus:border-bkpk-text-primary"
+                    >
+                        {PBP_CATEGORIES.filter((c) => c.key === 'all' || c.key === category || counts[c.key] > 0).map((c) => (
+                            <option key={c.key} value={c.key}>
+                                {c.label} ({counts[c.key]})
+                            </option>
+                        ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 border-x-[5px] border-x-transparent border-t-[6px] border-t-bkpk-text-secondary" aria-hidden="true" />
+                </label>
+                {filtered && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setPeriod('all');
+                            setSide('all');
+                            setCategory('all');
+                        }}
+                        className={cn(segBtn, 'border border-bkpk-border-strong', segIdle)}
+                    >
+                        Resetuj
+                    </button>
+                )}
                 <span className="text-xs text-bkpk-text-muted tabular-nums" aria-live="polite">{shown} {pluralPl(shown, 'zdarzenie', 'zdarzenia', 'zdarzeń')}</span>
             </div>
 
