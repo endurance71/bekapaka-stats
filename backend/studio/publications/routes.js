@@ -79,7 +79,7 @@ export function publicationRoutes(router, db) {
   });
   // AI copy for chosen channels; identical facts and prompt are served from cache without a new charge.
   router.post('/publications/:id/ai-copy', async (req, res) => {
-    const input = z.object({ channels: z.array(z.enum(channelIds)).min(1), brief: z.string().trim().max(500).default('') }).strict().parse(req.body);
+    const input = z.object({ channels: z.array(z.enum(channelIds)).min(1), brief: z.string().trim().max(500).default(''), model: z.string().max(80).optional() }).strict().parse(req.body);
     const view = await publicationView(db, req.studioOwner, uuid(req.params.id));
     const wanted = input.channels.filter((c) => view.items.some((i) => i.channel === c));
     if (!wanted.length) return res.status(422).json({ error: 'Publikacja nie ma wybranych kanałów' });
@@ -87,6 +87,7 @@ export function publicationRoutes(router, db) {
       brief: input.brief,
       hashtags: (await getSettings(db, req.studioOwner)).hashtags,
       aiArtwork: view.items.some((i) => i.graphic?.aiAssets),
+      model: input.model,
     });
     if (queued.cached) return res.json({ cached: true, result: queued.result });
     const { leaseToken, payload, ...job } = queued.job;

@@ -10,6 +10,7 @@ import { newProject, newPostProject, templates, postTypes, BRAND_VERSION } from 
 import { seedStudio } from '../../studio/seed.js';
 import { claimJob, recoverJobs, processJob } from '../../studio/worker.js';
 import { queueAi, budget } from '../../studio/ai.js';
+import { findModel, reservationMicros } from '../../studio/providers/catalog.js';
 import { migrateDesign, designKey, projectTemplateVersion } from '../../studio/post-types.js';
 import { projectView } from '../../studio/service.js';
 import { importBackgroundPack } from '../../studio/import-backgrounds.js';
@@ -172,8 +173,10 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   expect((await db.studioJob.findUnique({ where: { id: render.id } })).status).toBe('queued'); expect((await db.studioJob.findUnique({ where: { id: ai.id } })).status).toBe('uncertain'); await db.studioJob.delete({ where: { id: render.id } });
  });
  it('serializes concurrent budget reservations and blocks over-budget requests', async () => {
-  process.env.STUDIO_GEMINI_API_KEY = 'test-never-sent-to-provider'; process.env.STUDIO_AI_BUDGET_USD = '0.30';
-  const v = await projectView(db, owner, project.id); const results = await Promise.allSettled([queueAi(db, owner, v, 'image', 'texture'), queueAi(db, owner, v, 'image', 'texture')]); expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1); expect((await budget(db, owner)).remainingMicros).toBe(0); delete process.env.STUDIO_GEMINI_API_KEY; delete process.env.STUDIO_AI_BUDGET_USD;
+  // Budget fits one worst-case image call plus 0.001 USD, so exactly one of two concurrent requests is reserved.
+  const reserve = reservationMicros(findModel('gemini-3.1-flash-image'), 'image');
+  process.env.STUDIO_GEMINI_API_KEY = 'test-never-sent-to-provider'; process.env.STUDIO_AI_BUDGET_USD = ((reserve + 1000) / 1_000_000).toFixed(6);
+  const v = await projectView(db, owner, project.id); const results = await Promise.allSettled([queueAi(db, owner, v, 'image', 'texture'), queueAi(db, owner, v, 'image', 'texture')]); expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1); expect(results.find(r => r.status === 'rejected').reason.status).toBe(402); expect((await budget(db, owner)).remainingMicros).toBeCloseTo(1000, 0); delete process.env.STUDIO_GEMINI_API_KEY; delete process.env.STUDIO_AI_BUDGET_USD;
  });
  it('revokes sessions when the account password changes', async () => { await db.rosterPlayer.update({ where: { id: owner }, data: { password: 'rotated-test-only' } }); expect((await request('/auth/me')).res.status).toBe(401); const r = await request('/auth/login', { username: 'owner', password: 'valid' }, 'POST'); expect(r.res.status).toBe(200); cookie = r.res.headers.get('set-cookie').split(';')[0]; });
  it('revokes the session on logout', async () => { expect((await request('/auth/logout', {}, 'POST')).res.status).toBe(200); expect((await request('/auth/me')).res.status).toBe(401); });

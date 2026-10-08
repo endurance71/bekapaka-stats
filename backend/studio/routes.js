@@ -16,6 +16,7 @@ import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope, roundOptions } f
 import { createLoginThrottle } from '../lib/loginThrottle.js';
 import { publicationRoutes } from './publications/routes.js';
 import { mcpRoutes } from './agent/mcp.js';
+import { aiRoutes } from './providers/routes.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
 const jid = value => z.string().uuid().parse(value);
@@ -136,11 +137,11 @@ export function createStudioRouter({ db, loginUser }) {
     }); res.json({ ok: true });
   });
   router.post('/projects/:id/jobs', async (req, res) => {
-    const input = z.object({ kind: z.enum(['preview', 'export', 'ai-text', 'ai-image']), format: z.enum(Object.keys(formats)).optional(), idempotencyKey: z.string().min(8).max(128).optional(), brief: z.enum(['texture', 'background', 'still-life']).optional() }).strict().parse(req.body);
+    const input = z.object({ kind: z.enum(['preview', 'export', 'ai-text', 'ai-image']), format: z.enum(Object.keys(formats)).optional(), idempotencyKey: z.string().min(8).max(128).optional(), brief: z.enum(['texture', 'background', 'still-life']).optional(), model: z.string().max(80).optional() }).strict().parse(req.body);
     const v = await projectView(db, req.studioOwner, jid(req.params.id)); if (v.status === 'archived') fail(409, 'Projekt jest zarchiwizowany');
     if (input.kind === 'export' && !input.idempotencyKey) fail(400, 'Eksport wymaga klucza idempotencji');
     if (input.kind === 'preview' && !v.payload.formats.includes(input.format)) fail(400, 'Wybierz format projektu');
-    const job = input.kind.startsWith('ai-') ? await queueAi(db, req.studioOwner, v, input.kind.slice(3), ({ texture: 'abstract ink and paper texture', background: 'empty indoor basketball court', 'still-life': 'basketball on parquet, still life' })[input.brief || 'texture']) : await queueJob(db, req.studioOwner, v, input.kind, input.kind === 'preview' ? { format: input.format } : {}, input.idempotencyKey);
+    const job = input.kind.startsWith('ai-') ? await queueAi(db, req.studioOwner, v, input.kind.slice(3), ({ texture: 'abstract ink and paper texture', background: 'empty indoor basketball court', 'still-life': 'basketball on parquet, still life' })[input.brief || 'texture'], input.model) : await queueJob(db, req.studioOwner, v, input.kind, input.kind === 'preview' ? { format: input.format } : {}, input.idempotencyKey);
     res.status(202).json(safeJob(job));
   });
   router.get('/jobs/:id', async (req, res) => { const job = await db.studioJob.findFirst({ where: { id: jid(req.params.id), ownerId: req.studioOwner } }); if (!job) fail(404, 'Zadanie nie istnieje'); res.json(safeJob(job)); });
@@ -176,6 +177,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.post('/partners', async (req, res) => { const data = partnerSchema.parse(req.body); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.create({ data: { ...data, id: crypto.randomUUID(), ownerId: req.studioOwner } })); });
   router.put('/partners/:id', async (req, res) => { const data = partnerSchema.parse(req.body); const p = await db.studioPartner.findFirst({ where: { id: req.params.id, ownerId: req.studioOwner } }); if (!p) fail(404, 'Partner nie istnieje'); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.update({ where: { id: p.id }, data })); });
   router.get('/ai/budget', async (req, res) => res.json(await budget(db, req.studioOwner)));
+  aiRoutes(router, db);
   publicationRoutes(router, db);
   router.use((err, _req, res, _next) => {
     if (err instanceof ZodError) return res.status(400).json({ error: 'Sprawdź pola formularza', details: err.issues.map(i => ({ field: i.path.join('.'), message: i.message })) });

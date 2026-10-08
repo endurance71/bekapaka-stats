@@ -918,6 +918,22 @@ model StudioAgentToken {
   @@index([ownerId])
 }
 
+// Provider API keys entered in Studio (AES-256-GCM with STUDIO_SECRETS_KEY). Never returned to the browser.
+model StudioSecret {
+  ownerId String
+  provider String
+  ciphertext String
+  iv String
+  tag String
+  last4 String
+  lastTestOk Boolean?
+  lastTestedAt DateTime?
+  lastError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@id([ownerId, provider])
+}
+
 model StudioSession {
   credentialHash String?
   id String @id

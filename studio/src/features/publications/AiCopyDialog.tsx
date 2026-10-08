@@ -4,6 +4,8 @@ import { Check, LoaderCircle, Sparkles } from 'lucide-react';
 import Modal from '../../components/Modal';
 import { api, message, send } from '../../lib/api';
 import { keys, useBudget } from '../../lib/queries';
+import ModelSelect from '../ai/ModelSelect';
+import { usd } from '../ai/format';
 import {
   channels,
   hasErrors,
@@ -41,12 +43,18 @@ export default function AiCopyDialog({
   const drafts = publication.items.filter((i) => i.status === 'draft').map((i) => i.channel);
   const [selected, setSelected] = useState<ChannelId[]>(initialChannels.filter((c) => drafts.includes(c)));
   const [brief, setBrief] = useState('');
+  const [model, setModel] = useState('');
   const [job, setJob] = useState<Job | null>(null);
   const [result, setResult] = useState<(CopyResult & { cached: boolean }) | null>(null);
   const [applied, setApplied] = useState<ChannelId[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const b = budget.data;
+  // Empty choice = the model set for this task in Settings.
+  const task = b?.tasks.find((t) => t.id === 'copy');
+  const chosen = model ? b?.models.find((m) => m.id === model) : b?.models.find((m) => m.id === task?.model);
+  const ready = !!(model ? chosen?.available : task?.available);
+  const maxCall = model ? chosen?.maxCallMicros?.copy : task?.maxCallMicros;
 
   useEffect(() => {
     if (!job || !['queued', 'running'].includes(job.status)) return;
@@ -70,7 +78,11 @@ export default function AiCopyDialog({
     setResult(null);
     setApplied([]);
     try {
-      const answer = await send<Answer>(`/publications/${publication.id}/ai-copy`, { channels: selected, brief });
+      const answer = await send<Answer>(`/publications/${publication.id}/ai-copy`, {
+        channels: selected,
+        brief,
+        ...(model ? { model } : {}),
+      });
       if (answer.cached) setResult({ ...answer.result, cached: true });
       else setJob(answer.job);
     } catch (err) {
@@ -99,13 +111,13 @@ export default function AiCopyDialog({
   const running = !!job && ['queued', 'running'].includes(job.status);
   const staleFacts = !!result?.factsHash && result.factsHash !== publication.factsHash;
   return (
-    <Modal eyebrow="POMOC AI · GEMINI" title="Teksty kanałów z AI" onClose={onClose} className="ai-copy-modal">
+    <Modal eyebrow="POMOC AI" title="Teksty kanałów z AI" onClose={onClose} className="ai-copy-modal">
       {!publication.factsConfirmed ? (
         <p className="facts-state">AI dostaje wyłącznie potwierdzone fakty. Najpierw potwierdź fakty publikacji.</p>
       ) : !result ? (
         <>
           <p className="muted small">
-            Gemini pisze według zasad marki i instrukcji kanałów (strona „Prompty”), tylko z potwierdzonych faktów.
+            Model AI pisze według zasad marki i instrukcji kanałów (strona „Prompty”), tylko z potwierdzonych faktów.
             Propozycje przechodzą tę samą kontrolę marki co teksty ręczne. Niczego nie zapisuje bez Twojej decyzji.
           </p>
           <fieldset className="channel-picker">
@@ -135,16 +147,31 @@ export default function AiCopyDialog({
               onChange={(e) => setBrief(e.target.value)}
             />
           </label>
+          {b && (
+            <label className="ai-model">
+              Model
+              <ModelSelect
+                models={b.models}
+                task="copy"
+                kind="text"
+                value={model}
+                onChange={setModel}
+                defaultLabel={`Z ustawień: ${b.models.find((m) => m.id === task?.model)?.label ?? task?.model ?? '—'}`}
+              />
+            </label>
+          )}
           <p className="muted small">
             {b
-              ? `Budżet: ${(b.remainingMicros / 1e6).toFixed(2)} USD w tym miesiącu · rezerwacja ≤ 0,05 USD · te same fakty i prompt nie są płatne drugi raz.`
+              ? `Budżet: ${usd(b.remainingMicros, 2)} w tym miesiącu · rezerwacja ≤ ${maxCall ? usd(maxCall) : '—'} · te same fakty i prompt nie są płatne drugi raz.`
               : 'Budżet AI niedostępny.'}
-            {b && !b.configured && ' Klucz Gemini nie jest skonfigurowany — użyj „Wypełnij ze schematu”.'}
+            {b &&
+              !ready &&
+              ' Brak klucza API dostawcy tego modelu — dodaj go w Ustawieniach albo użyj „Wypełnij ze schematu”.'}
           </p>
           {running && (
             <p className="ai-progress">
               <LoaderCircle size={15} className="spin" />{' '}
-              {job?.status === 'queued' ? 'Czeka w kolejce…' : 'Gemini pisze teksty…'}
+              {job?.status === 'queued' ? 'Czeka w kolejce…' : `${chosen?.label ?? 'AI'} pisze teksty…`}
             </p>
           )}
           <div className="modal-actions">
@@ -153,7 +180,7 @@ export default function AiCopyDialog({
             </button>
             <button
               className="primary"
-              disabled={busy || running || !selected.length || !b?.configured}
+              disabled={busy || running || !selected.length || !ready}
               onClick={() => void generate()}
             >
               <Sparkles size={16} /> Generuj ({selected.length})

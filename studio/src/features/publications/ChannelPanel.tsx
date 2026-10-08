@@ -172,9 +172,7 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             <button
               className="text-button"
               disabled={locked || item.status !== 'draft' || dirty}
-              title={
-                publication.factsConfirmed ? 'Propozycja Gemini z potwierdzonych faktów' : 'Najpierw potwierdź fakty'
-              }
+              title={publication.factsConfirmed ? 'Propozycja AI z potwierdzonych faktów' : 'Najpierw potwierdź fakty'}
               onClick={onAi}
             >
               <Sparkles size={14} /> Zaproponuj AI

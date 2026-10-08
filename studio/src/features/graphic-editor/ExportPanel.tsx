@@ -3,6 +3,8 @@ import { ArrowRight, Check, Download, Eye, LoaderCircle, ShieldCheck, Sparkles }
 import { send } from '../../lib/api';
 import { DESIGN_VERSION, designFormats, formatSpec } from '../../lib/contracts';
 import { useBudget, useReloadLibrary } from '../../lib/queries';
+import ModelSelect from '../ai/ModelSelect';
+import { usd } from '../ai/format';
 import type { Job, Report } from '../../lib/types';
 import ExportFile from '../exports/ExportFile';
 import { useEditor } from './editor-context';
@@ -47,6 +49,8 @@ export default function ExportPanel(props: Props) {
   const budget = useBudget();
   const reload = useReloadLibrary();
   const [brief, setBrief] = useState('texture');
+  const [textModel, setTextModel] = useState('');
+  const [imageModel, setImageModel] = useState('');
   const currentDesign = !!publication && project.designVersion === DESIGN_VERSION;
   const available: string[] = currentDesign ? designFormats(publication, project.visualStyle) : template?.formats || [];
   const designApproved = (f: string) =>
@@ -61,10 +65,31 @@ export default function ExportPanel(props: Props) {
     );
   const templateStatus = project.postType && project.formats.every(designApproved) ? 'approved' : 'draft';
   const b = budget.data;
-  const ai = (kind: 'ai-text' | 'ai-image') =>
+  // Empty choice = the task's model from Settings; a model is ready when its provider has a key.
+  const pick = (id: 'text' | 'image', override: string) => {
+    const task = b?.tasks.find((t) => t.id === id);
+    const model = b?.models.find((m) => m.id === (override || task?.model));
+    return {
+      task,
+      model,
+      ready: !!(override ? model?.available : task?.available),
+      maxCall: override ? model?.maxCallMicros?.[id] : task?.maxCallMicros,
+    };
+  };
+  const text = pick('text', textModel);
+  const image = pick('image', imageModel);
+  const ai = (kind: 'ai-text' | 'ai-image') => {
+    const model = kind === 'ai-image' ? imageModel : textModel;
     void action(async () =>
-      setJob(await send<Job>(`/projects/${projectId}/jobs`, kind === 'ai-image' ? { kind, brief } : { kind })),
+      setJob(
+        await send<Job>(`/projects/${projectId}/jobs`, {
+          kind,
+          ...(kind === 'ai-image' ? { brief } : {}),
+          ...(model ? { model } : {}),
+        }),
+      ),
     );
+  };
 
   return (
     <aside className="export-panel">
@@ -225,15 +250,24 @@ export default function ExportPanel(props: Props) {
         <div className="budget-bar">
           <span style={{ width: `${b ? Math.min(100, (b.usedMicros / Math.max(1, b.limitMicros)) * 100) : 0}%` }} />
         </div>
-        <small>
-          {b ? `${(b.remainingMicros / 1e6).toFixed(2)} USD dostępne w tym miesiącu` : 'Budżet AI niedostępny'}
-        </small>
+        <small>{b ? `${usd(b.remainingMicros, 2)} dostępne w tym miesiącu` : 'Budżet AI niedostępny'}</small>
         {b && !b.configured && (
           <p className="muted small">
-            Klucz Gemini nie jest jeszcze skonfigurowany. Możesz tworzyć i eksportować materiały bez AI.
+            Brak kluczy API (Ustawienia → Klucze API i modele). Możesz tworzyć i eksportować materiały bez AI.
           </p>
         )}
-        <button className="secondary" disabled={!b?.configured || busy || readonly} onClick={() => ai('ai-text')}>
+        {b && (
+          <ModelSelect
+            models={b.models}
+            task="text"
+            kind="text"
+            value={textModel}
+            onChange={setTextModel}
+            label="Model opisu"
+            defaultLabel={`Opis: ${text.task ? (b.models.find((m) => m.id === text.task!.model)?.label ?? text.task.model) : '—'}`}
+          />
+        )}
+        <button className="secondary" disabled={!text.ready || busy || readonly} onClick={() => ai('ai-text')}>
           Zaproponuj opis i alt
         </button>
         <select aria-label="Rodzaj tła AI" value={brief} onChange={(e) => setBrief(e.target.value)}>
@@ -243,10 +277,24 @@ export default function ExportPanel(props: Props) {
             </option>
           ))}
         </select>
-        <button className="secondary" disabled={!b?.configured || busy || readonly} onClick={() => ai('ai-image')}>
+        {b && (
+          <ModelSelect
+            models={b.models}
+            task="image"
+            kind="image"
+            value={imageModel}
+            onChange={setImageModel}
+            label="Model tła"
+            defaultLabel={`Tło: ${image.task ? (b.models.find((m) => m.id === image.task!.model)?.label ?? image.task.model) : '—'}`}
+          />
+        )}
+        <button className="secondary" disabled={!image.ready || busy || readonly} onClick={() => ai('ai-image')}>
           Wygeneruj tło 2K
         </button>
-        <small>Rezerwacja: tekst ≤ 0,05 USD, tło ≤ 0,30 USD. Niepewne żądania zachowują rezerwację.</small>
+        <small>
+          Rezerwacja: opis ≤ {text.maxCall ? usd(text.maxCall) : '—'}, tło ≤ {image.maxCall ? usd(image.maxCall) : '—'}.
+          Niepewne żądania zachowują rezerwację.
+        </small>
       </details>
       {!readonly && (
         <button className="text-button archive-button" disabled={busy} onClick={() => void action(onArchive)}>
