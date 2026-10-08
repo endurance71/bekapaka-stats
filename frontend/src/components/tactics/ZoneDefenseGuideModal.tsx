@@ -65,29 +65,29 @@ const SCENARIO_CONFIGS_2_3: Record<string, { ball: { x: number; y: number }; def
   top: {
     ball: { x: 50, y: 80 },
     defenders: [
-      { id: 'D1', x: 44, y: 72, baseX: 30, baseY: 70, role: 'ON-BALL', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 56, y: 62, baseX: 70, baseY: 70, role: 'NAIL HELP', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D3', x: 22, y: 32, baseX: 20, baseY: 25, role: 'LEWY BLOK', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D4', x: 78, y: 32, baseX: 80, baseY: 25, role: 'PRAWY BLOK', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D5', x: 50, y: 24, baseX: 50, baseY: 25, role: 'OBRĘCZ & DESKA', color: ZONE_GUIDE_PALETTE.backLine }
+      { id: 'D1', x: 44, y: 72, baseX: 30, baseY: 70, role: 'NA PIŁCE', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 56, y: 62, baseX: 70, baseY: 70, role: 'POMOC ZE ŚRODKA', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D3', x: 22, y: 32, baseX: 20, baseY: 25, role: 'LEWA STRONA KOSZA', color: ZONE_GUIDE_PALETTE.backLine },
+      { id: 'D4', x: 78, y: 32, baseX: 80, baseY: 25, role: 'PRAWA STRONA KOSZA', color: ZONE_GUIDE_PALETTE.backLine },
+      { id: 'D5', x: 50, y: 24, baseX: 50, baseY: 25, role: 'KOSZ I TABLICA', color: ZONE_GUIDE_PALETTE.backLine }
     ]
   },
   wing: {
     ball: { x: 82, y: 64 },
     defenders: [
-      { id: 'D1', x: 50, y: 58, baseX: 30, baseY: 70, role: 'NAIL HELP', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 76, y: 62, baseX: 70, baseY: 70, role: 'CLOSEOUT SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D3', x: 34, y: 20, baseX: 20, baseY: 25, role: 'WEAK-SIDE DROP', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D4', x: 80, y: 44, baseX: 80, baseY: 25, role: 'PODBICIE W SKRZYDŁO', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D5', x: 60, y: 22, baseX: 50, baseY: 25, role: 'PRAWY BLOK', color: ZONE_GUIDE_PALETTE.backLine }
+      { id: 'D1', x: 50, y: 58, baseX: 30, baseY: 70, role: 'POMOC ZE ŚRODKA', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 76, y: 62, baseX: 70, baseY: 70, role: 'DOSKOK NA SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D3', x: 34, y: 20, baseX: 20, baseY: 25, role: 'COFNIĘCIE POD KOSZ', color: ZONE_GUIDE_PALETTE.backLine },
+      { id: 'D4', x: 80, y: 44, baseX: 80, baseY: 25, role: 'WYJŚCIE NA SKRZYDŁO', color: ZONE_GUIDE_PALETTE.backLine },
+      { id: 'D5', x: 60, y: 22, baseX: 50, baseY: 25, role: 'PRAWA STRONA KOSZA', color: ZONE_GUIDE_PALETTE.backLine }
     ]
   },
   corner: {
     ball: { x: 90, y: 16 },
     defenders: [
       { id: 'D1', x: 46, y: 52, baseX: 30, baseY: 70, role: 'ŚRODEK', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 68, y: 46, baseX: 70, baseY: 70, role: 'PRAWY ŁOKIEĆ', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D3', x: 36, y: 20, baseX: 20, baseY: 25, role: 'WEAK-SIDE DROP', color: ZONE_GUIDE_PALETTE.backLine },
+      { id: 'D2', x: 68, y: 46, baseX: 70, baseY: 70, role: 'PRAWY RÓG POLA 3 S', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D3', x: 36, y: 20, baseX: 20, baseY: 25, role: 'COFNIĘCIE POD KOSZ', color: ZONE_GUIDE_PALETTE.backLine },
       { id: 'D4', x: 88, y: 20, baseX: 80, baseY: 25, role: 'ZAMKNIĘCIE ROGU', color: ZONE_GUIDE_PALETTE.backLine },
       { id: 'D5', x: 62, y: 18, baseX: 50, baseY: 25, role: 'ODCIĘCIE LINII', color: ZONE_GUIDE_PALETTE.backLine }
     ]
@@ -95,11 +95,11 @@ const SCENARIO_CONFIGS_2_3: Record<string, { ball: { x: number; y: number }; def
   high_post: {
     ball: { x: 50, y: 52 },
     defenders: [
-      { id: 'D1', x: 44, y: 58, baseX: 30, baseY: 70, role: 'SANDWICH GÓRA', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 56, y: 58, baseX: 70, baseY: 70, role: 'SANDWICH GÓRA', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D1', x: 44, y: 58, baseX: 30, baseY: 70, role: 'ŚCISK OD GÓRY', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 56, y: 58, baseX: 70, baseY: 70, role: 'ŚCISK OD GÓRY', color: ZONE_GUIDE_PALETTE.frontLine },
       { id: 'D3', x: 22, y: 28, baseX: 20, baseY: 25, role: 'ODCIĘCIE ROGU', color: ZONE_GUIDE_PALETTE.backLine },
       { id: 'D4', x: 78, y: 28, baseX: 80, baseY: 25, role: 'ODCIĘCIE ROGU', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D5', x: 50, y: 38, baseX: 50, baseY: 25, role: 'SANDWICH DÓŁ', color: ZONE_GUIDE_PALETTE.backLine }
+      { id: 'D5', x: 50, y: 38, baseX: 50, baseY: 25, role: 'ŚCISK OD DOŁU', color: ZONE_GUIDE_PALETTE.backLine }
     ]
   }
 };
@@ -108,9 +108,9 @@ const SCENARIO_CONFIGS_3_2: Record<string, { ball: { x: number; y: number }; def
   top: {
     ball: { x: 50, y: 82 },
     defenders: [
-      { id: 'D1', x: 50, y: 75, baseX: 50, baseY: 78, role: 'ON-BALL SZCZYT', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 72, y: 66, baseX: 78, baseY: 60, role: 'MUR PRAWE SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D3', x: 28, y: 66, baseX: 22, baseY: 60, role: 'MUR LEWE SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D1', x: 50, y: 75, baseX: 50, baseY: 78, role: 'NA PIŁCE, SZCZYT', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 72, y: 66, baseX: 78, baseY: 60, role: 'MUR: PRAWE SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D3', x: 28, y: 66, baseX: 22, baseY: 60, role: 'MUR: LEWE SKRZYDŁO', color: ZONE_GUIDE_PALETTE.frontLine },
       { id: 'D4', x: 64, y: 26, baseX: 70, baseY: 22, role: 'PRAWY DÓŁ', color: ZONE_GUIDE_PALETTE.backLine },
       { id: 'D5', x: 36, y: 26, baseX: 30, baseY: 22, role: 'LEWY DÓŁ', color: ZONE_GUIDE_PALETTE.backLine }
     ]
@@ -118,21 +118,21 @@ const SCENARIO_CONFIGS_3_2: Record<string, { ball: { x: number; y: number }; def
   wing: {
     ball: { x: 82, y: 62 },
     defenders: [
-      { id: 'D1', x: 62, y: 70, baseX: 50, baseY: 78, role: 'PRAWY ŁOKIEĆ', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 76, y: 60, baseX: 78, baseY: 60, role: 'AGRESYWNY CLOSEOUT', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D1', x: 62, y: 70, baseX: 50, baseY: 78, role: 'PRAWY RÓG POLA 3 S', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 76, y: 60, baseX: 78, baseY: 60, role: 'MOCNY DOSKOK', color: ZONE_GUIDE_PALETTE.frontLine },
       { id: 'D3', x: 38, y: 58, baseX: 22, baseY: 60, role: 'ŚRODEK OBWODU', color: ZONE_GUIDE_PALETTE.frontLine },
       { id: 'D4', x: 68, y: 24, baseX: 70, baseY: 22, role: 'WYJŚCIE W RÓG', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D5', x: 46, y: 20, baseX: 30, baseY: 22, role: 'OBRONA OBRĘCZY', color: ZONE_GUIDE_PALETTE.backLine }
+      { id: 'D5', x: 46, y: 20, baseX: 30, baseY: 22, role: 'OBRONA KOSZA', color: ZONE_GUIDE_PALETTE.backLine }
     ]
   },
   corner: {
     ball: { x: 90, y: 16 },
     defenders: [
       { id: 'D1', x: 56, y: 68, baseX: 50, baseY: 78, role: 'LINIA WOLNYCH', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D2', x: 76, y: 48, baseX: 78, baseY: 60, role: 'PRAWY ŁOKIEĆ', color: ZONE_GUIDE_PALETTE.frontLine },
-      { id: 'D3', x: 36, y: 50, baseX: 22, baseY: 60, role: 'ŚRODEK TRUMNY', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D2', x: 76, y: 48, baseX: 78, baseY: 60, role: 'PRAWY RÓG POLA 3 S', color: ZONE_GUIDE_PALETTE.frontLine },
+      { id: 'D3', x: 36, y: 50, baseX: 22, baseY: 60, role: 'ŚRODEK POLA 3 S', color: ZONE_GUIDE_PALETTE.frontLine },
       { id: 'D4', x: 88, y: 20, baseX: 70, baseY: 22, role: 'ZAMKNIĘCIE ROGU', color: ZONE_GUIDE_PALETTE.backLine },
-      { id: 'D5', x: 50, y: 18, baseX: 30, baseY: 22, role: 'OBRONA OBRĘCZY', color: ZONE_GUIDE_PALETTE.backLine }
+      { id: 'D5', x: 50, y: 18, baseX: 30, baseY: 22, role: 'OBRONA KOSZA', color: ZONE_GUIDE_PALETTE.backLine }
     ]
   },
   high_post: {
@@ -178,10 +178,10 @@ export default function ZoneDefenseGuideModal({
               </div>
               <div className="flex flex-col gap-1.5">
                 <span className="kicker">
-                  Podręcznik Taktyczny &amp; Symulator Ruchu
+                  Poradnik i symulator ruchu
                 </span>
                 <h2 className="text-[22px] sm:text-[26px] leading-tight text-bkpk-text-primary">
-                  Zasady Poruszania się po Strefie (Dla Nowicjusza)
+                  Jak poruszać się w obronie strefowej – dla początkujących
                 </h2>
               </div>
             </div>
@@ -207,7 +207,7 @@ export default function ZoneDefenseGuideModal({
                 )}
               >
                 <Layers className="w-4 h-4" />
-                Obrona Strefowa 2-3
+                Strefa 2-3
               </button>
 
               <button
@@ -220,12 +220,12 @@ export default function ZoneDefenseGuideModal({
                 )}
               >
                 <Target className="w-4 h-4" />
-                Obrona Strefowa 3-2
+                Strefa 3-2
               </button>
             </div>
 
             <span className="text-[13px] font-semibold text-bkpk-text-secondary">
-              {selectedZone === '2-3' ? '🛡️ Ochrona trumny & zbiórka' : '🎯 Blokada rzutów za 3 punkty'}
+              {selectedZone === '2-3' ? 'Ochrona pola trzech sekund i zbiórka' : 'Blokada rzutów za 3'}
             </span>
           </div>
 
@@ -237,13 +237,13 @@ export default function ZoneDefenseGuideModal({
               <div>
                 <h4 className="uppercase text-[17px] leading-tight mb-1 font-display text-bkpk-text-primary">
                   {selectedZone === '2-3'
-                    ? 'Złota Zasada Strefy 2-3: Piłka Rządzi Całą Piątką (Ball-You-Man)'
-                    : 'Złota Zasada Strefy 3-2: Zero Czystych Rzutów za 3 (Perimeter Wall)'}
+                    ? 'Złota zasada strefy 2-3: piłka ustawia całą piątkę'
+                    : 'Złota zasada strefy 3-2: żadnych czystych rzutów za 3'}
                 </h4>
                 <p className="text-bkpk-text-secondary leading-relaxed">
                   {selectedZone === '2-3'
-                    ? 'W strefie 2-3 NIE kryjesz pustego parkietu! Wszyscy 5 obrońcy przesuwają się synchronicznie jak jeden organizm w kierunku piłki. Zawsze widzisz piłkę i swojego atakującego w strefie (Zasada Ball-You-Man).'
-                    : 'W strefie 3-2 trójka górna (D1, D2, D3) tworzy nieprzenikniony, falujący mur wzdłuż całej linii 6.75m. Żaden rywal nie ma prawa oddać czystego rzutu bez natychmiastowego doskoku (Closeout z ręką w górze).'}
+                    ? 'W strefie 2-3 nie kryjesz pustego parkietu. Cała piątka przesuwa się razem w stronę piłki, jak jeden organizm. Zawsze widzisz jednocześnie piłkę i atakującego w swojej strefie.'
+                    : 'W strefie 3-2 górna trójka (D1, D2, D3) tworzy szczelny, ruchomy mur wzdłuż całej linii rzutów za 3 (6,75 m). Żaden rywal nie może spokojnie rzucić – zawsze doskakujesz do niego z ręką w górze.'}
                 </p>
               </div>
             </div>
@@ -253,16 +253,16 @@ export default function ZoneDefenseGuideModal({
               <div className="flex items-center justify-between">
                 <h3 className="text-[18px] sm:text-[20px] leading-tight text-bkpk-text-primary flex items-center gap-2">
                   <Compass className="w-4 h-4 text-bkpk-primary" />
-                  Symulator Przesunięć: Wybierz Gdzie Znajduje się Piłka
+                  Symulator przesunięć: wybierz, gdzie jest piłka
                 </h3>
               </div>
 
               {/* Przyciski Wyboru Pozycji Piłki */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'top', label: '1. Piłka na Szczycie' },
-                  { id: 'wing', label: '2. Piłka na Skrzydle' },
-                  { id: 'corner', label: '3. Piłka w Rogu' },
+                  { id: 'top', label: '1. Piłka na szczycie łuku' },
+                  { id: 'wing', label: '2. Piłka na skrzydle' },
+                  { id: 'corner', label: '3. Piłka w rogu' },
                   { id: 'high_post', label: '4. Piłka na linii wolnych' }
                 ].map((sc) => (
                   <button
@@ -415,25 +415,25 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'top' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka na Szczycie (Top of the Key):
+                          Piłka na szczycie łuku:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 & D2 (Górna Linia):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 i D2 (górna linia):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Jeden z obrońców (D1 lub D2) wywiera presję On-Ball na kozłującym. Drugi asekuruje linię rzutów wolnych (Nail), zamykając wjazd do środka.
+                              Jeden z obrońców (D1 lub D2) naciska na kozłującego. Drugi pilnuje środka linii rzutów wolnych i zamyka wjazd do środka.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 & D4 (Dolne Skrzydła):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 i D4 (dolne skrzydła):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Ustawieni na wysokości dolnych bloków. Gotowi do sprintu w skrzydło, gdy poleci podanie.
+                              Stoją nisko, po bokach kosza. Gotowi do sprintu na skrzydło, gdy poleci tam podanie.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle sm:col-span-2">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (Środkowy):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (środkowy):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Kotwica w centrum trumny pod koszem. Komunikuje głośno zasłony i rozstawienie rywali.
+                              Kotwica w środku pola trzech sekund, pod koszem. Głośno informuje o zasłonach i ustawieniu rywali.
                             </p>
                           </div>
                         </div>
@@ -443,31 +443,31 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'wing' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka na Prawym Skrzydle (Right Wing):
+                          Piłka na prawym skrzydle:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (Doskok do Skrzydła):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (doskok na skrzydło):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Atakuje piłkę w niskiej postawie. Ręce w górze odcinają rzut i korytarz wzdłuż linii bocznej.
+                              Atakuje piłkę w niskiej postawie. Ręce w górze zamykają rzut i drogę wzdłuż linii bocznej.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (Zejście na Nail):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (zejście na środek):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Schodzi na środek linii rzutów wolnych (Nail). Odcina podanie do gracza na łokciu.
+                              Schodzi na środek linii rzutów wolnych. Odcina podanie do zawodnika przy rogu pola trzech sekund.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (Podbicie wyżej) & D5 (Prawy Blok):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (wyjście wyżej) i D5 (prawa strona kosza):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              D4 podchodzi pod linię rzutu, a D5 przesuwa się na prawy blok pod koszem.
+                              D4 podchodzi bliżej rzucającego, a D5 przesuwa się na prawą stronę pod koszem.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 (Weak-Side Drop):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 (cofnięcie pod kosz):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Zbiega głęboko pod kosz, zabezpieczając ścięcia za plecami D5 i zbiórkę z dystansu.
+                              Zbiega głęboko pod kosz, pilnuje wbiegnięć za plecami D5 i długich zbiórek.
                             </p>
                           </div>
                         </div>
@@ -477,31 +477,31 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'corner' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka w Prawym Rogu (Corner Trap):
+                          Piłka w prawym rogu:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (Zamknięcie Rogu):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (zamknięcie rogu):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Sprintuje w róg z rękami w górze. Blokuje rzut za 3 bez skakania w przód.
+                              Sprintuje do rogu z rękami w górze. Przeszkadza w rzucie za 3, ale nie wyskakuje do przodu.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (Odcięcie Linii Końcowej):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (odcięcie linii końcowej):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Doskakuje do linii końcowej, uniemożliwiając wjazd pod kosz wzdłuż autu.
+                              Doskakuje do linii końcowej i nie pozwala wjechać pod kosz wzdłuż autu.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (Zejście na Prawy Łokieć):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (zejście w stronę kosza):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Opada na łokieć trumny, odcinając podanie zwrotne na skrzydło.
+                              Cofa się na prawy róg pola trzech sekund i odcina podanie z powrotem na skrzydło.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 & D3 (Zabezpieczenie Kosza):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 i D3 (ochrona kosza):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Pilnują środka i przeciwnego skrzydła przed podaniami typu skip pass.
+                              Pilnują środka i drugiego skrzydła przed długim podaniem przez boisko.
                             </p>
                           </div>
                         </div>
@@ -511,13 +511,13 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'high_post' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          ⚠️ Piłka na linii rzutów wolnych (high post) — najgroźniejszy punkt dla strefy 2-3:
+                          Piłka na linii rzutów wolnych – najgroźniejsze miejsce dla strefy 2-3:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle border-l-[3px] border-l-bkpk-primary sm:col-span-2">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">Zasada Sandwich (Podwójne Zaciśnięcie):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">Zasada „kanapki” (ścisk z dwóch stron):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Gdy rywal otrzyma piłkę na linii rzutów wolnych (High Post), D1/D2 naciskają z góry, a D5 doskakuje od dołu. Obrońcy D3 i D4 natychmiast zamykają linie do rogów!
+                              Gdy rywal dostanie piłkę na linii rzutów wolnych, D1 i D2 naciskają z góry, a D5 doskakuje od dołu. D3 i D4 od razu zamykają podania do rogów.
                             </p>
                           </div>
                         </div>
@@ -529,25 +529,25 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'top' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka na Szczycie (Top of the Key):
+                          Piłka na szczycie łuku:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (Presja na Szczycie):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (nacisk na szczycie):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Wysoko na łuku 3PT. Nie pozwala na łatwy rzut ze szczytu.
+                              Wysoko, przy linii rzutów za 3. Nie pozwala na łatwy rzut ze szczytu łuku.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 & D3 (Skrzydła 3PT):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 i D3 (skrzydła):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Rozstawieni szeroko na skrzydłach na linii 6.75m. Gotowi do błyskawicznego doskoku.
+                              Stoją szeroko na skrzydłach, przy linii rzutów za 3 (6,75 m). Gotowi do szybkiego doskoku.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle sm:col-span-2">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 & D5 (Dolna Dwójka):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 i D5 (dolna dwójka):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Stoją po obu stronach trumny (bloki). Kontrolują wbiegających i zabezpieczają deskę.
+                              Stoją po obu stronach pola trzech sekund. Pilnują wbiegających i zbiórki.
                             </p>
                           </div>
                         </div>
@@ -557,31 +557,31 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'wing' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka na Prawym Skrzydle (Right Wing):
+                          Piłka na prawym skrzydle:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (Agresywny Closeout):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 (mocny doskok):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Doskakuje do strzelca z wyciągniętą ręką. Wymusza podanie lub trudny koźle w środek.
+                              Doskakuje do rzucającego z wyciągniętą ręką. Zmusza go do podania albo trudnego kozłowania do środka.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (Prawy Łokieć):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D1 (prawy róg pola trzech sekund):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Schodzi na prawy łokieć trumny, blokując wjazd w kierunku środka boiska.
+                              Schodzi na prawy róg pola trzech sekund i zamyka wjazd do środka boiska.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 (Środek Obwodu):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D3 (środek obwodu):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Przesuwa się w stronę szczytu, odcinając łatwe podanie powrotne.
+                              Przesuwa się w stronę szczytu łuku i odcina łatwe podanie powrotne.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 & D5 (Rotacja Pod Koszem):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 i D5 (rotacja pod koszem):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              D4 wychodzi w stronę prawego narożnika, a D5 przesuwa się pod samą obręcz.
+                              D4 wychodzi w stronę prawego rogu, a D5 przesuwa się pod sam kosz.
                             </p>
                           </div>
                         </div>
@@ -591,25 +591,25 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'corner' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka w Prawym Rogu (Corner Rotation):
+                          Piłka w prawym rogu:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (Wyjście do Rogu):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D4 (wyjście do rogu):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Wychodzi z pomalowanego w róg, by zablokować trójkę.
+                              Wychodzi spod kosza do rogu, żeby przeszkodzić w rzucie za 3.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (Obrona Obręczy):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D5 (obrona kosza):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              Zostaje jedynym obrońcą pod koszem. Zastawia pozycję przeciwko centrowi rywali.
+                              Zostaje jedynym obrońcą pod koszem. Zastawia środkowego rywali.
                             </p>
                           </div>
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle sm:col-span-2">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 & D1 (Zejście w Głąb):</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">D2 i D1 (cofnięcie w stronę kosza):</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              D2 cofa się do prawego łokcia, D1 zabezpiecza linię rzutów wolnych.
+                              D2 cofa się na prawy róg pola trzech sekund, D1 pilnuje linii rzutów wolnych.
                             </p>
                           </div>
                         </div>
@@ -619,13 +619,13 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'high_post' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka na linii rzutów wolnych (high post):
+                          Piłka na linii rzutów wolnych:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle sm:col-span-2">
-                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">Zaciśnięcie Trójki:</span>
+                            <span className="font-display text-[16px] uppercase text-bkpk-text-primary">Ścisk górnej trójki:</span>
                             <p className="text-bkpk-text-secondary mt-1">
-                              D1, D2 i D3 natychmiast opadają w stronę piłki, podczas gdy D4 i D5 nie pozwalają na podanie lobem za plecy.
+                              D1, D2 i D3 od razu cofają się w stronę piłki, a D4 i D5 nie pozwalają na podanie górą za ich plecy.
                             </p>
                           </div>
                         </div>
@@ -636,25 +636,25 @@ export default function ZoneDefenseGuideModal({
               </BkpkCard>
             </div>
 
-            {/* 3. Kluczowe Zasady: Bump & Pass oraz Komunikacja */}
+            {/* 3. Kluczowe zasady: przekazywanie zawodnika i zbiórka */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div className="p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle space-y-2">
                 <div className="flex items-center gap-2 text-bkpk-text-primary uppercase text-[16px] font-display">
                   <CheckCircle2 className="w-4 h-4 text-bkpk-primary shrink-0" />
-                  Zasada &quot;Bump &amp; Pass&quot; (Przekazywanie Gracza)
+                  Zasada „zatrzymaj i przekaż” (przekazywanie zawodnika)
                 </div>
                 <p className="text-bkpk-text-secondary text-[13px] leading-relaxed">
-                  Gdy atakujący bez piłki ścina przez twoją strefę: nie biegnij za nim po całym boisku! Wykonaj lekki, legalny kontakt klatką piersiową (<strong>Bump</strong>), zwalniając jego bieg, a następnie głośno przekaż go (<strong>Pass-off</strong>) koledze z sąsiedniej strefy.
+                  Gdy atakujący bez piłki przebiega przez twoją strefę, nie biegnij za nim po całym boisku. Lekko i przepisowo <strong>zatrzymaj</strong> go klatką piersiową, a potem głośno <strong>przekaż</strong> go koledze z sąsiedniej strefy.
                 </p>
               </div>
 
               <div className="p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle space-y-2">
                 <div className="flex items-center gap-2 text-bkpk-text-primary uppercase text-[16px] font-display">
                   <AlertTriangle className="w-4 h-4 text-bkpk-primary shrink-0" />
-                  Zbiórka Defensywna (Box-Out w Strefie)
+                  Zbiórka w obronie strefowej (zastawianie)
                 </div>
                 <p className="text-bkpk-text-secondary text-[13px] leading-relaxed">
-                  W strefie nie masz przypisanego konkretnego rywala do zbiórki. W momencie rzutu każdy obrońca natychmiast szuka najbliższego atakującego w swoim sektorze, odwraca się tyłem (<strong>Box-Out</strong>) i nie pozwala na dobitkę.
+                  W strefie nie masz przypisanego rywala do zbiórki. W chwili rzutu każdy obrońca szuka najbliższego atakującego w swoim sektorze, odwraca się do niego plecami (<strong>zastawia</strong>) i nie pozwala mu dobić piłki.
                 </p>
               </div>
             </div>
@@ -662,21 +662,21 @@ export default function ZoneDefenseGuideModal({
             {/* 4. Porównanie Kiedy Stosować 2-3 vs 3-2 */}
             <div className="p-4 bg-bkpk-surface-tint-2 border border-bkpk-border-strong space-y-2">
               <h4 className="uppercase text-[17px] text-bkpk-text-primary font-display">
-                Kiedy wybrać Strefę 2-3, a kiedy Strefę 3-2?
+                Kiedy wybrać strefę 2-3, a kiedy strefę 3-2?
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px] pt-1">
                 <div className="p-3 border border-bkpk-border-subtle">
-                  <span className="font-semibold text-bkpk-text-primary block mb-1">🛡️ Wybierz Strefę 2-3 gdy:</span>
+                  <span className="font-semibold text-bkpk-text-primary block mb-1">Wybierz strefę 2-3, gdy:</span>
                   <ul className="list-disc list-inside space-y-1 text-bkpk-text-muted">
                     <li>Rywal ma silnych graczy podkoszowych</li>
-                    <li>Chcesz całkowicie zamknąć wjazdy w pomalowane</li>
-                    <li>Potrzebujesz dominacji na zbiórce defensywnej</li>
+                    <li>Chcesz całkowicie zamknąć wjazdy pod kosz</li>
+                    <li>Chcesz wygrywać zbiórki w obronie</li>
                   </ul>
                 </div>
                 <div className="p-3 border border-bkpk-border-subtle">
-                  <span className="font-semibold text-bkpk-text-primary block mb-1">🎯 Wybierz Strefę 3-2 gdy:</span>
+                  <span className="font-semibold text-bkpk-text-primary block mb-1">Wybierz strefę 3-2, gdy:</span>
                   <ul className="list-disc list-inside space-y-1 text-bkpk-text-muted">
-                    <li>Rywal rzuca seryjnie za 3 punkty (5-Out / Spacing)</li>
+                    <li>Rywal często i celnie rzuca za 3</li>
                     <li>Przeciwnik nie ma dominującego środkowego</li>
                     <li>Chcesz wymusić trudne podania i straty na obwodzie</li>
                   </ul>
@@ -688,7 +688,7 @@ export default function ZoneDefenseGuideModal({
           {/* Footer */}
           <div className="p-4 bg-bkpk-surface-tint-1 border-t border-bkpk-border-subtle flex items-center justify-between gap-3 shrink-0">
             <span className="text-[13px] text-bkpk-text-muted">
-              Wskazówka: Włącz przycisk <strong>Strefy [WŁ]</strong> w odtwarzaczu, aby widzieć sektory na żywo!
+              Wskazówka: włącz przycisk <strong>Strefy: WŁ</strong> w odtwarzaczu, aby widzieć sektory na boisku.
             </span>
             <BkpkButton variant="primary" size="sm" onClick={onClose}>
               Rozumiem, przejdź do animacji

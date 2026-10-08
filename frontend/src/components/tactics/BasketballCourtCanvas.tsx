@@ -97,7 +97,7 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O1',
     number: 1,
-    name: 'PG',
+    name: '1 (rozgrywający)',
     role: 'PG',
     isOffense: true,
     keyframes: [
@@ -111,7 +111,7 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O2',
     number: 2,
-    name: 'SG',
+    name: '2 (rzucający obrońca)',
     role: 'SG',
     isOffense: true,
     keyframes: [
@@ -124,7 +124,7 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O3',
     number: 3,
-    name: 'SF',
+    name: '3 (niski skrzydłowy)',
     role: 'SF',
     isOffense: true,
     keyframes: [
@@ -139,7 +139,7 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O4',
     number: 4,
-    name: 'PF',
+    name: '4 (silny skrzydłowy)',
     role: 'PF',
     isOffense: true,
     keyframes: [
@@ -152,7 +152,7 @@ const FALLBACK_PLAYERS: PlayerTrack[] = [
   {
     id: 'O5',
     number: 5,
-    name: 'C',
+    name: '5 (środkowy)',
     role: 'C',
     isOffense: true,
     keyframes: [
@@ -632,7 +632,7 @@ export default function BasketballCourtCanvas({
         }
       }
 
-      // 4. SYMBOLE ZASŁON (T-Bar)
+      // 4. SYMBOLE ZASŁON (⊥)
       for (const player of renderedPlayers) {
         if (player.isScreening) {
           const sx = px(player.x);
@@ -752,22 +752,22 @@ export default function BasketballCourtCanvas({
             else roleTag = 'DOSKOK';
           } else if (player.id === 'D1') {
             if (renderedBall.x > 62 || renderedBall.x < 38) roleTag = 'POMOC ZE ŚRODKA';
-            else roleTag = 'SZCZYT 3PT';
+            else roleTag = 'SZCZYT ŁUKU';
           } else if (player.id === 'D2') {
             if (renderedBall.x < 38) roleTag = 'POMOC ZE ŚRODKA';
             else if (renderedBall.x > 65 && renderedBall.y > 45) roleTag = 'DOSKOK';
             else roleTag = 'PRAWE SKRZYDŁO';
           } else if (player.id === 'D3') {
-            if (renderedBall.x > 62) roleTag = 'ZEJŚCIE SŁABEJ STRONY';
+            if (renderedBall.x > 62) roleTag = 'POMOC Z DRUGIEJ STRONY';
             else roleTag = 'LEWE SKRZYDŁO';
           } else if (player.id === 'D4') {
             if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ZAMKNIĘCIE ROGU';
-            else if (renderedBall.x < 38) roleTag = 'ZEJŚCIE SŁABEJ STRONY';
+            else if (renderedBall.x < 38) roleTag = 'POMOC Z DRUGIEJ STRONY';
             else roleTag = 'PRAWE SKRZYDŁO / DÓŁ';
           } else if (player.id === 'D5') {
             if (renderedBall.x > 75 && renderedBall.y < 35) roleTag = 'ODCIĘCIE LINII';
             else if (renderedBall.x < 25 && renderedBall.y < 35) roleTag = 'ODCIĘCIE LINII';
-            else roleTag = 'OBRĘCZ & DESKA';
+            else roleTag = 'KOSZ I TABLICA';
           }
 
           if (roleTag) {
@@ -847,7 +847,7 @@ export default function BasketballCourtCanvas({
       ctx.lineTo(bx, airBy + ballRadius);
       ctx.stroke();
 
-      // Efekt trafienia do kosza (Dopasowany do faktycznego rzutu +2 / +3 PKT)
+      // Efekt trafienia do kosza (dopasowany do faktycznego rzutu: +2 / +3 pkt)
       if (t >= 7.2) {
         // Określ czy rzut był za 2 czy za 3 punkty na podstawie pozycji wyjściowej strzelca
         const shotKeyframe = timelineData.ball?.keyframes?.find((k) => k.isShot);
@@ -857,8 +857,8 @@ export default function BasketballCourtCanvas({
         const isThreePointer = Math.hypot(shotX - 50, shotY - 12.5) > 28 || shotY > 60;
 
         const outcomeLabel = timelineData.outcomeText || (isThreePointer
-          ? '✨ TRAFIENIE ZA 3 PUNKTY (+3 PKT)'
-          : '✨ PUNKTY Z POMALOWANEGO (+2 PKT)');
+          ? 'Celny rzut za 3 (+3 pkt)'
+          : 'Punkty spod kosza (+2 pkt)');
 
         // Pasek informacyjny z wynikiem na górze parkietu
         ctx.save();
@@ -918,7 +918,7 @@ export default function BasketballCourtCanvas({
           </div>
           <div>
             <h3 className="text-[18px] sm:text-[20px] leading-tight text-bkpk-text-primary">
-              {playName || 'Profesjonalny Schemat Taktyczny'}
+              {playName || 'Schemat zagrywki'}
             </h3>
             <div className="flex items-center gap-2 text-[13px] text-bkpk-text-muted">
               {targetDefense && (
@@ -940,10 +940,10 @@ export default function BasketballCourtCanvas({
           <button
             onClick={() => setIsGuideOpen(true)}
             className="px-3 py-1.5 label-caps text-[12px] transition-colors flex items-center gap-1.5 min-h-[44px] bg-transparent text-bkpk-text-primary border border-bkpk-border-strong hover:border-bkpk-text-primary"
-            title="Otwórz Podręcznik Taktyczny: Jak poruszać się po strefie"
+            title="Otwórz poradnik: jak poruszać się w obronie strefowej"
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Poradnik Strefowy</span>
+            <span>Poradnik strefy</span>
           </button>
 
           {/* Przełącznik stref (jeśli schemat posiada zdefiniowane strefy) */}
@@ -956,7 +956,7 @@ export default function BasketballCourtCanvas({
                   ? bkpkActivePillClass
                   : "bg-transparent text-bkpk-text-muted hover:text-bkpk-text-primary border-bkpk-border-strong"
               )}
-              title="Przełącz widoczność wyznaczonych stref defensywnych"
+              title="Pokaż lub ukryj strefy odpowiedzialności obrońców"
             >
               <Shield className="w-3.5 h-3.5" />
               <span>Strefy: <strong className={showZones ? "text-inherit" : "text-bkpk-text-muted"}>{showZones ? 'WŁ' : 'WYŁ'}</strong></span>
@@ -1002,13 +1002,13 @@ export default function BasketballCourtCanvas({
         />
       </div>
 
-      {/* Czysta Legenda Pozycji Koszykarskich */}
+      {/* Legenda pozycji */}
       <div className="flex flex-wrap items-center justify-center gap-4 py-2 px-3 border-y border-bkpk-border-subtle text-[12px] font-semibold text-bkpk-text-secondary">
         <div className="flex items-center gap-1.5">
           <span className="h-5 min-w-5 px-1 rounded-full bg-bkpk-primary text-brand-white text-[11px] font-display flex items-center justify-center">
             1-5
           </span>
-          <span>Pozycje Ataku (1: PG, 2: SG, 3: SF, 4: PF, 5: C)</span>
+          <span>Pozycje ataku (1: rozgrywający, 2: rzucający obrońca, 3: niski skrzydłowy, 4: silny skrzydłowy, 5: środkowy)</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="h-5 min-w-5 px-1 rounded-full bg-ink-700 border-2 border-brand-stone-200 text-brand-stone-200 text-[11px] font-display flex items-center justify-center">
@@ -1021,16 +1021,16 @@ export default function BasketballCourtCanvas({
             <span className="w-3.5 h-3.5 border border-dashed border-brand-stone-200 bg-brand-stone-200/10 flex items-center justify-center text-[9px] font-mono">
               ▨
             </span>
-            <span>Strefy Odpowiedzialności</span>
+            <span>Strefy odpowiedzialności</span>
           </div>
         )}
         <div className="flex items-center gap-1.5 text-bkpk-text-primary">
           <span className="font-black text-sm">⊥</span>
-          <span>Zasłona (T-Bar)</span>
+          <span>Zasłona</span>
         </div>
         <div className="flex items-center gap-1.5 text-brand-gold-500">
-          <span className="font-black text-xs">🏀</span>
-          <span>Piłka &amp; Rzut</span>
+          <span className="font-black text-xs">●</span>
+          <span>Piłka i rzut</span>
         </div>
       </div>
 
@@ -1158,7 +1158,7 @@ export default function BasketballCourtCanvas({
                       key={cIdx}
                       className="text-[12px] font-semibold text-bkpk-text-primary border border-bkpk-border-strong px-2.5 py-0.5"
                     >
-                      ⚡ {cue}
+                      {cue}
                     </span>
                   ))}
                 </div>

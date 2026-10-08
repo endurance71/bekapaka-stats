@@ -65,6 +65,7 @@ interface LeagueComparison {
 }
 
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import { formatStatFixed } from '../shared/lib/formatStat';
 
 export default function Trends() {
   const [trends, setTrends] = useState<TeamTrend[]>([]);
@@ -101,7 +102,7 @@ export default function Trends() {
   const radarData = useMemo(() => {
     if (!comparison) return [];
     return [
-      { subject: 'Atak (PPG)', A: (comparison.bekapaka.ppg / (comparison.league.ppg || 1)) * 100, fullMark: 150 },
+      { subject: 'Atak (pkt/m)', A: (comparison.bekapaka.ppg / (comparison.league.ppg || 1)) * 100, fullMark: 150 },
       { subject: 'Obrona (stracone/m)', A: (comparison.league.oppg / (comparison.bekapaka.oppg || 1)) * 100, fullMark: 150 },
       { subject: '% Zwycięstw', A: (comparison.bekapaka.winPct / (comparison.league.winPct || 1)) * 100, fullMark: 150 },
     ];
@@ -364,13 +365,13 @@ export default function Trends() {
           <div className="grid grid-cols-2 gap-4">
             <BkpkCard variant="flat" className="text-center py-6">
               <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Punkty / mecz</div>
-              <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.ppg ? comparison.bekapaka.ppg.toFixed(1) : '0.0'}</div>
-              <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {hasLeagueData && comparison?.league.ppg ? comparison.league.ppg.toFixed(1) : '0.0'}</div>
+              <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(hasLeagueData ? comparison?.bekapaka.ppg : 0)}</div>
+              <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {formatStatFixed(hasLeagueData ? comparison?.league.ppg : 0)}</div>
             </BkpkCard>
             <BkpkCard variant="flat" className="text-center py-6">
               <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Stracone / mecz</div>
-              <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{hasLeagueData && comparison?.bekapaka.oppg ? comparison.bekapaka.oppg.toFixed(1) : '0.0'}</div>
-              <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {hasLeagueData && comparison?.league.oppg ? comparison.league.oppg.toFixed(1) : '0.0'}</div>
+              <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(hasLeagueData ? comparison?.bekapaka.oppg : 0)}</div>
+              <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {formatStatFixed(hasLeagueData ? comparison?.league.oppg : 0)}</div>
             </BkpkCard>
           </div>
         </div>

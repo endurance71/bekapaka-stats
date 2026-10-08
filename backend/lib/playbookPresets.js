@@ -1,63 +1,64 @@
 /**
- * Biblioteka Gotowych Presetów Animowanych Zagrywek i Systemów Obronnych Koszykówki (BeKaPaKa Stats)
- * Zawiera schematy ataku pozycyjnego, autów, akcji po czasie (ATO) oraz zaawansowane systemy obrony
- * (1vs1 Man-to-Man z Help & Recover, Strefa 2-3 ze strefami odpowiedzialności, Strefa 3-2 z odcięciem obwodu).
+ * Biblioteka gotowych, animowanych zagrywek i systemów obrony (BeKaPaKa Stats).
+ * Zawiera atak pozycyjny, auty, zagrywki po czasie oraz obronę (każdy swego z pomocą i powrotem,
+ * strefa 2-3 ze strefami odpowiedzialności, strefa 3-2 z murem na obwodzie). `legacyName` = dawna nazwa do aktualizacji wierszy w bazie.
  */
 
 export const DEFAULT_PLAYBOOK_PRESETS = [
   // ==========================================
-  // 1. HORNS FLARE VS STREFA 2-3 (ATAK)
+  // 1. ROGI Z ZASŁONĄ ODCHODZĄCĄ (ATAK)
   // ==========================================
   {
-    name: 'Horns Flare vs Strefa 2-3',
+    name: 'Rogi z zasłoną odchodzącą (Horns Flare)',
+    legacyName: 'Horns Flare vs Strefa 2-3',
     category: 'half_court',
     targetDefense: 'Strefa 2-3',
-    description: 'Klasyczne ustawienie Rogów (Horns) rozbijające pierwszą linię strefy. Zasłona flare 5 (C) na obrońcy D2 uwalnia strzelca 3 (SF) w rogu boiska na czysty rzut za 3.',
-    tags: ['Horns', 'Strefa 2-3', 'Corner 3', 'Rzut za 3'],
+    description: 'Klasyczne ustawienie „rogi”: dwóch wysokich zawodników na rogach pola trzech sekund rozciąga pierwszą linię strefy. 5 (środkowy) stawia zasłonę w plecy obrońcy D2, a 3 (niski skrzydłowy) odbiega od niej do rogu boiska i dostaje piłkę na czysty rzut za 3.',
+    tags: ['Rogi', 'Strefa 2-3', 'Rzut z rogu', 'Rzut za 3'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '✨ CELNY RZUT ZA 3: POZYCJA 3 (SF) • +3 PKT',
+      outcomeText: 'Celny rzut za 3: zawodnik 3 (niski skrzydłowy) • +3 pkt',
       coachingKeys: [
-        'Ustawienie wyjściowe Horns zmusza obronę do rozciągnięcia linii',
-        'Zasłona na szczycie (T-Bar) 5 (C) musi zablokować powrót górnego obrońcy strefy D2',
-        'Podanie typu skip pass musi być posłane silnie wprost do rąk 3 (SF)',
-        'Center 5 (C) po zasłonie natychmiast roluje pod kosz na zbiórkę ofensywną'
+        'Ustawienie w „rogi” zmusza obronę strefową do rozciągnięcia pierwszej linii',
+        'Zasłona 5 (środkowy) na górze musi zatrzymać powrót obrońcy D2',
+        'Długie podanie przez boisko musi pójść mocno, prosto w ręce 3 (niski skrzydłowy)',
+        'Po zasłonie 5 od razu biegnie pod kosz po zbiórkę w ataku'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.5,
-          title: 'Faza 1: Ustawienie Wyjściowe Formacji Horns',
-          description: 'Zespół w formacji Rogów: 1 (PG) na szczycie, 2 (SG) i 3 (SF) w skrzydłach, 4 (PF) i 5 (C) na łokciach trumny. Obrona strefowa 2-3 w gotowości.',
-          coachingCues: ['Szeroki spacing', 'Cierpliwe rozpoznanie obrony']
+          title: 'Faza 1: Ustawienie wyjściowe w „rogi”',
+          description: 'Drużyna ustawia się w „rogi”: 1 (rozgrywający) na szczycie łuku, 2 (rzucający obrońca) i 3 (niski skrzydłowy) na skrzydłach, 4 (silny skrzydłowy) i 5 (środkowy) na rogach pola trzech sekund. Rywal broni strefą 2-3.',
+          coachingCues: ['Szerokie ustawienie', 'Spokojnie odczytaj obronę']
         },
         {
           startTime: 1.5,
           endTime: 4.5,
-          title: 'Faza 2: Zasłona Flare (T-Bar) & Ścięcie 3 (SF) w Róg',
-          description: '5 (C) podchodzi i stawia twardą zasłonę (T-Bar) w plecy D2. 3 (SF) ociera się bark w bark o 5 (C) i ścina w róg. D2 zostaje zablokowany!',
-          coachingCues: ['Kontakt bark w bark', 'Sprint po łuku do rogu']
+          title: 'Faza 2: Zasłona w plecy D2 i wybieg 3 do rogu',
+          description: '5 (środkowy) podchodzi i stawia mocną zasłonę w plecy D2. 3 (niski skrzydłowy) przebiega tuż obok 5, bark w bark, i odbiega do rogu. D2 zostaje zablokowany.',
+          coachingCues: ['Bark w bark przy zasłonie', 'Sprint łukiem do rogu']
         },
         {
           startTime: 4.5,
           endTime: 6.5,
-          title: 'Faza 3: Laserowy Skip Pass do 3 (SF)',
-          description: '1 (PG) posyła bezpośrednie podanie przez całe boisko do wybiegającego w narożnik 3 (SF). Dolny obrońca D5 spóźnia się z doskokiem.',
-          coachingCues: ['Podanie prosto w klatkę', 'Gotowość do chwytu w wyskoku']
+          title: 'Faza 3: Długie podanie przez boisko do 3',
+          description: '1 (rozgrywający) posyła mocne podanie przez całe boisko do 3 (niski skrzydłowy), który wybiega do rogu. Dolny obrońca D5 nie zdąży doskoczyć.',
+          coachingCues: ['Podanie prosto w klatkę piersiową', 'Gotowy do rzutu zaraz po chwycie']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Czysty Rzut za 3 przez 3 (SF) i Zbiórka 5 (C)',
-          description: '3 (SF) oddaje czysty rzut za 3 punkty. Piłka wpada do kosza (+3 PKT), a 5 (C) zbiega pod kosz na zbiórkę.',
-          coachingCues: ['Catch & Shoot w tempie', '5 (C) zabezpiecza deskę']
+          title: 'Faza 4: Rzut za 3 i zbiórka 5',
+          description: '3 (niski skrzydłowy) oddaje czysty rzut za 3. Piłka wpada do kosza (+3 pkt), a 5 (środkowy) biegnie pod kosz na zbiórkę.',
+          coachingCues: ['Rzut od razu po chwycie', '5 pilnuje zbiórki pod koszem']
         }
       ],
       players: [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -71,7 +72,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -84,7 +85,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -99,7 +100,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -112,7 +113,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -208,57 +209,58 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // ==========================================
-  // 2. SPAIN PICK & ROLL (ATAK)
+  // 2. ZASŁONA NA PIŁCE Z ZASŁONĄ W PLECY (ATAK)
   // ==========================================
   {
-    name: 'Spain Pick & Roll (Zasłona z pleców)',
+    name: 'Zasłona na piłce z zasłoną w plecy (Spain pick and roll)',
+    legacyName: 'Spain Pick & Roll (Zasłona z pleców)',
     category: 'half_court',
-    targetDefense: 'Obrona każdy swego (Drop / Switch)',
-    description: 'Klasyczny Pick & Roll uzupełniony o tylną zasłonę 3 (SF) w plecy D5, uwalniający 5 (C) na potężny wsad z góry.',
-    tags: ['Spain PnR', 'Pick & Roll', 'Backscreen', 'EuroLeague'],
+    targetDefense: 'Obrona każdy swego (cofnięcie / zmiana krycia)',
+    description: 'Zasłona na piłce i zbiegnięcie (pick and roll), do którego 3 (niski skrzydłowy) dokłada zasłonę w plecy obrońcy D5. Dzięki temu 5 (środkowy) ma wolną drogę pod kosz i kończy akcję wsadem.',
+    tags: ['Zasłona na piłce', 'Zasłona w plecy', 'Wsad', 'Atak pozycyjny'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '✨ WSAD SPOD KOSZA: POZYCJA 5 (C) • +2 PKT',
+      outcomeText: 'Wsad spod kosza: zawodnik 5 (środkowy) • +2 pkt',
       coachingKeys: [
-        'Zasłona z pleców (T-Bar) 3 (SF) musi zablokować cofającego się w dropie D5',
-        'Strzelec 3 (SF) po zasłonie natychmiast ucieka na szczyt (Pop na 3PT)',
-        'Center 5 (C) po minięciu zasłony kończy akcję wsadem nad obręczą'
+        'Zasłona w plecy od 3 (niski skrzydłowy) musi zatrzymać D5, który cofa się pod kosz',
+        'Po zasłonie 3 od razu wychodzi na szczyt łuku, gotowy do rzutu za 3',
+        '5 (środkowy) po minięciu zasłony kończy akcję wsadem'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.5,
-          title: 'Faza 1: Ustawienie Wyjściowe 5-Out',
-          description: 'Szerokie rozstawienie graczy wokół łuku 3PT. 1 (PG) na szczycie sygnalizuje zagrywkę Spain.',
-          coachingCues: ['Maksymalny spacing', 'Dyscyplina ustawienia']
+          title: 'Faza 1: Ustawienie wyjściowe – wszyscy na obwodzie',
+          description: 'Zawodnicy stoją szeroko wokół linii rzutów za 3. 1 (rozgrywający) na szczycie łuku daje znak do rozpoczęcia zagrywki.',
+          coachingCues: ['Jak najszersze ustawienie', 'Trzymaj swoje miejsce']
         },
         {
           startTime: 1.5,
           endTime: 4.5,
-          title: 'Faza 2: Zasłona PnR & Hiszpańska Zasłona w Plecy D5 (T-Bar)',
-          description: '5 (C) stawia zasłonę na piłce. D5 cofa się w dropie, gdzie 3 (SF) wkleja mu twardy T-Bar w plecy na linii rzutów wolnych. D5 zostaje odcięty!',
-          coachingCues: ['Mocna belka T-Bar', 'Otwarcie korytarza do obręczy']
+          title: 'Faza 2: Zasłona na piłce i zasłona w plecy D5',
+          description: '5 (środkowy) stawia zasłonę na piłce. D5 cofa się pod kosz, a 3 (niski skrzydłowy) stawia mu mocną zasłonę w plecy na wysokości linii rzutów wolnych. D5 zostaje odcięty.',
+          coachingCues: ['Mocna, nieruchoma zasłona', 'Wolna droga do kosza']
         },
         {
           startTime: 4.5,
           endTime: 6.5,
-          title: 'Faza 3: Podanie Lobem Nad Obręcz do 5 (C)',
-          description: '1 (PG) posyła wysoki lob prosto w tempo wbiegającego w wolną strefę 5 (C). 3 (SF) ucieka na szczyt (Pop).',
-          coachingCues: ['Miękki lob', 'Chwyt oburącz w powietrzu']
+          title: 'Faza 3: Wysokie podanie nad obrońcami do 5',
+          description: '1 (rozgrywający) posyła wysokie podanie górą do 5 (środkowy), który wbiega w wolne miejsce pod koszem. 3 wychodzi na szczyt łuku.',
+          coachingCues: ['Miękkie, wysokie podanie', 'Chwyt oburącz w powietrzu']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Potężny Wsad 5 (C) (+2 PKT) i Powrót do Obrony',
-          description: '5 (C) łapie piłkę w powietrzu i pakuje ją z góry do kosza (+2 PKT).',
-          coachingCues: ['Pewne wykończenie', 'Natychmiastowy powrót do obrony']
+          title: 'Faza 4: Wsad 5 (+2 pkt) i powrót do obrony',
+          description: '5 (środkowy) łapie piłkę w powietrzu i kończy akcję wsadem (+2 pkt).',
+          coachingCues: ['Pewne wykończenie', 'Od razu wracaj do obrony']
         }
       ],
       players: [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -272,7 +274,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -284,7 +286,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -298,7 +300,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -310,7 +312,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -403,58 +405,59 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // ==========================================
-  // 3. BOX CROSS BLOB (AUT SPOD KOSZA)
+  // 3. AUT SPOD KOSZA – ZASŁONA W KWADRACIE
   // ==========================================
   {
-    name: 'Box Cross BLOB (Aut spod kosza)',
+    name: 'Aut spod kosza – zasłona w kwadracie (Box Cross)',
+    legacyName: 'Box Cross BLOB (Aut spod kosza)',
     category: 'blob',
-    targetDefense: 'Obrona każdy swego (Man-to-Man)',
-    description: 'Zagrywka z autu końcowego w formacji Box. Zasłona 4 (PF) odcina D5, uwalniając 5 (C) pod samą obręcz na łatwy layup.',
-    tags: ['BLOB', 'Box Set', 'Layup', 'Punkty z pomalowanego'],
+    targetDefense: 'Obrona każdy swego',
+    description: 'Wprowadzenie piłki z autu spod kosza z ustawienia w kwadrat. 4 (silny skrzydłowy) stawia zasłonę obrońcy D5, a 5 (środkowy) wbiega pod sam kosz na łatwy dwutakt.',
+    tags: ['Aut spod kosza', 'Ustawienie w kwadrat', 'Dwutakt', 'Punkty spod kosza'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '✨ LAYUP SPOD KOSZA: POZYCJA 5 (C) • +2 PKT',
+      outcomeText: 'Dwutakt spod kosza: zawodnik 5 (środkowy) • +2 pkt',
       coachingKeys: [
-        'Ustawienie wyjściowe w kwadrat (Box) wymusza błąd krycia obrony',
-        'Zasłona na linii końcowej (T-Bar) 4 (PF) musi całkowicie zablokować D5',
-        'Podający 1 (PG) czeka dokładnie do momentu minięcia zasłony przez 5 (C)',
-        'Gracz na obwodzie stanowi opcję rezerwową'
+        'Ustawienie w kwadrat utrudnia obronie upilnowanie wszystkich zawodników',
+        'Zasłona 4 (silny skrzydłowy) wzdłuż linii końcowej musi całkowicie zatrzymać D5',
+        'Podający 1 (rozgrywający) czeka, aż 5 (środkowy) minie zasłonę',
+        'Zawodnik za linią rzutów za 3 to opcja awaryjna'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.5,
-          title: 'Faza 1: Ustawienie w Kwadrat (Box Formation)',
-          description: 'Czterech graczy rozstawia się w kwadrat w trumnie. Podający 1 (PG) zza linii końcowej daje sygnał.',
-          coachingCues: ['Statyczna koncentracja', 'Gotowość do zasłon']
+          title: 'Faza 1: Ustawienie w kwadrat',
+          description: 'Czterech zawodników ustawia się w kwadrat w polu trzech sekund. 1 (rozgrywający) wprowadza piłkę zza linii końcowej i daje znak.',
+          coachingCues: ['Pełne skupienie', 'Gotowość do zasłon']
         },
         {
           startTime: 1.5,
           endTime: 4.5,
-          title: 'Faza 2: Podwójna Zasłona Krzyżowa (T-Bar) & Ścięcie 5 (C)',
-          description: '4 (PF) stawia zasłonę wzdłuż linii dla 5 (C). D5 uderza w zasłonę 4 (PF) i zostaje odcięty, a 5 (C) ścina pod sam kosz.',
-          coachingCues: ['Mocna belka T-Bar', 'Sprint wprost pod kosz']
+          title: 'Faza 2: Zasłona 4 i wbiegnięcie 5 pod kosz',
+          description: '4 (silny skrzydłowy) stawia zasłonę wzdłuż linii końcowej dla 5 (środkowy). D5 wpada na zasłonę i zostaje odcięty, a 5 wbiega pod sam kosz.',
+          coachingCues: ['Mocna, nieruchoma zasłona', 'Sprint prosto pod kosz']
         },
         {
           startTime: 4.5,
           endTime: 6.5,
-          title: 'Faza 3: Podanie Kozłem Pod Sam Kosz do 5 (C)',
-          description: '1 (PG) posyła precyzyjne podanie kozłem w tempo do wolnego 5 (C) pod samą obręcz.',
+          title: 'Faza 3: Podanie kozłem pod kosz do 5',
+          description: '1 (rozgrywający) posyła dokładne podanie kozłem do wolnego 5 (środkowy) pod samym koszem.',
           coachingCues: ['Niskie podanie', 'Pewny chwyt oburącz']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Czysty Layup 5 (C) do Kosza (+2 PKT)',
-          description: '5 (C) bez obrońcy wykańcza akcję łatwym layupem do kosza (+2 PKT).',
-          coachingCues: ['Wysokie wyjście w górę', 'Punkty z pomalowanego']
+          title: 'Faza 4: Dwutakt 5 (+2 pkt)',
+          description: '5 (środkowy) bez obrońcy kończy akcję łatwym dwutaktem (+2 pkt).',
+          coachingCues: ['Wysokie wyjście do kosza', 'Punkty spod kosza']
         }
       ],
       players: [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -465,7 +468,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -478,7 +481,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -491,7 +494,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -504,7 +507,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -589,57 +592,58 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // ==========================================
-  // 4. SLOB HAMMER (AUT BOCZNY)
+  // 4. AUT Z BOKU – ZASŁONA DLA STRZELCA W ROGU
   // ==========================================
   {
-    name: 'SLOB Hammer (Aut boczny ze ścięciem)',
+    name: 'Aut z boku – zasłona dla strzelca w rogu (Hammer)',
+    legacyName: 'SLOB Hammer (Aut boczny ze ścięciem)',
     category: 'slob',
-    targetDefense: 'Obrona każdy swego (Man-to-Man)',
-    description: 'Zagrywka z autu bocznego. Wjazd 2 (SG) wzdłuż linii ściąga pomoc, a zasłona Hammer 4 (PF) uwalnia strzelca 3 (SF) na trójkę w rogu.',
-    tags: ['SLOB', 'Hammer Action', 'Spurs System', 'Corner 3'],
+    targetDefense: 'Obrona każdy swego',
+    description: 'Wprowadzenie piłki z autu z boku. 2 (rzucający obrońca) wjeżdża z piłką wzdłuż linii końcowej i ściąga pomoc obrony, a 4 (silny skrzydłowy) stawia zasłonę dla 3 (niski skrzydłowy), który dostaje piłkę na rzut za 3 z rogu.',
+    tags: ['Aut z boku', 'Zasłona dla strzelca', 'Rzut z rogu', 'Rzut za 3'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '✨ CELNY RZUT ZA 3: POZYCJA 3 (SF) • +3 PKT',
+      outcomeText: 'Celny rzut za 3: zawodnik 3 (niski skrzydłowy) • +3 pkt',
       coachingKeys: [
-        'Wprowadzenie piłki do wjeżdżającego pod kosz 2 (SG)',
-        'Zasłona Hammer (T-Bar) 4 (PF) musi odciąć obrońcę D3 w rogu boiska',
-        'Podanie drift pass wzdłuż linii końcowej wprost do rąk 3 (SF)'
+        'Wprowadź piłkę do 2 (rzucający obrońca), który wjeżdża pod kosz',
+        'Zasłona 4 (silny skrzydłowy) musi odciąć obrońcę D3 w rogu boiska',
+        'Podanie wzdłuż linii końcowej idzie prosto w ręce 3 (niski skrzydłowy)'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.5,
-          title: 'Faza 1: Ustawienie przy Linii Bocznej',
-          description: 'Podający 1 (PG) na aucie bocznym. 2 (SG) przygotowuje się do odbioru piłki na prawym skrzydle.',
+          title: 'Faza 1: Ustawienie przy linii bocznej',
+          description: 'Podający 1 (rozgrywający) stoi za linią boczną. 2 (rzucający obrońca) przygotowuje się do odbioru piłki na prawym skrzydle.',
           coachingCues: ['Pewny chwyt', 'Mocny pierwszy krok']
         },
         {
           startTime: 1.5,
           endTime: 4.5,
-          title: 'Faza 2: Wjazd w Głąb & Zasłona Hammer 4 (PF) dla 3 (SF)',
-          description: '2 (SG) atakuje koźłem wzdłuż linii końcowej. Na słabej stronie 4 (PF) stawia zasłonę Hammer (T-Bar) dla 3 (SF). D3 uderza w zasłonę!',
-          coachingCues: ['Belka T-Bar tyłem do kosza', 'Sprint do narożnika']
+          title: 'Faza 2: Wjazd 2 pod kosz i zasłona 4 dla 3',
+          description: '2 (rzucający obrońca) wjeżdża z piłką wzdłuż linii końcowej. Po drugiej stronie 4 (silny skrzydłowy) stawia zasłonę dla 3 (niski skrzydłowy). D3 wpada na zasłonę.',
+          coachingCues: ['Zasłona plecami do kosza', 'Sprint do rogu']
         },
         {
           startTime: 4.5,
           endTime: 6.5,
-          title: 'Faza 3: Podanie Baseline Drift Pass do 3 (SF)',
-          description: '2 (SG) z linii końcowej posyła laserowe podanie ponad obrońcami prosto w lewy narożnik do 3 (SF).',
-          coachingCues: ['Podanie w tempo', 'Strzelec 3 (SF) gotowy do rzutu']
+          title: 'Faza 3: Podanie wzdłuż linii końcowej do 3',
+          description: '2 (rzucający obrońca) spod linii końcowej podaje mocno nad obrońcami prosto w lewy róg do 3 (niski skrzydłowy).',
+          coachingCues: ['Podanie w tempo', '3 gotowy do rzutu']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Czysta Trójka 3 (SF) w Rogu i Zbiórka',
-          description: '3 (SF) trafia czysty rzut za 3 punkty (+3 PKT). Wysocy zabezpieczają deskę.',
-          coachingCues: ['Catch & Shoot', 'Zbiórka ofensywna']
+          title: 'Faza 4: Rzut za 3 z rogu i zbiórka',
+          description: '3 (niski skrzydłowy) trafia czysty rzut za 3 (+3 pkt). Wysocy zawodnicy pilnują zbiórki.',
+          coachingCues: ['Rzut od razu po chwycie', 'Zbiórka w ataku']
         }
       ],
       players: [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -651,7 +655,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -664,7 +668,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -679,7 +683,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -691,7 +695,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -775,57 +779,58 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // ==========================================
-  // 5. ELEVATOR DOORS ATO (PO CZASIE)
+  // 5. PO CZASIE – DRZWI WINDY
   // ==========================================
   {
-    name: 'Elevator Doors ATO (Zasłona Windowa)',
+    name: 'Po czasie – drzwi windy (Elevator Doors)',
+    legacyName: 'Elevator Doors ATO (Zasłona Windowa)',
     category: 'ato',
-    targetDefense: 'Obrona każdy swego (Po czasie / Clutch)',
-    description: 'Zagrywka po czasie. 2 (SG) sprintuje przez windę, 4 (PF) i 5 (C) zatrzaskują drzwi windy (T-Bar) blokując D2, a 2 (SG) trafia za 3 ze szczytu.',
-    tags: ['ATO', 'Elevator Screen', 'Clutch', 'Warriors Action'],
+    targetDefense: 'Obrona każdy swego (końcówka meczu)',
+    description: 'Zagrywka po wziętym czasie. 2 (rzucający obrońca) biegnie środkiem między 4 (silny skrzydłowy) i 5 (środkowy), którzy zaraz za nim zamykają przejście jak drzwi windy i blokują goniącego D2. 2 rzuca za 3 ze szczytu łuku.',
+    tags: ['Po czasie', 'Podwójna zasłona', 'Końcówka meczu', 'Rzut za 3'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '✨ CELNY RZUT ZA 3: POZYCJA 2 (SG) • +3 PKT',
+      outcomeText: 'Celny rzut za 3: zawodnik 2 (rzucający obrońca) • +3 pkt',
       coachingKeys: [
-        'Zasłaniający 4 (PF) i 5 (C) muszą zewrzeć szyk dokładnie po przebiegnięciu 2 (SG)',
-        'Podanie od 1 (PG) musi być posłane natychmiast na klatkę piersiową 2 (SG)',
-        'Strzelec 2 (SG) bez obrońcy oddaje czysty rzut za 3 punkty'
+        '4 (silny skrzydłowy) i 5 (środkowy) zamykają przejście dokładnie wtedy, gdy przebiegnie 2 (rzucający obrońca)',
+        'Podanie od 1 (rozgrywający) idzie od razu, prosto na klatkę piersiową 2',
+        '2 bez obrońcy oddaje czysty rzut za 3'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.5,
-          title: 'Faza 1: Ustawienie Po Przerwie na Żądanie',
-          description: '1 (PG) z piłką na lewym skrzydle. Strzelec 2 (SG) przyczajony pod koszem, wysocy 4 (PF) i 5 (C) rozstawieni na szczycie (otwarta winda).',
-          coachingCues: ['Pełna koncentracja', 'Wysocy gotowi do zamknięcia windy']
+          title: 'Faza 1: Ustawienie po wziętym czasie',
+          description: '1 (rozgrywający) z piłką na lewym skrzydle. 2 (rzucający obrońca) czeka pod koszem, a 4 (silny skrzydłowy) i 5 (środkowy) stoją na szczycie z przerwą między sobą („otwarte drzwi”).',
+          coachingCues: ['Pełne skupienie', 'Wysocy gotowi zamknąć przejście']
         },
         {
           startTime: 1.5,
           endTime: 4.5,
-          title: 'Faza 2: Sprint 2 (SG) & Zatrzaśnięcie Drzwi Windy (T-Bar)',
-          description: '2 (SG) sprintuje przez środek. W momencie minięcia 4 (PF) i 5 (C) zatrzaskują drzwi windy. Goniący D2 uderza w podwójną ścianę!',
-          coachingCues: ['Podwójny T-Bar', 'Obrońca D2 całkowicie odcięty']
+          title: 'Faza 2: Sprint 2 i zamknięcie „drzwi windy”',
+          description: '2 (rzucający obrońca) sprintuje środkiem. Gdy tylko przebiegnie, 4 i 5 stają ramię w ramię i zamykają przejście. Goniący D2 wpada na podwójną zasłonę.',
+          coachingCues: ['Podwójna zasłona', 'D2 całkowicie odcięty']
         },
         {
           startTime: 4.5,
           endTime: 6.5,
-          title: 'Faza 3: Podanie na Szczyt do 2 (SG) w Tempo',
-          description: '1 (PG) posyła bezpośrednie podanie na klatkę piersiową 2 (SG) wybiegającego na czystą pozycję na szczycie.',
-          coachingCues: ['Silne podanie', 'Złożenie się do rzutu']
+          title: 'Faza 3: Podanie na szczyt łuku do 2',
+          description: '1 (rozgrywający) podaje prosto na klatkę piersiową 2 (rzucający obrońca), który wybiega na wolne miejsce na szczycie łuku.',
+          coachingCues: ['Mocne podanie', 'Ustaw się do rzutu']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Decydujący Rzut za 3 Punkty przez 2 (SG) (+3 PKT)',
-          description: '2 (SG) bez presji oddaje rzut za 3 punkty. Piłka wpada czysto do kosza (+3 PKT).',
-          coachingCues: ['Czysty rzut', 'Celebracja i powrót do obrony']
+          title: 'Faza 4: Rzut za 3 przez 2 (+3 pkt)',
+          description: '2 (rzucający obrońca) bez presji rzuca za 3. Piłka czysto wpada do kosza (+3 pkt).',
+          coachingCues: ['Czysty rzut', 'Szybki powrót do obrony']
         }
       ],
       players: [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -836,7 +841,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -851,7 +856,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -862,7 +867,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -875,7 +880,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -958,51 +963,52 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 6. OBRONA KAŻDY SWEGO 1VS1 (MAN-TO-MAN: HELP & RECOVER) (OBRONA)
+  // 6. OBRONA KAŻDY SWEGO – POMOC I POWRÓT (OBRONA)
   // =========================================================================
   {
-    name: 'Obrona Każdy Swego 1vs1 (Help & Recover)',
+    name: 'Obrona każdy swego – pomoc i powrót (Help and Recover)',
+    legacyName: 'Obrona Każdy Swego 1vs1 (Help & Recover)',
     category: 'defense',
-    targetDefense: 'Atak pozycyjny (Pick & Roll / Motion)',
-    description: 'Agresywna obrona indywidualna 1vs1 z zasadami Help & Recover. Presja na piłce (On-Ball), odcięcie linii podań (Deny), asekuracja ze słabej strony (Nail Help) oraz dynamiczny doskok i zbiórka tablicy.',
-    tags: ['Obrona 1vs1', 'Man-to-Man', 'Help & Recover', 'Nail Help', 'Zbiórka Defensywna'],
+    targetDefense: 'Atak pozycyjny (zasłony i ruch bez piłki)',
+    description: 'Agresywna obrona każdy swego oparta na zasadzie „pomoc i powrót”. Naciskamy zawodnika z piłką, zamykamy najbliższe podania, obrońca z drugiej strony pomaga na środku, a po podaniu szybko doskakujemy do rywala i zbieramy piłkę z tablicy.',
+    tags: ['Obrona każdy swego', 'Pomoc i powrót', 'Pomoc ze środka', 'Zbiórka w obronie'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ SKUTECZNA OBRONA 1vs1: WYMUSZONY BŁĄD 24s & ZBIÓRKA D5',
+      outcomeText: 'Skuteczna obrona: trudny rzut rywala i zbiórka D5',
       coachingKeys: [
-        'Obrońca na piłce (D1) w niskiej postawie wywiera presję i odcina środek',
-        'Obrońcy o 1 podanie (D2, D3) w pozycji Deny nie pozwalają na łatwe podanie',
-        'Obrońca ze słabej strony (D3) schodzi na szczyt trumny (Nail Help) blokując wjazd',
-        'Doskok Closeout z ręką w górze i natychmiastowe zablokowanie powrotu (Recover)'
+        'Obrońca zawodnika z piłką (D1) stoi nisko, naciska i nie puszcza go środkiem',
+        'Obrońcy zawodników o jedno podanie od piłki (D2, D3) trzymają rękę w linii podania',
+        'Obrońca z drugiej strony (D3) schodzi na środek linii rzutów wolnych i zamyka wjazd',
+        'Doskok do rywala z ręką w górze, a po pomocy szybki powrót do swojego zawodnika'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 2.0,
-          title: 'Faza 1: Presja On-Ball na Szczycie & Odcięcie Skrzydeł (Deny)',
-          description: 'O1 z piłką na szczycie. D1 wywiera agresywną presję on-ball. D2 i D3 w pozycji Deny odcinają linie podań.',
-          coachingCues: ['Niski środek ciężkości', 'Ręce w korytarzu podania']
+          title: 'Faza 1: Nacisk na zawodnika z piłką i zamknięcie podań na skrzydła',
+          description: 'O1 ma piłkę na szczycie łuku. D1 mocno naciska na kozłującego. D2 i D3 stoją w linii podania i nie pozwalają łatwo podać na skrzydła.',
+          coachingCues: ['Nisko na nogach', 'Ręka w linii podania']
         },
         {
           startTime: 2.0,
           endTime: 4.2,
-          title: 'Faza 2: Wjazd O1 w Środek & Zejście na Linię Pomocy (Nail Help D3)',
-          description: 'O1 próbuje wjazdu w prawo. D3 schodzi z lewego skrzydła na linię rzutów wolnych (Nail Help), blokując korytarz. O1 odgrywa na skrzydło do O2.',
-          coachingCues: ['Nail Help zatrzymuje kozłującego', 'Komunikacja głosowa obrony']
+          title: 'Faza 2: Wjazd O1 i pomoc D3 ze środka',
+          description: 'O1 próbuje wjechać w prawo. D3 schodzi z lewego skrzydła na środek linii rzutów wolnych i zamyka drogę. O1 odgrywa na skrzydło do O2.',
+          coachingCues: ['Pomoc ze środka zatrzymuje kozłującego', 'Mów do partnerów']
         },
         {
           startTime: 4.2,
           endTime: 6.5,
-          title: 'Faza 3: Dynamiczny Closeout D2, Przerzut na O3 & Recover D3',
-          description: 'D2 doskakuje do O2. O2 posyła skip pass przez całe boisko do O3. D3 błyskawicznie wraca (Recover) i ląduje w idealnym closeoucie przed O3!',
-          coachingCues: ['Drobne kroki w closeoucie', 'Brak faulu przy wyskoku']
+          title: 'Faza 3: Doskok D2, przerzut piłki do O3 i powrót D3',
+          description: 'D2 doskakuje do O2. O2 podaje przez całe boisko do O3. D3 błyskawicznie wraca i doskakuje do O3 dokładnie na czas.',
+          coachingCues: ['Drobne kroki przy doskoku', 'Bez faulu przy wyskoku']
         },
         {
           startTime: 6.5,
           endTime: 8.5,
-          title: 'Faza 4: Wymuszony Trudny Rzut pod Presją & Zbiórka D5',
-          description: 'O3 pod presją zegara 24s oddaje trudny rzut przez ręce D3. Piłka odbija się od obręczy, D5 twardo zastawia deskę i zbiera piłkę.',
-          coachingCues: ['Twarde zastawienie tyłem', 'Zbiórka oburącz w wyskoku']
+          title: 'Faza 4: Trudny rzut pod presją i zbiórka D5',
+          description: 'Kończy się czas na akcję (24 s), więc O3 musi rzucać przez ręce D3. Piłka odbija się od obręczy, D5 zastawia rywala plecami i zbiera piłkę.',
+          coachingCues: ['Zastaw rywala plecami', 'Zbiórka oburącz w wyskoku']
         }
       ],
       players: [
@@ -1010,7 +1016,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -1023,7 +1029,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -1036,7 +1042,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -1050,7 +1056,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -1062,7 +1068,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -1071,7 +1077,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
             { time: 8.5, x: 64, y: 16, heading: 0, action: 'cut' }
           ]
         },
-        // Obrońcy 1vs1 (Man-to-Man)
+        // Obrońcy (każdy swego)
         {
           id: 'D1',
           number: 1,
@@ -1157,88 +1163,89 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 7. OBRONA STREFOWA 2-3 (PRZESUNIĘCIA & ZASTAWIENIE ROGÓW) (OBRONA)
+  // 7. STREFA 2-3 – PRZESUNIĘCIA I ZAMYKANIE ROGÓW (OBRONA)
   // =========================================================================
   {
-    name: 'Obrona Strefowa 2-3 (Przesunięcia & Zastawienie Rogów)',
+    name: 'Strefa 2-3 – przesunięcia i zamykanie rogów',
+    legacyName: 'Obrona Strefowa 2-3 (Przesunięcia & Zastawienie Rogów)',
     category: 'defense',
-    targetDefense: 'Zespoły rzucające z dystansu i wjazdy w pomalowane',
-    description: 'Klasyczna strefa 2-3 z wyznaczonymi 5 wyrazistymi strefami odpowiedzialności. Obrońcy przesuwają się synchronicznie w rytm ruchu piłki po całym obwodzie (Lewe Skrzydło -> Szczyt -> Prawe Skrzydło -> Prawy Róg), zagęszczając stronę silną i odcinając podania pod kosz.',
-    tags: ['Strefa 2-3', 'Zone Defense', 'Przesunięcia strefowe', 'Paint Protection', 'Siatka Stref'],
+    targetDefense: 'Drużyny rzucające z dystansu i wjeżdżające pod kosz',
+    description: 'Klasyczna obrona strefowa 2-3 z pięcioma wyraźnie zaznaczonymi strefami odpowiedzialności. Obrońcy przesuwają się razem za piłką wokół łuku (lewe skrzydło → szczyt łuku → prawe skrzydło → prawy róg), zagęszczają stronę z piłką i odcinają podania pod kosz.',
+    tags: ['Strefa 2-3', 'Obrona strefowa', 'Przesunięcia w strefie', 'Ochrona kosza', 'Strefy odpowiedzialności'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ STREFA 2-3: SYNCHRONICZNE PRZESUNIĘCIE & PRZECHWYT D5',
+      outcomeText: 'Strefa 2-3: zgrane przesunięcie i przechwyt D5',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
-          label: 'D1: Szczyt Lewy',
+          label: 'D1: lewy szczyt',
           color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
-          label: 'D2: Szczyt Prawy',
+          label: 'D2: prawy szczyt',
           color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
-          label: 'D3: Lewy Róg & Skrzydło',
+          label: 'D3: lewy róg i skrzydło',
           color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
         },
         {
           id: 'Z_D4',
           playerId: 'D4',
-          label: 'D4: Prawy Róg & Skrzydło',
+          label: 'D4: prawy róg i skrzydło',
           color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
         },
         {
           id: 'Z_D5',
           playerId: 'D5',
-          label: 'D5: Pomalowane & Deska',
+          label: 'D5: pod koszem i tablica',
           color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
         }
       ],
       coachingKeys: [
-        'Piłka krąży po obwodzie (L-Skrzydło -> Szczyt -> P-Skrzydło -> Róg), cała strefa wykonuje zgrany slide',
-        'Podanie na prawe skrzydło: D2 doskakuje do piłki, D1 schodzi na Nail, D4 podchodzi pod linię rzutu',
-        'Podanie w róg: D4 natychmiast zamyka róg (Corner Contest), D5 asekuruje linię końcową',
-        'Center D5 w centrum trumny patroluje podania inside i przecina piłkę w powietrzu'
+        'Piłka krąży wokół łuku (lewe skrzydło → szczyt → prawe skrzydło → róg), a cała strefa przesuwa się razem z nią',
+        'Podanie na prawe skrzydło: D2 doskakuje do piłki, D1 schodzi na środek linii rzutów wolnych, D4 podchodzi wyżej',
+        'Podanie do rogu: D4 od razu doskakuje do rogu, D5 pilnuje linii końcowej',
+        'Środkowy D5 w polu trzech sekund pilnuje podań pod kosz i przecina je w powietrzu'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.8,
-          title: 'Faza 1: Piłka na Lewym Skrzydle (O3) & Zagęszczenie Lewej Strony',
-          description: 'O3 trzyma piłkę na lewym skrzydle. D1 doskakuje na lewy szczyt, D3 zabezpiecza skrzydło, D2 zbiega na Nail, D5 kontroluje lewy blok, D4 zabezpiecza weak-side.',
-          coachingCues: ['Zagęszczenie lewej flanki', 'D2 na Nail zamyka środek']
+          title: 'Faza 1: Piłka na lewym skrzydle (O3) – zagęszczenie lewej strony',
+          description: 'O3 ma piłkę na lewym skrzydle. D1 doskakuje na lewą stronę szczytu, D3 pilnuje skrzydła, D2 schodzi na środek linii rzutów wolnych, D5 pilnuje lewej strony pod koszem, D4 zabezpiecza drugą stronę.',
+          coachingCues: ['Zagęść lewą stronę', 'D2 na środku zamyka drogę']
         },
         {
           startTime: 1.8,
           endTime: 4.2,
-          title: 'Faza 2: Swing Pass przez Szczyt (O1) na Prawe Skrzydło (O2) & Przesunięcie',
-          description: 'O3 odgrywa do O1, a O1 błyskawicznie przerzuca na prawe skrzydło do O2. Cała formacja 2-3 synchronicznie przesuwa się w prawo (D2 closeout, D1 na Nail, D4 podbija w skrzydło, D5 na prawy blok, D3 pod kosz).',
-          coachingCues: ['Błyskawiczny slide całej piątki', 'Brak wolnej przestrzeni na rzut']
+          title: 'Faza 2: Przerzut piłki przez szczyt (O1) na prawe skrzydło (O2)',
+          description: 'O3 odgrywa do O1, a O1 szybko przerzuca piłkę na prawe skrzydło do O2. Cała strefa 2-3 przesuwa się razem w prawo: D2 doskakuje do O2, D1 schodzi na środek, D4 podchodzi na skrzydło, D5 przechodzi na prawą stronę pod koszem, D3 pod kosz.',
+          coachingCues: ['Cała piątka przesuwa się razem', 'Nie zostawiaj miejsca na rzut']
         },
         {
           startTime: 4.2,
           endTime: 6.2,
-          title: 'Faza 3: Podanie w Prawy Róg do O4 & Zamknięcie Linii Końcowej',
-          description: 'O2 podaje do O4 w narożnik. D4 sprintuje i zamyka róg, D5 odcina linię końcową, D2 cofa się do łokcia trumny, D1 i D3 chronią środek.',
-          coachingCues: ['Podwójne ryglowanie rogu', 'Ręce w górze bez faulu']
+          title: 'Faza 3: Podanie do prawego rogu (O4) i zamknięcie linii końcowej',
+          description: 'O2 podaje do O4 w róg. D4 sprintuje i zamyka róg, D5 odcina drogę wzdłuż linii końcowej, D2 cofa się na róg pola trzech sekund, D1 i D3 pilnują środka.',
+          coachingCues: ['Dwóch obrońców zamyka róg', 'Ręce w górze, bez faulu']
         },
         {
           startTime: 6.2,
           endTime: 8.5,
-          title: 'Faza 4: Wymuszone Podanie Inside & Przechwyt Piłki przez D5',
-          description: 'O4 odcięty w rogu próbuje desperackiego podania w pomalowane. D5 wyczuwa intencję, przejmuje piłkę w wyskoku (Steal) i uruchamia szybki atak!',
-          coachingCues: ['Dominacja w trumnie', 'Błyskawiczne wyprowadzenie kontry']
+          title: 'Faza 4: Wymuszone podanie pod kosz i przechwyt D5',
+          description: 'Odcięty w rogu O4 próbuje ryzykownego podania pod kosz. D5 to wyczuwa, przechwytuje piłkę w wyskoku i rusza z szybkim atakiem.',
+          coachingCues: ['Pilnuj pola trzech sekund', 'Szybko wyprowadź kontratak']
         }
       ],
       players: [
@@ -1246,7 +1253,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -1259,7 +1266,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -1272,7 +1279,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -1284,7 +1291,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -1297,7 +1304,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -1393,88 +1400,89 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 8. OBRONA STREFOWA 3-2 (ODCIĘCIE OBWODU & ROTACJE PODKOSZOWE) (OBRONA)
+  // 8. STREFA 3-2 – MUR NA OBWODZIE I ROTACJE (OBRONA)
   // =========================================================================
   {
-    name: 'Obrona Strefowa 3-2 (Odcięcie Obwodu & Rotacje)',
+    name: 'Strefa 3-2 – mur na obwodzie i rotacje pod koszem',
+    legacyName: 'Obrona Strefowa 3-2 (Odcięcie Obwodu & Rotacje)',
     category: 'defense',
-    targetDefense: 'Zespoły bazujące na rzutach za 3 (High Spacing / 5-Out)',
-    description: 'Agresywna strefa 3-2 nastawiona na całkowite zablokowanie rzutów za 3 punkty. Trzej górni obrońcy (D1, D2, D3) tworzą wyrazisty mur na łuku 3PT, przesuwając się za piłką po całym obwodzie, a dwaj wysocy (D4, D5) rotują pod koszem i zabezpieczają zbiórkę.',
-    tags: ['Strefa 3-2', 'Zone Defense', 'Odcięcie 3PT', 'Perimeter Lock', 'Blok Rzutu'],
+    targetDefense: 'Drużyny, które dużo rzucają za 3',
+    description: 'Agresywna strefa 3-2, która ma przede wszystkim zablokować rzuty za 3. Trzech górnych obrońców (D1, D2, D3) tworzy mur na łuku i przesuwa się za piłką, a dwóch wysokich (D4, D5) rotuje pod koszem i pilnuje zbiórki.',
+    tags: ['Strefa 3-2', 'Obrona strefowa', 'Zamknięcie rzutów za 3', 'Mur na obwodzie', 'Blok'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ STREFA 3-2: SZCZELNY MUR NA ŁUKU & BLOK RZUTU ZA 3 (D2)',
+      outcomeText: 'Strefa 3-2: szczelny mur na łuku i blok rzutu za 3 (D2)',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
-          label: 'D1: Szczyt 3PT',
+          label: 'D1: szczyt łuku',
           color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
-          label: 'D2: Prawe Skrzydło 3PT',
+          label: 'D2: prawe skrzydło',
           color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
-          label: 'D3: Lewe Skrzydło 3PT',
+          label: 'D3: lewe skrzydło',
           color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
         },
         {
           id: 'D4',
           playerId: 'D4',
-          label: 'D4: Prawy Dół & Róg',
+          label: 'D4: prawy dół i róg',
           color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
         },
         {
           id: 'D5',
           playerId: 'D5',
-          label: 'D5: Lewy Dół & Róg',
+          label: 'D5: lewy dół i róg',
           color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
         }
       ],
       coachingKeys: [
-        'Trzej górni gracze (D1, D2, D3) ściśle kryją obwód – brak miejsca na rzut za 3',
-        'Piłka krąży z lewego skrzydła na szczyt i prawe skrzydło – trójka obwodowa przesuwa się jak jedna ściana',
-        'Przy próbie wymuszonego rzutu przez ręce: D2 wykonuje dynamiczny wyskok z blokiem',
-        'D4 i D5 kontrolują strefę podkoszową i zabezpieczają zbiórkę'
+        'Trzech górnych obrońców (D1, D2, D3) ciasno pilnuje łuku – nie ma miejsca na rzut za 3',
+        'Piłka idzie z lewego skrzydła przez szczyt na prawe skrzydło – górna trójka przesuwa się jak jedna ściana',
+        'Gdy rywal rzuca przez ręce, D2 wyskakuje pionowo i blokuje',
+        'D4 i D5 pilnują strefy pod koszem i zbiórki'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 1.8,
-          title: 'Faza 1: Piłka na Lewym Skrzydle (O3) & Doskok D3',
-          description: 'O3 ma piłkę na lewym skrzydle. D3 natychmiast doskakuje na obwód, D1 asekuruje lewy łokieć, D2 schodzi na środek, D5 zabezpiecza dół.',
-          coachingCues: ['Wysokie ręce na obwodzie', 'Ciasny rozstaw trójki obwodowej']
+          title: 'Faza 1: Piłka na lewym skrzydle (O3) i doskok D3',
+          description: 'O3 ma piłkę na lewym skrzydle. D3 od razu doskakuje, D1 pilnuje lewego rogu pola trzech sekund, D2 schodzi na środek, D5 pilnuje strefy pod koszem.',
+          coachingCues: ['Wysoko ręce na obwodzie', 'Górna trójka blisko siebie']
         },
         {
           startTime: 1.8,
           endTime: 4.0,
-          title: 'Faza 2: Podanie na Szczyt (O1) & Mur Trójki Obwodowej',
-          description: 'O3 odgrywa do O1 na szczyt. D1 natychmiast wychodzi na piłkę, D2 i D3 stają szeroko na skrzydłach, blokując wszelkie próby rzutu za 3.',
-          coachingCues: ['Brak miejsca na rzut', 'Szybka rotacja górnej trójki']
+          title: 'Faza 2: Podanie na szczyt (O1) i mur górnej trójki',
+          description: 'O3 odgrywa do O1 na szczyt łuku. D1 od razu wychodzi do piłki, D2 i D3 stają szeroko na skrzydłach i zamykają rzuty za 3.',
+          coachingCues: ['Nie zostawiaj miejsca na rzut', 'Szybkie przesunięcie górnej trójki']
         },
         {
           startTime: 4.0,
           endTime: 6.2,
-          title: 'Faza 3: Przerzut na Prawe Skrzydło do O2 & Wyskoczenie D2',
-          description: 'O1 posyła podanie do O2 na prawe skrzydło. D2 sprintuje w closeoucie, D1 przesuwa się na prawy łokieć, D4 pilnuje prawego dołu.',
-          coachingCues: ['Sprint w obronie', 'Wyskok pionowy bez kontaktu ciał']
+          title: 'Faza 3: Przerzut piłki na prawe skrzydło (O2) i doskok D2',
+          description: 'O1 podaje do O2 na prawe skrzydło. D2 sprintem doskakuje, D1 przesuwa się na prawy róg pola trzech sekund, D4 pilnuje prawej strony pod koszem.',
+          coachingCues: ['Sprint w obronie', 'Wyskok pionowy, bez kontaktu']
         },
         {
           startTime: 6.2,
           endTime: 8.5,
-          title: 'Faza 4: Efektowny Blok Rzutu za 3 przez D2 & Zabezpieczenie D4',
-          description: 'O2 decyduje się na rzut z dystansu, lecz D2 blokuje piłkę w powietrzu! Odbitą piłkę pod koszem zbiera D4.',
-          coachingCues: ['Czysty blok czubkami palców', 'Zabezpieczenie bezpańskiej piłki']
+          title: 'Faza 4: Blok rzutu za 3 przez D2 i zbiórka D4',
+          description: 'O2 rzuca z dystansu, ale D2 blokuje piłkę w powietrzu. Odbitą piłkę pod koszem zbiera D4.',
+          coachingCues: ['Czysty blok czubkami palców', 'Zabierz bezpańską piłkę']
         }
       ],
       players: [
@@ -1482,7 +1490,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -1495,7 +1503,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -1508,7 +1516,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -1520,7 +1528,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -1531,7 +1539,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -1624,88 +1632,89 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 9. NOWOŚĆ EDUKACYJNA: TRENING STREFY 2-3: ZASADY PRZESUNIĘĆ (SWING DRILL)
+  // 9. ĆWICZENIE STREFY 2-3: ZASADY PRZESUNIĘĆ
   // =========================================================================
   {
-    name: 'Trening Strefy 2-3: Zasady Przesunięć (Swing Drill)',
+    name: 'Ćwiczenie strefy 2-3: zasady przesunięć',
+    legacyName: 'Trening Strefy 2-3: Zasady Przesunięć (Swing Drill)',
     category: 'defense',
-    targetDefense: 'Edukacyjny Drill dla Zespołu i Nowicjuszy',
-    description: 'Instruktażowy trening obrony strefowej 2-3. Pokazuje krok po kroku ruch każdego z 5 obrońców (D1-D5) przy krążeniu piłki wokół całego obwodu (Lewe Skrzydło -> Szczyt -> Prawe Skrzydło -> Prawy Róg -> Środek). Idealny do nauki zasad Ball-You-Man i Nail Help.',
-    tags: ['Trening Strefy', 'Strefa 2-3', 'Drill Edukacyjny', 'Przesunięcia', 'Podręcznik'],
+    targetDefense: 'Ćwiczenie dla całej drużyny i początkujących',
+    description: 'Ćwiczenie obrony strefowej 2-3. Krok po kroku pokazuje ruch każdego z pięciu obrońców (D1–D5), gdy piłka krąży wokół łuku (lewe skrzydło → szczyt łuku → prawe skrzydło → prawy róg → środek). Dobre do nauki zasady „piłka – ja – mój zawodnik” i pomocy ze środka.',
+    tags: ['Ćwiczenie strefy', 'Strefa 2-3', 'Ćwiczenie', 'Przesunięcia', 'Poradnik'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ TRENING STREFY 2-3: ZAKOŃCZONY SUKCESEM • ZASADY OPANOWANE',
+      outcomeText: 'Ćwiczenie strefy 2-3 zakończone • zasady opanowane',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
-          label: 'D1: Szczyt Lewy',
+          label: 'D1: lewy szczyt',
           color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 6, y: 50 }, { x: 50, y: 50 }, { x: 50, y: 92 }, { x: 6, y: 92 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
-          label: 'D2: Szczyt Prawy',
+          label: 'D2: prawy szczyt',
           color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 50, y: 50 }, { x: 94, y: 50 }, { x: 94, y: 92 }, { x: 50, y: 92 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
-          label: 'D3: Lewy Róg & Skrzydło',
+          label: 'D3: lewy róg i skrzydło',
           color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 36, y: 4 }, { x: 36, y: 50 }, { x: 4, y: 50 }]
         },
         {
           id: 'Z_D4',
           playerId: 'D4',
-          label: 'D4: Prawy Róg & Skrzydło',
+          label: 'D4: prawy róg i skrzydło',
           color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 64, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 50 }, { x: 64, y: 50 }]
         },
         {
           id: 'Z_D5',
           playerId: 'D5',
-          label: 'D5: Pomalowane & Deska',
+          label: 'D5: pod koszem i tablica',
           color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 36, y: 4 }, { x: 64, y: 4 }, { x: 64, y: 50 }, { x: 36, y: 50 }]
         }
       ],
       coachingKeys: [
-        'Zasada 1: Piłka dyktuje przesunięcie całej formacji (Ball-You-Man)',
-        'Zasada 2: Gdy D1 jest na piłce, D2 zbiega na Nail (środek linii rzutów wolnych)',
-        'Zasada 3: Dolna linia (D3, D4) podbija w skrzydło lub doskakuje do rogu bez skakania w przód',
-        'Zasada 4: Center D5 odcina linię końcową i zamyka wjazdy'
+        'Zasada 1: Piłka wyznacza ustawienie całej strefy – widzisz jednocześnie piłkę i swojego zawodnika',
+        'Zasada 2: Gdy D1 jest przy piłce, D2 schodzi na środek linii rzutów wolnych',
+        'Zasada 3: Dolna linia (D3, D4) podchodzi na skrzydło albo doskakuje do rogu, bez wyskakiwania do przodu',
+        'Zasada 4: Środkowy D5 odcina drogę wzdłuż linii końcowej i zamyka wjazdy'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 2.0,
-          title: 'Krok 1: Piłka na Lewym Skrzydle (Zagęszczenie Lewej Strony)',
-          description: 'O3 ma piłkę. D1 doskakuje na lewy szczyt, D3 zabezpiecza skrzydło, D2 schodzi na Nail (środek wolnych), D5 kontroluje lewy blok, D4 w weak-side drop.',
-          coachingCues: ['D2 na Nail zamyka środek', 'Zasada Ball-You-Man']
+          title: 'Krok 1: Piłka na lewym skrzydle – zagęszczenie lewej strony',
+          description: 'O3 ma piłkę. D1 doskakuje na lewą stronę szczytu, D3 pilnuje skrzydła, D2 schodzi na środek linii rzutów wolnych, D5 pilnuje lewej strony pod koszem, D4 cofa się po drugiej stronie.',
+          coachingCues: ['D2 na środku zamyka drogę', 'Widzisz piłkę i swojego zawodnika']
         },
         {
           startTime: 2.0,
           endTime: 4.2,
-          title: 'Krok 2: Swing Pass na Szczyt (O1) i Prawe Skrzydło (O2)',
-          description: 'Piłka wędruje przez szczyt do O2. Cała piątka wykonuje zgrany slide w prawo! D2 doskakuje, D1 na Nail, D4 podchodzi wyżej, D5 na prawy blok, D3 pod kosz.',
-          coachingCues: ['Błyskawiczny slide całej formacji', 'Brak dziury w środku']
+          title: 'Krok 2: Przerzut piłki przez szczyt (O1) na prawe skrzydło (O2)',
+          description: 'Piłka idzie przez szczyt łuku do O2. Cała piątka przesuwa się razem w prawo: D2 doskakuje, D1 schodzi na środek, D4 podchodzi wyżej, D5 przechodzi na prawą stronę pod koszem, D3 pod kosz.',
+          coachingCues: ['Cała strefa przesuwa się razem', 'Bez dziury w środku']
         },
         {
           startTime: 4.2,
           endTime: 6.2,
-          title: 'Krok 3: Podanie w Prawy Róg do O4 & Zamknięcie Rogu',
-          description: 'O4 w rogu: D4 zamyka róg z rękami w górze, D5 odcina linię końcową, D2 opada na prawy łokieć trumny, D1 i D3 chronią pomalowane.',
-          coachingCues: ['Podwójne ryglowanie rogu', 'Ręce w górze bez faulu']
+          title: 'Krok 3: Podanie do prawego rogu (O4) i zamknięcie rogu',
+          description: 'O4 w rogu: D4 zamyka róg z rękami w górze, D5 odcina drogę wzdłuż linii końcowej, D2 cofa się na prawy róg pola trzech sekund, D1 i D3 pilnują strefy pod koszem.',
+          coachingCues: ['Dwóch obrońców zamyka róg', 'Ręce w górze, bez faulu']
         },
         {
           startTime: 6.2,
           endTime: 8.5,
-          title: 'Krok 4: Wymuszone Złe Podanie & Zbiórka D5',
-          description: 'Wszystkie opcje odcięte! O4 próbuje desperackiego podania, D5 przejmuje piłkę i zabezpiecza posiadanie.',
-          coachingCues: ['Czyste przejęcie', 'Zbiórka defensywna']
+          title: 'Krok 4: Wymuszone złe podanie i zbiórka D5',
+          description: 'Wszystkie podania odcięte. O4 próbuje ryzykownego podania, D5 przechwytuje piłkę i drużyna odzyskuje posiadanie.',
+          coachingCues: ['Czysty przechwyt', 'Zbiórka w obronie']
         }
       ],
       players: [
@@ -1713,7 +1722,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -1726,7 +1735,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -1739,7 +1748,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -1751,7 +1760,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -1764,7 +1773,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [
@@ -1860,88 +1869,89 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
   },
 
   // =========================================================================
-  // 10. NOWOŚĆ EDUKACYJNA: TRENING STREFY 3-2: MUR OBWODOWY (PERIMETER WALL DRILL)
+  // 10. ĆWICZENIE STREFY 3-2: MUR NA OBWODZIE
   // =========================================================================
   {
-    name: 'Trening Strefy 3-2: Mur Obwodowy (Perimeter Wall Drill)',
+    name: 'Ćwiczenie strefy 3-2: mur na obwodzie',
+    legacyName: 'Trening Strefy 3-2: Mur Obwodowy (Perimeter Wall Drill)',
     category: 'defense',
-    targetDefense: 'Edukacyjny Drill dla Zespołu i Nowicjuszy',
-    description: 'Instruktażowy trening obrony strefowej 3-2. Demonstruje zasadę nieprzeniknionego muru obwodowego (D1-D2-D3) oraz rotacje dolnych graczy (D4-D5) przy przerzutach piłki na obwodzie i podaniach w rogi boiska.',
-    tags: ['Trening Strefy', 'Strefa 3-2', 'Drill Edukacyjny', 'Mur Obwodowy', 'Podręcznik'],
+    targetDefense: 'Ćwiczenie dla całej drużyny i początkujących',
+    description: 'Ćwiczenie obrony strefowej 3-2. Pokazuje, jak górna trójka (D1, D2, D3) tworzy szczelny mur na obwodzie i jak dolni obrońcy (D4, D5) rotują, gdy piłka krąży wokół łuku i trafia do rogów boiska.',
+    tags: ['Ćwiczenie strefy', 'Strefa 3-2', 'Ćwiczenie', 'Mur na obwodzie', 'Poradnik'],
     diagramData: {
       duration: 8.5,
-      outcomeText: '🛡️ TRENING STREFY 3-2: ZAKOŃCZONY SUKCESEM • OBWÓD ZABLOKOWANY',
+      outcomeText: 'Ćwiczenie strefy 3-2 zakończone • obwód zamknięty',
       zoneAreas: [
         {
           id: 'Z_D1',
           playerId: 'D1',
-          label: 'D1: Szczyt 3PT',
+          label: 'D1: szczyt łuku',
           color: 'rgba(239, 23, 52, 0.14)',
           polygon: [{ x: 30, y: 64 }, { x: 70, y: 64 }, { x: 70, y: 94 }, { x: 30, y: 94 }]
         },
         {
           id: 'Z_D2',
           playerId: 'D2',
-          label: 'D2: Prawe Skrzydło 3PT',
+          label: 'D2: prawe skrzydło',
           color: 'rgba(216, 212, 204, 0.10)',
           polygon: [{ x: 64, y: 38 }, { x: 96, y: 38 }, { x: 96, y: 80 }, { x: 64, y: 80 }]
         },
         {
           id: 'Z_D3',
           playerId: 'D3',
-          label: 'D3: Lewe Skrzydło 3PT',
+          label: 'D3: lewe skrzydło',
           color: 'rgba(61, 186, 111, 0.12)',
           polygon: [{ x: 4, y: 38 }, { x: 36, y: 38 }, { x: 36, y: 80 }, { x: 4, y: 80 }]
         },
         {
           id: 'D4',
           playerId: 'D4',
-          label: 'D4: Prawy Dół & Róg',
+          label: 'D4: prawy dół i róg',
           color: 'rgba(255, 90, 110, 0.12)',
           polygon: [{ x: 50, y: 4 }, { x: 96, y: 4 }, { x: 96, y: 38 }, { x: 50, y: 38 }]
         },
         {
           id: 'D5',
           playerId: 'D5',
-          label: 'D5: Lewy Dół & Róg',
+          label: 'D5: lewy dół i róg',
           color: 'rgba(156, 151, 143, 0.12)',
           polygon: [{ x: 4, y: 4 }, { x: 50, y: 4 }, { x: 50, y: 38 }, { x: 4, y: 38 }]
         }
       ],
       coachingKeys: [
-        'Zasada 1: Trójka obwodowa (D1, D2, D3) nie pozwala na czyste zgięcie nóg do rzutu za 3',
-        'Zasada 2: Przy podaniu na skrzydło, D2 doskakuje, a D1 schodzi na łokieć',
-        'Zasada 3: Dolni wysocy (D4, D5) rotują pod koszem i przejmują narożniki boiska',
-        'Zasada 4: Wszyscy gracze zbiegają do walki o zbiórkę'
+        'Zasada 1: Górna trójka (D1, D2, D3) nie daje rywalowi spokojnie złożyć się do rzutu za 3',
+        'Zasada 2: Po podaniu na skrzydło D2 doskakuje, a D1 schodzi na róg pola trzech sekund',
+        'Zasada 3: Wysocy z dołu (D4, D5) rotują pod koszem i przejmują rogi boiska',
+        'Zasada 4: Wszyscy wracają pod kosz walczyć o zbiórkę'
       ],
       phaseDirectives: [
         {
           startTime: 0.0,
           endTime: 2.0,
-          title: 'Krok 1: Wyjściowy Mur na Łuku 3PT (Piłka u O3 na Lewym Skrzydle)',
-          description: 'O3 z piłką: D3 doskakuje na obwód z ręką w górze, D1 asekuruje lewy łokieć, D2 kontroluje środek, D5 pilnuje dołu.',
-          coachingCues: ['Wysokie ręce na obwodzie', 'Ciasny rozstaw trójki']
+          title: 'Krok 1: Mur na łuku – piłka u O3 na lewym skrzydle',
+          description: 'O3 z piłką: D3 doskakuje z ręką w górze, D1 pilnuje lewego rogu pola trzech sekund, D2 pilnuje środka, D5 pilnuje strefy pod koszem.',
+          coachingCues: ['Wysoko ręce na obwodzie', 'Górna trójka blisko siebie']
         },
         {
           startTime: 2.0,
           endTime: 4.2,
-          title: 'Krok 2: Przerzut przez Szczyt (O1) na Prawe Skrzydło (O2)',
-          description: 'O3 odgrywa do O1, a O1 natychmiast posyła piłkę do O2. D1 doskakuje na szczycie, a po podaniu D2 sprintuje w closeoucie do O2!',
-          coachingCues: ['Szybka rotacja górnej trójki', 'Brak miejsca na rzut']
+          title: 'Krok 2: Przerzut piłki przez szczyt (O1) na prawe skrzydło (O2)',
+          description: 'O3 odgrywa do O1, a O1 od razu podaje do O2. D1 doskakuje na szczycie, a po podaniu D2 sprintem doskakuje do O2.',
+          coachingCues: ['Szybkie przesunięcie górnej trójki', 'Nie zostawiaj miejsca na rzut']
         },
         {
           startTime: 4.2,
           endTime: 6.2,
-          title: 'Krok 3: Wymuszona Próba Rzutu za 3 i Blok D2',
-          description: 'O2 próbuje rzutu przez ręce. D2 wyskakuje pionowo w górę i blokuje rzut czubkami palców!',
-          coachingCues: ['Wyskok pionowy bez faulu', 'Czysty blok']
+          title: 'Krok 3: Wymuszony rzut za 3 i blok D2',
+          description: 'O2 próbuje rzucać przez ręce. D2 wyskakuje pionowo i blokuje rzut czubkami palców.',
+          coachingCues: ['Wyskok pionowy, bez faulu', 'Czysty blok']
         },
         {
           startTime: 6.2,
           endTime: 8.5,
-          title: 'Krok 4: Zabezpieczenie Zbiórki przez D4 i D5',
-          description: 'Zablokowana piłka spada w trumnę — D4 i D5 odcinają atakujących i pewnie zbierają piłkę.',
-          coachingCues: ['Pewny chwyt oburącz', 'Zbiórka defensywna']
+          title: 'Krok 4: Zbiórka D4 i D5',
+          description: 'Zablokowana piłka spada w pole trzech sekund – D4 i D5 odcinają rywali od kosza i pewnie zbierają piłkę.',
+          coachingCues: ['Pewny chwyt oburącz', 'Zbiórka w obronie']
         }
       ],
       players: [
@@ -1949,7 +1959,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O1',
           number: 1,
-          name: '1 (PG)',
+          name: '1 (rozgrywający)',
           role: 'PG',
           isOffense: true,
           keyframes: [
@@ -1962,7 +1972,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O2',
           number: 2,
-          name: '2 (SG)',
+          name: '2 (rzucający obrońca)',
           role: 'SG',
           isOffense: true,
           keyframes: [
@@ -1975,7 +1985,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O3',
           number: 3,
-          name: '3 (SF)',
+          name: '3 (niski skrzydłowy)',
           role: 'SF',
           isOffense: true,
           keyframes: [
@@ -1987,7 +1997,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O4',
           number: 4,
-          name: '4 (PF)',
+          name: '4 (silny skrzydłowy)',
           role: 'PF',
           isOffense: true,
           keyframes: [
@@ -1998,7 +2008,7 @@ export const DEFAULT_PLAYBOOK_PRESETS = [
         {
           id: 'O5',
           number: 5,
-          name: '5 (C)',
+          name: '5 (środkowy)',
           role: 'C',
           isOffense: true,
           keyframes: [

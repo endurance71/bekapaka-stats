@@ -26,6 +26,8 @@ import MatchDayCard, { type MatchDay } from '../features/match/MatchDayCard';
 import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
 
 type HomeNextMatch = { id: string; date: string; venue: string | null; opponent: string; matchDay: MatchDay | null };
+/** „3/9 (33.3%)” z KALK → „3/9 (33,3%)”; bez prób („0/0”) → „–”. */
+const threesText = (v?: string | null) => (!v || /^0\/0\b/.test(v.trim()) ? '–' : v.replace(/(\d)\.(\d)/g, '$1,$2'));
 const sameName = (a?: string | null, b?: string | null) => Boolean(a && b && a.trim().toLowerCase() === b.trim().toLowerCase());
 
 interface KeyPlayerRow {
@@ -340,7 +342,7 @@ export default function ScoutingPage() {
                       }
                       stats={[
                         { label: 'Mecze', value: p.matches },
-                        { label: 'Za 3', value: p.threePointStats || '—' },
+                        { label: 'Za 3', value: threesText(p.threePointStats) },
                         { label: 'Pkt łącznie', value: p.totalPoints, emphasize: true }
                       ]}
                     />
@@ -354,8 +356,8 @@ export default function ScoutingPage() {
                         <th className="h-11 pl-3 text-left">Zawodnik</th>
                         <th className="h-11 text-center">Mecze</th>
                         <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">Pkt/m</th>
-                        <th className="h-11 text-center">3PT</th>
-                        <th className="h-11 text-center">PTS</th>
+                        <th className="h-11 text-center">Za 3</th>
+                        <th className="h-11 text-center">Pkt</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -370,7 +372,7 @@ export default function ScoutingPage() {
                           <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">{p.matches}</td>
                           <td className="h-11 text-center font-display text-[18px] leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(p.ppg)}</td>
                           <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">
-                            {p.threePointStats || '-'}
+                            {threesText(p.threePointStats)}
                           </td>
                           <td className="h-11 text-center font-semibold tabular-nums text-bkpk-text-secondary">{p.totalPoints}</td>
                         </tr>
@@ -410,11 +412,11 @@ export default function ScoutingPage() {
                             : 'border-bkpk-text-secondary text-bkpk-text-primary'
                         )}
                       >
-                        {m.result === 'W' ? 'Z' : 'P'}
+                        {m.result === 'W' ? 'W' : 'P'}
                       </div>
                       <div className="flex flex-col min-w-0">
                         <span className="label-caps text-[11px] text-bkpk-text-muted">
-                          Przeciwnik
+                          {m.result === 'W' ? 'Wygrana' : 'Porażka'}
                         </span>
                         <span className="font-semibold text-bkpk-text-primary truncate">
                           vs {m.opponent}
@@ -423,9 +425,9 @@ export default function ScoutingPage() {
                     </div>
                     <div className="flex flex-col items-end shrink-0">
                       <span className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
-                        {m.score}
+                        {String(m.score).replace('-', ':')}
                       </span>
-                      <span className="text-xs font-medium text-bkpk-text-muted mt-1 tabular-nums">{m.date}</span>
+                      <span className="text-xs font-medium text-bkpk-text-muted mt-1 tabular-nums">{m.date ? formatMatchDate(m.date) : ''}</span>
                     </div>
                   </div>
                 ))}

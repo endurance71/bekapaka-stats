@@ -16,6 +16,10 @@ import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonServic
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
 import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
 import { matchLogistics } from '../lib/matchDay.js';
+import { upgradePresetPlays } from '../lib/playbookUpgrade.js';
+
+// Raz na proces: zagrywki z presetów pod starymi nazwami → polska wersja
+let presetUpgrade = null;
 import { computeTeamSynergy, emptySynergy } from '../kalk/v2/synergy.js';
 
 export const tacticsRouter = express.Router();
@@ -31,6 +35,13 @@ tacticsRouter.get('/plays', async (req, res) => {
     const where = {};
     if (category) where.category = String(category);
     if (targetDefense) where.targetDefense = { contains: String(targetDefense), mode: 'insensitive' };
+
+    presetUpgrade ??= upgradePresetPlays(prisma, DEFAULT_PLAYBOOK_PRESETS).catch((e) => {
+      console.error('Play preset upgrade failed:', e.message);
+      presetUpgrade = null; // spróbuj przy następnym żądaniu
+      return 0;
+    });
+    await presetUpgrade;
 
     let plays = await prisma.play.findMany({
       where,

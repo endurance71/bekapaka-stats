@@ -1,6 +1,7 @@
 import { InfoIcon as Info } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
+import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 
 interface TeamStatsData {
     efg?: number;  // Effective Field Goal %
@@ -40,10 +41,10 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
     }
 
     const formatPercent = (value?: number) =>
-        value !== undefined && value !== null ? `${(value * 100).toFixed(1)}%` : '-';
+        value !== undefined && value !== null ? fmtPct(value * 100) : '–';
 
     const formatNumber = (value?: number, decimals = 1) =>
-        value !== undefined && value !== null ? value.toFixed(decimals) : '-';
+        value !== undefined && value !== null ? fmt1(value, decimals) : '–';
 
     const StatItem = ({ label, value, desc, valueClass }: { label: string, value: string | number, desc: string, valueClass?: string }) => (
         <div className="flex flex-col p-3 sm:p-4 bg-bkpk-bg border border-bkpk-border-subtle hover:border-bkpk-border-strong transition-colors">

@@ -36,6 +36,24 @@ export function splitPlayerName(profile, fallbackFullName = '') {
 }
 
 /**
+ * Nazwa zawodnika do wyświetlenia. Stara strona KALK (sezon `sourceSite: 'legacy'`) podawała „Nazwisko Imię”,
+ * nowa — „Imię Nazwisko”; zamieniamy tylko dla starej i tylko przy dwóch słowach.
+ * @param {string} name
+ * @param {string|null|undefined} sourceSite
+ */
+export function displayPlayerName(name, sourceSite) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (sourceSite === 'legacy' && parts.length === 2) return `${parts[1]} ${parts[0]}`;
+  return parts.join(' ');
+}
+
+/** Nazwisko (do zdań typu „Kowalski i Nowak”), z tą samą regułą kolejności co `displayPlayerName`. */
+export function playerSurname(name, sourceSite) {
+  const parts = displayPlayerName(name, sourceSite).split(' ');
+  return parts.length > 1 ? parts.slice(1).join(' ') : parts[0] || '';
+}
+
+/**
  * Minuty z kolumny MIN (strona podaje minuty; kontrakt mógł podać sekundy).
  * @param {number|null} value
  * @param {number} games

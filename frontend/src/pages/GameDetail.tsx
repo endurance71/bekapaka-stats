@@ -1,5 +1,6 @@
 import { MatchPresentationEditor } from '../components/games/MatchPresentationEditor';
 import MatchDayCard from '../features/match/MatchDayCard';
+import { periodShortLabel } from '../components/games/pbpFormat';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
@@ -312,8 +313,8 @@ export default function GameDetail() {
               <div className="flex border border-bkpk-border-subtle divide-x divide-bkpk-border-subtle">
                 {game.quarters.map((q: any, i: number) => (
                   <div key={i} className="flex flex-col items-center gap-1 min-w-[64px] px-3 py-2 sm:px-4">
-                    <span className="label-caps text-[11px] text-bkpk-text-muted">Q{i + 1}</span>
-                    <span className="font-display text-lg sm:text-xl leading-none tabular-nums text-bkpk-text-primary">{q.home}-{q.away}</span>
+                    <span className="label-caps text-[11px] text-bkpk-text-muted">{periodShortLabel(i + 1)}</span>
+                    <span className="font-display text-lg sm:text-xl leading-none tabular-nums text-bkpk-text-primary">{q.home}:{q.away}</span>
                   </div>
                 ))}
               </div>
@@ -463,8 +464,9 @@ export default function GameDetail() {
                       "px-4 py-1.5 min-h-[44px] label-caps text-xs transition-colors",
                       activeTab === 'bekapaka' ? bkpkActivePillClass : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                     )}
+                    aria-pressed={activeTab === 'bekapaka'}
                   >
-                    BKPK
+                    BeKaPaKa
                   </button>
                   <button
                     onClick={() => setActiveTab('opponent')}
@@ -472,8 +474,9 @@ export default function GameDetail() {
                       "px-4 py-1.5 min-h-[44px] label-caps text-xs transition-colors",
                       activeTab === 'opponent' ? bkpkActivePillClass : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                     )}
+                    aria-pressed={activeTab === 'opponent'}
                   >
-                    OPP
+                    Rywal
                   </button>
                 </div>
               </div>

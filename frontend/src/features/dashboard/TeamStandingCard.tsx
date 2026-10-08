@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
+import { pluralPl } from '../../shared/lib/plural';
 
 export interface TeamStanding {
     position: number | null;
@@ -31,7 +32,7 @@ export default function TeamStandingCard({ team, teamsInLeague, remainingGames, 
                         </div>
                         <p className="mt-3 text-sm text-bkpk-text-secondary tabular-nums">
                             Bilans <strong className="text-bkpk-text-primary">{team.wins}–{team.losses}</strong>
-                            {remainingGames > 0 ? ` · zostało ${remainingGames} ${remainingGames === 1 ? 'mecz' : remainingGames < 5 ? 'mecze' : 'meczów'}` : ''}
+                            {remainingGames > 0 ? ` · ${pluralPl(remainingGames, 'został', 'zostały', 'zostało')} ${remainingGames} ${pluralPl(remainingGames, 'mecz', 'mecze', 'meczów')}` : ''}
                         </p>
                         {team.form.length > 0 && (
                             <div className="mt-4 flex items-center gap-2">

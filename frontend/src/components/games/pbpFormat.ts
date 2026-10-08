@@ -8,9 +8,10 @@ export function formatClock(sec: number | null | undefined): string {
     return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-/** Q1–Q4, OT1… */
+/** „1. kw.”–„4. kw.”, „Dogr.” / „Dogr. 2” */
 export function periodShortLabel(period: number): string {
-    return period > 4 ? `OT${period - 4}` : `Q${period}`;
+    if (period > 4) return period === 5 ? 'Dogr.' : `Dogr. ${period - 4}`;
+    return `${period}. kw.`;
 }
 
 /** Pełna etykieta okresu do nagłówka listy. */

@@ -136,7 +136,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             }
                             stats={[
                                 { label: 'M', value: team.matches, tone: 'muted' },
-                                { label: 'Z', value: team.wins, tone: 'success' },
+                                { label: 'W', value: team.wins, tone: 'success' },
                                 { label: 'P', value: team.losses, tone: 'danger' },
                                 { label: 'Zdob.', value: team.pointsFor, tone: 'muted' },
                                 { label: 'Strac.', value: team.pointsAgainst, tone: 'muted' },
@@ -170,8 +170,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             <th scope="col" className="h-12 px-3 sm:px-5 text-left sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)]">Drużyna</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center">M</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">PKT</th>
-                            <th scope="col" className="h-12 px-3 sm:px-5 text-center">Z</th>
-                            <th scope="col" className="h-12 px-3 sm:px-5 text-center">P</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center"><StatLabel k="wins" /></th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center"><StatLabel k="losses" /></th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap"><StatLabel k="pointsFor" /></th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap"><StatLabel k="pointsAgainst" /></th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">+/-</th>

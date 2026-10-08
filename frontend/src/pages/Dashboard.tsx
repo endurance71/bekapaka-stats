@@ -125,7 +125,7 @@ export default function Dashboard() {
   const recentForm = games
     .filter((g) => g.result)
     .slice(0, 10)
-    .map((g) => ({ id: g.id, result: g.result as 'W' | 'L', score: `${g.scoreUs}-${g.scoreThem}`, date: g.date }));
+    .map((g) => ({ id: g.id, result: g.result as 'W' | 'L', score: `${g.scoreUs}:${g.scoreThem}`, date: g.date }));
 
   return (
     <DashboardLayout

@@ -264,7 +264,7 @@ function H2hCard({ info }: { info: GameInfoResponse }) {
         <BkpkCard variant="glass">
             <SectionTitle icon={History}>Bezpośrednie mecze</SectionTitle>
             {h2h.meetings.length === 0 ? (
-                <p className="text-sm text-bkpk-text-secondary">Brak wcześniejszych meczów tych drużyn w bazie.</p>
+                <p className="text-sm text-bkpk-text-secondary">Te drużyny jeszcze ze sobą nie grały (od sezonu 2023/24).</p>
             ) : (
                 <>
                     <p className="label-caps text-xs text-bkpk-text-secondary mb-3">
@@ -321,7 +321,7 @@ export default function GameInfoPanel({ info }: { info: GameInfoResponse }) {
                     <BkpkCard variant="outline">
                         <div className="flex items-center gap-3 text-sm text-bkpk-text-secondary">
                             <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
-                            Szczegóły meczu (MVP, obsada, przebieg) są dostępne od sezonu KALK v2.
+                            Szczegóły meczu (MVP, skład, przebieg) są dostępne od sezonu 2025/26.
                         </div>
                     </BkpkCard>
                 )}

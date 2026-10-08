@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
 import BkpkCard from '../../shared/ui/BkpkCard';
+import { pluralPl } from '../../shared/lib/plural';
 
 export interface FormTrendProps {
     matches: Array<{ id: string; result: 'W' | 'L'; score: string; date: string }>;
@@ -15,7 +16,7 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                 <div className="flex justify-between items-center">
                     <span className="kicker text-bkpk-text-primary">Forma drużyny</span>
                     <span className="label-caps text-bkpk-text-muted text-xs">
-                        {matches.length > 0 ? `Ostatnie ${matches.length} ${matches.length === 1 ? 'mecz' : matches.length < 5 ? 'mecze' : 'meczów'}` : 'Brak meczów'}
+                        {loading ? '' : matches.length === 1 ? 'Ostatni mecz' : matches.length > 0 ? `Ostatnie ${matches.length} ${pluralPl(matches.length, 'mecz', 'mecze', 'meczów')}` : 'Brak meczów'}
                     </span>
                 </div>
 

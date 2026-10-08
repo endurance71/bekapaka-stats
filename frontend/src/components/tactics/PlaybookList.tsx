@@ -17,6 +17,7 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton, { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';
 import { deleteJSON } from '../../lib/api';
+import { pluralPl } from '../../shared/lib/plural';
 
 export interface PlayItem {
   id: string;
@@ -45,9 +46,9 @@ interface PlaybookListProps {
 // Paleta kategoryczna Digital 2.0 — kolor = obrys + tekst flagi; etykieta kategorii zawsze widoczna.
 const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
   half_court: { label: 'Atak pozycyjny', color: 'text-brand-red-500' },
-  blob: { label: 'BLOB (Aut końcowy)', color: 'text-brand-gold-500' },
-  slob: { label: 'SLOB (Aut boczny)', color: 'text-brand-green-400' },
-  ato: { label: 'ATO (Po czasie)', color: 'text-brand-stone-200' },
+  blob: { label: 'Aut spod kosza', color: 'text-brand-gold-500' },
+  slob: { label: 'Aut z boku', color: 'text-brand-green-400' },
+  ato: { label: 'Po czasie (time-out)', color: 'text-brand-stone-200' },
   fastbreak: { label: 'Szybki atak', color: 'text-brand-red-300' },
   defense: { label: 'Obrona', color: 'text-brand-stone-400' }
 };
@@ -76,7 +77,7 @@ export default function PlaybookList({
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm('Czy na pewno chcesz usunąć ten preset zagrywki?')) return;
+    if (!window.confirm('Czy na pewno chcesz usunąć tę zagrywkę?')) return;
     setDeletingId(id);
     try {
       await deleteJSON(`/api/tactics/plays/${id}`);
@@ -124,7 +125,7 @@ export default function PlaybookList({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Szukaj presetu zagrywki..."
+          placeholder="Szukaj zagrywki…"
           className="bg-bkpk-bg border border-bkpk-border-strong px-3 py-1.5 min-h-[44px] text-[14px] text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary w-full sm:w-64"
         />
       </div>
@@ -182,7 +183,7 @@ export default function PlaybookList({
                         <div className="flex items-center gap-1.5">
                           <span className="status-flag gap-1 text-bkpk-text-muted whitespace-nowrap">
                             <Layers className="w-3 h-3" />
-                            {stepsCount} {stepsCount === 1 ? 'faza' : 'fazy'}
+                            {stepsCount} {pluralPl(stepsCount, 'faza', 'fazy', 'faz')}
                           </span>
 
                           {play.isAiGenerated && (
@@ -225,7 +226,7 @@ export default function PlaybookList({
                           onClick={(e) => handleDelete(play.id, e)}
                           disabled={deletingId === play.id}
                           className="min-h-[44px] min-w-[44px] flex items-center justify-center border border-transparent text-bkpk-text-muted hover:text-bkpk-danger hover:border-bkpk-danger transition-colors"
-                          title="Usuń preset"
+                          title="Usuń zagrywkę"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>}

@@ -40,13 +40,13 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
     const sampleNote = `Na podstawie ${games} ${games === 1 ? 'meczu' : 'meczów'} — rekomendacje od 3 meczów.`;
 
     // Pace Logic
-    const paceLabel = pace > 84 ? 'SZYBKIE TEMPO' : (pace < 78 ? 'WOLNE TEMPO' : 'NORMALNE TEMPO');
+    const paceLabel = pace > 84 ? 'Szybka gra — dużo akcji' : (pace < 78 ? 'Wolna gra — długie akcje' : 'Średnie tempo');
     const paceColor = pace > 84 ? 'text-bkpk-text-danger' : (pace < 78 ? 'text-bkpk-text-secondary' : 'text-bkpk-success');
 
     // Shot Profile Data for Chart
     const pieData = [
-        { name: '2pkt', value: shotProfile.two, color: chartCategorical[0] },
-        { name: '3pkt', value: shotProfile.three, color: chartCategorical[1] },
+        { name: 'Za 2', value: shotProfile.two, color: chartCategorical[0] },
+        { name: 'Za 3', value: shotProfile.three, color: chartCategorical[1] },
         { name: 'Wolne', value: shotProfile.ft, color: chartCategorical[2] },
     ];
 
@@ -98,7 +98,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
 
     return (
         <div className="space-y-6 mb-8">
-            <SectionHeading title="DNA Zespołu" className="mb-4" />
+            <SectionHeading title="Styl gry rywala" className="mb-4" />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -199,8 +199,8 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                 <BkpkCard
                     title={
                         <div className="flex items-center gap-1.5">
-                            <span>Four Factors</span>
-                            <BkpkTooltip content="Najważniejsze statystyki w nowoczesnej koszykówce. eFG% (skuteczność), TOV% (straty), ORB% (zbiórki ataku) i FTR (częstotliwość fauli)." />
+                            <span>Cztery czynniki</span>
+                            <BkpkTooltip content="Cztery rzeczy, które najczęściej decydują o wyniku: skuteczność rzutów, straty, zbiórki w ataku i częstość rzutów wolnych." />
                         </div>
                     }
                     icon={<Crosshair className="w-5 h-5 text-bkpk-primary" />}

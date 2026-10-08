@@ -1,6 +1,7 @@
 import { Swords } from 'lucide-react';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
+import { fmtShotPct } from '../../shared/lib/formatStat';
 
 interface TeamStats {
     name: string;
@@ -53,7 +54,7 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
         );
     };
 
-    const formatPct = (m?: number, a?: number) => a ? `${((m || 0) / a * 100).toFixed(1)}%` : '0%';
+    const formatPct = (m?: number, a?: number) => fmtShotPct(m, a);
 
     return (
         <BkpkCard variant="glass" className="space-y-6">

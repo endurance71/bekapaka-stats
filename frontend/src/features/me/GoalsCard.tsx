@@ -4,8 +4,9 @@ import BkpkButton from '../../shared/ui/BkpkButton';
 import { putJSON } from '../../lib/api';
 import { cn } from '../../shared/lib/utils';
 import { GOAL_OPTIONS, MAX_GOALS, goalProgress, type Goal, type GoalStat, type Goals } from './meStats';
+import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 
-const fmt = (v: number | null, pct?: boolean) => (v == null ? '–' : `${v.toFixed(1).replace('.', ',')}${pct ? '%' : ''}`);
+const fmt = (v: number | null, pct?: boolean) => (pct ? fmtPct(v) : fmt1(v));
 const fieldControl =
     'w-full min-h-[44px] px-3 bg-bkpk-bg border border-bkpk-border-strong text-bkpk-text-primary font-text normal-case tracking-normal font-normal hover:border-bkpk-text-secondary transition-colors';
 

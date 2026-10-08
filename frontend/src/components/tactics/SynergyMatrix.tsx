@@ -6,6 +6,7 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { pluralPl } from '../../shared/lib/plural';
+import { fmt1 } from '../../shared/lib/formatStat';
 
 /** GET /api/tactics/synergy (backend/kalk/v2/synergy.js → computeTeamSynergy). */
 export interface DuoPlayer {
@@ -51,7 +52,6 @@ export const EMPTY_SYNERGY: SynergyResponse = {
 };
 
 const signed = (n: number | undefined) => (n == null ? '–' : n > 0 ? `+${n}` : String(n));
-const fmt1 = (n: number | null | undefined) => (n == null ? '–' : n.toFixed(1).replace('.', ','));
 
 function PlayerName({ p, className }: { p: DuoPlayer; className?: string }) {
   return p.rosterId ? (

@@ -188,7 +188,7 @@ export default function Administration() {
                 </section>
 
                 <section className="space-y-4">
-                <SectionHeading kicker="Dane KALK" title="Liga KALK Scraper" />
+                <SectionHeading kicker="Dane KALK" title="Synchronizacja z ligą KALK" />
                 <BkpkCard variant="flat" className="space-y-6">
                     <div className="flex items-center gap-3 p-4 bg-bkpk-bg border border-bkpk-border-subtle">
                         <div className={cn(
@@ -202,7 +202,7 @@ export default function Administration() {
 
                     <p className="text-bkpk-text-secondary text-sm leading-relaxed">
                         Pełna synchronizacja KALK (v2): tabela, terminarz, wszystkie kategorie statystyk, box score zakończonych meczów Dywizji II oraz log meczów kadry BeKaPaKa.
-                        Proces trwa zwykle 3–4 minuty (rate limit 1 s).
+                        Proces trwa zwykle 3–4 minuty (1 zapytanie na sekundę do strony KALK).
                     </p>
 
                     {kalkSummary ? (

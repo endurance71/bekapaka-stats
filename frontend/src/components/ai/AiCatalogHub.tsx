@@ -14,6 +14,7 @@ import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import PageHeader from '../../shared/ui/PageHeader';
 import PageLoader from '../../shared/ui/PageLoader';
+import { pluralPl } from '../../shared/lib/plural';
 import {
   AI_CATEGORIES,
   categoryLabelFromSlug,
@@ -474,7 +475,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
                 Model: {catalog?.model ?? '—'}
                 {catalog?.configured === false ? ' · Gemini nie skonfigurowane' : ''}
                 {stats.upcomingExcluded > 0
-                  ? ` · ${stats.upcomingExcluded} przyszłych meczów pominiętych`
+                  ? ` · pominięto ${stats.upcomingExcluded} ${pluralPl(stats.upcomingExcluded, 'nadchodzący mecz', 'nadchodzące mecze', 'nadchodzących meczów')}`
                   : ''}
               </p>
             </div>

@@ -27,8 +27,9 @@ describe('pbpFormat', () => {
         expect(formatClock(585)).toBe('9:45');
         expect(formatClock(5)).toBe('0:05');
         expect(formatClock(null)).toBe('–');
-        expect(periodShortLabel(2)).toBe('Q2');
-        expect(periodShortLabel(5)).toBe('OT1');
+        expect(periodShortLabel(2)).toBe('2. kw.');
+        expect(periodShortLabel(5)).toBe('Dogr.');
+        expect(periodShortLabel(6)).toBe('Dogr. 2');
     });
 
     it('describes starters and strips the player name', () => {
