@@ -487,7 +487,8 @@ export async function auditSeasonIntegrity(prisma, season, opts = {}) {
   for (const [slug, rows] of pageBySlug) {
     const ls = logsBySlug.get(slug) || [];
     const fromLogs = {
-      games: ls.filter((l) => (l.secondsPlayed ?? 0) > 0 || (l.pts ?? 0) > 0).length,
+      // KALK liczy mecz za każde wystąpienie w box score (także 0 min / 0 pkt; historia nie ma minut)
+      games: ls.length,
       pts: ls.reduce((a, l) => a + n(l.pts), 0),
       reb: ls.reduce((a, l) => a + n(l.reb), 0),
       ast: ls.reduce((a, l) => a + n(l.ast), 0)

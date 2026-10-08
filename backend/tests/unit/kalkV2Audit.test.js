@@ -97,6 +97,19 @@ describe('Audyt KALK v2 — sezon', () => {
     const report = await auditSeasonIntegrity(prisma, season, { now: NOW });
     expect(report.warnings.find((w) => w.code === 'S3').message).toMatch(/filip-karpinski: pts strona 30 vs logi 7/);
   });
+
+  it('S3: występ bez minut i punktów (historia KALK) liczy się jako mecz', async () => {
+    const { prisma, season } = await ingested((b) => {
+      const row = b.matches[0].box.teams[1].players.find((p) => p.slug === 'marek-maj');
+      row.secondsPlayed = null;
+      const base = b.players.find((p) => p.slug === 'adam-nowak').seasonStats[0];
+      b.players.find((p) => p.slug === 'marek-maj').seasonStats = [
+        { ...base, games: 1, minutesTotal: null, pts: 0, twoPm: 0, threePm: 0, orb: 0, drb: 0, reb: 0, ast: 0 }
+      ];
+    });
+    const report = await auditSeasonIntegrity(prisma, season, { now: NOW });
+    expect(report.warnings.filter((w) => w.code === 'S3')).toEqual([]);
+  });
 });
 
 describe('Audyt KALK v2 — kontrole meczu (czyste funkcje)', () => {
