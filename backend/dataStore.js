@@ -80,6 +80,7 @@ import { getJwtSecret } from './lib/requireEnv.js';
 import { matchHasPlusMinus } from './kalk/v2/util.js';
 import { resolveMatchDay } from './lib/matchDay.js';
 import { rosterKalkSlug } from './kalk/v2/readModels.js';
+import { linkRosterFromHistory } from './kalk/v2/rosterHistory.js';
 
 const SECRET_KEY = getJwtSecret();
 
@@ -2072,6 +2073,29 @@ export async function syncPlayersFromKalk(options = {}) {
       }
     } catch (e) {
       errors.push({ id: kalkPlayer.id, error: e.message });
+    }
+  }
+
+  // Zawodnicy bez meczu w bieżącym sezonie: powiązanie z ich wcześniejszych sezonów w BeKaPaKa
+  const unlinked = allRoster.filter((r) => !r.kalkSlug);
+  if (unlinked.length && activeSeason) {
+    const [profiles, seasonStats, kalkPlayersAll] = await Promise.all([
+      prisma.kalkPlayerProfile.findMany({ select: { slug: true, fullName: true, firstName: true, lastName: true } }),
+      prisma.kalkPlayerSeasonStat.findMany({ select: { playerSlug: true, teamName: true, seasonId: true } }),
+      prisma.kalkPlayer.findMany({ select: { id: true, seasonId: true } })
+    ]);
+    const updates = linkRosterFromHistory(allRoster, { profiles: profiles || [], seasonStats: seasonStats || [], kalkPlayers: kalkPlayersAll || [] });
+    for (const u of updates) {
+      const existing = allRoster.find((r) => r.id === u.rosterId);
+      // Stare powiązanie z dawnego importu zastępujemy wierszem v2, jeśli istnieje
+      const data = { kalkSlug: u.kalkSlug, ...(u.kalkPlayerId ? { kalkPlayerId: u.kalkPlayerId } : {}) };
+      try {
+        await prisma.rosterPlayer.update({ where: { id: u.rosterId }, data });
+        if (existing) Object.assign(existing, data);
+        linked += 1;
+      } catch (e) {
+        errors.push({ id: u.kalkPlayerId, error: e.message });
+      }
     }
   }
 
