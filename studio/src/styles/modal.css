@@ -1,0 +1,78 @@
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #0009;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal {
+  width: min(580px, 100%);
+  background: #f7f6f2;
+  border-radius: 6px;
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 28px;
+}
+.modal h2 {
+  font-size: 32px;
+}
+.modal > p {
+  margin: 16px 0;
+  font-size: 14px;
+}
+.modal-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 14px;
+}
+.modal-heading .icon-button {
+  font-size: 26px;
+}
+.template-modal {
+  width: 920px;
+}
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.template-grid button {
+  background: #edeae3;
+  border: 1px solid #ddd8cc;
+  text-align: left;
+  padding: 21px 17px;
+  display: flex;
+  flex-direction: column;
+  min-height: 205px;
+  transition: background 0.15s;
+}
+.template-grid button:hover {
+  background: #e5e0d5;
+}
+.template-num {
+  font-size: 11px;
+  color: var(--red);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.template-grid h3 {
+  margin: 20px 0 9px;
+  font-size: 16px;
+}
+.template-grid p {
+  font-size: 12px;
+  color: #77766d;
+}
+.template-meta {
+  font-size: 10px;
+  margin-top: auto;
+  padding-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  color: #817e74;
+}

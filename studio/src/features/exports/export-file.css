@@ -1,0 +1,44 @@
+.export-file + .export-file {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 4px;
+}
+.export-file .secondary.export-file-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 44px;
+  font-size: 12px;
+  margin: 10px 0 0;
+  padding: 10px 8px;
+  text-align: center;
+}
+.export-file-help {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 9px;
+}
+.export-file-help span {
+  display: block;
+}
+.export-file-help a {
+  display: inline-block;
+  padding: 8px 0;
+  text-decoration: underline;
+}
+.export-images {
+  margin-top: 14px;
+  max-width: 360px;
+}
+@media (max-width: 700px) {
+  .export-row:has(.export-images) {
+    align-items: flex-start;
+  }
+  .export-row:has(.export-images) > div {
+    flex-basis: calc(100% - 36px);
+    min-width: 0;
+  }
+}

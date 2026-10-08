@@ -26,8 +26,16 @@ export async function cms(kind, id) {
   const result = await fetch(endpoint, { headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(15_000) });
   if (!result.ok) fail(502, 'CMS nie udostępnił treści');
   const json = await result.json();
-  return (json.data || []).filter(v => v.publishedAt).map(v => ({ id: v.documentId, title: v.title || '', body: typeof v.excerpt === 'string' ? v.excerpt : '', date: v.startAt || v.publishedAtCustom || v.publishedAt, venue: v.location || 'CESiR Bobolice', media: [v.coverImage, ...(v.attachments || [])].flat().filter(Boolean).map(m => ({ id: m.documentId || String(m.id), name: m.name, url: m.url, alternativeText: m.alternativeText || '' })) }));
+  return (json.data || []).filter(v => v.publishedAt).map(v => cmsItem(kind, v));
 }
+// Events carry description/startAt/location; news carry excerpt/content and media. Body fits the project limit.
+// Unknown venue stays null so an import never overwrites the venue typed in the project.
+export function cmsItem(kind, v) {
+  const text = s => typeof s === 'string' ? s.trim() : '';
+  const body = kind === 'event' ? text(v.description) : text(v.excerpt) || plainText(text(v.content));
+  return { id: v.documentId, title: text(v.title).slice(0, 180), body: body.slice(0, 1500), date: (kind === 'event' ? v.startAt : v.eventDate || v.publishedAtCustom) || v.publishedAt || '', venue: text(v.location).slice(0, 100) || null, media: [v.coverImage, ...(v.attachments || [])].flat().filter(Boolean).map(m => ({ id: m.documentId || String(m.id), name: m.name, url: m.url, alternativeText: m.alternativeText || '' })) };
+}
+const plainText = md => md.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[#>*_`~]/g, '').replace(/[ \t]{2,}/g, ' ').replace(/\n{2,}/g, '\n\n').trim();
 
 export async function cmsMedia(kind, documentId, mediaId) {
   const posts = await cms(kind, documentId); const post = posts[0];
@@ -43,3 +51,6 @@ export async function cmsMedia(kind, documentId, mediaId) {
   while (true) { const { done, value } = await reader.read(); if (done) break; size += value.length; if (size > 20 * 1024 * 1024) { await reader.cancel(); fail(413, 'Plik CMS przekracza 20 MB'); } chunks.push(Buffer.from(value)); }
   return { buffer: Buffer.concat(chunks), name: media.name, origin: `CMS · ${post.title} · ${documentId}/${mediaId}` };
 }
+
+// Round labels are text ("1", "10", "2"); natural order keeps 2 before 10.
+export const roundOptions = labels => [...labels].sort((a, b) => a.localeCompare(b, 'pl', { numeric: true })).map(label => ({ id: label, title: 'Kolejka ' + label }));

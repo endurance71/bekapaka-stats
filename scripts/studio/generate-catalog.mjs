@@ -23,5 +23,8 @@ try {
   const result=JSON.parse(stdout);
   await sharp(await fs.readFile(result.files[0].svg)).resize(360,450).webp({quality:80}).toFile(path.join(out,`${type.id}-${style}.webp`));
  }
- console.log(`Generated ${postTypes.reduce((sum,p)=>sum+p.styles.length,0)} catalogue thumbnails.`);
+ // Thumbnails of removed compositions would otherwise ship forever with the SPA.
+ const current=new Set(postTypes.flatMap(type=>type.styles.map(style=>`${type.id}-${style}.webp`)));
+ for(const file of await fs.readdir(out)) if(file.endsWith('.webp')&&!current.has(file)) await fs.rm(path.join(out,file));
+ console.log(`Generated ${current.size} catalogue thumbnails.`);
 } finally{await fs.rm(temp,{recursive:true,force:true});}

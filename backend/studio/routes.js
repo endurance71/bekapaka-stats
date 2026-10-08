@@ -12,7 +12,7 @@ import { hash, saveImage, filePath } from './storage.js';
 import { seedStudio } from './seed.js';
 import { projectView, createProject, updateProject, validation, queueJob, context } from './service.js';
 import { budget, queueAi } from './ai.js';
-import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope } from './sources.js';
+import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope, roundOptions } from './sources.js';
 import { createLoginThrottle } from '../lib/loginThrottle.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
@@ -89,7 +89,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.get('/sources/matches', async (req, res) => res.json(await matches(db, String(req.query.seasonId || ''))));
   router.get('/sources/statistical-matches',async(req,res)=>res.json((await db.kalkMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true},orderBy:{date:'desc'},take:300})).filter(m=>/bekapaka|bobolice/i.test(m.homeTeamName+' '+m.guestTeamName)).map(matchSnapshot)));
   router.get('/sources/statistics', async (req,res)=> { const q=z.object({kind:z.enum(['standings','round','season','match-statistics']),seasonId:z.string().min(1),id:z.string().default(''),subjectId:z.string().max(128).default(''),view:z.enum(['team','player','leaders']).default('team')}).parse(req.query); res.json(sourceEnvelope(q.kind,await statisticalSnapshot(db,q.kind,q.seasonId,q.id,q.subjectId,q.view))); });
-  router.get('/sources/rounds',async(req,res)=>res.json((await db.leagueMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true,phaseLabel:{not:null}},select:{phaseLabel:true},distinct:['phaseLabel'],orderBy:{phaseLabel:'asc'}})).map(r=>({id:r.phaseLabel,title:'Kolejka '+r.phaseLabel}))));
+  router.get('/sources/rounds',async(req,res)=>res.json(roundOptions((await db.leagueMatch.findMany({where:{seasonId:String(req.query.seasonId || ''),isFinished:true,phaseLabel:{not:null}},select:{phaseLabel:true},distinct:['phaseLabel']})).map(r=>r.phaseLabel))));
   router.get('/sources/players', async (_req, res) => res.json((await db.rosterPlayer.findMany({ orderBy: { lastName: 'asc' }, select: { id: true, firstName: true, lastName: true, number: true, position: true } })).map(p => ({ ...p, number: String(p.number ?? ''), position: p.position || '' }))));
   router.get('/sources/cms/:kind', async (req, res) => { const kind = z.enum(['event', 'news']).parse(req.params.kind); res.json(await cms(kind)); });
   router.get('/sources/snapshot', async (req, res) => {
