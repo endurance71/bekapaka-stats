@@ -24,6 +24,7 @@ import PageLoader from '../shared/ui/PageLoader';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import MatchDayCard, { type MatchDay } from '../features/match/MatchDayCard';
 import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
+import LoadError from '../shared/ui/LoadError';
 
 type HomeNextMatch = { id: string; date: string; venue: string | null; opponent: string; matchDay: MatchDay | null };
 /** „3/9 (33.3%)” z KALK → „3/9 (33,3%)”; bez prób („0/0”) → „–”. */
@@ -44,7 +45,9 @@ export default function ScoutingPage() {
   const [pregame, setPregame] = useState<{ briefing: PreGameData | null; opponent: string | null }>({ briefing: null, opponent: null });
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<unknown>(null);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const { user } = useAuth();
   const { seasonId } = useSeasonPreferenceContext();
   const isAdmin = user?.role === 'ADMIN';
@@ -60,6 +63,7 @@ export default function ScoutingPage() {
 
   const loadScouting = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const opponent = searchParams.get('opponent');
       const q = new URLSearchParams();
@@ -70,6 +74,7 @@ export default function ScoutingPage() {
       setData(res);
     } catch (err) {
       console.error(err);
+      setLoadError(err);
     } finally {
       setLoading(false);
     }
@@ -98,6 +103,7 @@ export default function ScoutingPage() {
 
   const handleGenerateScoutingAi = async (force = false) => {
     setAiLoading(true);
+    setAiError(null);
     try {
       const opponent = searchParams.get('opponent') || (data?.teamInfo as { opponent?: { name?: string } })?.opponent?.name;
       const q = new URLSearchParams();
@@ -108,7 +114,7 @@ export default function ScoutingPage() {
       await loadScouting();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Błąd generacji scoutingu AI';
-      alert(message);
+      setAiError(message);
     } finally {
       setAiLoading(false);
     }
@@ -121,7 +127,14 @@ export default function ScoutingPage() {
   if (!data) {
     return (
       <PageContainer width="narrow">
-        <PageHeader kicker="Następny rywal" title="Brak rywala" description="Raport pojawi się, gdy w terminarzu będzie kolejny mecz BeKaPaKa." />
+        {loadError ? (
+          <>
+            <PageHeader kicker="Następny rywal" title="Raport o rywalu" />
+            <LoadError title="Nie udało się wczytać raportu" error={loadError} onRetry={() => void loadScouting()} />
+          </>
+        ) : (
+          <PageHeader kicker="Następny rywal" title="Brak rywala" description="Raport pojawi się, gdy w terminarzu będzie kolejny mecz BeKaPaKa." />
+        )}
       </PageContainer>
     );
   }
@@ -253,6 +266,7 @@ export default function ScoutingPage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <AiAnalysisBlock
             title="Plan meczowy (AI)"
+            errorMessage={aiError}
             content={scoutingSummaryMd}
             structuredContent={aiAnalysis?.summary ? aiAnalysis : null}
             generatedAt={aiMeta?.generatedAt}
@@ -325,7 +339,9 @@ export default function ScoutingPage() {
               className="h-full"
               overflowVisible
             >
-              {showPlayerCards ? (
+              {keyPlayers.length === 0 ? (
+                <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie ma jeszcze statystyk zawodników w tym sezonie.</p>
+              ) : showPlayerCards ? (
                 <MobileDataList className="p-0 pb-3">
                   {keyPlayers.map((p, i) => (
                     <MobileDataCard
@@ -396,7 +412,8 @@ export default function ScoutingPage() {
               className="h-full"
               overflowVisible
             >
-              <div className="border-y border-bkpk-border-subtle">
+              {form.length === 0 && <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie rozegrał jeszcze meczu w tym sezonie.</p>}
+              <div className={form.length ? 'border-y border-bkpk-border-subtle' : 'hidden'}>
                 {form.map((m, i) => (
                   <div
                     key={i}

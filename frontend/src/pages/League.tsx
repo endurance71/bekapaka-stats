@@ -41,23 +41,27 @@ export default function League() {
             />
 
             {/* Zakładki — jak `.tabs` na bekapaka.pl: wersaliki, 3 px czerwone podkreślenie aktywnej */}
-            <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle">
+            <div role="tablist" aria-label="Sekcje ligi" className="flex overflow-x-auto no-scrollbar max-w-full gap-4 sm:gap-8 border-b border-bkpk-border-subtle">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={isActive}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                "relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-[13px] sm:text-sm transition-colors duration-200",
+                                "relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-xs sm:text-sm transition-colors duration-200",
                                 "after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200",
                                 isActive
                                     ? "text-bkpk-text-primary after:scale-x-100"
                                     : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
                             )}
                         >
-                            <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                            {/* Na telefonie bez ikon — wszystkie zakładki mieszczą się bez obcinania */}
+                            <Icon className="hidden sm:block w-4 h-4 shrink-0" aria-hidden="true" />
                             {tab.label}
                         </button>
                     );

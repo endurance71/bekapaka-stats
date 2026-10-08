@@ -3,6 +3,7 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { fetchJSON } from '../../lib/api';
 import { useIsAdmin } from '../../context/AuthContext';
+import { CalendarPlus, CalendarSync } from 'lucide-react';
 
 /** `resolveMatchDay` z backendu (backend/lib/matchDay.js). */
 export interface MatchDay {
@@ -27,14 +28,20 @@ export function calendarLinks(matchId: string, seasonId?: string | null, host = 
     };
 }
 
+const calendarButton =
+    'inline-flex items-center gap-2 min-h-[44px] px-3 border border-bkpk-border-strong label-caps text-xs text-bkpk-text-primary hover:border-bkpk-text-primary hover:text-bkpk-primary transition-colors';
+
 export function CalendarButtons({ matchId, seasonId }: { matchId: string; seasonId?: string | null }) {
     const links = calendarLinks(matchId, seasonId);
     return (
-        <div className="flex flex-wrap gap-x-6 gap-y-1">
-            <a href={links.single} download className="inline-flex items-center min-h-[44px] label-caps text-xs text-bkpk-text-primary hover:text-bkpk-primary">
+        // Bez atrybutu download: w aplikacji na iPhonie plik .ics otwiera się w Kalendarzu (serwer wysyła go inline)
+        <div className="flex flex-wrap gap-2">
+            <a href={links.single} className={calendarButton}>
+                <CalendarPlus className="w-4 h-4 shrink-0" aria-hidden="true" />
                 Dodaj do kalendarza
             </a>
-            <a href={links.subscribe} className="inline-flex items-center min-h-[44px] label-caps text-xs text-bkpk-text-secondary hover:text-bkpk-primary">
+            <a href={links.subscribe} className={calendarButton}>
+                <CalendarSync className="w-4 h-4 shrink-0" aria-hidden="true" />
                 Subskrybuj terminarz
             </a>
         </div>

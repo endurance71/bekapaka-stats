@@ -51,9 +51,21 @@ const data: PlayByPlayResponse = {
     largestRun: { home: 2, away: 8 },
 };
 
+/** Panel startuje od „Punkty”; testy filtrów zaczynają od pełnej listy. */
+const showAll = () => fireEvent.change(screen.getByLabelText('Rodzaj akcji'), { target: { value: 'all' } });
+
 describe('PlayByPlayPanel', () => {
+    it('domyślnie pokazuje punkty — bez setek zdarzeń i składów', () => {
+        render(<PlayByPlayPanel data={data} />);
+        expect((screen.getByLabelText('Rodzaj akcji') as HTMLSelectElement).value).toBe('score');
+        expect(screen.getByText('5 zdarzeń')).toBeInTheDocument();
+        expect(screen.queryByText('Zbiórka w obronie')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: 'Resetuj' })).not.toBeInTheDocument();
+    });
+
     it('renders periods, BeKaPaKa-first scores and run badges', () => {
         render(<PlayByPlayPanel data={data} />);
+        showAll();
         expect(screen.getByRole('region', { name: 'Kwarta 1' })).toBeInTheDocument();
         expect(screen.getByText('Seria 8:0')).toBeInTheDocument();
         // Wynik w perspektywie BeKaPaKa (lewa strona) — 8:0, nie 0:8
@@ -65,6 +77,7 @@ describe('PlayByPlayPanel', () => {
 
     it('filters by quarter and scoring events', () => {
         render(<PlayByPlayPanel data={data} />);
+        showAll();
         fireEvent.click(screen.getByRole('button', { name: '2. kw.' }));
         expect(screen.queryByRole('region', { name: 'Kwarta 1' })).not.toBeInTheDocument();
         expect(screen.getByText('2 zdarzenia')).toBeInTheDocument();
@@ -74,6 +87,7 @@ describe('PlayByPlayPanel', () => {
 
     it('filters by team and action type with counts, and resets', () => {
         render(<PlayByPlayPanel data={data} />);
+        showAll();
         const select = screen.getByLabelText('Rodzaj akcji') as HTMLSelectElement;
         // liczniki dla całego meczu; kategorie z zerem ukryte
         expect([...select.options].map((o) => o.textContent)).toEqual(['Wszystkie akcje (6)', 'Punkty (5)', 'Zbiórki (1)']);
@@ -84,17 +98,19 @@ describe('PlayByPlayPanel', () => {
         expect(screen.getByText('1 zdarzenie')).toBeInTheDocument();
         expect(screen.getByText('Zbiórka w obronie')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Resetuj' }));
-        expect(screen.getByText('6 zdarzeń')).toBeInTheDocument();
+        // Reset wraca do widoku domyślnego (punkty)
+        expect(screen.getByText('5 zdarzeń')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Resetuj' })).not.toBeInTheDocument();
     });
 
     it('„Moje akcje”: tylko zdarzenia zalogowanego zawodnika; bez przycisku, gdy nie grał', () => {
         const mine = { ...data, events: data.events.map((e) => (e.seq === 3 || e.seq === 7 ? { ...e, playerSlug: 'jan-kowalski' } : e)) };
         const { unmount } = render(<PlayByPlayPanel data={mine} mySlug="jan-kowalski" />);
+        showAll();
         fireEvent.click(screen.getByRole('button', { name: 'Moje akcje' }));
         expect(screen.getByText('2 zdarzenia')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', { name: 'Resetuj' }));
-        expect(screen.getByText('6 zdarzeń')).toBeInTheDocument();
+        expect(screen.getByText('5 zdarzeń')).toBeInTheDocument();
         unmount();
         render(<PlayByPlayPanel data={data} mySlug="jan-kowalski" />);
         expect(screen.queryByRole('button', { name: 'Moje akcje' })).not.toBeInTheDocument();

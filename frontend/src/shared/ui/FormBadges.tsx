@@ -42,6 +42,8 @@ export function StreakBadge({ streak }: { streak?: string | null }) {
     if (!streak || streak.trim() === '' || streak.trim() === '—') {
         return <span className="text-bkpk-text-muted">—</span>;
     }
+    // Seria 1 to po prostu ostatni wynik — już widać go w formie
+    if (Number(streak.replace(/\D/g, '')) < 2) return null;
     const kind = resultKind(streak);
     const display = streak.toUpperCase().startsWith('L') ? `P${streak.slice(1)}` : streak.toUpperCase();
     return (

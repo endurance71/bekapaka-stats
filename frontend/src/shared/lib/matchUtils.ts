@@ -17,12 +17,15 @@ export interface OpponentForm {
 
 /**
  * Poziom trudności 1–5 z bilansu rywala w sezonie (% zwycięstw → 1–5), ±1 gdy bilans bezpośredni jest wyraźny.
- * Rywal bez rozegranych meczów → null (nie zgadujemy).
+ * Poniżej 3 meczów rywala → null (z jednego meczu nie da się ocenić siły drużyny).
  */
+/** Próg jak przy innych wnioskach panelu (3 mecze). */
+export const MIN_DIFFICULTY_GAMES = 3;
+
 export function difficultyFromOpponent({ wins, losses, h2h }: OpponentForm): 1 | 2 | 3 | 4 | 5 | null {
     const w = wins ?? 0;
     const l = losses ?? 0;
-    if (w + l === 0) return null;
+    if (w + l < MIN_DIFFICULTY_GAMES) return null;
     let level = 1 + Math.round(4 * (w / (w + l)));
     if (h2h && h2h.wins + h2h.losses >= 2) {
         if (h2h.wins > h2h.losses) level -= 1;

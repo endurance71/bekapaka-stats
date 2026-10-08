@@ -158,6 +158,8 @@ interface AiAnalysisBlockProps {
   staleHint?: string | null;
   /** Zwarty pasek akcji (scouting, mobile) */
   compactActions?: boolean;
+  /** Błąd ostatniego generowania (zamiast alert()) */
+  errorMessage?: string | null;
 }
 
 function AiAnalysisMarkdown({ markdown }: { markdown: string }) {
@@ -181,7 +183,8 @@ export default function AiAnalysisBlock({
   playerEmptyHint = 'Analiza pojawi się, gdy trener ją przygotuje.',
   sourceLabel,
   staleHint,
-  compactActions = false
+  compactActions = false,
+  errorMessage = null
 }: AiAnalysisBlockProps) {
   const markdown = useMemo(
     () => resolveAiMarkdown(content, structuredContent),
@@ -257,6 +260,9 @@ export default function AiAnalysisBlock({
                 )}
                 {canGenerate && staleHint && hasContent ? (
                   <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-danger">{staleHint}</p>
+                ) : null}
+                {canGenerate && errorMessage ? (
+                  <p role="alert" className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-danger">{errorMessage}</p>
                 ) : null}
               </div>
             </div>

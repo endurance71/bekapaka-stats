@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect, type ComponentType } from 'react';
+import { ReactNode, useState, useEffect, useRef, type ComponentType } from 'react';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileFullScreenMenu from './MobileFullScreenMenu';
@@ -13,6 +13,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Target,
+  BookOpen,
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import { useAuth } from '../context/AuthContext';
@@ -27,10 +28,11 @@ import { InstallPromptBanner } from './pwa/InstallPromptBanner';
 import { UpdateNotification } from './pwa/UpdateNotification';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { JerseyIcon, MatchIcon, TrophyIcon } from '../shared/ui/BrandIcon';
+import LoadError from '../shared/ui/LoadError';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
-/** Menu: zawodnik widzi 6 pozycji; sekcja „Trener” (Analizy, AI, Admin) tylko dla admina. */
+/** Menu: zawodnik widzi 7 pozycji (z Słowniczkiem); sekcja „Trener” (Analizy, AI, Admin) tylko dla admina. */
 export const allLinks: NavLinkItem[] = [
   { to: '/dashboard', label: 'Start', icon: LayoutDashboard, group: 'player' },
   { to: '/games', label: 'Mecze', icon: MatchIcon, group: 'player' },
@@ -38,6 +40,7 @@ export const allLinks: NavLinkItem[] = [
   { to: '/league', label: 'Liga', icon: TrophyIcon, group: 'player' },
   { to: '/druzyna', label: 'Drużyna', icon: JerseyIcon, group: 'player' },
   { to: '/profile', label: 'Ja', icon: User, group: 'player' },
+  { to: '/slowniczek', label: 'Słowniczek', icon: BookOpen, group: 'player' },
   { to: '/trends', label: 'Analizy', icon: Activity, group: 'coach', adminOnly: true },
   { to: '/ai', label: 'AI', icon: Bot, group: 'coach', adminOnly: true },
   { to: '/admin', label: 'Admin', icon: ShieldCheck, group: 'coach', adminOnly: true },
@@ -120,8 +123,13 @@ export default function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const mainRef = useRef<HTMLElement>(null);
+
   useEffect(() => {
     setIsMenuOpen(false);
+    // Nowa strona zaczyna się od góry (telefon: okno, desktop: <main>); zmiana samego ?widok= nie przewija
+    window.scrollTo(0, 0);
+    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [location.pathname]);
 
   useEffect(() => {
@@ -147,7 +155,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   };
 
   const links = allLinks.filter((link) => !link.adminOnly || user?.role === 'ADMIN');
-  const { seasons, seasonId, loading: seasonsLoading, setSeasonId } = useSeasonPreferenceContext();
+  const { seasons, seasonId, loading: seasonsLoading, error: seasonsError, reload: reloadSeasons, setSeasonId } = useSeasonPreferenceContext();
   const breakpoint = useBreakpoint();
   const isDesktopSidebar = breakpoint === 'lg' || breakpoint === 'xl' || breakpoint === '2xl';
   const navCollapsed = sidebarCollapsed && !isDesktopSidebar;
@@ -264,13 +272,20 @@ export default function Shell({ children }: { children: ReactNode }) {
         </header>
 
         <main
+          ref={mainRef}
           className={cn(
             'flex-1 w-full relative z-10 overflow-y-auto overflow-x-hidden',
             'pb-[max(0.5rem,var(--safe-area-bottom))] md:pb-0',
             'md:min-h-0 md:no-scrollbar md:scroll-smooth md:bg-bkpk-bg'
           )}
         >
-          {children}
+          {seasonsError && !seasonId ? (
+            <div className="px-4 py-10 md:px-8">
+              <LoadError title="Nie udało się połączyć z panelem" error={seasonsError} onRetry={reloadSeasons} />
+            </div>
+          ) : (
+            children
+          )}
           <div className="px-4 pb-2 md:px-8 md:pb-6">
             <AppFooter />
           </div>

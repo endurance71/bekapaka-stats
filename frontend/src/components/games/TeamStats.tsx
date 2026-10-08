@@ -2,6 +2,7 @@ import { InfoIcon as Info } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import { fmt1, fmtPct } from '../../shared/lib/formatStat';
+import { Link } from 'react-router-dom';
 
 interface TeamStatsData {
     efg?: number;  // Effective Field Goal %
@@ -101,7 +102,7 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
                     <h4 className="label-caps text-xs text-bkpk-text-primary">Jak czytać</h4>
                     <p className="text-xs text-bkpk-text-secondary leading-relaxed">
                         „Na 100 akcji” pozwala porównać mecze grane w różnym tempie. Bilans na plus = byliśmy lepsi.{' '}
-                        <a href="/slowniczek" className="underline">Słowniczek</a>
+                        <Link to="/slowniczek" className="underline">Słowniczek</Link>
                     </p>
                 </div>
             </div>

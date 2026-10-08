@@ -7,6 +7,7 @@ import PlaybookList, { type PlayItem } from './PlaybookList';
 import AiPlayGeneratorModal from './AiPlayGeneratorModal';
 import { fetchJSON } from '../../lib/api';
 import { useIsAdmin } from '../../context/AuthContext';
+import LoadError from '../../shared/ui/LoadError';
 
 /** Drużyna → „Zagrywki”: animowana tablica i lista zagrywek (generator AI tylko dla trenera). */
 export default function PlaybookSection() {
@@ -15,14 +16,17 @@ export default function PlaybookSection() {
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
     const canManage = useIsAdmin();
     const boardRef = useRef<HTMLDivElement>(null);
+    const [loadError, setLoadError] = useState<unknown>(null);
 
     const loadPlays = useCallback(async () => {
+        setLoadError(null);
         try {
             const data = await fetchJSON<PlayItem[]>('/api/tactics/plays');
             setPlays(data || []);
             setSelectedPlay((current) => current ?? data?.[0] ?? null);
         } catch (err) {
             console.error('Error fetching plays:', err);
+            setLoadError(err);
         }
     }, []);
 
@@ -34,6 +38,10 @@ export default function PlaybookSection() {
         setSelectedPlay(play);
         boardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
+
+    if (loadError && plays.length === 0) {
+        return <LoadError title="Nie udało się wczytać zagrywek" error={loadError} onRetry={() => void loadPlays()} />;
+    }
 
     return (
         <div className="space-y-8">

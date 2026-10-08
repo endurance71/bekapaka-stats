@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { formatStatFixed } from '../shared/lib/formatStat';
 import { useParams, Link } from 'react-router-dom';
-import { fetchJSON, postJSON } from '../lib/api';
+import { fetchJSON, postJSON, ApiError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,6 +37,9 @@ import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { pluralPl } from '../shared/lib/plural';
 import BkpkTooltip from '../shared/ui/BkpkTooltip';
 import StatLabel from '../shared/ui/StatLabel';
+import BackLink from '../shared/ui/BackLink';
+import LoadError from '../shared/ui/LoadError';
+import { formatMatchDate } from '../shared/lib/matchUtils';
 
 interface StatSnapshot {
     gameId: string;
@@ -109,7 +112,9 @@ export default function PlayerProfile() {
     const { id } = useParams<{ id: string }>();
     const [data, setData] = useState<PlayerStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState<unknown>(null);
     const [aiLoading, setAiLoading] = useState(false);
+    const [aiError, setAiError] = useState<string | null>(null);
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
     const [career, setCareer] = useState<PlayerCareerResponse | null>(null);
@@ -127,6 +132,7 @@ export default function PlayerProfile() {
             return;
         }
         setLoading(true);
+        setLoadError(null);
         try {
             const statsQ = new URLSearchParams({ t: String(Date.now()), seasonId });
             const [stats, playerRow] = await Promise.all([
@@ -142,6 +148,7 @@ export default function PlayerProfile() {
             });
         } catch (error) {
             console.error('Error fetching player stats:', error);
+            if (!(error instanceof ApiError && error.status === 404)) setLoadError(error);
         } finally {
             setLoading(false);
         }
@@ -169,6 +176,7 @@ export default function PlayerProfile() {
     const handleGenerateAi = async (force = false) => {
         if (!id) return;
         setAiLoading(true);
+        setAiError(null);
         try {
             const result = await postJSON<{
                 aiDevelopmentSummary: string;
@@ -178,7 +186,7 @@ export default function PlayerProfile() {
             setAiSummary(result.aiDevelopmentSummary);
             setAiMeta({ at: result.aiDevelopmentAt, model: result.model });
         } catch (error: any) {
-            alert(error?.message || 'Nie udało się wygenerować planu rozwoju');
+            setAiError(error?.message || 'Nie udało się wygenerować planu rozwoju');
         } finally {
             setAiLoading(false);
         }
@@ -196,7 +204,19 @@ export default function PlayerProfile() {
         return <PageLoader fullScreen label="Analizowanie Profilu..." />;
     }
 
-    if (!data) return <div className="p-20 text-center label-caps text-sm text-bkpk-text-muted">Nie znaleziono zawodnika.</div>;
+    if (!data) {
+        return (
+            <PageContainer>
+                {loadError ? (
+                    <LoadError title="Nie udało się wczytać profilu" error={loadError} onRetry={fetchStats} className="my-12" />
+                ) : (
+                    <p className="py-20 text-center text-bkpk-text-secondary">
+                        Nie znaleziono zawodnika. Wróć do <Link to="/druzyna" className="underline">składu</Link> albo na <Link to="/dashboard" className="underline">Start</Link>.
+                    </p>
+                )}
+            </PageContainer>
+        );
+    }
 
     const { player, averages, gameLog } = data;
 
@@ -206,12 +226,7 @@ export default function PlayerProfile() {
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                    <Link to="/druzyna" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
-                        <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center group-hover:border-bkpk-text-primary transition-colors">
-                            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-                        </div>
-                        <span className="label-caps text-xs">Powrót do składu</span>
-                    </Link>
+                    <BackLink fallback="/druzyna" label="Wróć" />
 
                     {selectedSeason && !selectedSeason.isActive ? (
                         <span className="status-flag text-bkpk-text-secondary">
@@ -295,6 +310,7 @@ export default function PlayerProfile() {
                 {(isAdmin || user?.id === id) && (
                     <AiAnalysisBlock
                         title="Plan rozwoju (AI)"
+                        errorMessage={aiError}
                         content={aiSummary}
                         generatedAt={aiMeta.at}
                         model={aiMeta.model}
@@ -388,12 +404,15 @@ export default function PlayerProfile() {
                         {/* Advanced Box Score (Game Log) */}
                         <section className="space-y-4">
                             <BoxScoreModern
+                                firstColumnLabel="Mecz"
                                 showPlusMinus={gameLog.some((g) => g.plusMinusAvailable !== false && g.plusMinus !== 0)}
                                 playerStats={gameLog.map(g => {
                                     // EVAL z KALK; wzór uproszczony tylko dla starych danych bez EVAL
                                     const evalVal = g.eval ?? (g.pts + g.reb + g.ast + g.stl + g.blk) - ((g.fga - g.fgm) + (g.fta - g.ftm) + g.tov);
                                     return {
-                                        name: g.opponent,
+                                        name: `vs ${g.opponent}`,
+                                        href: g.gameId ? `/games/${g.gameId}` : null,
+                                        subtitle: g.date ? formatMatchDate(g.date) : null,
                                         eval: evalVal,
                                         points: g.pts,
                                         rebounds: g.reb,
@@ -424,7 +443,7 @@ export default function PlayerProfile() {
                                     { label: 'Skuteczność rzutów', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
                                     { label: 'Skuteczność ogólna', value: formatStatFixed((averages.ts ?? 0) * 100, 1) + '%', progress: (averages.ts ?? 0) * 100 },
                                     ...(averages.plusMinusAvg != null
-                                        ? [{ label: 'Średni bilans +/-', value: averages.plusMinusAvg > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 }]
+                                        ? [{ key: 'plusMinus', label: 'Średni bilans +/-', value: averages.plusMinusAvg > 0 ? `+${formatStatFixed(averages.plusMinusAvg, 1)}` : formatStatFixed(averages.plusMinusAvg, 1), progress: Math.max(0, averages.plusMinusAvg + 10) * 5 }]
                                         : []),
                                 ].map((stat, i) => (
                                     <div key={i} className="space-y-2">
@@ -439,7 +458,7 @@ export default function PlayerProfile() {
                                                 transition={{ duration: 0.3, delay: 0.2 + (i * 0.05) }}
                                                 className={cn(
                                                     "h-full",
-                                                    stat.label.includes('Plus') ? ((averages.plusMinusAvg ?? 0) >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
+                                                    ('key' in stat && stat.key === 'plusMinus') ? ((averages.plusMinusAvg ?? 0) >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"
                                                 )}
                                             />
                                         </div>

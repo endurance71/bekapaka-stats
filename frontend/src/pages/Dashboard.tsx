@@ -14,6 +14,7 @@ import TopPlayersCard from '../components/dashboard/TopPlayersCard';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { difficultyFromOpponent, formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
+import LoadError from '../shared/ui/LoadError';
 
 type Game = {
   id: string;
@@ -68,8 +69,10 @@ export default function Dashboard() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [allTimeTeams, setAllTimeTeams] = useState<AllTimeTeam[]>([]);
   const [loading, setLoading] = useState(true);
+  const [homeError, setHomeError] = useState<unknown>(null);
   const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const isAdmin = useIsAdmin();
   const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
@@ -89,6 +92,7 @@ export default function Dashboard() {
         settled[idx].status === 'fulfilled' ? (settled[idx] as PromiseFulfilledResult<T>).value : fallback;
 
       setHome(pick<PlayerHome | null>(0, null));
+      setHomeError(settled[0].status === 'rejected' ? settled[0].reason : null);
       setGames(pick<Game[]>(1, []) || []);
       setPlayers((pick<Player[]>(2, []) || []).map((p) => normalizePlayerIdentity(p)));
       setBriefing(pick<any>(3, null));
@@ -104,11 +108,12 @@ export default function Dashboard() {
 
   const handleGenerateBriefing = async (force = false) => {
     setBriefingLoading(true);
+    setAiError(null);
     try {
       const result = await postJSON<{ contentMd: string; generatedAt: string; model?: string }>('/api/ai/briefing/generate', { force, seasonId });
       setBriefing({ contentMd: result.contentMd, generatedAt: result.generatedAt, model: result.model, stale: false });
     } catch (error: any) {
-      alert(error?.message || 'Nie udało się wygenerować briefingu');
+      setAiError(error?.message || 'Nie udało się wygenerować podsumowania');
     } finally {
       setBriefingLoading(false);
     }
@@ -153,6 +158,8 @@ export default function Dashboard() {
                 <MatchDayCard variant="inline" matchId={nextMatch.id} seasonId={seasonId} matchDay={nextMatch.matchDay} />
               </div>
             </NextChallengeWidget>
+          ) : homeError && !loading ? (
+            <LoadError title="Nie udało się wczytać Startu" error={homeError} onRetry={() => void fetchDashboardData()} />
           ) : (
             <div className="p-6 bg-bkpk-surface border border-dashed border-bkpk-border-strong space-y-3">
               <Calendar className="w-8 h-8 text-bkpk-text-muted" aria-hidden="true" />
@@ -167,8 +174,11 @@ export default function Dashboard() {
       main={
         <div className="space-y-8">
           <FormTrendMiniChart matches={recentForm} loading={loading} />
+          {/* Zawodnik nie widzi pustego bloku — tylko gotowe podsumowanie; trener widzi zawsze (przycisk Generuj) */}
+          {(isAdmin || briefing?.contentMd) && (
           <AiAnalysisBlock
             title="Podsumowanie tygodnia (AI)"
+            errorMessage={aiError}
             content={briefing?.contentMd}
             generatedAt={briefing?.generatedAt}
             model={briefing?.model}
@@ -179,6 +189,7 @@ export default function Dashboard() {
             emptyHint="Brak podsumowania — użyj „Generuj”."
             playerEmptyHint="Podsumowanie tygodnia pojawi się, gdy trener je przygotuje."
           />
+          )}
         </div>
       }
       sidebar={<TopPlayersCard players={players} loading={loading} />}

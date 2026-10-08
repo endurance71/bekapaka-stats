@@ -10,6 +10,7 @@ import { BrandMark } from '../shared/ui/BrandMark';
 import { JerseyStripes } from '../shared/ui/JerseyStripes';
 import herbUrl from '../assets/brand/herb2-kolor.svg';
 import arenaUrl from '../assets/brand/arena.webp';
+import { ApiError } from '../lib/api';
 
 export default function LoginPage() {
     const [username, setUsername] = useState('');
@@ -31,8 +32,9 @@ export default function LoginPage() {
             await login(username, password);
             const redirect = searchParams.get('redirect');
             navigate(redirect && redirect.startsWith('/') && !redirect.startsWith('/login') ? redirect : '/dashboard');
-        } catch {
-            setError('Błędny login lub hasło');
+        } catch (err) {
+            // Złe dane → 401; brak sieci / serwer → inny komunikat (nie mylić zawodnika „złym hasłem”)
+            setError(err instanceof ApiError && err.status === 401 ? 'Błędny login lub hasło' : err instanceof Error ? err.message : 'Nie udało się zalogować — spróbuj ponownie.');
         } finally {
             setLoading(false);
         }

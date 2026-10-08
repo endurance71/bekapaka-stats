@@ -104,14 +104,17 @@ export function generateGameInsights(game, bekapakaStats, opponentStats, extras 
     }
 
     // 4. Quarter analysis
+    // Tylko gdy 3. kwarta była przegrana, a mecz nie był rozstrzygnięty wysoko (np. 86:20 — bez „spadku”)
     if (game.quarters && game.quarters.length >= 3) {
         const q1 = game.quarters[0].home || 0;
         const q3 = game.quarters[2].home || 0;
-        if (q3 < q1 * 0.7 && q3 < 15) {
+        const q3Against = game.quarters[2].away || 0;
+        const total = game.quarters.reduce((acc, q) => acc + (q.home || 0) - (q.away || 0), 0);
+        if (q3 < q1 * 0.7 && q3 < 15 && q3 < q3Against && total < 20) {
             insights.push({
                 type: 'info',
                 category: 'momentum',
-                text: `Zauważalny spadek skuteczności w 3. kwarcie (${q3} pkt) w porównaniu do otwarcia meczu.`,
+                text: `Najmniej punktów w 3. kwarcie (${q3}:${q3Against}) — wcześniej ${q1} pkt w 1. kwarcie.`,
                 impact: 'medium'
             });
         }

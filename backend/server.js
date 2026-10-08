@@ -445,7 +445,7 @@ app.get(['/api/calendar.ics', '/calendar.ics'], async (req, res) => {
     const ics = buildIcsCalendar(matches.map(leagueMatchToEvent), { name: matchId ? 'BeKaPaKa — mecz' : 'BeKaPaKa Bobolice — mecze' });
     res.set('Content-Type', 'text/calendar; charset=utf-8');
     res.set('Cache-Control', 'public, max-age=900');
-    res.set('Content-Disposition', `${matchId ? 'attachment' : 'inline'}; filename="${matchId ? `bekapaka-mecz-${matchId}` : 'bekapaka-mecze'}.ics"`);
+    res.set('Content-Disposition', `inline; filename="${matchId ? `bekapaka-mecz-${matchId}` : 'bekapaka-mecze'}.ics"`);
     res.send(ics);
   } catch (err) {
     console.error('Calendar error:', err);

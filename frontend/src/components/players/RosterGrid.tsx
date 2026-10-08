@@ -6,6 +6,7 @@ import PlayerCard from '../../shared/ui/PlayerCard';
 import { resolvePlayerImage } from '../../shared/lib/playerUtils';
 import { useSeasonPreferenceContext } from '../../context/SeasonPreferenceContext';
 import { normalizePlayerIdentity } from '../../shared/lib/playerIdentity';
+import LoadError from '../../shared/ui/LoadError';
 
 interface Player {
     id: string;
@@ -20,6 +21,7 @@ interface Player {
     ppg: number;
     rpg: number;
     apg: number;
+    gamesPlayed?: number | null;
 }
 
 /** Drużyna → „Skład”: karty zawodników jak na bekapaka.pl (sezon z menu). */
@@ -61,17 +63,14 @@ export default function RosterGrid() {
         );
     }
 
-    if (error || players.length === 0) {
+    if (error) {
+        return <LoadError title="Nie udało się wczytać składu" onRetry={fetchRoster} />;
+    }
+
+    if (players.length === 0) {
         return (
             <div className="py-24 text-center bg-bkpk-surface border border-dashed border-bkpk-border-strong">
-                <p className="font-display text-2xl uppercase text-bkpk-text-muted">
-                    {error ? 'Nie udało się wczytać składu.' : 'Brak zawodników w składzie.'}
-                </p>
-                {error && (
-                    <button type="button" onClick={fetchRoster} className="mt-4 min-h-[44px] label-caps text-xs underline">
-                        Spróbuj ponownie
-                    </button>
-                )}
+                <p className="font-display text-2xl uppercase text-bkpk-text-muted">Brak zawodników w składzie.</p>
             </div>
         );
     }

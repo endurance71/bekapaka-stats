@@ -15,6 +15,8 @@ export interface PlayerCardProps {
     ppg?: number;
     rpg?: number;
     apg?: number;
+    /** Mecze w wybranym sezonie; 0 → „Bez meczu w tym sezonie” zamiast zer (brak = nie wiemy, pokazujemy średnie) */
+    gamesPlayed?: number | null;
     isStarter?: boolean;
     onClick?: (id: string) => void;
 }
@@ -34,6 +36,7 @@ export default function PlayerCard({
     ppg,
     rpg,
     apg,
+    gamesPlayed,
     isStarter,
     onClick
 }: PlayerCardProps) {
@@ -89,17 +92,23 @@ export default function PlayerCard({
                     {displayNumber ? `#${displayNumber} · ` : ''}
                     {getPositionLabel(position)}
                 </span>
-                <span className="player-card__stats">
-                    <span>
-                        <b>{formatStatFixed(ppg, 1)}</b> pkt
+                {gamesPlayed === 0 ? (
+                    <span className="player-card__stats">
+                        <span>Bez meczu w tym sezonie</span>
                     </span>
-                    <span>
-                        <b>{formatStatFixed(rpg, 1)}</b> zb
+                ) : (
+                    <span className="player-card__stats">
+                        <span>
+                            <b>{formatStatFixed(ppg, 1)}</b> pkt/m
+                        </span>
+                        <span>
+                            <b>{formatStatFixed(rpg, 1)}</b> zb/m
+                        </span>
+                        <span>
+                            <b>{formatStatFixed(apg, 1)}</b> as/m
+                        </span>
                     </span>
-                    <span>
-                        <b>{formatStatFixed(apg, 1)}</b> as
-                    </span>
-                </span>
+                )}
             </span>
         </div>
     );

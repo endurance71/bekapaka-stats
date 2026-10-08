@@ -114,7 +114,8 @@ export default function Profile() {
         const slug = user.kalkSlug ?? null;
         const idx = leagueLeaders.findIndex((l) => l.rosterPlayer?.id === user.id || (slug != null && l.id.endsWith(`__${slug}`)));
         if (idx >= 0) out.push({ label: 'Punkty/m w lidze', rank: idx + 1, of: leagueLeaders.length < 100 ? leagueLeaders.length : null });
-        return out;
+        // Najmocniejsza kategoria zawodnika na początku (nie lista samych ostatnich miejsc)
+        return out.sort((a, b) => a.rank / (a.of ?? 100) - b.rank / (b.of ?? 100));
     }, [user?.id, user?.kalkSlug, gameLog.length, teamPlayers, leagueLeaders]);
 
     useEffect(() => {
@@ -255,7 +256,7 @@ export default function Profile() {
                             <form onSubmit={handlePasswordChange} className="space-y-4">
                                 <div className="flex items-center gap-3 p-3 bg-bkpk-bg border border-bkpk-border-subtle text-sm text-bkpk-text-secondary">
                                     <ShieldCheck className="w-4 h-4 text-bkpk-success shrink-0" aria-hidden="true" />
-                                    <span>Zalogowany jako: <strong className="text-bkpk-text-primary">@{user.username}</strong> ({getPositionLabel(user.position)} #{user.number || '--'})</span>
+                                    <span>Zalogowany jako: <strong className="text-bkpk-text-primary">@{user.username}</strong> ({getPositionLabel(user.position)}{user.number != null ? ` #${user.number}` : ''})</span>
                                 </div>
 
                                 {passwordError && (

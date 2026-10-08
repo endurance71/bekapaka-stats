@@ -85,10 +85,13 @@ const EventRow = memo(function EventRow({ ev, left, leftIsBekapaka, leftName, ri
 });
 
 /** Zakładka „Akcja po akcji” meczu (KALK v2). */
+const DEFAULT_CATEGORY: PbpCategory = 'score';
+
 export default function PlayByPlayPanel({ data, mySlug = null }: { data: PlayByPlayResponse; /** slug KALK zalogowanego zawodnika → filtr „Moje akcje” */ mySlug?: string | null }) {
     const [period, setPeriod] = useState<number | 'all'>('all');
     const [side, setSide] = useState<Side | 'all'>('all');
-    const [category, setCategory] = useState<PbpCategory>('all');
+    // Start od punktów — pełna lista (setki zdarzeń, składy) jest w „Wszystkie akcje”
+    const [category, setCategory] = useState<PbpCategory>(DEFAULT_CATEGORY);
     const [onlyMine, setOnlyMine] = useState(false);
     // „Moje akcje” tylko, gdy zawodnik zagrał w tym meczu
     const iPlayed = Boolean(mySlug && data.events.some((ev) => ev.playerSlug === mySlug));
@@ -103,7 +106,7 @@ export default function PlayByPlayPanel({ data, mySlug = null }: { data: PlayByP
 
     const groups = useMemo(() => groupEventsByPeriod(data.events, { period, side, category, playerSlug }), [data.events, period, side, category, playerSlug]);
     const counts = useMemo(() => countPbpCategories(data.events, { period, side, playerSlug }), [data.events, period, side, playerSlug]);
-    const filtered = period !== 'all' || side !== 'all' || category !== 'all' || playerSlug != null;
+    const filtered = period !== 'all' || side !== 'all' || category !== DEFAULT_CATEGORY || playerSlug != null;
     const runIndex = useMemo(() => runsByEndSeq(data.runs), [data.runs]);
     const shown = groups.reduce((n, g) => n + g.events.length, 0);
 
@@ -193,7 +196,7 @@ export default function PlayByPlayPanel({ data, mySlug = null }: { data: PlayByP
                         onClick={() => {
                             setPeriod('all');
                             setSide('all');
-                            setCategory('all');
+                            setCategory(DEFAULT_CATEGORY);
                             setOnlyMine(false);
                         }}
                         className={cn(segBtn, 'border border-bkpk-border-strong', segIdle)}

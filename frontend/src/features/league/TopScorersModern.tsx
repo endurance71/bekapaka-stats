@@ -16,6 +16,7 @@ import type { PhotoSource } from '../../shared/lib/playerUtils';
 import { Link } from 'react-router-dom';
 import { useRosterLinks } from '../../shared/lib/useRosterLinks';
 import { formatStatFixed, fmtPct } from '../../shared/lib/formatStat';
+import LoadError from '../../shared/ui/LoadError';
 
 interface Scorer {
     id: string;
@@ -65,6 +66,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const [activeCategory, setActiveCategory] = useState<LeaderCategory>('points');
     const [leaders, setLeaders] = useState<Scorer[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<unknown>(null);
     const rosterLinks = useRosterLinks();
     // Zawodnik BeKaPaKa → link do profilu (powiązanie w tym sezonie albo slug KALK)
     const profileHref = (player: Scorer): string | null => {
@@ -82,6 +84,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const fetchLeaders = useCallback(async () => {
         if (!seasonId) return;
         setLoading(true);
+        setError(null);
         try {
             const q = new URLSearchParams({
                 category: activeCategory,
@@ -92,6 +95,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             setLeaders(data || []);
         } catch (err) {
             console.error(err);
+            setError(err);
         } finally {
             setLoading(false);
         }
@@ -192,6 +196,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                         <div key={i} className="h-16 bg-bkpk-surface-tint-2 animate-pulse" />
                     ))}
                 </div>
+            ) : error ? (
+                <LoadError title="Nie udało się wczytać liderów" error={error} onRetry={fetchLeaders} />
             ) : leaders.length === 0 ? (
                 <KalkEmptyState title={`Ranking dla kategorii ${currentCatInfo.label} jest pusty`} />
             ) : (

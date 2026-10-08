@@ -9,6 +9,7 @@ import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 import { fmt1, fmtPct } from '../../shared/lib/formatStat';
+import LoadError from '../../shared/ui/LoadError';
 
 /** GET /api/league/all-time (backend/kalk/v2/readModels.js → getTeamsAllTime). */
 interface HeadToHead {
@@ -78,20 +79,27 @@ function TeamName({ team }: { team: AllTimeTeam }) {
 export default function AllTimeTableModern() {
     const [data, setData] = useState<AllTimeResponse | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<unknown>(null);
+    const [attempt, setAttempt] = useState(0);
     const [scope, setScope] = useState<Scope>('active');
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
 
     useEffect(() => {
         let active = true;
+        setLoading(true);
+        setError(null);
         fetchJSON<AllTimeResponse>('/api/league/all-time')
             .then((res) => active && setData(res))
-            .catch((err) => console.error(err))
+            .catch((err) => {
+                console.error(err);
+                if (active) setError(err);
+            })
             .finally(() => active && setLoading(false));
         return () => {
             active = false;
         };
-    }, []);
+    }, [attempt]);
 
     const bekapaka = data?.teams.find((t) => t.isBekapaka) ?? null;
     const hasActive = Boolean(data?.teams.some((t) => t.isActive));
@@ -109,6 +117,10 @@ export default function AllTimeTableModern() {
                 ))}
             </div>
         );
+    }
+
+    if (error) {
+        return <LoadError title="Nie udało się wczytać bilansu" error={error} onRetry={() => setAttempt((n) => n + 1)} />;
     }
 
     if (!data || data.teams.length === 0) {
