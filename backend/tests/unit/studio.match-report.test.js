@@ -150,3 +150,15 @@ describe('match flow from play-by-play', () => {
     expect(lintCopy('website', website, facts).filter((i) => /Liczby spoza|Godzina/.test(i.message))).toEqual([]);
   });
 });
+
+describe('reporter language in the brand lint', () => {
+  const copy = (content) => ({ title: 'Mecz', excerpt: 'x'.repeat(150), content, tags: ['mecz'], coverAlt: '' });
+  it('accepts judgements backed by a clear result and flags invented events', () => {
+    const clear = factsSchema.parse({ kind: 'match', opponent: 'Pantery', scoreUs: 86, scoreThem: 20 });
+    const close = factsSchema.parse({ kind: 'match', opponent: 'Pantery', scoreUs: 71, scoreThem: 68 });
+    const text = copy('Zdominowaliśmy rywala od początku meczu.');
+    expect(lintCopy('website', text, clear).some((i) => /Ocena przebiegu/.test(i.message))).toBe(false);
+    expect(lintCopy('website', text, close).some((i) => /Ocena przebiegu/.test(i.message))).toBe(true);
+    expect(lintCopy('website', copy('Wspaniała atmosfera na trybunach.'), clear).some((i) => /Zdarzenie, którego nie ma/.test(i.message))).toBe(true);
+  });
+});

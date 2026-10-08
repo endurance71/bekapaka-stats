@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.2.0';
+export const LINT_VERSION = '1.3.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -19,10 +19,17 @@ const rules = [
   { re: /bilet/i, level: 'error', message: 'Mecze są bezpłatne — piszemy „Wstęp wolny”, bez biletów.' },
   { re: /\b(na wyjeździe|wyjazdow\w*|u siebie|mecz\w* domow\w*|w roli gospodarza)\b/i, level: 'warning', message: 'Mecze KALK są w jednej hali — bez oznaczeń dom/wyjazd, podaj miejsce.' },
   { re: /\b(najlepsz\w+ w historii|legendarn\w+|niesamowit\w+|epick\w+)\b/i, level: 'warning', message: 'Fakty zamiast patosu.' },
+  // Judgements backed by a clear result are fine („zdominowaliśmy” at 86:20); otherwise they need numbers.
   {
-    re: /(kontrolowa\p{L}*|od (samego )?początku (meczu|spotkania)?|narzuci\p{L}* (swój|nasz)|solidn\p{L}+|dobr\p{L}+ obron\p{L}*|świetn\p{L}+|walk\p{L}* do (samego )?końca|dominowa\p{L}*|pod dyktando)/iu,
+    re: /(kontrolowa\p{L}*|dominowa\p{L}*|zdominowa\p{L}*|pod dyktando|narzuci\p{L}* (swój|nasz)|od (samego )?początku (meczu|spotkania))/iu,
     level: 'warning',
-    message: 'Opis przebiegu gry bez pokrycia w faktach — zostaw liczby (kwarty, statystyki).',
+    message: 'Ocena przebiegu gry bez pokrycia w wyniku — przy wyrównanym meczu zostaw liczby.',
+    unless: (facts) => Number.isFinite(facts?.scoreUs) && Number.isFinite(facts?.scoreThem) && Math.abs(facts.scoreUs - facts.scoreThem) >= 15,
+  },
+  {
+    re: /(dobr\p{L}+ obron\p{L}*|walk\p{L}* do (samego )?końca|atmosfer\p{L}*|trybun\p{L}*|kontuzj\p{L}*|wsad\p{L}*|równo z syreną)/iu,
+    level: 'warning',
+    message: 'Zdarzenie, którego nie ma w danych meczu (akcja, atmosfera, kontuzja) — usuń albo potwierdź.',
   },
 ];
 // „o 14:40”, „godz. 14:40” — clock times must be the Warsaw times of the dates in facts.
@@ -53,7 +60,7 @@ export function lintCopy(channel, copy, facts) {
   for (const field of textFields[channel] || []) {
     const value = String(copy?.[field] ?? '');
     if (!value) continue;
-    for (const rule of rules) if (rule.re.test(value)) add(rule.level, field, rule.message);
+    for (const rule of rules) if (rule.re.test(value) && !rule.unless?.(facts)) add(rule.level, field, rule.message);
     const unknown = [...new Set((value.match(/\d+/g) || []).map((n) => String(Number(n))))].filter(
       (n) => Number(n) > 10 && !known.has(n),
     );

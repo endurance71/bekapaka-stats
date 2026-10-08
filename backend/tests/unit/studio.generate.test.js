@@ -32,7 +32,7 @@ describe('generateAi with any provider', () => {
   it('sends the prompt to the job model with the env key and charges actual usage', async () => {
     reply = async () => ({ json: { instagram_story: story }, usage: { inputTokens: 2000, outputTokens: 300 } });
     const out = await generateAi(copyJob, db);
-    expect(calls[0]).toMatchObject({ apiKey: 'sk-ant-env-test', model: { id: 'claude-sonnet-5-5', provider: 'anthropic' }, system: 'system', user: 'user', maxOutputTokens: 6000 });
+    expect(calls[0]).toMatchObject({ apiKey: 'sk-ant-env-test', model: { id: 'claude-sonnet-5-5', provider: 'anthropic' }, system: 'system', user: 'user', maxOutputTokens: 10000 });
     expect(out.result).toMatchObject({ copy: { instagram_story: story }, model: 'claude-sonnet-5-5', provider: 'anthropic', promptVersion: 'copy-test' });
     expect(out.chargedMicros).toBe(2000 * 2 + 300 * 10);
   });
@@ -44,16 +44,16 @@ describe('generateAi with any provider', () => {
 
   it('charges a truncated answer by its usage and a lost connection by the full reservation', async () => {
     reply = async () => {
-      throw new ProviderError('ucięta', { usage: { inputTokens: 100, outputTokens: 6000 } });
+      throw new ProviderError('ucięta', { usage: { inputTokens: 100, outputTokens: 10000 } });
     };
-    await expect(generateAi(copyJob, db)).rejects.toMatchObject({ chargedMicros: 100 * 2 + 6000 * 10 });
+    await expect(generateAi(copyJob, db)).rejects.toMatchObject({ chargedMicros: 100 * 2 + 10000 * 10 });
     reply = async () => {
       throw new ProviderError('timeout', { uncertain: true });
     };
     const err = await generateAi(copyJob, db).catch((e) => e);
     expect(err.uncertain).toBe(true);
     expect(err.chargedMicros).toBeUndefined();
-    expect(reservationMicros(claude, 'copy')).toBeGreaterThan(100 * 2 + 6000 * 10);
+    expect(reservationMicros(claude, 'copy')).toBeGreaterThan(100 * 2 + 10000 * 10);
   });
 
   it('does not call anything without a key', async () => {
