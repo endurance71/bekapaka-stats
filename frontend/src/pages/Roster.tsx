@@ -33,7 +33,7 @@ export default function Roster() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { seasonId } = useSeasonPreferenceContext();
+  const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
   const fetchRoster = useCallback(async () => {
     setLoading(true);
@@ -58,7 +58,7 @@ export default function Roster() {
         <PageHeader
           kicker="Personalia Drużyny"
           title="Skład"
-          description="Poznaj kadrę BeKaPaKa Bobolice na sezon 2025/26. Szczegółowe statystyki i profile zawodników."
+          description={`Kadra BeKaPaKa Bobolice${selectedSeason ? ` — ${selectedSeason.label}` : ''}. Kliknij zawodnika, aby zobaczyć jego statystyki.`}
         />
 
         {/* Roster Grid */}

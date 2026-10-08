@@ -66,7 +66,18 @@ export function kalkMatchToGameDetail(km) {
   }
 
   const isHome = isBekapakaTeamName(km.homeTeamName);
-  return { ...view, scoreUs: isHome ? km.scoreHome : km.scoreAway, scoreThem: isHome ? km.scoreAway : km.scoreHome, isFinished: km.isFinished, seasonId: km.seasonId, presentation: km.presentation, presentationUpdatedAt: km.presentationUpdatedAt };
+  return {
+    ...view,
+    scoreUs: isHome ? km.scoreHome : km.scoreAway,
+    scoreThem: isHome ? km.scoreAway : km.scoreHome,
+    isFinished: km.isFinished,
+    seasonId: km.seasonId,
+    venue: km.venue ?? null,
+    startsAt: (km.startsAtUtc ?? km.date)?.toISOString?.() ?? null,
+    roundLabel: km.roundLabel ?? null,
+    presentation: km.presentation,
+    presentationUpdatedAt: km.presentationUpdatedAt
+  };
 }
 
 /**
@@ -93,6 +104,9 @@ export function kalkMatchToListItem(km) {
     dataSource: 'kalk',
     isFromKalkMatch: true,
     roundCode: km.roundCode,
+    roundLabel: km.roundLabel ?? null,
+    venue: km.venue ?? null,
+    startsAt: (km.startsAtUtc ?? km.date)?.toISOString?.() ?? null,
     isFinished: km.isFinished, seasonId: km.seasonId,
     presentation: km.presentation, presentationUpdatedAt: km.presentationUpdatedAt
   };

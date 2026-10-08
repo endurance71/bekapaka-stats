@@ -17,6 +17,10 @@ interface User {
     ppg?: number;
     rpg?: number;
     apg?: number;
+    /** Pierwsza piątka (flaga składu) */
+    starter?: boolean;
+    /** Slug KALK — tożsamość zawodnika w danych ligi */
+    kalkSlug?: string | null;
 }
 
 interface AuthContextType {

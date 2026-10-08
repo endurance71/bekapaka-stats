@@ -13,13 +13,13 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import PageContainer from '../shared/ui/PageContainer';
 import PageLoader from '../shared/ui/PageLoader';
 import { bkpkActivePillClass } from '../shared/ui/BkpkButton';
-import BoxScoreModern from '../features/games/BoxScoreModern';
+import BoxScoreModern, { hasPlusMinus } from '../features/games/BoxScoreModern';
 import TeamStats from '../components/games/TeamStats';
-import DashboardMomentum from '../components/games/DashboardMomentum';
 import OpponentComparison from '../components/games/OpponentComparison';
 import GameInfoPanel from '../components/games/GameInfoPanel';
 import PlayByPlayPanel from '../components/games/PlayByPlayPanel';
 import type { GameInfoResponse, PlayByPlayResponse } from '../components/games/kalkMatchTypes';
+import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
 
 type MainTab = 'stats' | 'info' | 'pbp';
 
@@ -145,6 +145,8 @@ export default function GameDetail() {
 
   const bekapaka = useMemo(() => game?.teams?.find((t: any) => t.isBekapaka) || game?.teams?.[0] || { name: 'BeKaPaKa', isBekapaka: true, players: [] }, [game]);
   const opponentTeam = useMemo(() => game?.teams?.find((t: any) => !t.isBekapaka) || game?.teams?.[1] || { name: game?.opponent || 'Rywal', isBekapaka: false, players: [] }, [game]);
+  // KALK nie liczy +/- w części meczów — wtedy wszyscy mają 0 i kolumna znika (dla obu drużyn naraz)
+  const matchPlusMinus = useMemo(() => hasPlusMinus((game?.teams || []).flatMap((t: any) => t.players || [])), [game]);
   const isWin = game?.result === 'W';
   const isLoss = game?.result === 'L';
 
@@ -152,7 +154,18 @@ export default function GameDetail() {
     return <PageLoader fullScreen label="Pobieranie danych meczu..." />;
   }
 
-  if (!game) return null;
+  if (!game) {
+    return (
+      <PageContainer>
+        <p className="py-20 text-center text-bkpk-text-secondary">Nie znaleziono meczu. Wróć do <Link to="/games" className="underline">listy meczów</Link>.</p>
+      </PageContainer>
+    );
+  }
+
+  // Mecz jeszcze nierozegrany (terminarz KALK): zamiast 0:0 i pustych statystyk — termin, hala i link do rywala
+  const isUpcoming = game.isFinished === false || (game.scoreUs == null && game.scoreThem == null);
+  const startsAt = game.startsAt || game.date;
+  const venue: string | null = info?.venue || game.venue || null;
 
   return (
     <div className="bg-bkpk-bg">
@@ -167,13 +180,13 @@ export default function GameDetail() {
         {/* Scoreboard Header — jak MatchHero/ScoreBoard na bekapaka.pl: BeKaPaKa po lewej, przegrany konturem */}
         <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 md:p-10 lg:p-12">
           <h1 className="sr-only">Mecz: {bekapaka.name} – {opponentTeam.name}</h1>
-          {(isWin || isLoss) && (
+          {(isWin || isLoss || isUpcoming) && (
             <div className="flex justify-center md:justify-start mb-6 md:mb-8">
               <span className={cn(
                 'status-flag',
                 isWin ? 'bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg' : 'text-bkpk-text-primary'
               )}>
-                {isWin ? 'Wygrana' : 'Porażka'}
+                {isUpcoming ? 'Nadchodzący' : isWin ? 'Wygrana' : 'Porażka'}
               </span>
             </div>
           )}
@@ -191,6 +204,12 @@ export default function GameDetail() {
 
             {/* Score */}
             <div className="flex flex-col items-center gap-2 shrink-0">
+              {isUpcoming ? (
+                <div className="text-center">
+                  <div className="font-display tabular-nums leading-none text-bkpk-text-primary text-5xl sm:text-6xl md:text-7xl">{formatMatchTime(startsAt)}</div>
+                  <div className="mt-2 label-caps text-xs text-bkpk-text-secondary">{formatMatchDate(startsAt)}</div>
+                </div>
+              ) : (
               <div className="font-display flex items-baseline gap-1 sm:gap-2 md:gap-4 tabular-nums leading-[0.85] tracking-[-0.02em] text-bkpk-text-primary text-6xl sm:text-7xl md:text-8xl lg:text-[128px]">
                 <span className={cn(isLoss && 'outline-text')}>
                   {game.scoreUs ?? 0}
@@ -200,6 +219,7 @@ export default function GameDetail() {
                   {game.scoreThem ?? 0}
                 </span>
               </div>
+              )}
             </div>
 
             {/* Away Team */}
@@ -218,25 +238,31 @@ export default function GameDetail() {
             <div className="hidden sm:flex items-center gap-6 label-caps text-xs text-bkpk-text-secondary">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
-                <span className="tabular-nums">{new Date(game.date).toLocaleDateString()}</span>
+                <span className="tabular-nums">{formatMatchDate(startsAt)}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
-                {info?.venue || game.venue || 'KOSiR Koszalin'}
-              </div>
+              {venue && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
+                  {venue}
+                </div>
+              )}
             </div>
 
             {/* Mobile Info Badge */}
             <div className="sm:hidden flex items-center justify-center gap-2.5 label-caps text-[11px] text-bkpk-text-secondary">
               <div className="flex items-center gap-1">
                 <Calendar className="w-3 h-3 text-bkpk-primary" aria-hidden="true" />
-                <span className="tabular-nums">{new Date(game.date).toLocaleDateString()}</span>
+                <span className="tabular-nums">{formatMatchDate(startsAt)}</span>
               </div>
-              <div className="w-px h-3 bg-bkpk-border-strong" aria-hidden="true" />
-              <div className="flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
-                {info?.venue || game.venue || 'KOSiR Koszalin'}
-              </div>
+              {venue && (
+                <>
+                  <div className="w-px h-3 bg-bkpk-border-strong" aria-hidden="true" />
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
+                    {venue}
+                  </div>
+                </>
+              )}
             </div>
 
             {(game.dataSource === 'kalk' || game.isFromKalkMatch) ? (
@@ -267,8 +293,20 @@ export default function GameDetail() {
           ) : null}
         </section>
 
+        {isUpcoming && (
+          <BkpkCard variant="glass" className="space-y-3">
+            <p className="text-bkpk-text-secondary">Mecz jeszcze się nie odbył — statystyki i analiza pojawią się po meczu.</p>
+            <Link
+              to={`/scouting?opponent=${encodeURIComponent(opponentTeam.name || game.opponent || '')}`}
+              className="inline-flex items-center gap-2 min-h-[44px] label-caps text-xs text-bkpk-text-primary hover:text-bkpk-primary"
+            >
+              Raport o rywalu →
+            </Link>
+          </BkpkCard>
+        )}
+
         {/* Zakładki meczu — jak `.tabs` na bekapaka.pl (League.tsx): wersaliki, 3 px czerwone podkreślenie */}
-        {visibleTabs.length > 1 && (
+        {!isUpcoming && visibleTabs.length > 1 && (
           <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Sekcje meczu">
             {visibleTabs.map((tab) => {
               const Icon = tab.icon;
@@ -312,7 +350,7 @@ export default function GameDetail() {
         )}
 
         {/* Content Layout */}
-        <div className={cn('grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12', mainTab !== 'stats' && 'hidden')}>
+        <div className={cn('grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12', (mainTab !== 'stats' || isUpcoming) && 'hidden')}>
           {/* Main Content */}
           <div className="lg:col-span-8 space-y-10 md:space-y-12">
 
@@ -427,6 +465,7 @@ export default function GameDetail() {
                   plusMinus: p.plusMinus,
                   eval: p.eval
                 })) || []}
+                showPlusMinus={matchPlusMinus}
               />
             </section>
           </div>
@@ -455,13 +494,6 @@ export default function GameDetail() {
                 bekapaka={{ ...bekapaka, ...bekapaka.fourFactors }}
                 opponent={{ ...opponentTeam, ...opponentTeam.fourFactors }}
               />
-              {game.fiveMinute && (
-                <DashboardMomentum
-                  data={game.fiveMinute}
-                  bkCode={bekapaka.id || 'BB'}
-                  oppCode={opponentTeam.id || 'PR'}
-                />
-              )}
             </div>
           </aside>
         </div>

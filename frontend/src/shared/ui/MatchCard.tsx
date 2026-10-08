@@ -13,6 +13,10 @@ export interface MatchCardProps {
     homeAway?: string;
     mvp?: string | null;
     league?: string;
+    /** Kolejka z KALK, np. „Kolejka 3” */
+    roundLabel?: string | null;
+    /** Hala z terminarza KALK (brak → wiersz ukryty) */
+    venue?: string | null;
     onClick?: (id: string) => void;
 }
 
@@ -26,6 +30,8 @@ export default function MatchCard({
     scoreThem,
     mvp,
     league,
+    roundLabel,
+    venue,
     onClick
 }: MatchCardProps) {
     const isPlayed = result !== undefined && result !== null;
@@ -35,6 +41,7 @@ export default function MatchCard({
     const day = validDate ? parsed.toLocaleDateString('pl-PL', { day: '2-digit' }) : '--';
     const month = validDate ? parsed.toLocaleDateString('pl-PL', { month: 'short' }).replace('.', '') : '';
     const weekday = validDate ? parsed.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '') : '';
+    const time = validDate ? parsed.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' }) : '';
 
     return (
         <BkpkCard
@@ -49,13 +56,14 @@ export default function MatchCard({
                     <span className="font-display text-[34px] sm:text-[40px] leading-none text-bkpk-text-primary tabular-nums">{day}</span>
                     <span className="label-caps text-[11px] text-bkpk-text-muted mt-1">{month}</span>
                     <span className="text-[11px] text-bkpk-text-muted">{weekday}</span>
+                    {!isPlayed && time && <span className="text-[12px] font-semibold text-bkpk-text-primary tabular-nums mt-1">{time}</span>}
                 </div>
 
                 <div className="flex-1 min-w-0 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 p-4 sm:p-5">
                     {/* Para i meta */}
                     <div className="min-w-0 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                            <span className="kicker text-[12px]">{league || 'Mecz Sezonowy'}</span>
+                            <span className="kicker text-[12px]">{league || roundLabel || 'Liga KALK'}</span>
                             {isPlayed && (
                                 <span className={cn(
                                     'status-flag',
@@ -68,10 +76,12 @@ export default function MatchCard({
                         <h3 className="text-[22px] sm:text-[26px] leading-none text-bkpk-text-primary truncate">
                             BeKaPaKa <span className="text-bkpk-text-muted">–</span> {opponent}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-bkpk-text-muted text-xs">
-                            <MapPin className="w-3.5 h-3.5" aria-hidden />
-                            KOSiR Koszalin
-                        </div>
+                        {venue && (
+                            <div className="flex items-center gap-1.5 text-bkpk-text-muted text-xs">
+                                <MapPin className="w-3.5 h-3.5" aria-hidden />
+                                {venue}
+                            </div>
+                        )}
                     </div>
 
                     {/* Wynik / status */}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
-import { Activity, Database } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import { CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import BkpkCard from '../shared/ui/BkpkCard';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
@@ -17,9 +17,9 @@ import { NextChallengeWidget } from '../features/dashboard/NextChallengeWidget';
 // Temporary Legacy Components (until refactored)
 import TopPlayersCard from '../components/dashboard/TopPlayersCard';
 import ScoutingCard from '../components/dashboard/ScoutingCard';
-import DashboardMomentum from '../components/games/DashboardMomentum';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
+import { difficultyFromOpponent, formatMatchDate, formatMatchTime, isBekapakaName } from '../shared/lib/matchUtils';
 
 type Game = {
   id: string;
@@ -53,7 +53,7 @@ export default function Dashboard() {
   const [recordStats, setRecordStats] = useState({ wins: 0, losses: 0, total: 0, remaining: 0 });
   const [nextMatch, setNextMatch] = useState<any>(null);
   const [scoutingData, setScoutingData] = useState<any>(null);
-  const [lastGameFull, setLastGameFull] = useState<any>(null);
+  const [allTimeTeams, setAllTimeTeams] = useState<Array<{ kalkId: string; headToHead: { wins: number; losses: number } | null }>>([]);
   const [teamStats, setTeamStats] = useState<any>(null);
   const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
@@ -72,7 +72,8 @@ export default function Dashboard() {
         fetchJSON<any[]>(`/api/league/schedule?${q}`),
         fetchJSON<any>(`/api/scouting/next?${q}`),
         fetchJSON<any>(`/api/team/stats?${q}`),
-        fetchJSON<any>(`/api/ai/briefing?${q}`)
+        fetchJSON<any>(`/api/ai/briefing?${q}`),
+        fetchJSON<{ teams: Array<{ kalkId: string; headToHead: { wins: number; losses: number } | null }> }>('/api/league/all-time')
       ]);
 
       const pick = <T,>(idx: number, fallback: T): T =>
@@ -84,6 +85,7 @@ export default function Dashboard() {
       const scouting = pick<any>(3, null);
       const tStats = pick<any>(4, null);
       const briefingData = pick<any>(5, null);
+      setAllTimeTeams(pick<{ teams: any[] } | null>(6, null)?.teams ?? []);
 
       const played = (gamesData || []).filter(g => g.result);
       const wins = played.filter(g => g.result === 'W').length;
@@ -95,10 +97,7 @@ export default function Dashboard() {
       setTeamStats(tStats);
       setBriefing(briefingData);
 
-      const ourSchedule = (scheduleData || []).filter(m =>
-        m.homeTeam?.toLowerCase().includes('bekapaka') ||
-        m.guestTeam?.toLowerCase().includes('bekapaka')
-      );
+      const ourSchedule = (scheduleData || []).filter(m => isBekapakaName(m.homeTeam) || isBekapakaName(m.guestTeam));
 
       setRecordStats({
         wins,
@@ -112,13 +111,6 @@ export default function Dashboard() {
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       setNextMatch(sortedFuture[0] || null);
-
-      if (played.length > 0) {
-        const full = await fetchJSON<any>(`/api/games/${played[0].id}`);
-        setLastGameFull(full);
-      } else {
-        setLastGameFull(null);
-      }
     } catch (error) {
       console.error('Błąd pobierania danych:', error);
     } finally {
@@ -151,6 +143,21 @@ export default function Dashboard() {
   };
 
   const ppg = players.reduce((acc, p) => acc + p.ppg, 0) / (players.length || 1);
+
+  // Poziom trudności następnego rywala: bilans w sezonie (scouting, gdy dotyczy tego rywala) + bilans bezpośredni
+  const nextOpponentDifficulty = (() => {
+    if (!nextMatch) return null;
+    const usHome = isBekapakaName(nextMatch.homeTeam);
+    const oppName = String(usHome ? nextMatch.guestTeam : nextMatch.homeTeam || '').toLowerCase();
+    const oppKalkId = usHome ? nextMatch.guestTeamKalkId : nextMatch.homeTeamKalkId;
+    const sameOpponent = scoutingData?.opponent && oppName.includes(String(scoutingData.opponent).toLowerCase());
+    const h2h = allTimeTeams.find((t) => t.kalkId === oppKalkId)?.headToHead ?? null;
+    return difficultyFromOpponent({
+      wins: sameOpponent ? scoutingData.wins : null,
+      losses: sameOpponent ? scoutingData.losses : null,
+      h2h
+    });
+  })();
   const recentTrendMatches = games.filter(g => g.result).slice(0, 10).map(g => ({
     id: g.id,
     result: g.result as 'W' | 'L',
@@ -180,7 +187,7 @@ export default function Dashboard() {
             losses={recordStats.losses}
             loading={loading}
           />
-          <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend || 0} />
+          <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend ?? null} />
           <RatingCard
             offRating={teamStats?.offRating || 0}
             defRating={teamStats?.defRating || 0}
@@ -209,48 +216,6 @@ export default function Dashboard() {
 
           <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
 
-          {(() => {
-            const fiveMinute = lastGameFull?.data?.fiveMinute;
-            const quarters = lastGameFull?.quarters ?? lastGameFull?.data?.quarters;
-            if (fiveMinute || quarters) {
-              return (
-                <DashboardMomentum
-                  data={fiveMinute || (() => {
-                    const isHome = lastGameFull.homeAway === 'home';
-                    let homeSum = 0;
-                    let awaySum = 0;
-                    const homePoints: number[] = [];
-                    const awayPoints: number[] = [];
-
-                    quarters.forEach((q: { home: number; away: number }) => {
-                      homeSum += q.home;
-                      awaySum += q.away;
-                      homePoints.push(homeSum);
-                      awayPoints.push(awaySum);
-                    });
-
-                    return [
-                      { team: 'BB', points: isHome ? homePoints : awayPoints },
-                      { team: 'OP', points: isHome ? awayPoints : homePoints }
-                    ];
-                  })()}
-                  bkCode="BB"
-                  oppCode="OP"
-                  step={fiveMinute ? 5 : 10}
-                />
-              );
-            }
-            if (!loading && games.some(g => g.result)) {
-              return (
-                <div className="p-3 border border-dashed border-bkpk-border-strong bg-bkpk-surface flex items-center justify-center gap-3">
-                  <Database className="w-4 h-4 text-bkpk-text-muted" aria-hidden="true" />
-                  <span className="label-caps text-sm text-bkpk-text-muted">Brak danych o dynamice meczu</span>
-                </div>
-              );
-            }
-            return null;
-          })()}
-
           <ScoutingCard data={scoutingData} loading={loading} />
         </div>
       }
@@ -258,12 +223,12 @@ export default function Dashboard() {
         <div className="space-y-8">
           {nextMatch ? (
             <NextChallengeWidget
-              opponent={nextMatch.homeTeam?.toLowerCase().includes('bekapaka') ? nextMatch.guestTeam : nextMatch.homeTeam}
-              date={new Date(nextMatch.date).toLocaleDateString('pl-PL')}
-              time={new Date(nextMatch.date).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}
-              location={nextMatch.venue || "Hala Sportowa"}
-              difficulty={3}
-              homeAway={nextMatch.homeTeam?.toLowerCase().includes('bekapaka') ? 'Dom' : 'Wyjazd'}
+              opponent={isBekapakaName(nextMatch.homeTeam) ? nextMatch.guestTeam : nextMatch.homeTeam}
+              date={formatMatchDate(nextMatch.date)}
+              time={formatMatchTime(nextMatch.date)}
+              location={nextMatch.venue}
+              difficulty={nextOpponentDifficulty}
+              host={nextMatch.homeTeam}
             />
           ) : !loading && (
             <div className="p-8 bg-bkpk-surface border border-dashed border-bkpk-border-strong text-center space-y-4">

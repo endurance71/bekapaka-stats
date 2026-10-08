@@ -15,6 +15,7 @@ import { findScoutingReport } from '../ai/scoutingData.js';
 import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
 import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
+import { computeTeamSynergy, emptySynergy } from '../kalk/v2/synergy.js';
 
 export const tacticsRouter = express.Router();
 
@@ -193,119 +194,13 @@ tacticsRouter.post('/plays/generate', async (req, res) => {
  * ANALIZA SYNERGII PAR I ZESTAWIEŃ (LINEUP / DUO SYNERGY)
  */
 
-// GET /api/tactics/synergy
+// GET /api/tactics/synergy — duety BeKaPaKa (akcja po akcji: wspólne minuty i bilans; starsze sezony: wspólne mecze)
 tacticsRouter.get('/synergy', async (req, res) => {
   try {
     const targetSeasonId = await resolveSeasonId(req.query.seasonId);
     const season = await getSeasonById(targetSeasonId);
-    const roster = await getRoster(targetSeasonId);
-
-    if (!season) {
-      return res.json({ duos: [], bestOffensivePair: null, bestDefensivePair: null, gamesAnalyzed: 0 });
-    }
-
-    // Pobierz wszystkie logi meczowe zawodników w tym sezonie
-    const kalkLogs = await prisma.kalkPlayerGameLog.findMany({
-      where: { seasonId: season.id },
-      include: { kalkMatch: true, kalkPlayer: true }
-    });
-
-    // Zgrupuj logi meczowe według meczu
-    const matchMap = new Map();
-    for (const log of kalkLogs) {
-      const matchId = log.kalkMatchId;
-      if (!matchMap.has(matchId)) {
-        matchMap.set(matchId, []);
-      }
-      const stats = log.stats && typeof log.stats === 'object' ? log.stats : {};
-      const pts = Number(stats.pts) || 0;
-      const pm = Number(stats.plusMinus) || 0;
-      const min = String(stats.min || '0:0');
-      matchMap.get(matchId).push({
-        playerId: log.kalkPlayerId,
-        playerName: log.kalkPlayer?.name || log.opponentName || 'Zawodnik',
-        pts,
-        plusMinus: pm,
-        min
-      });
-    }
-
-    const gamesAnalyzed = matchMap.size;
-    if (gamesAnalyzed === 0) {
-      return res.json({ duos: [], bestOffensivePair: null, bestDefensivePair: null, gamesAnalyzed: 0 });
-    }
-
-    // Oblicz statystyki par (duetów)
-    const duoMap = new Map();
-
-    for (const [matchId, playersInMatch] of matchMap.entries()) {
-      for (let i = 0; i < playersInMatch.length; i++) {
-        for (let j = i + 1; j < playersInMatch.length; j++) {
-          const p1 = playersInMatch[i];
-          const p2 = playersInMatch[j];
-          const key = [p1.playerId, p2.playerId].sort().join('___');
-
-          if (!duoMap.has(key)) {
-            duoMap.set(key, {
-              p1Id: p1.playerId,
-              p1Name: p1.playerName,
-              p2Id: p2.playerId,
-              p2Name: p2.playerName,
-              gamesTogether: 0,
-              combinedPoints: 0,
-              totalPlusMinus: 0,
-              plusMinusList: []
-            });
-          }
-
-          const record = duoMap.get(key);
-          record.gamesTogether++;
-          record.combinedPoints += (p1.pts + p2.pts);
-          record.totalPlusMinus += (p1.plusMinus + p2.plusMinus) / 2; // avg +/- pary
-          record.plusMinusList.push((p1.plusMinus + p2.plusMinus) / 2);
-        }
-      }
-    }
-
-    // Dopasuj nazwiska z RosterPlayer
-    const playerLookup = new Map();
-    for (const r of roster) {
-      const kalkId = r.kalkPlayerId || r.kalkPlayer?.id;
-      if (kalkId) {
-        playerLookup.set(kalkId, { name: `${r.firstName} ${r.lastName}`, number: r.number, photo: r.photo });
-      }
-    }
-
-    const duos = Array.from(duoMap.values())
-      .filter(d => d.gamesTogether >= 1)
-      .map(d => {
-        const p1Info = playerLookup.get(d.p1Id) || { name: d.p1Name, number: null };
-        const p2Info = playerLookup.get(d.p2Id) || { name: d.p2Name, number: null };
-        const avgCombinedPpg = parseFloat((d.combinedPoints / d.gamesTogether).toFixed(1));
-        const avgPlusMinus = parseFloat((d.totalPlusMinus / d.gamesTogether).toFixed(1));
-
-        return {
-          id: `${d.p1Id}___${d.p2Id}`,
-          player1: { id: d.p1Id, name: p1Info.name, number: p1Info.number },
-          player2: { id: d.p2Id, name: p2Info.name, number: p2Info.number },
-          gamesTogether: d.gamesTogether,
-          combinedPoints: d.combinedPoints,
-          avgCombinedPpg,
-          avgPlusMinus,
-          synergyScore: parseFloat((avgCombinedPpg * 0.4 + avgPlusMinus * 0.6).toFixed(1))
-        };
-      })
-      .sort((a, b) => b.synergyScore - a.synergyScore);
-
-    const bestOffensivePair = [...duos].sort((a, b) => b.avgCombinedPpg - a.avgCombinedPpg)[0] || null;
-    const bestDefensivePair = [...duos].sort((a, b) => b.avgPlusMinus - a.avgPlusMinus)[0] || null;
-
-    res.json({
-      duos,
-      bestOffensivePair,
-      bestDefensivePair,
-      gamesAnalyzed
-    });
+    if (!season) return res.json(emptySynergy());
+    res.json(await computeTeamSynergy(prisma, season.id));
   } catch (err) {
     console.error('Error calculating synergy:', err);
     res.status(500).json({ error: 'Błąd kalkulacji synergii duetów' });

@@ -18,7 +18,7 @@ export interface PlayerStat {
     fg?: string;
     threeP?: string;
     ft?: string;
-    plusMinus?: number | string;
+    plusMinus?: number | string | null;
     eval?: number | string;
     /** KALK v2: pierwsza piątka (gwiazdka przy nazwisku). */
     starter?: boolean;
@@ -43,13 +43,23 @@ const pair = (a: number | null | undefined, b: number | null | undefined) =>
 interface BoxScoreProps {
     playerStats: PlayerStat[];
     loading?: boolean;
+    /** Kolumna +/-: domyślnie tylko gdy ktoś ma wartość ≠ 0 (KALK nie liczy +/- w części meczów). */
+    showPlusMinus?: boolean;
+}
+
+/** Czy w wierszach jest prawdziwy +/- (same zera / brak = KALK go nie podał). */
+export function hasPlusMinus(rows: Array<{ plusMinus?: number | string | null }>): boolean {
+    return rows.some((r) => {
+        const n = Number(r.plusMinus);
+        return r.plusMinus != null && Number.isFinite(n) && n !== 0;
+    });
 }
 
 /** Komórki liczbowe — rytm jak .bkpk-table na bekapaka.pl */
 const cell = 'px-2 sm:px-4 py-2 sm:py-3 text-center tabular-nums';
 
 /** Memoized table row to prevent unnecessary re-renders */
-const PlayerRow = memo(function PlayerRow({ player, idx, extended }: { player: PlayerStat; idx: number; extended: boolean }) {
+const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus }: { player: PlayerStat; idx: number; extended: boolean; showPlusMinus: boolean }) {
     return (
         <motion.tr
             key={idx}
@@ -86,19 +96,21 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended }: { player: P
             <td className={cn(cell, 'text-[11px] sm:text-xs text-bkpk-text-secondary font-medium hidden lg:table-cell')}>{player.fg ?? '-'}</td>
             <td className={cn(cell, 'text-[11px] sm:text-xs text-bkpk-text-secondary font-medium hidden lg:table-cell')}>{player.threeP ?? '-'}</td>
             <td className={cn(cell, 'text-[11px] sm:text-xs text-bkpk-text-secondary font-medium hidden lg:table-cell')}>{player.ft ?? '-'}</td>
-            <td className={cn(
-                cell,
-                'font-medium text-xs sm:text-sm',
-                Number(player.plusMinus) > 0 ? 'text-bkpk-success' : Number(player.plusMinus) < 0 ? 'text-bkpk-text-danger' : 'text-bkpk-text-muted'
-            )}>
-                {Number(player.plusMinus) > 0 ? `+${player.plusMinus}` : player.plusMinus ?? '-'}
-            </td>
+            {showPlusMinus && (
+                <td className={cn(
+                    cell,
+                    'font-medium text-xs sm:text-sm',
+                    Number(player.plusMinus) > 0 ? 'text-bkpk-success' : Number(player.plusMinus) < 0 ? 'text-bkpk-text-danger' : 'text-bkpk-text-muted'
+                )}>
+                    {player.plusMinus == null ? '–' : Number(player.plusMinus) > 0 ? `+${player.plusMinus}` : player.plusMinus}
+                </td>
+            )}
             <td className={cn(cell, 'font-semibold text-bkpk-text-primary text-xs sm:text-sm')}>{player.eval ?? '-'}</td>
         </motion.tr>
     );
 });
 
-type Header = { label: string; className: string; title?: string; extended?: boolean };
+type Header = { label: string; className: string; title?: string; extended?: boolean; plusMinus?: boolean };
 
 const headers: Header[] = [
     { label: 'Zawodnik', className: 'text-left min-w-[120px] sticky left-0 z-20 bg-[var(--table-head-bg)] border-r border-bkpk-border-strong' },
@@ -115,13 +127,13 @@ const headers: Header[] = [
     { label: 'FG', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
     { label: '3P', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
     { label: 'FT', className: 'text-center whitespace-nowrap hidden lg:table-cell' },
-    { label: '+/-', className: 'text-center whitespace-nowrap' },
+    { label: '+/-', title: 'Bilans punktów, gdy zawodnik był na parkiecie', className: 'text-center whitespace-nowrap', plusMinus: true },
     { label: 'VAL', className: 'text-center whitespace-nowrap' },
 ];
 
-function BoxScoreTable({ playerStats, compact }: { playerStats: PlayerStat[]; compact?: boolean }) {
+function BoxScoreTable({ playerStats, compact, showPlusMinus }: { playerStats: PlayerStat[]; compact?: boolean; showPlusMinus: boolean }) {
     const extended = hasExtendedBoxColumns(playerStats);
-    const visibleHeaders = headers.filter((h) => extended || !h.extended);
+    const visibleHeaders = headers.filter((h) => (extended || !h.extended) && (showPlusMinus || !h.plusMinus));
     return (
         <table className={cn('bkpk-table bg-bkpk-bg min-w-[520px]', compact ? 'text-xs' : 'text-sm')}>
             <thead>
@@ -143,15 +155,16 @@ function BoxScoreTable({ playerStats, compact }: { playerStats: PlayerStat[]; co
             </thead>
             <tbody>
                 {playerStats.map((player, idx) => (
-                    <PlayerRow key={idx} player={player} idx={idx} extended={extended} />
+                    <PlayerRow key={idx} player={player} idx={idx} extended={extended} showPlusMinus={showPlusMinus} />
                 ))}
             </tbody>
         </table>
     );
 }
 
-export default function BoxScore({ playerStats, loading }: BoxScoreProps) {
+export default function BoxScore({ playerStats, loading, showPlusMinus }: BoxScoreProps) {
     const isMobile = useIsMobile(1024);
+    const plusMinusVisible = showPlusMinus ?? hasPlusMinus(playerStats ?? []);
 
     if (loading) {
         return (
@@ -181,7 +194,7 @@ export default function BoxScore({ playerStats, loading }: BoxScoreProps) {
         return (
             <div>
                 <ScrollableTableShell compact hint="Obróć telefon poziomo lub przesuń tabelę w bok">
-                    <BoxScoreTable playerStats={playerStats} compact />
+                    <BoxScoreTable playerStats={playerStats} compact showPlusMinus={plusMinusVisible} />
                 </ScrollableTableShell>
                 {legend}
             </div>
@@ -192,7 +205,7 @@ export default function BoxScore({ playerStats, loading }: BoxScoreProps) {
         <div>
             <BkpkCard variant="glass" padding="none" className="overflow-hidden">
                 <ScrollableTableShell className="border-0" hint="Przesuń w bok, aby zobaczyć wszystkie kolumny">
-                    <BoxScoreTable playerStats={playerStats} />
+                    <BoxScoreTable playerStats={playerStats} showPlusMinus={plusMinusVisible} />
                 </ScrollableTableShell>
             </BkpkCard>
             {legend}

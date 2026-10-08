@@ -115,7 +115,7 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                                         ? "bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg"
                                         : "bg-transparent border-bkpk-text-secondary text-bkpk-text-primary"
                                 )}>
-                                    {match.result}
+                                    {match.result === 'W' ? 'W' : 'P'}
                                 </div>
                                 <div className="font-display text-base leading-none text-bkpk-text-primary truncate tabular-nums">{match.scoreUs}:{match.scoreThem}</div>
                                 <div className="text-[11px] text-bkpk-text-muted truncate uppercase mt-1 leading-tight" title={match.opponent}>
@@ -132,14 +132,14 @@ export default function ScoutingCard({ data, loading }: ScoutingCardProps) {
                             <TrendingUp className="w-3.5 h-3.5 text-bkpk-success" aria-hidden="true" />
                             <span className="label-caps text-xs text-bkpk-text-secondary">Atak</span>
                         </div>
-                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">PPG</span></div>
+                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.ppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">pkt/m</span></div>
                     </div>
                     <div className="bg-bkpk-bg p-3 border border-bkpk-border-subtle">
                         <div className="flex items-center gap-2 mb-1">
                             <TrendingDown className="w-3.5 h-3.5 text-bkpk-text-danger" aria-hidden="true" />
-                            <span className="label-caps text-xs text-bkpk-text-secondary">Obrona</span>
+                            <span className="label-caps text-xs text-bkpk-text-secondary">Tracą</span>
                         </div>
-                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">PPG</span></div>
+                        <div className="text-3xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">{formatStatFixed(data.oppg)} <span className="label-caps text-[11px] text-bkpk-text-muted">pkt/m</span></div>
                     </div>
                 </div>
 

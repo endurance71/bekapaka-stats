@@ -14,6 +14,8 @@ export interface Game {
     scoreThem?: number | null;
     homeAway?: string;
     mvp?: string | null;
+    venue?: string | null;
+    roundLabel?: string | null;
 }
 
 export interface GamesListProps {

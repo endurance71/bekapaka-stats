@@ -45,11 +45,12 @@ export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) 
 
 export interface PPGCardProps {
     ppg: number;
-    trend: number; // percentage change or points delta
+    /** % zmiany: ostatnie 3 mecze vs wcześniejsze; null = za mało meczów (poniżej 6) */
+    trend: number | null;
 }
 
 export function PPGCard({ ppg, trend }: PPGCardProps) {
-    const isPositive = trend >= 0;
+    const isPositive = (trend ?? 0) >= 0;
 
     return (
         <BkpkCard hoverEffect overflowVisible className="relative h-full">
@@ -68,13 +69,19 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-bkpk-border-subtle flex items-center gap-3">
-                    <div className={clsx(
-                        "status-flag gap-1 tabular-nums",
-                        isPositive ? "text-bkpk-success" : "text-bkpk-text-danger-subtle"
-                    )}>
-                        {isPositive ? "↑" : "↓"} {Math.abs(trend)}%
-                    </div>
-                    <span className="label-caps text-bkpk-text-secondary text-xs">vs ostatnie 3 mecze</span>
+                    {trend == null ? (
+                        <span className="text-xs text-bkpk-text-muted">Trend pokażemy po 6. meczu</span>
+                    ) : (
+                        <>
+                            <div className={clsx(
+                                "status-flag gap-1 tabular-nums",
+                                isPositive ? "text-bkpk-success" : "text-bkpk-text-danger-subtle"
+                            )}>
+                                {isPositive ? "↑" : "↓"} {Math.abs(trend)}%
+                            </div>
+                            <span className="label-caps text-bkpk-text-secondary text-xs">ostatnie 3 mecze vs wcześniej</span>
+                        </>
+                    )}
                 </div>
             </div>
         </BkpkCard>

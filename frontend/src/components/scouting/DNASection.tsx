@@ -44,13 +44,17 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
         { name: 'Wolne', value: shotProfile.ft, color: chartCategorical[2] },
     ];
 
+    // FTR (backend: rzuty wolne / rzuty z gry × 100) — jeden próg dla koloru i porady
+    const FTR_HIGH = 25;
+    const FTR_LOW = 10;
+
     // Four Factors Evaluation (Simple Logic)
     const getFactorColor = (val: number, type: 'efg' | 'tov' | 'orb' | 'ftr') => {
         // Good thresholds (returning Tailwind colors) — Digital 2.0: dobry / słaby / neutralny (kamień zamiast złota)
         if (type === 'efg') return val > 50 ? 'bg-bkpk-success' : (val < 40 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
         if (type === 'tov') return val < 15 ? 'bg-bkpk-success' : (val > 20 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
         if (type === 'orb') return val > 25 ? 'bg-bkpk-success' : (val < 15 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
-        if (type === 'ftr') return val > 20 ? 'bg-bkpk-success' : (val < 10 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
+        if (type === 'ftr') return val > FTR_HIGH ? 'bg-bkpk-success' : (val < FTR_LOW ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
         return 'bg-ink-500';
     };
 
@@ -75,7 +79,11 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
         if (type === 'efg') return val > 50 ? "Trafiają na wysokim procencie. Utrudniaj każdy rzut (contest)." : "Mają problemy ze skutecznością. Zmuś do rzutów z nieprzygotowanych pozycji.";
         if (type === 'tov') return val > 20 ? "Popełniają dużo strat. Graj agresywnie na piłce, szukaj przechwytów." : "Szanują piłkę. Graj cierpliwie w obronie, nie ryzykuj.";
         if (type === 'orb') return val > 25 ? "Dominują na desce. Konieczny mocny zastawianie (box out)!" : "Słabo zbierają w ataku. Możesz szybciej uruchamiać kontrę.";
-        if (type === 'ftr') return val > 25 ? "Często wymuszają faule. Broń czysto, ręce w górze (no reach)." : "Rzadko stają na linii. Możesz grać bardziej fizycznie.";
+        if (type === 'ftr') {
+            if (val > FTR_HIGH) return "Często wymuszają faule. Broń czysto, ręce w górze (no reach).";
+            if (val < FTR_LOW) return "Rzadko stają na linii. Możesz grać bardziej fizycznie.";
+            return "Rzuty wolne na przeciętnym poziomie.";
+        }
         return "";
     };
 
@@ -245,7 +253,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                         <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">FTR (Rzuty Wolne)</span>
                                         <BkpkTooltip content="Współczynnik rzutów wolnych do rzutów z pola. Pokazuje, jak agresywnie zespół wymusza faule." />
                                     </div>
-                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 2)}</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 1)}%</span>
                                 </div>
                                 <div className="h-2 w-full bg-bkpk-bg overflow-hidden border border-bkpk-border-subtle">
                                     <div className={`h-full transition-all duration-1000 ${getFactorColor(fourFactors.ftr, 'ftr')}`} style={{ width: getWidth(fourFactors.ftr * 2) }} />

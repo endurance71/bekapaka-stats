@@ -36,7 +36,7 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                                         : "bg-transparent border-bkpk-text-secondary text-bkpk-text-primary group-hover:border-bkpk-text-primary"
                                 )}
                             >
-                                {match.result === 'W' ? 'Z' : 'P'}
+                                {match.result === 'W' ? 'W' : 'P'}
                             </div>
                             <span className="text-xs text-bkpk-text-muted font-medium tabular-nums group-hover:text-bkpk-text-secondary transition-colors">
                                 {match.score}
