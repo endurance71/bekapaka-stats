@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Trophy, Users, MapPin, History, Activity, Crown, Target } from 'lucide-react';
+import { Users, History, Activity, Target } from 'lucide-react';
+import { TrophyIcon as Trophy, VenueIcon as MapPin, MvpIcon as Crown } from '../../shared/ui/BrandIcon';
+import type { IconComponent } from '../../shared/ui/BrandIcon';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
@@ -43,7 +45,7 @@ function formatDate(value: string | null | undefined, withTime = false): string 
     });
 }
 
-function SectionTitle({ icon: Icon, children, gold = false }: { icon: typeof Trophy; children: React.ReactNode; gold?: boolean }) {
+function SectionTitle({ icon: Icon, children, gold = false }: { icon: IconComponent; children: React.ReactNode; gold?: boolean }) {
     return (
         <div className="flex items-center gap-3 mb-4 pb-3 border-b border-bkpk-border-subtle">
             <div className={cn('flex items-center justify-center w-9 h-9 border shrink-0', gold ? 'border-bkpk-medal-gold' : 'border-bkpk-border-strong')}>

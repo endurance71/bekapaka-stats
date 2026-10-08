@@ -1,6 +1,7 @@
 import { cn } from '../lib/utils';
 import BkpkCard from './BkpkCard';
-import { MapPin, ArrowRight, Trophy } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { VenueIcon as MapPin, TrophyIcon as Trophy } from './BrandIcon';
 
 export interface MatchCardProps {
     id: string;

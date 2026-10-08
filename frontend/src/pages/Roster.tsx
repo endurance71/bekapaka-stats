@@ -5,9 +5,10 @@ import PlayerCard from '../shared/ui/PlayerCard';
 import { useNavigate } from 'react-router-dom';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
-import { resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { resolvePlayerImage } from '../shared/lib/playerUtils';
 
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 
 interface Player {
   id: string;
@@ -39,7 +40,7 @@ export default function Roster() {
     try {
       const q = seasonId ? `&seasonId=${encodeURIComponent(seasonId)}` : '';
       const data = await fetchJSON<Player[]>(`/api/roster?t=${Date.now()}${q}`);
-      setPlayers(data.sort((a, b) => a.number - b.number));
+      setPlayers(data.map((p) => normalizePlayerIdentity(p)).sort((a, b) => a.number - b.number));
     } catch (error) {
       console.error('Error fetching roster:', error);
     } finally {
@@ -78,7 +79,7 @@ export default function Roster() {
               >
                 <PlayerCard
                   {...player}
-                  photoUrl={resolvePlayerPhoto(player)}
+                  photoUrl={resolvePlayerImage(player)}
                   isStarter={player.starter}
                   onClick={(id) => navigate(`/players/${id}`)}
                 />

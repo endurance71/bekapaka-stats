@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay';
-import { ChevronRight, LogOut, X, type LucideIcon } from 'lucide-react';
+import type { ComponentType } from 'react';
+import { ChevronRight, LogOut, X } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import { cn } from '../shared/lib/utils';
-import { getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { getPositionLabel, type PhotoSource } from '../shared/lib/playerUtils';
 import SeasonSelector from './SeasonSelector';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { BrandMark } from '../shared/ui/BrandMark';
 import { JerseyStripes } from '../shared/ui/JerseyStripes';
+import PlayerAvatar from '../shared/ui/PlayerAvatar';
 
 /** Must match transition duration in component className */
 const MENU_ANIMATION_MS = 280;
@@ -16,7 +18,7 @@ const MENU_ANIMATION_MS = 280;
 export interface MobileMenuLink {
     to: string;
     label: string;
-    icon: LucideIcon;
+    icon: ComponentType<{ className?: string; strokeWidth?: number | string }>;
 }
 
 interface MenuUser {
@@ -70,14 +72,7 @@ function MenuProfileSection({
                 >
                     <div className="relative shrink-0">
                         <div className="w-12 h-[60px] overflow-hidden bg-ink-700 chamfer-sm">
-                            <img
-                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
-                                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                decoding="async"
-                                alt=""
-                            />
+                            <PlayerAvatar player={user as PhotoSource} className="w-full h-full" />
                         </div>
                         <span className="absolute -bottom-1 -right-2 min-w-[1.5rem] h-6 px-1 bg-bkpk-primary font-display text-sm leading-none text-bkpk-on-primary flex items-center justify-center">
                             {user.number ?? '—'}
@@ -287,14 +282,7 @@ export default function MobileFullScreenMenu({
                             className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0"
                             aria-label="Mój profil"
                         >
-                            <img
-                                src={resolvePlayerPhoto(user as Parameters<typeof resolvePlayerPhoto>[0])}
-                                onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                decoding="async"
-                                alt=""
-                            />
+                            <PlayerAvatar player={user as PhotoSource} className="w-full h-full" />
                         </Link>
                     ) : (
                         <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />

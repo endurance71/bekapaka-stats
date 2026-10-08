@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Star } from 'lucide-react';
-import { getPhotoUrl as buildPhotoUrl, getPositionLabel } from '../lib/playerUtils';
+import { MvpIcon as Star } from './BrandIcon';
+import { getPositionLabel } from '../lib/playerUtils';
 import { resolvePlayerPortrait } from '../lib/playerPortraits';
 import { formatStatFixed } from '../lib/formatStat';
 import monogramUrl from '../../assets/brand/monogram-bialy.svg';
@@ -40,11 +40,8 @@ export default function PlayerCard({
     const [photoFailed, setPhotoFailed] = useState(false);
 
     const portrait = resolvePlayerPortrait(firstName, lastName, number);
-    const sourcePhoto = (() => {
-        const hasValidRemotePhoto = Boolean(photoUrl) && !photoUrl!.toLowerCase().includes('empty.jpg') && !photoUrl!.includes('/photos/default.png');
-        return hasValidRemotePhoto ? photoUrl! : buildPhotoUrl(firstName, lastName);
-    })();
-    const photo = portrait ?? (photoFailed || sourcePhoto.includes('/photos/default.png') ? null : sourcePhoto);
+    const sourcePhoto = photoUrl && !photoUrl.toLowerCase().includes('empty.jpg') && !photoUrl.includes('/photos/default.png') ? photoUrl : null;
+    const photo = portrait ?? (photoFailed ? null : sourcePhoto);
     const displayNumber = number ? String(number) : null;
 
     return (

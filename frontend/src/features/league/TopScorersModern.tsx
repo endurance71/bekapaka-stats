@@ -3,13 +3,16 @@ import { fetchJSON } from '../../lib/api';
 import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
-import { Trophy, Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
+import { Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
+import { TrophyIcon as Trophy } from '../../shared/ui/BrandIcon';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import SectionHeading from '../../shared/ui/SectionHeading';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
+import PlayerAvatar from '../../shared/ui/PlayerAvatar';
+import type { PhotoSource } from '../../shared/lib/playerUtils';
 
 interface Scorer {
     id: string;
@@ -84,15 +87,11 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
         fetchLeaders();
     }, [fetchLeaders]);
 
-    const resolveLeaderPhoto = (player: Scorer) => {
-        if (player.rosterPlayer?.data?.photo) {
-            return player.rosterPlayer.data.photo;
-        }
-        if (player.raw?.photo_url && !player.raw.photo_url.includes('empty.jpg')) {
-            return player.raw.photo_url;
-        }
-        return '/photos/default.png';
-    };
+    // Zawodnik BeKaPaKa → portret/zdjęcie jak w składzie; rywal → zdjęcie z KALK albo monogram.
+    const leaderPhotoSource = (player: Scorer): PhotoSource =>
+        player.rosterPlayer
+            ? { ...player.rosterPlayer, photo: player.rosterPlayer.data?.photo, kalkPlayer: { raw: player.raw } }
+            : { kalkPlayer: { raw: player.raw } };
 
     const getCategoryStats = (player: Scorer, cat: LeaderCategory) => {
         switch (cat) {
@@ -214,14 +213,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             </div>
                                             <div className="relative shrink-0">
                                                 <div className="w-12 h-12 sm:w-14 sm:h-14 overflow-hidden border border-bkpk-border-strong bg-bkpk-bg flex items-center justify-center">
-                                                    <img
-                                                        src={resolveLeaderPhoto(player)}
-                                                        onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                                        className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-300"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        alt=""
-                                                    />
+                                                    <PlayerAvatar player={leaderPhotoSource(player)} className="w-full h-full" />
                                                 </div>
                                             </div>
 
@@ -266,14 +258,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             subtitle={player.team}
                                             leading={
                                                 <div className="w-9 h-9 overflow-hidden shrink-0 border border-bkpk-border-strong">
-                                                    <img
-                                                        src={resolveLeaderPhoto(player)}
-                                                        onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                                        className="w-full h-full object-cover"
-                                                        loading="lazy"
-                                                        decoding="async"
-                                                        alt=""
-                                                    />
+                                                    <PlayerAvatar player={leaderPhotoSource(player)} className="w-full h-full" />
                                                 </div>
                                             }
                                             highlight={
@@ -342,14 +327,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                     <td className="h-12 px-3 sm:px-5 font-semibold sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)] text-bkpk-text-primary">
                                                         <div className="flex items-center gap-2.5">
                                                             <div className="w-7 h-7 overflow-hidden shrink-0 border border-bkpk-border-strong">
-                                                                <img
-                                                                    src={resolveLeaderPhoto(player)}
-                                                                    onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                                                    className="w-full h-full object-cover"
-                                                                    loading="lazy"
-                                                                    decoding="async"
-                                                                    alt=""
-                                                                />
+                                                                <PlayerAvatar player={leaderPhotoSource(player)} className="w-full h-full" />
                                                             </div>
                                                             {player.name}
                                                         </div>

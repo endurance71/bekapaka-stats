@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { resolvePlayerPhoto, getPositionLabel } from '../shared/lib/playerUtils';
+import { resolvePlayerImage, getPositionLabel } from '../shared/lib/playerUtils';
 import PlayerCard from '../shared/ui/PlayerCard';
 import BkpkCard from '../shared/ui/BkpkCard';
 import BkpkButton from '../shared/ui/BkpkButton';
@@ -93,7 +93,7 @@ export default function Profile() {
         }
     };
 
-    const userPhoto = resolvePlayerPhoto(user);
+    const userPhoto = resolvePlayerImage(user);
 
     return (
         <div className="bg-bkpk-bg">

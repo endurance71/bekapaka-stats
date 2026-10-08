@@ -1,10 +1,11 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Star, Medal } from 'lucide-react';
+import { Medal } from 'lucide-react';
+import { TrophyIcon as Trophy, MvpIcon as Star } from '../../shared/ui/BrandIcon';
 import { BkpkCard } from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
-import { resolvePlayerPhoto } from '../../shared/lib/playerUtils';
 import { formatStatFixed } from '../../shared/lib/formatStat';
+import PlayerAvatar from '../../shared/ui/PlayerAvatar';
 
 interface Player {
     id: string;
@@ -86,14 +87,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                         >
                              <div className="relative">
                                  <div className="w-12 h-12 overflow-hidden bg-bkpk-surface-tint-2 border border-bkpk-border-strong flex items-center justify-center relative">
-                                     <img
-                                         src={resolvePlayerPhoto(player)}
-                                         onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                         className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-300"
-                                         loading="lazy"
-                                         decoding="async"
-                                         alt=""
-                                     />
+                                     <PlayerAvatar player={player} className="w-full h-full" />
                                      <div className={cn(
                                          "absolute bottom-0 right-0 w-5 h-5 flex items-center justify-center font-display text-[12px] leading-none tabular-nums",
                                          index === 0 ? "bg-bkpk-medal-gold text-bkpk-bg" :

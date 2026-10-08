@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react';
+import { InfoIcon as Info } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 

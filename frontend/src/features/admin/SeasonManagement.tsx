@@ -5,7 +5,8 @@ import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import SectionHeading from '../../shared/ui/SectionHeading';
-import { Calendar, Plus, CheckCircle2, Archive, RefreshCw, Edit3, ArrowRight, ShieldAlert, Users, Layers } from 'lucide-react';
+import { Plus, CheckCircle2, Archive, RefreshCw, Edit3, ArrowRight, ShieldAlert, Users, Layers } from 'lucide-react';
+import { CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 
 /** Digital 2.0: pole formularza — płaskie, linia ink-500, fokus 3 px złoty z global.css. */
 const fieldClass =

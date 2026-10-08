@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { LucideIcon, Trophy, Calendar, MapPin, AlertCircle } from 'lucide-react';
+import { LucideIcon, AlertCircle } from 'lucide-react';
+import { TrophyIcon as Trophy, CalendarIcon as Calendar, VenueIcon as MapPin } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';

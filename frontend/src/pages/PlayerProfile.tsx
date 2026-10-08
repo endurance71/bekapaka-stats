@@ -9,7 +9,8 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     AreaChart, Area
 } from 'recharts';
-import { ChevronLeft, Star, TrendingUp, BarChart2, Calendar, Target } from 'lucide-react';
+import { ChevronLeft, TrendingUp, BarChart2, Target } from 'lucide-react';
+import { MvpIcon as Star, CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import PageContainer from '../shared/ui/PageContainer';
@@ -27,8 +28,10 @@ import BoxScoreModern from '../features/games/BoxScoreModern';
 import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import useIsMobile from '../hooks/useIsMobile';
-import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { getPositionLabel } from '../shared/lib/playerUtils';
 import PlayerCareer, { type PlayerCareerResponse } from '../components/players/PlayerCareer';
+import PlayerAvatar from '../shared/ui/PlayerAvatar';
+import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 
 interface StatSnapshot {
     gameId: string;
@@ -117,7 +120,7 @@ export default function PlayerProfile() {
                 fetchJSON<PlayerStats>(`/api/players/${id}/stats?${statsQ.toString()}`),
                 fetchJSON<any>(`/api/players/${id}`)
             ]);
-            setData(stats);
+            setData(stats ? { ...stats, player: normalizePlayerIdentity(stats.player) } : stats);
             setAiSummary(playerRow?.aiDevelopmentSummary || null);
             setAiMeta({
                 at: playerRow?.aiDevelopmentAt,
@@ -182,7 +185,6 @@ export default function PlayerProfile() {
     if (!data) return <div className="p-20 text-center label-caps text-sm text-bkpk-text-muted">Player not found.</div>;
 
     const { player, averages, gameLog } = data;
-    const playerPhoto = resolvePlayerPhoto(player);
 
     return (
         <div className="bg-bkpk-bg">
@@ -218,14 +220,7 @@ export default function PlayerProfile() {
                         {/* Player Photo */}
                         <div className="relative shrink-0">
                             <div className="w-32 h-40 md:w-48 md:h-60 bg-bkpk-bg border border-bkpk-border-strong relative overflow-hidden">
-                                <img
-                                    src={playerPhoto}
-                                    onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                                    className="w-full h-full object-cover object-top grayscale hover:grayscale-0 transition-all duration-300"
-                                    loading="lazy"
-                                    decoding="async"
-                                    alt=""
-                                />
+                                <PlayerAvatar player={player} className="w-full h-full" />
                                 <div className="absolute bottom-0 right-0 min-w-9 h-9 md:min-w-12 md:h-12 px-1.5 bg-bkpk-primary flex items-center justify-center">
                                     <span className="text-lg md:text-2xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">#{player.number}</span>
                                 </div>

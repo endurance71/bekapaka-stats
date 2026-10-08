@@ -342,6 +342,13 @@ html.is-scroll-locked {
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Ikony UI (lucide) w geometrii marki — jak ikony na bekapaka.pl: końcówki proste, narożniki ostre.
+     Ikony z odpowiednikiem w brandbooku: shared/ui/BrandIcon.tsx (Ikony 2.0). */
+  svg.lucide {
+    stroke-linecap: square;
+    stroke-linejoin: miter;
+  }
+
   input, textarea, select {
     font-size: max(16px, 1rem) !important;
     touch-action: manipulation;

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { cn } from '../shared/lib/utils';
-import { getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import { getPositionLabel } from '../shared/lib/playerUtils';
+import PlayerAvatar from '../shared/ui/PlayerAvatar';
 
 interface User {
     firstName: string;
@@ -26,12 +27,7 @@ export default function SidebarProfile({ user, variant = 'sidebar' }: SidebarPro
     const content = (
         <div className="flex items-center gap-3 p-2 -m-2 border border-transparent group-hover:border-bkpk-border-subtle group-hover:bg-bkpk-surface transition-colors">
             <div className="relative w-12 h-[60px] shrink-0 overflow-hidden bg-ink-700 chamfer-sm">
-                <img
-                    src={resolvePlayerPhoto(user)}
-                    onError={(e) => (e.currentTarget.src = '/photos/default.png')}
-                    alt=""
-                    className="w-full h-full object-cover object-top"
-                />
+                <PlayerAvatar player={user} className="w-full h-full" />
             </div>
             <div className="min-w-0 flex-1">
                 <p className="label-caps text-[11px] leading-none text-bkpk-primary truncate">

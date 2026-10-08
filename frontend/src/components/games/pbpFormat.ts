@@ -1,4 +1,4 @@
-import type { PbpEvent, PbpRun } from './kalkMatchTypes';
+import type { PbpEvent, PbpRun, Side } from './kalkMatchTypes';
 
 /** Zegar meczowy m:ss (pozostały czas kwarty). */
 export function formatClock(sec: number | null | undefined): string {
@@ -60,14 +60,66 @@ export interface PbpPeriodGroup {
     endScore: { home: number; away: number } | null;
 }
 
+/** Rodzaje akcji do filtra — jak na bekapaka.pl (`site/app/mecze/MatchPlayByPlay.tsx`), ale po `actionType`. */
+export type PbpCategory = 'all' | 'score' | 'miss' | 'rebound' | 'assist' | 'turnover' | 'steal' | 'block' | 'foul' | 'sub';
+
+export const PBP_CATEGORIES: ReadonlyArray<{ key: PbpCategory; label: string }> = [
+    { key: 'all', label: 'Wszystkie akcje' },
+    { key: 'score', label: 'Punkty' },
+    { key: 'miss', label: 'Niecelne rzuty' },
+    { key: 'rebound', label: 'Zbiórki' },
+    { key: 'assist', label: 'Asysty' },
+    { key: 'turnover', label: 'Straty' },
+    { key: 'steal', label: 'Przechwyty' },
+    { key: 'block', label: 'Bloki' },
+    { key: 'foul', label: 'Faule' },
+    { key: 'sub', label: 'Zmiany' },
+];
+
+const MISS_TYPES = new Set(['shot_missed', 'shot_blocked', 'ft_missed']);
+
+export function matchesPbpCategory(ev: Pick<PbpEvent, 'actionType' | 'isScoring'>, category: PbpCategory): boolean {
+    switch (category) {
+        case 'all':
+            return true;
+        case 'score':
+            return ev.isScoring;
+        case 'miss':
+            return MISS_TYPES.has(ev.actionType);
+        default:
+            return ev.actionType === category;
+    }
+}
+
+export interface PbpFilter {
+    /** 'all' albo numer okresu */
+    period?: number | 'all';
+    side?: Side | 'all';
+    category?: PbpCategory;
+    /** @deprecated = category 'score' */
+    scoringOnly?: boolean;
+}
+
+const passesScope = (ev: PbpEvent, { period = 'all', side = 'all' }: PbpFilter) =>
+    (period === 'all' || ev.period === period) && (side === 'all' || ev.side === side);
+
+/** Liczba zdarzeń w każdym rodzaju akcji dla bieżącej kwarty i drużyny (licznik w filtrze). */
+export function countPbpCategories(events: PbpEvent[], filter: Pick<PbpFilter, 'period' | 'side'> = {}): Record<PbpCategory, number> {
+    const counts = Object.fromEntries(PBP_CATEGORIES.map((c) => [c.key, 0])) as Record<PbpCategory, number>;
+    for (const ev of events) {
+        if (isNeutralEvent(ev) || !passesScope(ev, filter)) continue;
+        for (const { key } of PBP_CATEGORIES) if (matchesPbpCategory(ev, key)) counts[key] += 1;
+    }
+    return counts;
+}
+
 /**
- * Grupowanie zdarzeń po okresach z filtrami (okres, tylko punkty). Zdarzenia neutralne pomijane.
- * @param period 'all' albo numer okresu
+ * Grupowanie zdarzeń po okresach z filtrami (okres, drużyna, rodzaj akcji). Zdarzenia neutralne pomijane;
+ * wynik po okresie liczony ze wszystkich zdarzeń okresu.
  */
-export function groupEventsByPeriod(
-    events: PbpEvent[],
-    { period = 'all', scoringOnly = false }: { period?: number | 'all'; scoringOnly?: boolean } = {}
-): PbpPeriodGroup[] {
+export function groupEventsByPeriod(events: PbpEvent[], filter: PbpFilter = {}): PbpPeriodGroup[] {
+    const { period = 'all', side = 'all' } = filter;
+    const category: PbpCategory = filter.category ?? (filter.scoringOnly ? 'score' : 'all');
     const groups = new Map<number, PbpPeriodGroup>();
     for (const ev of events) {
         if (period !== 'all' && ev.period !== period) continue;
@@ -78,7 +130,8 @@ export function groupEventsByPeriod(
         }
         g.endScore = { home: ev.scoreHome, away: ev.scoreAway };
         if (isNeutralEvent(ev)) continue;
-        if (scoringOnly && !ev.isScoring) continue;
+        if (side !== 'all' && ev.side !== side) continue;
+        if (!matchesPbpCategory(ev, category)) continue;
         g.events.push(ev);
     }
     return [...groups.values()].sort((a, b) => a.period - b.period);

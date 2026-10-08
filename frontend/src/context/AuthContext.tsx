@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { postJSON, fetchJSON, setUnauthorizedHandler } from '../lib/api';
+import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 
 interface User {
     id: string;
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (token) {
             try {
                 const data = await fetchJSON<{ user: User }>('/api/auth/me');
-                setUser(data.user);
+                setUser(normalizePlayerIdentity(data.user));
             } catch {
                 logout();
             }
@@ -64,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (token) {
             fetchJSON<{ user: User }>('/api/auth/me')
-                .then(data => setUser(data.user))
+                .then(data => setUser(normalizePlayerIdentity(data.user)))
                 .catch(() => {
                     logout();
                 })
@@ -77,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const login = useCallback(async (username: string, password: string) => {
         const data = await postJSON<{ user: User; token: string }>('/api/auth/login', { username, password });
         setToken(data.token);
-        setUser(data.user);
+        setUser(normalizePlayerIdentity(data.user));
         localStorage.setItem('bkpk_token', data.token);
     }, []);
 

@@ -1,3 +1,6 @@
+import { normalizePlayerIdentity, resolvePlayerJerseyNumber } from './playerIdentity';
+import { resolvePlayerPortrait } from './playerPortraits';
+
 /**
  * Shared player utilities — extracted from Shell, SidebarProfile, PlayerCard
  * to eliminate code duplication.
@@ -35,29 +38,64 @@ export function getPositionLabel(position?: string): string {
   return POSITION_MAP[position] || position;
 }
 
-export function resolvePlayerPhoto(player?: {
-  firstName?: string;
-  lastName?: string;
+/** Lokalne zdjęcia w `public/photos` (jak `LOCAL_PHOTOS` w site/lib/data/utils.ts). */
+const LOCAL_PHOTOS = new Set([
+  'damian-motylinski',
+  'emil-klos',
+  'filip-karpinski',
+  'filip-kawecki',
+  'miroslaw-malina',
+  'pablo-iriarte',
+  'patryk-szczesniak',
+  'pawel-samusionek',
+  'przemyslaw-klimek',
+  'robert-kulik',
+  'tomasz-kaszubowski',
+]);
+
+export type PhotoSource = {
+  firstName?: string | null;
+  lastName?: string | null;
+  number?: number | string | null;
   photo?: string | null;
+  photoUrl?: string | null;
+  photo_url?: string | null;
   data?: any;
   kalkPlayer?: {
     raw?: {
       photo_url?: string | null;
     } | null;
   } | null;
-} | null): string {
-  if (!player) return '/photos/default.png';
+} | null | undefined;
 
-  // 1. Custom photo from user data (Base64 or URL)
-  const customPhoto = player.photo || player.data?.photo;
-  if (customPhoto) return customPhoto;
+const isRealPhoto = (url?: string | null): url is string =>
+  Boolean(url) && !url!.toLowerCase().includes('empty.jpg') && !url!.includes('/photos/default.png');
 
-  // 2. Remote photo from KALK if valid
-  const remotePhoto = player.kalkPlayer?.raw?.photo_url || null;
-  const hasValid = remotePhoto && !remotePhoto.toLowerCase().includes('empty.jpg');
-  if (hasValid) return remotePhoto;
+/**
+ * Zdjęcie zawodnika jak na bekapaka.pl: portret marki → własne zdjęcie → zdjęcie KALK → `public/photos`
+ * (obie kolejności imienia i nazwiska). Brak zdjęcia → `null` (komponent pokazuje monogram BKPK).
+ */
+export function resolvePlayerImage(player: PhotoSource): string | null {
+  if (!player) return null;
+  const { firstName, lastName } = normalizePlayerIdentity(player);
+  const portrait = resolvePlayerPortrait(firstName ?? undefined, lastName ?? undefined, resolvePlayerJerseyNumber(player));
+  if (portrait) return portrait;
 
-  // 3. Fallback to name-based pattern
-  return getPhotoUrl(player.firstName, player.lastName);
+  const custom = player.photo || player.data?.photo;
+  if (isRealPhoto(custom)) return custom;
+
+  const remote = player.photoUrl || player.photo_url || player.kalkPlayer?.raw?.photo_url;
+  if (isRealPhoto(remote)) return remote;
+
+  if (!firstName || !lastName) return null;
+  const forward = `${normalizePolishChars(firstName)}-${normalizePolishChars(lastName)}`;
+  const reversed = `${normalizePolishChars(lastName)}-${normalizePolishChars(firstName)}`;
+  if (LOCAL_PHOTOS.has(forward)) return `/photos/${forward}.png`;
+  if (LOCAL_PHOTOS.has(reversed)) return `/photos/${reversed}.png`;
+  return null;
 }
 
+/** @deprecated Użyj `resolvePlayerImage` / `PlayerAvatar` — zwraca `/photos/default.png`, gdy brak zdjęcia. */
+export function resolvePlayerPhoto(player: PhotoSource): string {
+  return resolvePlayerImage(player) ?? '/photos/default.png';
+}
