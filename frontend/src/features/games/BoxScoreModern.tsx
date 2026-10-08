@@ -10,8 +10,12 @@ import type { StatKey } from '../../shared/lib/statGlossary';
 
 export interface PlayerStat {
     name: string;
-    /** Link do profilu zawodnika (gdy jest w składzie BeKaPaKa) */
+    /** Link do profilu zawodnika (gdy jest w składzie BeKaPaKa) albo do meczu (dziennik meczów zawodnika) */
     href?: string | null;
+    /** Druga linia pod nazwą, np. data meczu */
+    subtitle?: string | null;
+    /** Wiersz zalogowanego zawodnika — wyróżniony */
+    isMe?: boolean;
     number?: number | string;
     minutes?: number | string;
     points?: number | string;
@@ -50,6 +54,8 @@ interface BoxScoreProps {
     loading?: boolean;
     /** Kolumna +/-: domyślnie tylko gdy ktoś ma wartość ≠ 0 (KALK nie liczy +/- w części meczów). */
     showPlusMinus?: boolean;
+    /** Nagłówek pierwszej kolumny („Zawodnik” w meczu, „Mecz” w dzienniku zawodnika) */
+    firstColumnLabel?: string;
 }
 
 /** Czy w wierszach jest prawdziwy +/- (same zera / brak = KALK go nie podał). */
@@ -72,9 +78,10 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.03 }}
             className="group"
+            aria-current={player.isMe ? 'true' : undefined}
         >
             {/* Przyklejona kolumna zawodnika: pełne tło (zebra/hover) + linia zamiast cienia */}
-            <td className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-bkpk-text-primary sticky left-0 z-10 bg-bkpk-bg group-even:bg-[var(--table-stripe)] group-hover:bg-[var(--table-hover)] transition-colors border-r border-bkpk-border-strong min-w-[120px] max-w-[140px]">
+            <td className={cn('px-2 sm:px-4 py-2 sm:py-3 font-semibold text-bkpk-text-primary sticky left-0 z-10 bg-bkpk-bg group-even:bg-[var(--table-stripe)] group-hover:bg-[var(--table-hover)] transition-colors border-r border-bkpk-border-strong min-w-[120px] max-w-[140px]', player.isMe && 'shadow-[inset_4px_0_0_var(--c-red-500)]')}>
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 min-w-0">
                         {player.number && <span className="font-display text-xs sm:text-sm text-bkpk-primary tabular-nums shrink-0">#{player.number}</span>}
@@ -83,10 +90,12 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                         ) : (
                             <span className="truncate text-xs sm:text-sm">{player.name}</span>
                         )}
+                        {player.isMe && <span className="label-caps text-[10px] text-bkpk-primary shrink-0">Ja</span>}
                         {player.starter && (
                             <span className="text-bkpk-primary font-display text-sm leading-none shrink-0" title="Pierwsza piątka">*<span className="sr-only"> (pierwsza piątka)</span></span>
                         )}
                     </div>
+                    {player.subtitle && <span className="text-xs font-normal text-bkpk-text-muted tabular-nums">{player.subtitle}</span>}
                     {/* Telefon: kolumny rzutów są ukryte — skrót z podpisami */}
                     <span className="text-xs font-normal text-bkpk-text-muted tabular-nums truncate lg:hidden">
                         Z gry {player.fg ?? '–'} · Za 3 {player.threeP ?? '–'} · Wolne {player.ft ?? '–'}
@@ -141,9 +150,11 @@ const headers: Header[] = [
     { label: 'Eval', key: 'eval', className: 'text-center whitespace-nowrap' },
 ];
 
-function BoxScoreTable({ playerStats, compact, showPlusMinus }: { playerStats: PlayerStat[]; compact?: boolean; showPlusMinus: boolean }) {
+function BoxScoreTable({ playerStats, compact, showPlusMinus, firstColumnLabel }: { playerStats: PlayerStat[]; compact?: boolean; showPlusMinus: boolean; firstColumnLabel?: string }) {
     const extended = hasExtendedBoxColumns(playerStats);
-    const visibleHeaders = headers.filter((h) => (extended || !h.extended) && (showPlusMinus || !h.plusMinus));
+    const visibleHeaders = headers
+        .filter((h) => (extended || !h.extended) && (showPlusMinus || !h.plusMinus))
+        .map((h, i) => (i === 0 && firstColumnLabel ? { ...h, label: firstColumnLabel } : h));
     return (
         <table className={cn('bkpk-table bg-bkpk-bg min-w-[520px]', compact ? 'text-xs' : 'text-sm')}>
             <thead>
@@ -172,7 +183,7 @@ function BoxScoreTable({ playerStats, compact, showPlusMinus }: { playerStats: P
     );
 }
 
-export default function BoxScore({ playerStats, loading, showPlusMinus }: BoxScoreProps) {
+export default function BoxScore({ playerStats, loading, showPlusMinus, firstColumnLabel }: BoxScoreProps) {
     const isMobile = useIsMobile(1024);
     const plusMinusVisible = showPlusMinus ?? hasPlusMinus(playerStats ?? []);
 
@@ -204,7 +215,7 @@ export default function BoxScore({ playerStats, loading, showPlusMinus }: BoxSco
         return (
             <div>
                 <ScrollableTableShell compact hint="Obróć telefon poziomo lub przesuń tabelę w bok">
-                    <BoxScoreTable playerStats={playerStats} compact showPlusMinus={plusMinusVisible} />
+                    <BoxScoreTable playerStats={playerStats} compact showPlusMinus={plusMinusVisible} firstColumnLabel={firstColumnLabel} />
                 </ScrollableTableShell>
                 {legend}
             </div>
@@ -215,7 +226,7 @@ export default function BoxScore({ playerStats, loading, showPlusMinus }: BoxSco
         <div>
             <BkpkCard variant="glass" padding="none" className="overflow-hidden">
                 <ScrollableTableShell className="border-0" hint="Przesuń w bok, aby zobaczyć wszystkie kolumny">
-                    <BoxScoreTable playerStats={playerStats} showPlusMinus={plusMinusVisible} />
+                    <BoxScoreTable playerStats={playerStats} showPlusMinus={plusMinusVisible} firstColumnLabel={firstColumnLabel} />
                 </ScrollableTableShell>
             </BkpkCard>
             {legend}

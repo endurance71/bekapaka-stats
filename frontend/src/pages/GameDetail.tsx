@@ -3,7 +3,7 @@ import MatchDayCard from '../features/match/MatchDayCard';
 import { periodShortLabel } from '../components/games/pbpFormat';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { fetchJSON, postJSON } from '../lib/api';
+import { fetchJSON, postJSON, ApiError } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,6 +23,8 @@ import PlayByPlayPanel from '../components/games/PlayByPlayPanel';
 import type { GameInfoResponse, PlayByPlayResponse } from '../components/games/kalkMatchTypes';
 import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
 import { useRosterLinks } from '../shared/lib/useRosterLinks';
+import BackLink from '../shared/ui/BackLink';
+import LoadError from '../shared/ui/LoadError';
 
 type MainTab = 'stats' | 'info' | 'pbp';
 
@@ -55,14 +57,17 @@ export default function GameDetail() {
   const [pbp, setPbp] = useState<PlayByPlayResponse | null>(null);
   const [pbpState, setPbpState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<unknown>(null);
   const [activeTab, setActiveTab] = useState<'bekapaka' | 'opponent'>('bekapaka');
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
   const fetchGame = useCallback(async () => {
     if (!id) return;
     setLoading(true);
+    setLoadError(null);
     try {
       // seasonId z linku (np. H2H) — to samo ID meczu może istnieć w kilku sezonach.
       const q = querySeasonId ? `?seasonId=${encodeURIComponent(querySeasonId)}` : '';
@@ -70,6 +75,8 @@ export default function GameDetail() {
       setGame(data);
     } catch (error) {
       console.error('Błąd podczas pobierania meczu:', error);
+      // 404 = mecz nie istnieje; inne błędy (sieć, serwer) → „Spróbuj ponownie”
+      if (!(error instanceof ApiError && error.status === 404)) setLoadError(error);
     } finally {
       setLoading(false);
     }
@@ -151,6 +158,7 @@ export default function GameDetail() {
   const handleGenerateAi = async (force = false) => {
     if (!id) return;
     setAiLoading(true);
+    setAiError(null);
     try {
       const result = await postJSON<{
         aiSummary: string;
@@ -166,7 +174,7 @@ export default function GameDetail() {
         aiSummaryStale: false
       }));
     } catch (error: any) {
-      alert(error?.message || 'Nie udało się wygenerować analizy AI');
+      setAiError(error?.message || 'Nie udało się wygenerować analizy AI');
     } finally {
       setAiLoading(false);
     }
@@ -186,7 +194,11 @@ export default function GameDetail() {
   if (!game) {
     return (
       <PageContainer>
-        <p className="py-20 text-center text-bkpk-text-secondary">Nie znaleziono meczu. Wróć do <Link to="/games" className="underline">listy meczów</Link>.</p>
+        {loadError ? (
+          <LoadError title="Nie udało się wczytać meczu" error={loadError} onRetry={fetchGame} className="my-12" />
+        ) : (
+          <p className="py-20 text-center text-bkpk-text-secondary">Nie znaleziono meczu. Wróć do <Link to="/games" className="underline">listy meczów</Link> albo na <Link to="/dashboard" className="underline">Start</Link>.</p>
+        )}
       </PageContainer>
     );
   }
@@ -199,12 +211,7 @@ export default function GameDetail() {
   return (
     <div className="bg-bkpk-bg">
       <PageContainer>
-        <Link to="/games" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
-          <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center group-hover:border-bkpk-text-primary transition-colors">
-            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
-          </div>
-          <span className="label-caps text-xs">Powrót do meczów</span>
-        </Link>
+        <BackLink fallback="/games" label="Wróć" />
 
         {/* Scoreboard Header — jak MatchHero/ScoreBoard na bekapaka.pl: BeKaPaKa po lewej, przegrany konturem */}
         <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 md:p-10 lg:p-12">
@@ -345,7 +352,7 @@ export default function GameDetail() {
 
         {/* Zakładki meczu — jak `.tabs` na bekapaka.pl (League.tsx): wersaliki, 3 px czerwone podkreślenie */}
         {!isUpcoming && visibleTabs.length > 1 && (
-          <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Sekcje meczu">
+          <div className="flex overflow-x-auto no-scrollbar max-w-full gap-5 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Sekcje meczu">
             {visibleTabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = mainTab === tab.id;
@@ -362,7 +369,8 @@ export default function GameDetail() {
                     isActive ? 'text-bkpk-text-primary after:scale-x-100' : 'text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0'
                   )}
                 >
-                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  {/* Na telefonie bez ikon — „Akcja po akcji” mieści się bez obcinania */}
+                  <Icon className="hidden sm:block w-4 h-4 shrink-0" aria-hidden="true" />
                   {tab.label}
                 </button>
               );
@@ -434,6 +442,7 @@ export default function GameDetail() {
 
             <AiAnalysisBlock
               title="Analiza meczu (AI)"
+              errorMessage={aiError}
               content={game.aiSummary}
               generatedAt={game.aiSummaryAt}
               model={game.aiSummaryModel}
@@ -504,7 +513,8 @@ export default function GameDetail() {
                   ft: `${p.ftm}/${p.fta}`,
                   plusMinus: p.plusMinus,
                   eval: p.eval,
-                  href: p.slug && rosterLinks.get(p.slug) ? `/players/${rosterLinks.get(p.slug)}` : null
+                  href: p.slug && rosterLinks.get(p.slug) ? `/players/${rosterLinks.get(p.slug)}` : null,
+                  isMe: Boolean(user?.kalkSlug && p.slug === user.kalkSlug)
                 })) || []}
                 showPlusMinus={matchPlusMinus}
               />

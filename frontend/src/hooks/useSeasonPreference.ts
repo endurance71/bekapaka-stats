@@ -16,9 +16,15 @@ export function useSeasonPreference(playerId: string | undefined) {
   const [seasons, setSeasons] = useState<KalkSeasonOption[]>([]);
   const [seasonId, setSeasonId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Błąd pobrania sezonów (sieć/serwer): bez sezonu strony nie mają czego wczytać — Shell pokazuje „Spróbuj ponownie”
+  const [error, setError] = useState<unknown>(null);
+  const [attempt, setAttempt] = useState(0);
+  const reload = useCallback(() => setAttempt((n) => n + 1), []);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(null);
     (async () => {
       try {
         const list = await fetchJSON<KalkSeasonOption[]>('/api/seasons');
@@ -30,6 +36,7 @@ export function useSeasonPreference(playerId: string | undefined) {
         setSeasonId(initial);
       } catch (e) {
         console.error('seasons load failed', e);
+        if (!cancelled) setError(e);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -37,7 +44,7 @@ export function useSeasonPreference(playerId: string | undefined) {
     return () => {
       cancelled = true;
     };
-  }, [playerId]);
+  }, [playerId, attempt]);
 
   const handleSeasonChange = useCallback(
     async (nextId: string) => {
@@ -61,6 +68,8 @@ export function useSeasonPreference(playerId: string | undefined) {
     seasonId,
     selectedSeason,
     loading,
+    error,
+    reload,
     setSeasonId: handleSeasonChange
   };
 }

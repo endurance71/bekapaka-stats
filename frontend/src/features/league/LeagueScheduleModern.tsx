@@ -7,6 +7,7 @@ import { pluralPl } from '../../shared/lib/plural';
 import { Link } from 'react-router-dom';
 import { isBekapakaName } from '../../shared/lib/matchUtils';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
+import LoadError from '../../shared/ui/LoadError';
 
 interface Match {
     id: string;
@@ -76,17 +77,20 @@ interface LeagueScheduleModernProps {
 export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernProps) {
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<unknown>(null);
     // Domyślnie tylko mecze BeKaPaKa — zawodnika interesuje własny terminarz
     const [onlyOurs, setOnlyOurs] = useState(true);
 
     const fetchSchedule = useCallback(async () => {
         if (!seasonId) return;
         setLoading(true);
+        setError(null);
         try {
             const data = await fetchJSON<Match[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`);
             setMatches(data || []);
         } catch (err) {
             console.error(err);
+            setError(err);
         } finally {
             setLoading(false);
         }
@@ -111,6 +115,10 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                 ))}
             </div>
         );
+    }
+
+    if (error) {
+        return <LoadError title="Nie udało się wczytać terminarza" error={error} onRetry={fetchSchedule} />;
     }
 
     if (matches.length === 0) {

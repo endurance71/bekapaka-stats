@@ -6,6 +6,7 @@ describe('difficultyFromOpponent', () => {
     it('rywal bez meczów → brak oceny', () => {
         expect(difficultyFromOpponent({ wins: 0, losses: 0 })).toBeNull();
         expect(difficultyFromOpponent({})).toBeNull();
+        expect(difficultyFromOpponent({ wins: 0, losses: 1 })).toBeNull(); // 1–2 mecze rywala: za mało, by ocenić
     });
 
     it('% zwycięstw rywala → 1–5', () => {
