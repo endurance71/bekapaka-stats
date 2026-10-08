@@ -54,6 +54,11 @@ afterAll(async () => {
 });
 
 describe('API authorization', () => {
+  it('players cannot change their own photo (coach only, via admin)', async () => {
+    expect((await request('/api/profile', 'PUT', token('player-1', 'PLAYER'))).status).toBe(403);
+    expect((await request('/api/admin/users/player-1', 'PUT', token('player-1', 'PLAYER'))).status).toBe(403);
+  });
+
   it('player goals: only the player or a coach; match day only for a coach', async () => {
     expect((await request('/api/players/player-1/goals', 'PUT')).status).toBe(401);
     expect((await request('/api/players/player-1/goals', 'PUT', token('player-2', 'PLAYER'))).status).toBe(403);

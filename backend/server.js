@@ -1093,33 +1093,9 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
 });
 
 // --- USER PROFILE API (SELF SERVICE) ---
-app.put(['/api/profile', '/profile'], authenticateToken, async (req, res) => {
-  try {
-    const { photo } = req.body;
-    const existingUser = await prisma.rosterPlayer.findUnique({
-      where: { id: req.user.id }
-    });
-
-    if (!existingUser) {
-      return res.status(404).json({ error: 'Użytkownik nie istnieje' });
-    }
-
-    const updated = await prisma.rosterPlayer.update({
-      where: { id: req.user.id },
-      data: {
-        data: {
-          ...(existingUser.data || {}),
-          photo: photo !== undefined ? photo : (existingUser.data?.photo || null)
-        }
-      }
-    });
-
-    const { password: _, ...safeUser } = updated;
-    res.json(safeUser);
-  } catch (err) {
-    console.error('Failed to update profile photo:', err);
-    res.status(500).json({ error: 'Błąd aktualizacji zdjęcia profilowego' });
-  }
+// Zdjęcia zawodników zmienia tylko trener (Administracja → edycja zawodnika: PUT /api/admin/users/:id)
+app.put(['/api/profile', '/profile'], authenticateToken, (req, res) => {
+  res.status(403).json({ error: 'Zdjęcie zmienia trener w Administracji.' });
 });
 
 app.put(['/api/profile/password', '/profile/password'], authenticateToken, async (req, res) => {
