@@ -299,3 +299,70 @@ export function aggregatePbpTendencies(insightsList, perspective, otherLabel) {
     playersFouledOut: fouledOut
   };
 }
+
+const FOUL_OUT = 5;
+
+/**
+ * Profil zawodnika z akcji po akcji (wszystkie jego zdarzenia w sezonie): punkty, faule i straty
+ * na kwarty, końcówki (ostatnie 5 min 4. kwarty + dogrywki), rzuty za 2/3 i wolne, faule do 5.
+ * @param {object[] | null | undefined} events — zdarzenia jednego zawodnika (dowolne mecze)
+ * @param {{ clutchSeconds?: number }} [options]
+ */
+export function computePlayerPbpProfile(events, options = {}) {
+  const list = Array.isArray(events) ? events : [];
+  if (list.length === 0) return { available: false, matchesWithPbp: 0 };
+  const clutchSeconds = options.clutchSeconds ?? DEFAULT_CLUTCH_SECONDS;
+  const byPeriod = {};
+  const period = (ev) => {
+    const key = ev.period ?? 0;
+    byPeriod[key] ??= { pts: 0, fouls: 0, turnovers: 0 };
+    return byPeriod[key];
+  };
+  const shots = { twoPm: 0, twoPa: 0, threePm: 0, threePa: 0, ftm: 0, fta: 0, blockedShots: 0 };
+  const clutch = { pts: 0, fgm: 0, fga: 0, ftm: 0, fta: 0, turnovers: 0, fouls: 0 };
+  const foulsByMatch = new Map();
+  const matches = new Set();
+
+  for (const ev of list) {
+    matches.add(ev.kalkMatchId ?? 'm');
+    const p = period(ev);
+    const inClutch = isClutchEvent(ev, clutchSeconds);
+    const type = ev.actionType;
+    if (type === 'shot_made' || type === 'shot_missed' || type === 'shot_blocked') {
+      const three = ev.shotValue === 3;
+      const made = type === 'shot_made';
+      if (three) { shots.threePa += 1; if (made) shots.threePm += 1; }
+      else { shots.twoPa += 1; if (made) shots.twoPm += 1; }
+      if (type === 'shot_blocked') shots.blockedShots += 1;
+      if (made) p.pts += three ? 3 : 2;
+      if (inClutch) { clutch.fga += 1; if (made) { clutch.fgm += 1; clutch.pts += three ? 3 : 2; } }
+    } else if (type === 'ft_made' || type === 'ft_missed') {
+      shots.fta += 1;
+      if (type === 'ft_made') { shots.ftm += 1; p.pts += 1; }
+      if (inClutch) { clutch.fta += 1; if (type === 'ft_made') { clutch.ftm += 1; clutch.pts += 1; } }
+    } else if (type === 'foul') {
+      p.fouls += 1;
+      if (inClutch) clutch.fouls += 1;
+      const key = ev.kalkMatchId ?? 'm';
+      foulsByMatch.set(key, (foulsByMatch.get(key) ?? 0) + 1);
+    } else if (type === 'turnover') {
+      p.turnovers += 1;
+      if (inClutch) clutch.turnovers += 1;
+    }
+  }
+
+  const ordered = Object.fromEntries(
+    Object.keys(byPeriod)
+      .map(Number)
+      .sort((a, b) => a - b)
+      .map((n) => [periodLabel(n), byPeriod[n]])
+  );
+  return {
+    available: true,
+    matchesWithPbp: matches.size,
+    byPeriod: ordered,
+    shots,
+    clutch,
+    foulOuts: [...foulsByMatch.values()].filter((n) => n >= FOUL_OUT).length
+  };
+}

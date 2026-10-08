@@ -1,19 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import type { PlayByPlayData, PlayByPlayEvent, PlayByPlayPeriod } from '../../lib/data/play-by-play'
 
-export interface PlayByPlayEvent {
-  time: string
-  side: 'home' | 'away' | 'neutral'
-  player?: string | null
-  action: string
-  score?: string | null
-}
-
-export interface PlayByPlayPeriod {
-  title: string
-  events: PlayByPlayEvent[]
-}
+export type { PlayByPlayEvent, PlayByPlayPeriod }
 
 interface MatchPlayByPlayProps {
   gameId: string
@@ -96,6 +86,8 @@ function periodScore(events: PlayByPlayEvent[]): string | null {
 
 export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPlayByPlayProps) {
   const [periods, setPeriods] = useState<PlayByPlayPeriod[]>([])
+  // Strony zdarzeń są wg KALK (gospodarz/gość), nie wg BeKaPaKa — nazwy bierzemy z odpowiedzi
+  const [teams, setTeams] = useState<Pick<PlayByPlayData, 'home' | 'away'> | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedPeriod, setSelectedPeriod] = useState<number | 'all'>('all')
@@ -114,10 +106,11 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
         }
         return res.json()
       })
-      .then((data: PlayByPlayPeriod[]) => {
+      .then((data: PlayByPlayData) => {
         if (!active) return
-        if (Array.isArray(data) && data.length > 0) {
-          setPeriods(data)
+        if (Array.isArray(data?.periods) && data.periods.length > 0) {
+          setPeriods(data.periods)
+          setTeams({ home: data.home, away: data.away })
         } else {
           setError('Brak zarejestrowanych akcji dla tego spotkania.')
         }
@@ -215,10 +208,15 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
 
   const totalDisplayedEvents = filteredPeriods.reduce((sum, p) => sum + p.events.length, 0)
 
+  const sideName = {
+    home: teams?.home.name || homeTeamName,
+    away: teams?.away.name || awayTeamName
+  }
+  const shortName = (name: string) => name.replace(/\s+Bobolice$/i, '')
   const sides: { key: 'all' | 'home' | 'away'; label: string }[] = [
     { key: 'all', label: 'Obie' },
-    { key: 'home', label: homeTeamName.replace(/\s+Bobolice$/i, '') },
-    { key: 'away', label: awayTeamName }
+    { key: 'home', label: shortName(sideName.home) },
+    { key: 'away', label: shortName(sideName.away) }
   ]
 
   return (
@@ -297,8 +295,8 @@ export function MatchPlayByPlay({ gameId, homeTeamName, awayTeamName }: MatchPla
                   {events.map((ev, eIdx) => (
                     <li key={eIdx} className={`pbp-event pbp-event--${ev.side}${ev.score ? ' is-score' : ''}`}>
                       <time className='pbp-event__time'>{ev.time}</time>
-                      <span className='pbp-event__team' title={ev.side === 'home' ? 'BeKaPaKa Bobolice' : awayTeamName}>
-                        {ev.side === 'home' ? 'BeKaPaKa' : awayTeamName}
+                      <span className='pbp-event__team' title={sideName[ev.side as 'home' | 'away']}>
+                        {shortName(sideName[ev.side as 'home' | 'away'])}
                       </span>
                       <span className='pbp-event__text'>
                         {ev.player ? <strong>{ev.player}</strong> : null}

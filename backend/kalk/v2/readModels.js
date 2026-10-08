@@ -589,3 +589,100 @@ export async function getPlayerCareer(prisma, id, { firstSeasonSlug = CAREER_FIR
     gameLogSummary
   };
 }
+
+const ARCHIVED_TEAM = /^Drużyna archiwalna\b/i;
+const ratio = (a, b) => (b > 0 ? Math.round((a / b) * 1000) / 10 : null);
+const perGame = (pts, games) => (games > 0 ? Math.round((pts / games) * 10) / 10 : null);
+
+/** Bilans BeKaPaKa z rywalem z zakończonych meczów terminarza (wszystkie sezony w bazie, od 2023/24). */
+export function headToHeadByOpponent(leagueMatches, bekapakaKalkId) {
+  const out = new Map();
+  for (const m of leagueMatches) {
+    if (!m.isFinished || m.scoreHome == null || m.scoreAway == null) continue;
+    const bkpkHome = m.homeTeamKalkId === bekapakaKalkId;
+    if (!bkpkHome && m.guestTeamKalkId !== bekapakaKalkId) continue;
+    const opponentId = bkpkHome ? m.guestTeamKalkId : m.homeTeamKalkId;
+    if (!opponentId) continue;
+    const us = bkpkHome ? m.scoreHome : m.scoreAway;
+    const them = bkpkHome ? m.scoreAway : m.scoreHome;
+    const row = out.get(opponentId) || { games: 0, wins: 0, losses: 0, pointsFor: 0, pointsAgainst: 0, lastDate: null };
+    row.games += 1;
+    if (us > them) row.wins += 1;
+    else if (us < them) row.losses += 1;
+    row.pointsFor += us;
+    row.pointsAgainst += them;
+    const date = m.date instanceof Date ? m.date.toISOString() : m.date;
+    if (date && (!row.lastDate || date > row.lastDate)) row.lastDate = date;
+    out.set(opponentId, row);
+  }
+  return out;
+}
+
+/**
+ * GET /api/league/all-time — bilans wszech czasów drużyn Dywizji II (strona drużyny KALK)
+ * + bilans bezpośredni z BeKaPaKa. Sortowanie: % zwycięstw, potem liczba meczów.
+ */
+export async function getTeamsAllTime(prisma) {
+  const [profiles, active] = await Promise.all([
+    prisma.kalkTeamProfile.findMany({ where: { allTimeGames: { gt: 0 } } }),
+    prisma.kalkSeason.findFirst({ where: { isActive: true }, select: { id: true } })
+  ]);
+  const bekapaka = profiles.find((p) => isBekapakaTeamName(p.name)) || null;
+  const leagueMatches = bekapaka
+    ? await prisma.leagueMatch.findMany({
+        where: { isFinished: true, OR: [{ homeTeamKalkId: bekapaka.id }, { guestTeamKalkId: bekapaka.id }] },
+        select: { date: true, isFinished: true, scoreHome: true, scoreAway: true, homeTeamKalkId: true, guestTeamKalkId: true }
+      })
+    : [];
+  const activeIds = new Set();
+  if (active) {
+    const rows = await prisma.leagueMatch.findMany({
+      where: { seasonId: active.id },
+      select: { homeTeamKalkId: true, guestTeamKalkId: true }
+    });
+    for (const r of rows) {
+      if (r.homeTeamKalkId) activeIds.add(r.homeTeamKalkId);
+      if (r.guestTeamKalkId) activeIds.add(r.guestTeamKalkId);
+    }
+  }
+  const h2h = bekapaka ? headToHeadByOpponent(leagueMatches, bekapaka.id) : new Map();
+
+  const teams = profiles.map((p) => {
+    const games = p.allTimeGames ?? 0;
+    const wins = p.allTimeWins ?? 0;
+    const losses = p.allTimeLosses ?? 0;
+    const pf = p.allTimePointsFor ?? null;
+    const pa = p.allTimePointsAgainst ?? null;
+    const qw = p.quartersWon ?? 0;
+    const ql = p.quartersLost ?? 0;
+    const isBekapaka = bekapaka?.id === p.id;
+    return {
+      kalkId: p.id,
+      slug: p.slug,
+      name: p.name,
+      since: p.sinceDate instanceof Date ? p.sinceDate.toISOString() : p.sinceDate ?? null,
+      captainSlug: p.captainSlug ?? null,
+      isBekapaka,
+      isArchived: ARCHIVED_TEAM.test(p.name),
+      isActive: activeIds.has(p.id),
+      games,
+      wins,
+      losses,
+      winPct: ratio(wins, wins + losses),
+      pointsFor: pf,
+      pointsAgainst: pa,
+      pointsForPerGame: pf == null ? null : perGame(pf, games),
+      pointsAgainstPerGame: pa == null ? null : perGame(pa, games),
+      quartersWon: p.quartersWon ?? null,
+      quartersLost: p.quartersLost ?? null,
+      quarterWinPct: ratio(qw, qw + ql),
+      overtimes: p.overtimes ?? null,
+      overtimeWins: p.overtimeWins ?? null,
+      overtimeLosses: p.overtimeLosses ?? null,
+      headToHead: isBekapaka ? null : h2h.get(p.id) ?? null,
+      scrapedAt: p.scrapedAt instanceof Date ? p.scrapedAt.toISOString() : p.scrapedAt ?? null
+    };
+  });
+  teams.sort((a, b) => (b.winPct ?? -1) - (a.winPct ?? -1) || b.games - a.games || a.name.localeCompare(b.name, 'pl'));
+  return { bekapakaKalkId: bekapaka?.id ?? null, headToHeadSince: CAREER_FIRST_SEASON_SLUG, teams };
+}

@@ -14,10 +14,11 @@ TON I OSOBA (OBOWIĄZKOWE we wszystkich polach JSON):
 
 KONTEKST DRUŻYNY:
 - Wszystkie mecze rozgrywane są w hali KOSiR Koszalin — nie używaj sformułowań „u siebie”, „na wyjeździe”, „we własnej hali”.
-- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (averages, derived, seasonStats, career, gameLog, signals, positionProfile, goals, leagueKalk, teamAverages, teamContext) — nie zmyślaj liczb.
+- Opieraj się WYŁĄCZNIE na danych z PLAYER_JSON (averages, derived, seasonStats, career, playByPlay, gameLog, signals, positionProfile, goals, leagueKalk, teamAverages, teamContext) — nie zmyślaj liczb.
 - Każda liczba w sekcjach profile, strengths, improvements i trend MUSI występować w JSON (wolno podać prostą różnicę dwóch liczb z JSON). null = brak danych — napisz „brak danych”, nie szacuj.
 - Cele liczbowe w trainingProposals i seasonGoals są dozwolone, ale muszą wychodzić od aktualnej wartości z JSON.
 - seasonStats: pełne statystyki sezonu z KALK (mpg, ppg, rpg, orbPg, apg, spg, bpg, tovPg, pfPg, threePct, twoPct, ftPct, evalPg). career: te same statystyki we wcześniejszych sezonach (2023–2027) — gdy dostępne, porównaj obecny sezon z poprzednim jednym zdaniem w profile lub trend.
+- playByPlay (akcja po akcji, od sezonu 2026/27): gdy available=true — byPeriod (punkty, faule, straty w Q1–Q4/OT), clutch (ostatnie 5 min 4. kwarty + dogrywki: pts, fgm/fga, ftm/fta, straty, faule), shots (2/3/wolne, rzuty zablokowane), foulOuts (mecze zakończone 5 faulami), matchesWithPbp. Użyj jednej obserwacji w trend lub improvements (np. w której kwarcie faulujesz najczęściej, skuteczność w końcówkach). Gdy available=false — NIE pisz o kwartach, końcówkach ani faulach z przebiegu meczu.
 - gameLog: mecz po meczu z result (W/L) i score (nasze:ich); record = bilans meczów zawodnika. teamAverages: średnia zawodnika BeKaPaKa (ppg, turnoversPerGame) — punkt odniesienia dla porównań „vs drużyna”.
 - Pole signals zawiera gotowe sygnały regułowe — to PIERWSZE źródło priorytetów (przed szablonem pozycyjnym).
 - Nie pisz ogólników typu „ważny element rotacji” — podaj minuty, liczbę meczów, wpływ per 36 minut jeśli dane pozwalają.
