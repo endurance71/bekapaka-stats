@@ -59,7 +59,7 @@ export default function Dashboard() {
   const [briefingLoading, setBriefingLoading] = useState(false);
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-  const { seasonId } = useSeasonPreferenceContext();
+  const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
   const fetchDashboardData = useCallback(async () => {
     if (!seasonId) return;
@@ -171,8 +171,7 @@ export default function Dashboard() {
         <PageHeader
           kicker="Centrum drużyny"
           title="Pulpit"
-          description="Witamy w centrum dowodzenia BeKaPaKa 2026"
-          actions={<span className="status-flag text-bkpk-text-secondary">v3.1</span>}
+          description={selectedSeason ? `Najważniejsze informacje drużyny — ${selectedSeason.label}.` : 'Najważniejsze informacje drużyny.'}
         />
       }
       hero={
@@ -208,10 +207,11 @@ export default function Dashboard() {
             onGenerate={handleGenerateBriefing}
             staleHint={
               briefing?.stale
-                ? 'Briefing może być nieaktualny (nowy mecz, scrape KALK). Admin: wygeneruj ponownie.'
+                ? 'Briefing może być nieaktualny (nowy mecz) — wygeneruj ponownie.'
                 : null
             }
-            emptyHint="Brak briefingu. Administrator może wygenerować podsumowanie tygodnia dla drużyny."
+            emptyHint="Brak briefingu — użyj „Generuj”, by podsumować tydzień."
+            playerEmptyHint="Podsumowanie tygodnia pojawi się, gdy trener je przygotuje."
           />
 
           <FormTrendMiniChart matches={recentTrendMatches} loading={loading} />
@@ -235,7 +235,7 @@ export default function Dashboard() {
               <Calendar className="w-8 h-8 text-bkpk-text-muted mx-auto" aria-hidden="true" />
               <div className="space-y-1">
                 <p className="font-display text-xl text-bkpk-text-primary uppercase">Brak zaplanowanych meczów</p>
-                <p className="text-sm text-bkpk-text-muted">Uruchom scraper w Administracji, aby pobrać aktualny terminarz.</p>
+                <p className="text-sm text-bkpk-text-muted">Terminarz pojawi się, gdy liga KALK opublikuje kolejne mecze.</p>
               </div>
             </div>
           )}

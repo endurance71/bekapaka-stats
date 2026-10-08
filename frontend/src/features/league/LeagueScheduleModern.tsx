@@ -107,7 +107,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
             <div className="p-8">
                 <KalkEmptyState
                     title="Terminarz jest pusty"
-                    message="Nie znaleziono żadnych zaplanowanych meczów w bazie danych. Uruchom scraper, aby je pobrać."
+                    message="Terminarz pojawi się, gdy liga KALK opublikuje mecze sezonu."
                 />
             </div>
         );

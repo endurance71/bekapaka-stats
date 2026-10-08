@@ -9,6 +9,7 @@ import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
+import StatLabel from '../../shared/ui/StatLabel';
 
 interface Team {
     name: string;
@@ -122,8 +123,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                 { label: 'M', value: team.matches, tone: 'muted' },
                                 { label: 'Z', value: team.wins, tone: 'success' },
                                 { label: 'P', value: team.losses, tone: 'danger' },
-                                { label: 'RZ', value: team.pointsFor, tone: 'muted' },
-                                { label: 'ST', value: team.pointsAgainst, tone: 'muted' },
+                                { label: 'Zdob.', value: team.pointsFor, tone: 'muted' },
+                                { label: 'Strac.', value: team.pointsAgainst, tone: 'muted' },
                                 {
                                     label: '+/-',
                                     value: diff > 0 ? `+${diff}` : diff,
@@ -156,8 +157,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">PKT</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center">Z</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center">P</th>
-                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">RZ</th>
-                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">ST</th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap"><StatLabel k="pointsFor" /></th>
+                            <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap"><StatLabel k="pointsAgainst" /></th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">+/-</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-left whitespace-nowrap">Forma</th>
                             <th scope="col" className="h-12 px-3 sm:px-5 text-center whitespace-nowrap">Seria</th>

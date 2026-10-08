@@ -1412,7 +1412,7 @@ export async function getLeagueComparison(querySeasonId = undefined) {
   const lgMetrics = calcMetrics(others);
 
   return {
-    bekapaka: bkMetrics,
+    bekapaka: { ...bkMetrics, matches: bekapaka.matches || 0 },
     league: lgMetrics,
     rankings: {
       points: bkMetrics.ppg > lgMetrics.ppg ? 'Powyżej średniej' : 'Poniżej średniej',

@@ -1,5 +1,6 @@
 import { cn } from '../shared/lib/utils'
 import { JerseyStripes } from '../shared/ui/JerseyStripes'
+import { Link } from 'react-router-dom'
 import shipappLogoUrl from '../assets/brand/shipapp-logo-white.svg'
 
 type AppFooterProps = {
@@ -12,6 +13,12 @@ export function AppFooter({ className }: AppFooterProps) {
     <footer className={cn('text-xs text-bkpk-text-muted space-y-1.5', className)}>
       <JerseyStripes className="max-w-[96px] mb-3" />
       <p className="label-caps text-[11px] text-bkpk-text-secondary">BeKaPaKa Bobolice — BKPK</p>
+      <Link
+        to="/slowniczek"
+        className="flex items-center min-h-[44px] hover:text-bkpk-text-primary transition-colors"
+      >
+        Słowniczek statystyk
+      </Link>
       <a
         href="https://bekapaka.pl"
         target="_blank"

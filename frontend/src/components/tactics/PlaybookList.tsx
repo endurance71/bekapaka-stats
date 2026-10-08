@@ -137,7 +137,7 @@ export default function PlaybookList({
             Brak zagrywek w tej kategorii
           </h3>
           <p className="text-[14px] text-bkpk-text-muted max-w-sm mx-auto">
-            Użyj 1-click Generatora AI, aby wygenerować animowaną zagrywkę pod dowolny scenariusz.
+            {canManage ? 'Użyj generatora AI, aby dodać animowaną zagrywkę.' : 'Trener jeszcze nie dodał zagrywek w tej kategorii.'}
           </p>
         </BkpkCard>
       ) : (

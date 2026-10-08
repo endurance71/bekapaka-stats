@@ -4,6 +4,8 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import { cn } from '../../shared/lib/utils';
 import { getPositionLabel } from '../../shared/lib/playerUtils';
+import StatLabel from '../../shared/ui/StatLabel';
+import type { StatKey } from '../../shared/lib/statGlossary';
 
 /** GET /api/players/:id/career (backend/kalk/v2/readModels.js → getPlayerCareer). */
 export interface CareerSeasonRow {
@@ -42,19 +44,19 @@ export interface PlayerCareerResponse {
 const fmt1 = (v: number | null | undefined) => (v == null ? '–' : v.toFixed(1).replace('.', ','));
 const fmtPct = (v: number | null | undefined) => (v == null ? '–' : `${v.toFixed(1).replace('.', ',')}%`);
 
-const COLUMNS: { label: string; title?: string; value: (r: CareerSeasonRow) => string; strong?: boolean }[] = [
-    { label: 'M', title: 'Mecze', value: (r) => String(r.games) },
-    { label: 'MIN', value: (r) => fmt1(r.perGame.min) },
-    { label: 'PTS', value: (r) => fmt1(r.perGame.pts), strong: true },
-    { label: 'REB', value: (r) => fmt1(r.perGame.reb) },
-    { label: 'AST', value: (r) => fmt1(r.perGame.ast) },
-    { label: 'STL', value: (r) => fmt1(r.perGame.stl) },
-    { label: 'BLK', value: (r) => fmt1(r.perGame.blk) },
-    { label: 'TO', value: (r) => fmt1(r.perGame.tov) },
-    { label: 'FG%', value: (r) => fmtPct(r.pct.fg) },
-    { label: '3P%', value: (r) => fmtPct(r.pct.three) },
-    { label: 'FT%', value: (r) => fmtPct(r.pct.ft) },
-    { label: 'EVAL', value: (r) => fmt1(r.perGame.eval), strong: true },
+const COLUMNS: { key: StatKey; value: (r: CareerSeasonRow) => string; strong?: boolean; pct?: boolean }[] = [
+    { key: 'games', value: (r) => String(r.games) },
+    { key: 'min', value: (r) => fmt1(r.perGame.min) },
+    { key: 'pts', value: (r) => fmt1(r.perGame.pts), strong: true },
+    { key: 'reb', value: (r) => fmt1(r.perGame.reb) },
+    { key: 'ast', value: (r) => fmt1(r.perGame.ast) },
+    { key: 'stl', value: (r) => fmt1(r.perGame.stl) },
+    { key: 'blk', value: (r) => fmt1(r.perGame.blk) },
+    { key: 'tov', value: (r) => fmt1(r.perGame.tov) },
+    { key: 'fg', value: (r) => fmtPct(r.pct.fg), pct: true },
+    { key: 'three', value: (r) => fmtPct(r.pct.three), pct: true },
+    { key: 'ft', value: (r) => fmtPct(r.pct.ft), pct: true },
+    { key: 'eval', value: (r) => fmt1(r.perGame.eval), strong: true },
 ];
 
 /** Sekcja „Kariera” na profilu zawodnika: sezony KALK od 2023/24 (średnie na mecz) + profil. */
@@ -100,7 +102,10 @@ export default function PlayerCareer({ career }: { career: PlayerCareerResponse 
                                 <tr>
                                     <th scope="col" className="px-3 py-3 text-left sticky left-0 z-20 bg-[var(--table-head-bg)] border-r border-bkpk-border-strong">Sezon</th>
                                     {COLUMNS.map((c) => (
-                                        <th key={c.label} scope="col" title={c.title} className="px-2 sm:px-3 py-3 text-center whitespace-nowrap">{c.label}</th>
+                                        <th key={c.key} scope="col" className="px-2 sm:px-3 py-3 text-center whitespace-nowrap">
+                                            <StatLabel k={c.key} />
+                                            {c.pct ? ' %' : ''}
+                                        </th>
                                     ))}
                                 </tr>
                             </thead>
@@ -117,7 +122,7 @@ export default function PlayerCareer({ career }: { career: PlayerCareerResponse 
                                         </th>
                                         {COLUMNS.map((c) => (
                                             <td
-                                                key={c.label}
+                                                key={c.key}
                                                 className={cn(
                                                     'px-2 sm:px-3 py-2.5 text-center tabular-nums whitespace-nowrap',
                                                     c.strong ? 'font-display text-base leading-none text-bkpk-text-primary' : 'text-bkpk-text-secondary'

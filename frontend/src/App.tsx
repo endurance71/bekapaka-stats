@@ -24,6 +24,7 @@ const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 const AiCenterPage = lazy(() => import('./pages/AiCenterPage'));
 const TacticsHub = lazy(() => import('./pages/TacticsHub'));
+const Glossary = lazy(() => import('./pages/Glossary'));
 
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
                     <Routes>
                       <Route path="/" element={<Navigate to="/dashboard" replace />} />
                       <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/slowniczek" element={<Glossary />} />
                       <Route path="/league" element={<League />} />
                       <Route path="/scouting" element={<ScoutingPage />} />
                       <Route path="/roster" element={<Roster />} />

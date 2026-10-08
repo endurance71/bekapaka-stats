@@ -72,9 +72,9 @@ export default function OpponentComparison({ bekapaka, opponent }: OpponentCompa
 
             <div>
                 {renderStatRow('Punkty', bekapaka.pts || 0, opponent.pts || 0)}
-                {renderStatRow('FG%', formatPct(bekapaka.fgm, bekapaka.fga), formatPct(opponent.fgm, opponent.fga))}
-                {renderStatRow('3P%', formatPct(bekapaka.three_pm, bekapaka.three_pa), formatPct(opponent.three_pm, opponent.three_pa))}
-                {renderStatRow('FT%', formatPct(bekapaka.ftm, bekapaka.fta), formatPct(opponent.ftm, opponent.fta))}
+                {renderStatRow('Z gry %', formatPct(bekapaka.fgm, bekapaka.fga), formatPct(opponent.fgm, opponent.fga))}
+                {renderStatRow('Za 3 %', formatPct(bekapaka.three_pm, bekapaka.three_pa), formatPct(opponent.three_pm, opponent.three_pa))}
+                {renderStatRow('Wolne %', formatPct(bekapaka.ftm, bekapaka.fta), formatPct(opponent.ftm, opponent.fta))}
                 {renderStatRow('Zbiórki', bekapaka.reb || 0, opponent.reb || 0)}
                 {renderStatRow('Asysty', bekapaka.ast || 0, opponent.ast || 0)}
                 {renderStatRow('Straty', bekapaka.tov || 0, opponent.tov || 0, 'lower')}

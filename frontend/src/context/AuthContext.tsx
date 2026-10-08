@@ -113,3 +113,8 @@ export function useAuth() {
     }
     return context;
 }
+
+/** Admin (trener) — narzędzia i komunikaty techniczne; zawodnik ich nie widzi. */
+export function useIsAdmin(): boolean {
+    return useAuth().user?.role === 'ADMIN';
+}

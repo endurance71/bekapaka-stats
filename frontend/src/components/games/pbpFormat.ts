@@ -50,7 +50,7 @@ export function runsByEndSeq(runs: PbpRun[]): Map<number, PbpRun> {
 
 /** Tekst badge'a runu: punkty serii : 0. */
 export function runLabel(run: Pick<PbpRun, 'points'>): string {
-    return `Run ${run.points}:0`;
+    return `Seria ${run.points}:0`;
 }
 
 export interface PbpPeriodGroup {

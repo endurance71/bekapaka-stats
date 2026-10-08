@@ -213,12 +213,13 @@ export default function ScoutingPage() {
             onGenerate={(force) => void handleGenerateScoutingAi(force)}
             staleHint={
               aiMeta?.stale
-                ? 'Raport może być nieaktualny (nowe dane KALK). Admin: Odśwież lub wymuś generację.'
+                ? 'Raport może być nieaktualny (nowe dane KALK) — odśwież.'
                 : aiMeta?.needsRegeneration && aiMeta?.fromGemini
                   ? 'Raport AI jest niepełny — użyj „Wymuś ponowną generację” poniżej przycisków.'
                   : null
             }
-            emptyHint="Brak raportu AI. Administrator może wygenerować plan meczowy (Gemini)."
+            emptyHint="Brak planu meczowego — użyj „Generuj”."
+            playerEmptyHint="Plan meczowy pojawi się, gdy trener go przygotuje."
           />
         </motion.div>
 
@@ -245,7 +246,8 @@ export default function ScoutingPage() {
             loading={aiLoading}
             compactActions
             onGenerate={(force) => void handleGenerateScoutingAi(force)}
-            emptyHint="Kadra AI powstaje razem z planem meczowym — wygeneruj raport scoutingu (admin)."
+            emptyHint="Analiza kadry powstaje razem z planem meczowym — wygeneruj plan powyżej."
+            playerEmptyHint="Analiza kadry rywala pojawi się razem z planem meczowym."
           />
         </motion.div>
 
@@ -284,12 +286,12 @@ export default function ScoutingPage() {
                           <div className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
                             {formatStatFixed(p.ppg)}
                           </div>
-                          <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">PPG</div>
+                          <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">pkt/m</div>
                         </div>
                       }
                       stats={[
                         { label: 'Mecze', value: p.matches },
-                        { label: '3PT', value: p.threePointStats || '—' },
+                        { label: 'Za 3', value: p.threePointStats || '—' },
                         { label: 'Pkt łącznie', value: p.totalPoints, emphasize: true }
                       ]}
                     />
@@ -302,7 +304,7 @@ export default function ScoutingPage() {
                       <tr>
                         <th className="h-11 pl-3 text-left">Zawodnik</th>
                         <th className="h-11 text-center">Mecze</th>
-                        <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">PPG</th>
+                        <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">Pkt/m</th>
                         <th className="h-11 text-center">3PT</th>
                         <th className="h-11 text-center">PTS</th>
                       </tr>

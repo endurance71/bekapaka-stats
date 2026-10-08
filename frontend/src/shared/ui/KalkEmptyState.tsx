@@ -2,6 +2,7 @@ import { Database, AlertCircle, RefreshCw } from 'lucide-react';
 import BkpkButton from './BkpkButton';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useIsAdmin } from '../../context/AuthContext';
 
 interface KalkEmptyStateProps {
     title?: string;
@@ -10,11 +11,12 @@ interface KalkEmptyStateProps {
 }
 
 export default function KalkEmptyState({
-    title = "Brak danych z KALK",
-    message = "Dane ligowe, statystyki i terminarz nie zostały jeszcze pobrane. Uruchom import w panelu administracyjnym.",
+    title = "Brak danych z ligi",
+    message = "Dane pojawią się po pobraniu wyników z ligi KALK.",
     className = ""
 }: KalkEmptyStateProps) {
     const navigate = useNavigate();
+    const isAdmin = useIsAdmin();
 
     return (
         <motion.div
@@ -40,14 +42,16 @@ export default function KalkEmptyState({
                 </p>
             </div>
 
-            <BkpkButton
-                variant="primary"
-                onClick={() => navigate('/admin')}
-                className="group"
-            >
-                <RefreshCw className="w-4 h-4 mr-2 group-hover:animate-spin-slow" />
-                Przejdź do Administracji
-            </BkpkButton>
+            {isAdmin && (
+                <BkpkButton
+                    variant="primary"
+                    onClick={() => navigate('/admin')}
+                    className="group"
+                >
+                    <RefreshCw className="w-4 h-4 mr-2 group-hover:animate-spin-slow" />
+                    Przejdź do Administracji
+                </BkpkButton>
+            )}
         </motion.div>
     );
 }

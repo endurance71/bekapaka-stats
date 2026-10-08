@@ -135,10 +135,12 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
         <BkpkCard variant="glass" className="text-center py-16">
           <Shield className="w-12 h-12 text-bkpk-text-muted mx-auto mb-3" />
           <h4 className="font-display uppercase text-[20px] leading-tight text-bkpk-text-primary mb-2">
-            Odprawa na mecz z {opponent} nie została jeszcze wygenerowana
+            Odprawa na mecz z {opponent} jeszcze nie jest gotowa
           </h4>
           <p className="text-[14px] text-bkpk-text-muted max-w-md mx-auto mb-6">
-            Kliknij poniższy przycisk, aby Gemini AI przygotowało 3 kluczowe założenia, wyjściową piątkę i krycie indywidualne na podstawie scoutingu.
+            {canGenerate
+              ? 'Przycisk poniżej przygotuje 3 kluczowe założenia, wyjściową piątkę i krycie indywidualne na podstawie scoutingu.'
+              : 'Odprawa pojawi się tutaj, gdy trener ją przygotuje.'}
           </p>
           {canGenerate && (
             <BkpkButton variant="primary" onClick={() => handleGenerate(false)} loading={generating}>
@@ -161,7 +163,7 @@ ${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.na
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-bkpk-border-strong">
               <div>
                 <span className="kicker mb-3">
-                  KALK Dywizja II • Matchday Briefing
+                  KALK Dywizja II • Odprawa przedmeczowa
                 </span>
                 <h2 className="text-[32px] sm:text-[44px] leading-[0.95] text-bkpk-text-primary">
                   BEKAPAKA <span className="text-bkpk-primary">vs</span> {briefing.opponentName}

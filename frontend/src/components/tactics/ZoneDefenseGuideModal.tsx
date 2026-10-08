@@ -263,7 +263,7 @@ export default function ZoneDefenseGuideModal({
                   { id: 'top', label: '1. Piłka na Szczycie' },
                   { id: 'wing', label: '2. Piłka na Skrzydle' },
                   { id: 'corner', label: '3. Piłka w Rogu' },
-                  { id: 'high_post', label: '4. Piłka w High Post' }
+                  { id: 'high_post', label: '4. Piłka na linii wolnych' }
                 ].map((sc) => (
                   <button
                     key={sc.id}
@@ -511,7 +511,7 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'high_post' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          ⚠️ Piłka w High Post (Najgroźniejszy punkt dla Strefy 2-3):
+                          ⚠️ Piłka na linii rzutów wolnych (high post) — najgroźniejszy punkt dla strefy 2-3:
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle border-l-[3px] border-l-bkpk-primary sm:col-span-2">
@@ -619,7 +619,7 @@ export default function ZoneDefenseGuideModal({
                     {activeScenario === 'high_post' && (
                       <div className="space-y-3">
                         <div className="kicker">
-                          🏀 Piłka w High Post:
+                          🏀 Piłka na linii rzutów wolnych (high post):
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                           <div className="p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle sm:col-span-2">

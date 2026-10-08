@@ -23,6 +23,8 @@ interface DNAProps {
         fallbackBasicOnly?: boolean;
         sourceMatchDate?: string | null;
         sourceMatchLabel?: string | null;
+        /** Ile meczów rywala z box score policzono */
+        matchesScraped?: number;
     };
 }
 
@@ -32,6 +34,10 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
     if (!data) return null;
 
     const { pace, shotProfile, fourFactors } = data;
+    // Rekomendacje z 1–2 meczów byłyby zgadywaniem — pokazujemy same liczby
+    const games = data.matchesScraped ?? 0;
+    const fewGames = games < 3;
+    const sampleNote = `Na podstawie ${games} ${games === 1 ? 'meczu' : 'meczów'} — rekomendacje od 3 meczów.`;
 
     // Pace Logic
     const paceLabel = pace > 84 ? 'SZYBKIE TEMPO' : (pace < 78 ? 'WOLNE TEMPO' : 'NORMALNE TEMPO');
@@ -48,7 +54,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
     const FTR_HIGH = 25;
     const FTR_LOW = 10;
 
-    // Four Factors Evaluation (Simple Logic)
+    // Cztery czynniki Evaluation (Simple Logic)
     const getFactorColor = (val: number, type: 'efg' | 'tov' | 'orb' | 'ftr') => {
         // Good thresholds (returning Tailwind colors) — Digital 2.0: dobry / słaby / neutralny (kamień zamiast złota)
         if (type === 'efg') return val > 50 ? 'bg-bkpk-success' : (val < 40 ? 'bg-bkpk-danger' : 'bg-brand-stone-400');
@@ -63,24 +69,27 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
 
     // Tactical Advice Generators
     const getPaceAdvice = () => {
-        if (pace > 84) return "Kluczem jest szybki powrót do obrony (transition defense) i spowolnienie ich gry.";
+        if (fewGames) return sampleNote;
+        if (pace > 84) return "Kluczem jest szybki powrót do obrony i spowolnienie ich gry.";
         if (pace < 78) return "Narzuć presję na całym boisku, zmuś ich do szybszej gry i błędów.";
         return "Kontroluj rytm gry, nie pozwalaj na serie punktowe.";
     };
 
     const getShotProfileAdvice = () => {
+        if (fewGames) return sampleNote;
         if (shotProfile.three > 35) return "Mocno obsadzają obwód. Wyjdź wyżej w obronie, nie pomagaj od strzelców.";
-        if (shotProfile.two > 60) return "Atakują głównie pomalowane. Zagęść środek (pack the paint).";
+        if (shotProfile.two > 60) return "Atakują głównie spod kosza. Zagęść środek obrony.";
         return "Zrównoważony atak. Bądź gotowy na każdą opcję.";
     };
 
     // Four Factors Advice
     const getFactorAdvice = (type: 'efg' | 'tov' | 'orb' | 'ftr', val: number) => {
-        if (type === 'efg') return val > 50 ? "Trafiają na wysokim procencie. Utrudniaj każdy rzut (contest)." : "Mają problemy ze skutecznością. Zmuś do rzutów z nieprzygotowanych pozycji.";
+        if (fewGames) return '';
+        if (type === 'efg') return val > 50 ? "Trafiają na wysokim procencie. Utrudniaj każdy rzut ręką w górze." : "Mają problemy ze skutecznością. Zmuś do rzutów z nieprzygotowanych pozycji.";
         if (type === 'tov') return val > 20 ? "Popełniają dużo strat. Graj agresywnie na piłce, szukaj przechwytów." : "Szanują piłkę. Graj cierpliwie w obronie, nie ryzykuj.";
-        if (type === 'orb') return val > 25 ? "Dominują na desce. Konieczny mocny zastawianie (box out)!" : "Słabo zbierają w ataku. Możesz szybciej uruchamiać kontrę.";
+        if (type === 'orb') return val > 25 ? "Dominują na tablicy. Po każdym rzucie zastaw rywala przed zbiórką." : "Słabo zbierają w ataku. Możesz szybciej uruchamiać kontrę.";
         if (type === 'ftr') {
-            if (val > FTR_HIGH) return "Często wymuszają faule. Broń czysto, ręce w górze (no reach).";
+            if (val > FTR_HIGH) return "Często wymuszają faule. Broń czysto, ręce w górze, bez sięgania po piłkę.";
             if (val < FTR_LOW) return "Rzadko stają na linii. Możesz grać bardziej fizycznie.";
             return "Rzuty wolne na przeciętnym poziomie.";
         }
@@ -97,7 +106,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                 <BkpkCard
                     title={
                         <div className="flex items-center gap-1.5">
-                            <span>PACE (Tempo Gry)</span>
+                            <span>Tempo gry</span>
                             <BkpkTooltip content="Szacowana liczba posiadań piłki na 40 minut. Wyższe tempo sprzyja szybkim atakom, niższe - przemyślanej grze pozycyjnej." />
                         </div>
                     }
@@ -205,7 +214,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">eFG% (Efektywność)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">Skuteczność rzutów</span>
                                         <BkpkTooltip content="Efektywny Procent Rzutów z Pola. Uwzględnia wyższą wartość rzutów za 3 punkty." />
                                     </div>
                                     <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.efg)}%</span>
@@ -220,7 +229,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">TOV% (Straty)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">Straty</span>
                                         <BkpkTooltip content="Procent posiadań kończących się stratą. Im niższy, tym lepiej zespół szanuje piłkę." />
                                     </div>
                                     <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.tov)}%</span>
@@ -235,7 +244,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">ORB% (Zbiórki Ataku)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">Zbiórki w ataku</span>
                                         <BkpkTooltip content="Procent dostępnych zbiórek ofensywnych zebranych przez zespół. Klucz do punktów drugiej szansy." />
                                     </div>
                                     <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.orb)}%</span>
@@ -250,7 +259,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             <div className="group">
                                 <div className="flex justify-between items-end mb-2">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">FTR (Rzuty Wolne)</span>
+                                        <span className="label-caps text-[11px] text-bkpk-text-secondary group-hover:text-bkpk-text-primary transition-colors">Rzuty wolne</span>
                                         <BkpkTooltip content="Współczynnik rzutów wolnych do rzutów z pola. Pokazuje, jak agresywnie zespół wymusza faule." />
                                     </div>
                                     <span className="font-display text-lg leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(fourFactors.ftr, 1)}%</span>

@@ -124,7 +124,7 @@ export default function Profile() {
                     generatedAt={aiMeta.at}
                     model={aiMeta.model}
                     loading={aiLoading}
-                    emptyHint="Twój plan rozwoju nie został jeszcze wygenerowany przez trenera."
+                    playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach w sezonie)."
                 />
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

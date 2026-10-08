@@ -88,7 +88,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
                         <Calendar className="w-12 h-12 text-bkpk-text-muted" aria-hidden="true" />
                         <div className="space-y-1">
                             <p className="font-display text-xl uppercase text-bkpk-text-primary">Brak meczów w wybranym sezonie</p>
-                            <p className="text-bkpk-text-muted text-sm max-w-sm">Mecze pojawią się w terminarzu po pobraniu danych z ligi KALK lub dodaniu ich w panelu administracyjnym.</p>
+                            <p className="text-bkpk-text-muted text-sm max-w-sm">Mecze pojawią się, gdy liga KALK opublikuje terminarz.</p>
                         </div>
                     </div>
                 )}

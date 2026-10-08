@@ -105,7 +105,7 @@ export default function TacticsHub() {
     <PageContainer className="max-w-[1280px]">
       {/* Header Huba Taktycznego */}
       <PageHeader
-        kicker={<>Smart Coaching &amp; Strategy</>}
+        kicker="Drużyna"
         title={<>Centrum Taktyczne <span className="text-bkpk-primary">BeKaPaKa</span></>}
       />
 
@@ -188,10 +188,10 @@ export default function TacticsHub() {
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary">
-                    Biblioteka Gotowych Presetów (<span className="font-display tabular-nums">{plays.length}</span>)
+                    Zagrywki (<span className="font-display tabular-nums">{plays.length}</span>)
                   </h3>
                   <p className="text-[14px] text-bkpk-text-muted">
-                    Wybierz zagrywkę taktyczną lub wygeneruj nowy wariant z pomocą AI
+                    {canManageTactics ? 'Wybierz zagrywkę albo wygeneruj nowy wariant z pomocą AI.' : 'Wybierz zagrywkę, aby zobaczyć ją na tablicy.'}
                   </p>
                 </div>
 

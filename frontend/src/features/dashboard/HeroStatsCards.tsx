@@ -57,14 +57,14 @@ export function PPGCard({ ppg, trend }: PPGCardProps) {
             <div className="flex flex-col h-full justify-between">
                 <div>
                     <div className="flex items-center gap-1.5 mb-1">
-                        <span className="kicker text-bkpk-text-primary">Siła Ofensywna</span>
-                        <BkpkTooltip content="Średnia liczba punktów na mecz. Określa potencjał punktowy - im wyższa, tym łatwiej o zwycięstwo przy stabilnej obronie." />
+                        <span className="kicker text-bkpk-text-primary">Punkty na mecz</span>
+                        <BkpkTooltip content="Ile punktów zdobywamy średnio w meczu w tym sezonie." />
                     </div>
                     <div className="flex items-baseline gap-2 mt-3">
                         <h2 className="text-5xl lg:text-6xl leading-none font-display tabular-nums text-bkpk-text-primary">
                             {formatStatFixed(ppg)}
                         </h2>
-                        <span className="label-caps text-bkpk-text-secondary text-xs">PKT/Mecz</span>
+                        <span className="label-caps text-bkpk-text-secondary text-xs">pkt/m</span>
                     </div>
                 </div>
 
@@ -117,6 +117,8 @@ function ratingBarPercent(delta: number): number {
     return Math.min(100, Math.max(5, 50 + (delta / (RATING_LEAGUE_SPREAD / 2)) * 50));
 }
 
+const MODE_LABELS = { OFF: 'Atak', DEF: 'Obrona', NET: 'Bilans' } as const;
+
 const TIER_LABELS: Record<RatingLeagueTier, string> = {
     weak: 'Słabo',
     average: 'Średnio',
@@ -148,9 +150,9 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
     };
 
     const getLabel = () => {
-        if (mode === 'OFF') return 'Rating Ofensywny';
-        if (mode === 'DEF') return 'Rating Defensywny';
-        return 'Efektywność Netto';
+        if (mode === 'OFF') return 'Atak na 100 akcji';
+        if (mode === 'DEF') return 'Obrona na 100 akcji';
+        return 'Bilans na 100 akcji';
     };
 
     const value = getValue();
@@ -171,9 +173,9 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                         <div className="flex items-center gap-1.5 mb-1">
                             <span className="kicker text-bkpk-text-primary">{getLabel()}</span>
                             <BkpkTooltip content={
-                                mode === 'OFF' ? "Punkty na 100 posiadań. Porównanie ze średnią dywizji z box score'ów KALK." :
-                                    mode === 'DEF' ? "Punkty stracone na 100 posiadań. Im niższy od średniej ligi, tym lepsza obrona." :
-                                        "Różnica ORtg − DefRtg. Dodatnia wartość powyżej średniej ligi oznacza przewagę nad rywalami."
+                                mode === 'OFF' ? "Ile punktów zdobywamy średnio na 100 posiadań piłki. Obok średnia całej ligi." :
+                                    mode === 'DEF' ? "Ile punktów tracimy na 100 posiadań rywala. Im mniej od średniej ligi, tym lepsza obrona." :
+                                        "Atak minus obrona na 100 akcji. Na plus = zdobywamy więcej, niż tracimy."
                             } />
                         </div>
                         <div className="flex items-baseline gap-2 mt-3">
@@ -208,7 +210,7 @@ export function RatingCard({ offRating, defRating, league, tiers }: RatingCardPr
                                         : "text-bkpk-text-secondary hover:text-bkpk-text-primary"
                                 )}
                             >
-                                {m}
+                                {MODE_LABELS[m]}
                             </button>
                         ))}
                     </div>

@@ -57,51 +57,50 @@ export default function TeamStats({ teamStats, loading }: TeamStatsProps) {
         <BkpkCard variant="glass" className="space-y-6">
             <div className="flex items-center gap-3 border-b border-bkpk-border-subtle pb-4">
                 <span className="w-6 h-[3px] bg-bkpk-primary shrink-0" aria-hidden="true" />
-                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki Zespołowe</h3>
+                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki zespołowe</h3>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
                 <StatItem
-                    label="EFG%"
+                    label="Skuteczność"
                     value={formatPercent(teamStats.efg)}
-                    desc="Efektywność rzutów"
+                    desc="Rzuty z gry, trójka ×1,5"
                 />
                 <StatItem
-                    label="TO%"
+                    label="Straty %"
                     value={formatPercent(teamStats.tovPct)}
-                    desc="Procent strat"
+                    desc="Akcje zakończone stratą"
                 />
                 <StatItem
-                    label="OffRtg"
+                    label="Atak /100"
                     value={formatNumber(teamStats.offRtg)}
-                    desc="Pkt / 100 posiadań"
+                    desc="Pkt na 100 akcji"
                 />
                 <StatItem
-                    label="DefRtg"
+                    label="Obrona /100"
                     value={formatNumber(teamStats.defRtg)}
-                    desc="Pkt stracone / 100 pos"
+                    desc="Pkt rywala na 100 akcji"
                 />
                 <StatItem
-                    label="NetRtg"
+                    label="Bilans /100"
                     value={`${teamStats.netRtg && teamStats.netRtg > 0 ? '+' : ''}${formatNumber(teamStats.netRtg)}`}
-                    desc="Różnica efektywności"
+                    desc="Atak minus obrona"
                     valueClass={teamStats.netRtg && teamStats.netRtg > 0 ? "text-bkpk-success" : "text-bkpk-text-danger"}
                 />
                 <StatItem
-                    label="Pace"
+                    label="Tempo"
                     value={formatNumber(teamStats.pace)}
-                    desc="Tempo (pos/40min)"
+                    desc="Akcji w meczu"
                 />
             </div>
 
             <div className="flex items-start gap-3 p-4 border-l-2 border-bkpk-primary bg-bkpk-bg">
                 <Info className="w-5 h-5 text-bkpk-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
                 <div className="space-y-2">
-                    <h4 className="label-caps text-xs text-bkpk-text-primary">Advanced Stats</h4>
+                    <h4 className="label-caps text-xs text-bkpk-text-primary">Jak czytać</h4>
                     <p className="text-xs text-bkpk-text-secondary leading-relaxed">
-                        <strong>OffRtg/DefRtg</strong> mierzą efektywność na 100 posiadań.
-                        <strong> NetRtg</strong> to różnica (plus = dobrze).
-                        <strong> Pace</strong> to szacowana liczba posiadań.
+                        „Na 100 akcji” pozwala porównać mecze grane w różnym tempie. Bilans na plus = byliśmy lepsi.{' '}
+                        <a href="/slowniczek" className="underline">Słowniczek</a>
                     </p>
                 </div>
             </div>
