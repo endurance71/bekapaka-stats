@@ -11,6 +11,8 @@ type Props = {
   defaultLabel?: string;
   label?: string;
   disabled?: boolean;
+  /** Settings may pick a model before its provider has a key; generating needs one. */
+  allowUnavailable?: boolean;
 };
 
 /** Models of one kind grouped by provider, with price and the worst case of one call. */
@@ -23,6 +25,7 @@ export default function ModelSelect({
   defaultLabel,
   label = 'Model AI',
   disabled,
+  allowUnavailable,
 }: Props) {
   const groups = (Object.keys(providerLabel) as AiProviderId[])
     .map((p) => [p, models.filter((m) => m.kind === kind && m.provider === p)] as const)
@@ -33,7 +36,7 @@ export default function ModelSelect({
       {groups.map(([provider, list]) => (
         <optgroup key={provider} label={providerLabel[provider]}>
           {list.map((m) => (
-            <option key={m.id} value={m.id} disabled={!m.available && m.id !== value}>
+            <option key={m.id} value={m.id} disabled={!allowUnavailable && !m.available && m.id !== value}>
               {m.label}
               {m.custom ? ' (własny)' : ''} · {priceLabel(m)}
               {m.maxCallMicros?.[task] ? ` · maks. ${usd(m.maxCallMicros[task]!)}` : ''}

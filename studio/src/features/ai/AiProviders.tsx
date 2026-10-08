@@ -78,6 +78,7 @@ export default function AiProviders() {
               kind={t.kind}
               value={t.model}
               label={`Model: ${t.label}`}
+              allowUnavailable
               onChange={(model) =>
                 void run(() => send<AiOverview>('/ai/tasks', { task: t.id, model }, 'PUT'), 'Zapisano model zadania.')
               }
