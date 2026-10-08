@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { aggregatePbpTendencies, computePbpInsights } from '../../ai/pbpInsights.js';
+import { aggregatePbpTendencies, computePbpInsights, computePlayerPbpProfile } from '../../ai/pbpInsights.js';
 
 /**
  * Buduje zdarzenia punktowe z listy [period, clockSec, side, points].
@@ -106,5 +106,35 @@ describe('computePbpInsights', () => {
     const agg = aggregatePbpTendencies([m1, m2, { available: false }], 'opponent', 'other');
     expect(agg).toMatchObject({ available: true, matchesWithPbp: 2, runsOf8PlusFor: 1, runsOf8PlusAgainst: 1 });
     expect(aggregatePbpTendencies([], 'opponent', 'other')).toEqual({ available: false, matchesWithPbp: 0 });
+  });
+});
+
+describe('computePlayerPbpProfile', () => {
+  const e = (kalkMatchId, period, clockSec, actionType, shotValue = null) => ({ kalkMatchId, period, clockSec, actionType, shotValue });
+
+  it('punkty/faule/straty na kwarty, końcówki, rzuty i faule do 5', () => {
+    const profile = computePlayerPbpProfile([
+      e('1', 1, 500, 'shot_made', 2),
+      e('1', 1, 400, 'shot_missed', 3),
+      e('1', 2, 300, 'foul'),
+      e('1', 4, 200, 'shot_made', 3),
+      e('1', 4, 100, 'ft_made'),
+      e('1', 4, 90, 'ft_missed'),
+      e('1', 4, 80, 'turnover'),
+      e('1', 5, 30, 'shot_blocked', 2),
+      e('2', 1, 590, 'foul'), e('2', 1, 580, 'foul'), e('2', 2, 500, 'foul'), e('2', 3, 400, 'foul'), e('2', 3, 300, 'foul')
+    ]);
+    expect(profile.available).toBe(true);
+    expect(profile.matchesWithPbp).toBe(2);
+    expect(Object.keys(profile.byPeriod)).toEqual(['Q1', 'Q2', 'Q3', 'Q4', 'OT1']);
+    expect(profile.byPeriod.Q1).toEqual({ pts: 2, fouls: 2, turnovers: 0 });
+    expect(profile.byPeriod.Q4).toEqual({ pts: 4, fouls: 0, turnovers: 1 });
+    expect(profile.shots).toEqual({ twoPm: 1, twoPa: 2, threePm: 1, threePa: 2, ftm: 1, fta: 2, blockedShots: 1 });
+    expect(profile.clutch).toEqual({ pts: 4, fgm: 1, fga: 2, ftm: 1, fta: 2, turnovers: 1, fouls: 0 });
+    expect(profile.foulOuts).toBe(1);
+  });
+
+  it('brak zdarzeń → available=false', () => {
+    expect(computePlayerPbpProfile([])).toEqual({ available: false, matchesWithPbp: 0 });
   });
 });

@@ -7,6 +7,7 @@ import { computePlayerSignals } from './playerSignals.js';
 import { AiValidationError } from './errors.js';
 import { intOrNull, pctOrNull, roundOrNull, sanitizeAiPayload } from './payloadUtils.js';
 import { seasonStatToKeyPlayer } from './scoutingData.js';
+import { computePlayerPbpProfile } from './pbpInsights.js';
 
 
 function getPositionProfile(positionRaw) {
@@ -223,7 +224,7 @@ export async function buildPlayerContext(playerId, options = {}) {
 
   const matchIds = stats.gameLog.map((g) => g.gameId).filter(Boolean).map(String);
 
-  const [priorities, teamLogRows, matchRows, careerRows, profile, seasons] = await Promise.all([
+  const [priorities, teamLogRows, matchRows, careerRows, profile, seasons, pbpEvents] = await Promise.all([
     getTrainingPriorities(statsSeasonId),
     safe(
       () =>
@@ -251,7 +252,17 @@ export async function buildPlayerContext(playerId, options = {}) {
       : [],
     slug ? safe(() => prisma.kalkPlayerSeasonStat.findMany({ where: { playerSlug: slug } }), []) : [],
     slug ? safe(() => prisma.kalkPlayerProfile.findUnique({ where: { slug } }), null) : null,
-    safe(() => prisma.kalkSeason.findMany({ select: { id: true, label: true, slug: true } }), [])
+    safe(() => prisma.kalkSeason.findMany({ select: { id: true, label: true, slug: true } }), []),
+    slug
+      ? safe(
+          () =>
+            prisma.kalkPlayByPlayEvent.findMany({
+              where: { seasonId: statsSeasonId, playerSlug: slug },
+              select: { kalkMatchId: true, period: true, clockSec: true, actionType: true, shotValue: true }
+            }),
+          []
+        )
+      : []
   ]);
 
   /** @type {Map<string, { result: string | null, score: string | null, round: string | null }>} */
@@ -328,6 +339,7 @@ export async function buildPlayerContext(playerId, options = {}) {
     derived,
     seasonStats: currentSeasonStats.length ? currentSeasonStats : null,
     career: career.length ? career : null,
+    playByPlay: computePlayerPbpProfile(pbpEvents),
     teamAverages,
     goals: roster?.goals || null,
     gameLog: stats.gameLog.slice(0, 15).map((g) => gameLogForPrompt(g, matchById.get(String(g.gameId)))),

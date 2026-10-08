@@ -3,14 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
 import TopScorersModern from '../features/league/TopScorersModern';
+import AllTimeTableModern from '../features/league/AllTimeTableModern';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
-import { Target } from 'lucide-react';
+import { Target, History } from 'lucide-react';
 import { TrophyIcon as Trophy, CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import { cn } from '../shared/lib/utils';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 
-type Tab = 'table' | 'schedule' | 'scorers';
+type Tab = 'table' | 'schedule' | 'scorers' | 'alltime';
 
 export default function League() {
     const [activeTab, setActiveTab] = useState<Tab>('table');
@@ -20,6 +21,7 @@ export default function League() {
         { id: 'table' as Tab, label: 'Tabela', icon: Trophy },
         { id: 'schedule' as Tab, label: 'Terminarz', icon: Calendar },
         { id: 'scorers' as Tab, label: 'Liderzy', icon: Target },
+        { id: 'alltime' as Tab, label: 'Wszech czasów', icon: History },
     ];
 
     return (
@@ -74,6 +76,7 @@ export default function League() {
                         </div>
                     )}
                     {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
+                    {activeTab === 'alltime' && <AllTimeTableModern />}
                 </motion.div>
             </AnimatePresence>
         </PageContainer>

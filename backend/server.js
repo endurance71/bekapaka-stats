@@ -79,7 +79,7 @@ import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
-import { getGameInfo, getGamePlayByPlay, getPlayerCareer } from './kalk/v2/readModels.js';
+import { getGameInfo, getGamePlayByPlay, getPlayerCareer, getTeamsAllTime } from './kalk/v2/readModels.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -1110,6 +1110,15 @@ app.get(['/api/league/table', '/league/table'], async (req, res) => {
   if (req.query.includeMeta !== '1') return res.json(rows);
   const season = req.query.seasonId ? await getSeasonById(req.query.seasonId) : await getActiveSeason();
   res.json({ data: rows, meta: leagueMetadata(season, rows) });
+});
+// Bilans wszech czasów drużyn Dywizji II (KALK) + bilans bezpośredni z BeKaPaKa (publiczne, dane ligi).
+app.get(['/api/league/all-time', '/league/all-time'], async (_req, res) => {
+  try {
+    res.json(await getTeamsAllTime(prisma));
+  } catch (err) {
+    console.error('All-time error:', err);
+    res.status(500).json({ error: 'Błąd pobierania bilansu wszech czasów' });
+  }
 });
 // Zapowiedź meczu: porównanie BeKaPaKa i rywala w sezonie (publiczne, dane ligi).
 app.get(['/api/league/matchup', '/league/matchup'], async (req, res) => {
