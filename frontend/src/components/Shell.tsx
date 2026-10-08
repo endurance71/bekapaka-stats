@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, type ComponentType } from 'react';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import MobileFullScreenMenu from './MobileFullScreenMenu';
@@ -30,34 +30,49 @@ import { JerseyIcon, MatchIcon, TrophyIcon } from '../shared/ui/BrandIcon';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
-const allLinks = [
-  { to: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, public: true },
-  { to: '/games', label: 'Mecze', icon: MatchIcon, public: true },
-  { to: '/league', label: 'Liga KALK', icon: TrophyIcon, public: true },
-  { to: '/roster', label: 'Skład', icon: JerseyIcon, public: true },
-  { to: '/tactics', label: 'Taktyka', icon: Target, public: true },
-  { to: '/trends', label: 'Analizy', icon: Activity, public: true },
-  { to: '/ai', label: 'AI', icon: Bot, public: false, adminOnly: true },
-  { to: '/profile', label: 'Mój Profil', icon: User, public: true },
-  { to: '/admin', label: 'Admin', icon: ShieldCheck, public: false, adminOnly: true },
+/** Menu: zawodnik widzi 6 pozycji; sekcja „Trener” (Analizy, AI, Admin) tylko dla admina. */
+export const allLinks: NavLinkItem[] = [
+  { to: '/dashboard', label: 'Start', icon: LayoutDashboard, group: 'player' },
+  { to: '/games', label: 'Mecze', icon: MatchIcon, group: 'player' },
+  { to: '/rywal', label: 'Następny rywal', icon: Target, group: 'player' },
+  { to: '/league', label: 'Liga', icon: TrophyIcon, group: 'player' },
+  { to: '/druzyna', label: 'Drużyna', icon: JerseyIcon, group: 'player' },
+  { to: '/profile', label: 'Ja', icon: User, group: 'player' },
+  { to: '/trends', label: 'Analizy', icon: Activity, group: 'coach', adminOnly: true },
+  { to: '/ai', label: 'AI', icon: Bot, group: 'coach', adminOnly: true },
+  { to: '/admin', label: 'Admin', icon: ShieldCheck, group: 'coach', adminOnly: true },
 ];
+
+export interface NavLinkItem {
+  to: string;
+  label: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number | string }>;
+  group: 'player' | 'coach';
+  adminOnly?: boolean;
+}
 
 function NavItems({
   links,
   onNavigate,
   collapsed = false,
 }: {
-  links: typeof allLinks;
+  links: NavLinkItem[];
   onNavigate?: () => void;
   collapsed?: boolean;
 }) {
   return (
-    <nav className="flex-1 overflow-y-auto no-scrollbar -mx-2">
-      {links.map((link) => {
+    <nav className="flex-1 overflow-y-auto no-scrollbar -mx-2" aria-label="Menu">
+      {links.map((link, i) => {
         const Icon = link.icon;
+        const groupStart = link.group === 'coach' && links[i - 1]?.group !== 'coach';
         return (
+          <div key={link.to}>
+          {groupStart && (
+            collapsed
+              ? <div className="mx-4 my-2 border-t border-bkpk-border-subtle" aria-hidden />
+              : <p className="label-caps text-[11px] text-bkpk-text-muted px-4 pt-5 pb-2">Trener</p>
+          )}
           <NavLink
-            key={link.to}
             to={link.to}
             onClick={onNavigate}
             title={collapsed ? link.label : undefined}
@@ -88,6 +103,7 @@ function NavItems({
               </>
             )}
           </NavLink>
+          </div>
         );
       })}
     </nav>

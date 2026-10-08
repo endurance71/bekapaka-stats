@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { TrophyIcon as Trophy, CalendarIcon as Calendar, VenueIcon as MapPin } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
@@ -6,6 +5,10 @@ import { useNavigate } from 'react-router-dom';
 
 export interface NextChallengeWidgetProps {
     opponent: string;
+    /** „5. miejsce · 0–1” */
+    opponentInfo?: string | null;
+    /** ID meczu (KALK) — link do zapowiedzi */
+    matchId?: string | null;
     date: string;
     time: string;
     /** Hala z terminarza KALK; brak → wiersz ukryty */
@@ -18,6 +21,8 @@ export interface NextChallengeWidgetProps {
 
 export function NextChallengeWidget({
     opponent,
+    opponentInfo,
+    matchId,
     date,
     time,
     location,
@@ -35,6 +40,7 @@ export function NextChallengeWidget({
                         <h3 className="text-[28px] leading-none font-display text-bkpk-text-primary mt-3">
                             {opponent}
                         </h3>
+                        {opponentInfo && <span className="mt-1.5 text-xs text-bkpk-text-muted tabular-nums">{opponentInfo}</span>}
                     </div>
                     <div className="flex items-center justify-center w-10 h-10 border border-bkpk-border-strong shrink-0">
                         <Trophy className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
@@ -80,20 +86,16 @@ export function NextChallengeWidget({
                 </div>
                 )}
 
-                <BkpkButton
-                    variant="ghost"
-                    className="w-full mt-2 group/btn"
-                    onClick={() => navigate('/scouting')}
-                >
-                    Raport o rywalu
-                    <motion.span
-                        className="ml-2"
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                    >
-                        →
-                    </motion.span>
-                </BkpkButton>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                    {matchId ? (
+                        <BkpkButton variant="ghost" className="w-full" onClick={() => navigate(`/games/${matchId}`)}>
+                            Szczegóły
+                        </BkpkButton>
+                    ) : <span />}
+                    <BkpkButton variant="primary" className="w-full" onClick={() => navigate('/rywal')}>
+                        Raport o rywalu
+                    </BkpkButton>
+                </div>
             </div>
 
         </BkpkCard>

@@ -16,13 +16,6 @@ import {
 import CompareBars, { type CompareRow } from './CompareBars';
 import { leftSideOf, otherSide, shortTeamName, type GameInfoResponse, type RecordKey, type Side } from './kalkMatchTypes';
 
-const LEADER_LABELS: { key: 'pts' | 'reb' | 'ast' | 'eval'; label: string }[] = [
-    { key: 'pts', label: 'Punkty' },
-    { key: 'reb', label: 'Zbiórki' },
-    { key: 'ast', label: 'Asysty' },
-    { key: 'eval', label: 'Eval' },
-];
-
 const RECORD_LABELS: { key: RecordKey; label: string }[] = [
     { key: 'pts', label: 'Punkty' },
     { key: 'reb', label: 'Zbiórki' },
@@ -129,36 +122,6 @@ function FactsCard({ info }: { info: GameInfoResponse }) {
                     </div>
                 ))}
             </dl>
-        </BkpkCard>
-    );
-}
-
-function LeadersCard({ info }: { info: GameInfoResponse }) {
-    const cats = LEADER_LABELS.filter((c) => (info.leaders[c.key] || []).length > 0);
-    if (!cats.length) return null;
-    return (
-        <BkpkCard variant="glass">
-            <SectionTitle icon={Crown}>Liderzy meczu</SectionTitle>
-            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6">
-                {cats.map(({ key, label }) => (
-                    <div key={key}>
-                        <div className="label-caps text-xs text-bkpk-text-secondary pb-2 border-b-2 border-bkpk-text-primary">{label}</div>
-                        <ol className="divide-y divide-bkpk-border-subtle">
-                            {(info.leaders[key] || []).slice(0, 3).map((l, i) => (
-                                <li key={`${l.slug ?? l.name}-${i}`} className="flex items-center justify-between gap-3 min-h-[44px] py-1.5">
-                                    <div className="min-w-0 flex flex-col">
-                                        <span className={cn('text-sm truncate', i === 0 ? 'font-semibold text-bkpk-text-primary' : 'text-bkpk-text-secondary')}>{l.name}</span>
-                                        <TeamTag side={l.side} info={info} />
-                                    </div>
-                                    <span className={cn('font-display font-extrabold text-2xl leading-none tabular-nums shrink-0', i === 0 ? 'text-bkpk-medal-gold' : 'text-bkpk-text-primary')}>
-                                        {l.value}
-                                    </span>
-                                </li>
-                            ))}
-                        </ol>
-                    </div>
-                ))}
-            </div>
         </BkpkCard>
     );
 }
@@ -349,7 +312,6 @@ export default function GameInfoPanel({ info }: { info: GameInfoResponse }) {
                 <FlowCard info={info} left={left} right={right} />
                 <PointsSourcesCard info={info} left={left} right={right} />
                 <RecordsCard info={info} left={left} right={right} />
-                <LeadersCard info={info} />
             </div>
             <aside className="lg:col-span-4 space-y-6 min-w-0">
                 <MvpCard info={info} />

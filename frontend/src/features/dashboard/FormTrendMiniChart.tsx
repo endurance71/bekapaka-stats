@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
+import { Link } from 'react-router-dom';
 import BkpkCard from '../../shared/ui/BkpkCard';
 
 export interface FormTrendProps {
@@ -12,9 +13,9 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
         <BkpkCard variant="glass" className="w-full">
             <div className="flex flex-col gap-4">
                 <div className="flex justify-between items-center">
-                    <span className="kicker text-bkpk-text-primary">Aktualna Forma</span>
+                    <span className="kicker text-bkpk-text-primary">Forma drużyny</span>
                     <span className="label-caps text-bkpk-text-muted text-xs">
-                        {matches.length > 0 ? `Ostatnie ${matches.length} meczów` : 'Brak meczów'}
+                        {matches.length > 0 ? `Ostatnie ${matches.length} ${matches.length === 1 ? 'mecz' : matches.length < 5 ? 'mecze' : 'meczów'}` : 'Brak meczów'}
                     </span>
                 </div>
 
@@ -22,11 +23,13 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                     {matches.map((match, idx) => (
                         <motion.div
                             key={match.id}
+                            title={`${match.result === 'W' ? 'Wygrana' : 'Porażka'} ${match.score}`}
                             initial={{ opacity: 0, scale: 0.8, x: -10 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{ delay: idx * 0.05, duration: 0.3 }}
-                            className="flex flex-col items-center gap-1.5 group cursor-pointer min-w-[44px]"
+                            className="min-w-[44px]"
                         >
+                            <Link to={`/games/${match.id}`} className="flex flex-col items-center gap-1.5 group min-h-[44px]">
                             <div
                                 className={clsx(
                                     // Jak .standings-badge na bekapaka.pl: wygrana wypełniona, porażka obrysowana
@@ -41,6 +44,7 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                             <span className="text-xs text-bkpk-text-muted font-medium tabular-nums group-hover:text-bkpk-text-secondary transition-colors">
                                 {match.score}
                             </span>
+                            </Link>
                         </motion.div>
                     ))}
 

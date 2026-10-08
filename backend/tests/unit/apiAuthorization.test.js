@@ -54,6 +54,12 @@ afterAll(async () => {
 });
 
 describe('API authorization', () => {
+  it('team analytics, scouting and the player home require login', async () => {
+    for (const path of ['/api/trends/team', '/api/trends/league', '/api/scouting/next', '/api/scouting/detailed', '/api/me/home']) {
+      expect((await request(path)).status).toBe(401);
+    }
+  });
+
   it('requires an admin for game and tactical writes', async () => {
     for (const path of ['/api/games', '/api/tactics/plays', '/api/tactics/plays/generate', '/api/coach-notes/game-1', '/api/tags/game-1']) {
       expect((await request(path, 'POST')).status).toBe(401);

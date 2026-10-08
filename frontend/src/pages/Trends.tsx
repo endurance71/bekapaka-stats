@@ -12,6 +12,9 @@ import useIsMobile from '../hooks/useIsMobile';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import PageLoader from '../shared/ui/PageLoader';
+import { PPGCard, RatingCard } from '../features/dashboard/HeroStatsCards';
+import SynergyMatrix, { EMPTY_SYNERGY, type SynergyResponse } from '../components/tactics/SynergyMatrix';
+import SectionHeading from '../shared/ui/SectionHeading';
 import {
   chartAxisProps,
   chartCategorical,
@@ -67,12 +70,17 @@ export default function Trends() {
   const [trends, setTrends] = useState<TeamTrend[]>([]);
   const [comparison, setComparison] = useState<LeagueComparison | null>(null);
   const [loading, setLoading] = useState(true);
+  const [teamStats, setTeamStats] = useState<any>(null);
+  const [synergy, setSynergy] = useState<SynergyResponse>(EMPTY_SYNERGY);
   const isMobile = useIsMobile();
   const { seasonId } = useSeasonPreferenceContext();
 
   useEffect(() => {
     setLoading(true);
     const q = seasonId ? `?seasonId=${encodeURIComponent(seasonId)}` : '';
+    // Ratingi i duety (dawniej na pulpicie i w Taktyce) — narzędzia trenera
+    fetchJSON<any>(`/api/team/stats${q}`).then(setTeamStats).catch(() => setTeamStats(null));
+    fetchJSON<SynergyResponse>(`/api/tactics/synergy${q}`).then((r) => setSynergy({ ...EMPTY_SYNERGY, ...r })).catch(() => setSynergy(EMPTY_SYNERGY));
     Promise.all([
       fetchJSON<TeamTrend[]>(`/api/trends/team${q}`),
       fetchJSON<LeagueComparison>(`/api/trends/league${q}`)
@@ -115,10 +123,20 @@ export default function Trends() {
   return (
     <PageContainer>
       <PageHeader
-        kicker="Centrum Analityczne"
+        kicker="Trener"
         title={<>Analizy i <span className="text-bkpk-primary">Trendy</span></>}
-        description="Szczegółowa ewolucja wyników drużyny i porównanie z ligą."
+        description="Wskaźniki drużyny na 100 akcji, trendy meczów, porównanie z ligą i duety."
       />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend ?? null} />
+        <RatingCard
+          offRating={teamStats?.offRating || 0}
+          defRating={teamStats?.defRating || 0}
+          league={teamStats?.league ?? null}
+          tiers={teamStats?.tiers ?? null}
+        />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
 
@@ -357,6 +375,10 @@ export default function Trends() {
           </div>
         </div>
       </div>
+      <section className="space-y-4" aria-labelledby="duety">
+        <SectionHeading kicker="Kto gra razem najlepiej" title={<span id="duety">Duety</span>} />
+        <SynergyMatrix data={synergy} />
+      </section>
     </PageContainer>
   );
 }

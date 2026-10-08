@@ -6,6 +6,7 @@ import { BkpkCard } from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import { formatStatFixed } from '../../shared/lib/formatStat';
 import PlayerAvatar from '../../shared/ui/PlayerAvatar';
+import { Link } from 'react-router-dom';
 
 interface Player {
     id: string;
@@ -40,7 +41,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
 
     if (loading) {
         return (
-            <BkpkCard title="Top 3 Zawodnicy" icon={<Star className="w-5 h-5 text-bkpk-primary" />}>
+            <BkpkCard title="Najlepsi strzelcy" icon={<Star className="w-5 h-5 text-bkpk-primary" />}>
                 <div className="flex items-center justify-center py-12">
                     <div className="w-8 h-8 border-4 border-bkpk-border-strong border-t-bkpk-primary rounded-full animate-spin" />
                 </div>
@@ -52,7 +53,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
 
     if (topPlayers.length === 0 || !hasAnyStats) {
         return (
-            <BkpkCard title="Top 3 Zawodnicy" icon={<Star className="w-5 h-5 text-bkpk-primary" />}>
+            <BkpkCard title="Najlepsi strzelcy" icon={<Star className="w-5 h-5 text-bkpk-primary" />}>
                 <div className="flex flex-col items-center justify-center py-12 text-bkpk-text-muted text-center px-4">
                     <Trophy className="w-12 h-12 mb-4 text-bkpk-text-muted" aria-hidden="true" />
                     <p className="label-caps text-sm text-bkpk-text-primary">Brak statystyk meczowych</p>
@@ -64,7 +65,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
 
     return (
         <BkpkCard
-            title="Top 3 Zawodnicy"
+            title="Najlepsi strzelcy"
             icon={<Star className="w-5 h-5 text-bkpk-primary" />}
             className="h-full"
         >
@@ -73,8 +74,8 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                     const isFirst = index === 0;
                     const evalVal = resolvePlayerEval(player);
                     return (
+                        <Link key={player.id} to={`/players/${player.id}`} className="block">
                         <motion.div
-                            key={player.id}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: index * 0.1 }}
@@ -124,6 +125,7 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                                 </div>
                             </div>
                         </motion.div>
+                        </Link>
                     );
                 })}
             </div>

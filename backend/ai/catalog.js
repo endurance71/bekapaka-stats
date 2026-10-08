@@ -369,7 +369,7 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       ? buildPersonnelMdFromAnalysis(report.analysisJson)
       : null;
     const personnelHasContent = Boolean(personnelMd?.trim());
-    const viewPath = `/scouting?opponent=${encodeURIComponent(opponentName)}`;
+    const viewPath = `/rywal?opponent=${encodeURIComponent(opponentName)}`;
     const common = {
       generatedAt,
       model,

@@ -10,6 +10,8 @@ import type { StatKey } from '../../shared/lib/statGlossary';
 
 export interface PlayerStat {
     name: string;
+    /** Link do profilu zawodnika (gdy jest w składzie BeKaPaKa) */
+    href?: string | null;
     number?: number | string;
     minutes?: number | string;
     points?: number | string;
@@ -76,7 +78,11 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5 min-w-0">
                         {player.number && <span className="font-display text-xs sm:text-sm text-bkpk-primary tabular-nums shrink-0">#{player.number}</span>}
-                        <span className="truncate text-xs sm:text-sm">{player.name}</span>
+                        {player.href ? (
+                            <Link to={player.href} className="truncate text-xs sm:text-sm hover:text-bkpk-primary underline-offset-2 hover:underline">{player.name}</Link>
+                        ) : (
+                            <span className="truncate text-xs sm:text-sm">{player.name}</span>
+                        )}
                         {player.starter && (
                             <span className="text-bkpk-primary font-display text-sm leading-none shrink-0" title="Pierwsza piątka">*<span className="sr-only"> (pierwsza piątka)</span></span>
                         )}

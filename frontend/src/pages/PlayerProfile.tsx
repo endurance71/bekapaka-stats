@@ -33,6 +33,7 @@ import PlayerCareer, { type PlayerCareerResponse } from '../components/players/P
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { pluralPl } from '../shared/lib/plural';
+import BkpkTooltip from '../shared/ui/BkpkTooltip';
 
 interface StatSnapshot {
     gameId: string;
@@ -199,11 +200,11 @@ export default function PlayerProfile() {
 
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sm:gap-6">
-                    <Link to="/roster" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
+                    <Link to="/druzyna" className="group inline-flex items-center gap-3 min-h-[44px] text-bkpk-text-secondary hover:text-bkpk-text-primary transition-colors">
                         <div className="w-8 h-8 border border-bkpk-border-strong flex items-center justify-center group-hover:border-bkpk-text-primary transition-colors">
                             <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                         </div>
-                        <span className="label-caps text-xs">Powrót do Składu</span>
+                        <span className="label-caps text-xs">Powrót do składu</span>
                     </Link>
 
                     {selectedSeason && !selectedSeason.isActive ? (
@@ -365,7 +366,7 @@ export default function PlayerProfile() {
                             )}
                         </BkpkCard>
 
-                        {career && <PlayerCareer career={career} />}
+                        {career && <PlayerCareer career={career} showPersonal={isAdmin || user?.id === id} />}
 
                         {/* Advanced Box Score (Game Log) */}
                         <section className="space-y-4">
@@ -397,7 +398,10 @@ export default function PlayerProfile() {
                     {/* Sidebar / Detailed Averages */}
                     <div className="lg:col-span-4 space-y-8">
                         <BkpkCard variant="glass" className="space-y-6">
-                            <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Efektywność Sezonowa</h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Skuteczność w sezonie</h3>
+                                <BkpkTooltip content="Skuteczność rzutów liczy trójkę 1,5 raza (bo daje 3 pkt); skuteczność ogólna dolicza też rzuty wolne." />
+                            </div>
                             <div className="space-y-6">
                                 {[
                                     { label: 'Skuteczność rzutów', value: formatStatFixed((averages.efg ?? 0) * 100, 1) + '%', progress: (averages.efg ?? 0) * 100 },
@@ -427,28 +431,6 @@ export default function PlayerProfile() {
                             </div>
                         </BkpkCard>
 
-                        {/* Recent Achievements / Milestones */}
-                        <BkpkCard variant="glass" className="border-t-2 border-t-bkpk-medal-gold">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="flex items-center justify-center w-9 h-9 border border-bkpk-medal-gold shrink-0">
-                                    <Star className="w-5 h-5 fill-current text-bkpk-medal-gold" aria-hidden="true" />
-                                </div>
-                                <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Najlepsze Występy</h3>
-                            </div>
-                            <div className="border-t border-bkpk-border-subtle">
-                                {[...gameLog].sort((a, b) => b.pts - a.pts).slice(0, 3).map((g, idx) => (
-                                    <div key={idx} className="flex items-center justify-between gap-3 px-1 py-3 border-b border-bkpk-border-subtle">
-                                        <div className="min-w-0">
-                                            <div className="text-sm font-semibold text-bkpk-text-primary truncate">{g.opponent}</div>
-                                            <div className="text-xs text-bkpk-text-muted tabular-nums">{new Date(g.date).toLocaleDateString()}</div>
-                                        </div>
-                                        <div className="shrink-0 text-2xl leading-none font-display font-extrabold tabular-nums text-bkpk-text-primary">
-                                            {g.pts} PTS
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </BkpkCard>
                     </div>
                 </div>
             </PageContainer>

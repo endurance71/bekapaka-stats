@@ -13,6 +13,8 @@ import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 import PlayerAvatar from '../../shared/ui/PlayerAvatar';
 import type { PhotoSource } from '../../shared/lib/playerUtils';
+import { Link } from 'react-router-dom';
+import { useRosterLinks } from '../../shared/lib/useRosterLinks';
 
 interface Scorer {
     id: string;
@@ -62,6 +64,17 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const [activeCategory, setActiveCategory] = useState<LeaderCategory>('points');
     const [leaders, setLeaders] = useState<Scorer[]>([]);
     const [loading, setLoading] = useState(true);
+    const rosterLinks = useRosterLinks();
+    // Zawodnik BeKaPaKa → link do profilu (powiązanie w tym sezonie albo slug KALK)
+    const profileHref = (player: Scorer): string | null => {
+        const slug = player.id.includes('__') ? player.id.slice(player.id.indexOf('__') + 2) : null;
+        const rosterId = player.rosterPlayer?.id ?? (slug ? rosterLinks.get(slug) : undefined);
+        return rosterId ? `/players/${rosterId}` : null;
+    };
+    const NameLink = ({ player, className }: { player: Scorer; className?: string }) => {
+        const href = profileHref(player);
+        return href ? <Link to={href} className={cn(className, 'hover:text-bkpk-primary hover:underline underline-offset-2')}>{player.name}</Link> : <span className={className}>{player.name}</span>;
+    };
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
 
@@ -218,7 +231,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             </div>
 
                                             <div className="flex-1 min-w-0">
-                                                <div className="font-display text-lg uppercase text-bkpk-text-primary leading-tight truncate">{player.name}</div>
+                                                <NameLink player={player} className="block font-display text-lg uppercase text-bkpk-text-primary leading-tight truncate" />
                                                 <div className="label-caps text-[11px] text-bkpk-text-muted truncate mt-0.5">{player.team}</div>
                                             </div>
                                             <div className="text-right shrink-0">
@@ -254,7 +267,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             key={player.id}
                                             rank={index + 4}
                                             accent={isBkpk}
-                                            title={player.name}
+                                            title={<NameLink player={player} />}
                                             subtitle={player.team}
                                             leading={
                                                 <div className="w-9 h-9 overflow-hidden shrink-0 border border-bkpk-border-strong">
@@ -329,7 +342,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                             <div className="w-7 h-7 overflow-hidden shrink-0 border border-bkpk-border-strong">
                                                                 <PlayerAvatar player={leaderPhotoSource(player)} className="w-full h-full" />
                                                             </div>
-                                                            {player.name}
+                                                            <NameLink player={player} />
                                                         </div>
                                                     </td>
                                                     <td className="h-12 px-3 sm:px-5 text-bkpk-text-secondary text-[13px] max-w-[160px] truncate">{player.team}</td>

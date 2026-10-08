@@ -6,43 +6,6 @@ import { useState } from 'react';
 import { clsx } from 'clsx';
 import { formatStatFixed } from '../../shared/lib/formatStat';
 
-export interface WinCardProps {
-    winPercentage: number;
-    wins: number;
-    losses: number;
-    loading?: boolean;
-}
-
-export function WinCard({ winPercentage, wins, losses, loading }: WinCardProps) {
-    return (
-        <BkpkCard hoverEffect className="relative h-full">
-            <div className="flex flex-col h-full justify-between">
-                <div>
-                    <span className="kicker text-bkpk-text-primary">Bilans Sezonu</span>
-                    <div className="flex items-baseline gap-2 mt-3">
-                        <h2 className="text-5xl lg:text-6xl leading-none font-display tabular-nums text-bkpk-text-primary">
-                            {isNaN(winPercentage) || winPercentage <= 0 ? 0 : Math.round(winPercentage)}%
-                        </h2>
-                        <span className="label-caps text-bkpk-text-secondary text-xs">Zwycięstw</span>
-                    </div>
-                </div>
-
-                <div className="mt-6 pt-4 border-t border-bkpk-border-subtle flex items-end justify-between">
-                    <div className="flex flex-col gap-1">
-                        <span className="label-caps text-bkpk-text-secondary text-xs">Wygrane</span>
-                        <span className="font-display text-3xl leading-none tabular-nums text-bkpk-text-primary">{wins}</span>
-                    </div>
-                    <div className="h-10 w-px bg-bkpk-border-subtle mx-4" aria-hidden="true" />
-                    <div className="flex flex-col gap-1 text-right">
-                        <span className="label-caps text-bkpk-text-secondary text-xs">Mecze</span>
-                        <span className="font-display text-3xl leading-none tabular-nums text-bkpk-text-primary">{wins + losses}</span>
-                    </div>
-                </div>
-            </div>
-        </BkpkCard>
-    );
-}
-
 export interface PPGCardProps {
     ppg: number;
     /** % zmiany: ostatnie 3 mecze vs wcześniejsze; null = za mało meczów (poniżej 6) */
