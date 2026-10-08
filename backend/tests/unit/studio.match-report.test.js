@@ -67,6 +67,8 @@ describe('match report article', () => {
     expect(website.excerpt.length).toBeGreaterThanOrEqual(140);
     expect(lintCopy('website', website, facts).filter((i) => i.level === 'error')).toEqual([]);
     expect(lintCopy('website', website, facts).some((i) => /Liczby spoza/.test(i.message))).toBe(false);
+    // The next match is written in Warsaw time (e.g. 18:00) — its hour counts as a known fact.
+    expect(website.content).toContain('o 18:00');
   });
   it('keeps the short article when there are no statistics', () => {
     const facts = factsSchema.parse({ kind: 'match', round: '3', opponent: 'Pantery', scoreUs: 71, scoreThem: 60 });
