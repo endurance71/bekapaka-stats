@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useBlocker, useNavigate } from 'react-router';
+import { useBlocker, useNavigate, useSearchParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Check, Copy, Download, History, LoaderCircle, Undo2 } from 'lucide-react';
 import { api, message, send } from '../../lib/api';
@@ -58,6 +58,11 @@ const steps: [Step, string][] = [
 
 export default function GraphicEditor({ initial, posts, templates, assets, partners, players }: Props) {
   const navigate = useNavigate();
+  // Opened from a publication: going back returns to its graphics tab.
+  const [search] = useSearchParams();
+  const fromPublication = search.get('publikacja');
+  const backTo =
+    fromPublication && /^[0-9a-f-]{36}$/.test(fromPublication) ? `/publikacje/${fromPublication}/grafiki` : '/grafiki';
   const client = useQueryClient();
   const reload = useReloadLibrary();
   const seasons = useSeasons();
@@ -174,9 +179,9 @@ export default function GraphicEditor({ initial, posts, templates, assets, partn
       <header className="editor-header">
         <button
           className="icon-button"
-          aria-label="Wróć do projektów"
+          aria-label={fromPublication ? 'Wróć do publikacji' : 'Wróć do projektów'}
           disabled={busy}
-          onClick={() => navigate('/grafiki')}
+          onClick={() => navigate(backTo)}
         >
           <ArrowLeft size={20} />
         </button>

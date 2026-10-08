@@ -437,6 +437,7 @@ model StudioProject {
   revisions StudioRevision[]
   jobs StudioJob[]
   exports StudioExport[]
+  publicationItems StudioPublicationItem[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([ownerId, updatedAt])
@@ -562,6 +563,71 @@ model StudioAiUsage {
   status String @default("reserved")
   createdAt DateTime @default(now())
   @@index([ownerId, month])
+}
+
+// Studio 2: one communication event (match result, tournament, partner…) published to several channels.
+model StudioPublication {
+  id String @id @default(uuid())
+  ownerId String
+  title String
+  playbook String
+  status String @default("draft")
+  facts Json
+  factsHash String
+  factsConfirmedHash String?
+  sourceRef Json?
+  plannedAt DateTime?
+  revision Int @default(1)
+  items StudioPublicationItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([ownerId, status, plannedAt])
+}
+
+// One channel variant: instagram_feed, instagram_story, facebook or website.
+model StudioPublicationItem {
+  id String @id @default(uuid())
+  publicationId String
+  publication StudioPublication @relation(fields: [publicationId], references: [id], onDelete: Cascade)
+  channel String
+  projectId String?
+  project StudioProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  format String?
+  copy Json
+  copyOrigin String @default("manual")
+  promptVersion String?
+  status String @default("draft")
+  approvedHash String?
+  plannedAt DateTime?
+  publishedAt DateTime?
+  externalId String?
+  externalUrl String?
+  error String?
+  revision Int @default(1)
+  events StudioPublishEvent[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([publicationId, channel])
+  @@index([status, plannedAt])
+}
+
+model StudioPublishEvent {
+  id String @id @default(uuid())
+  itemId String
+  item StudioPublicationItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  action String
+  actor String
+  payload Json?
+  createdAt DateTime @default(now())
+  @@index([itemId, createdAt])
+}
+
+model StudioSetting {
+  ownerId String
+  key String
+  value Json
+  updatedAt DateTime @updatedAt
+  @@id([ownerId, key])
 }
 
 model StudioSession {

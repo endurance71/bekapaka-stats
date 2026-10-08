@@ -1,7 +1,17 @@
 import { useMemo, useState } from 'react';
 import { NavLink, Outlet, useMatch, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { Download, Image, LayoutGrid, LogOut, ShieldCheck } from 'lucide-react';
+import {
+  CalendarDays,
+  Download,
+  Home,
+  Image,
+  LayoutGrid,
+  LogOut,
+  Megaphone,
+  Settings,
+  ShieldCheck,
+} from 'lucide-react';
 import { message, send } from '../lib/api';
 import { keys, useCatalog, useProjects } from '../lib/queries';
 import { newPostProject } from '../lib/contracts';
@@ -9,26 +19,41 @@ import { brandDate } from '../lib/brand';
 import type { User, View } from '../lib/types';
 import Modal from '../components/Modal';
 import PostCatalog from '../features/catalog/PostCatalog';
+import NewPublicationModal, { type NewPublicationPrefill } from '../features/publications/NewPublicationModal';
 import { ShellContext } from './shell-context';
 
 const nav = [
+  ['/', 'Pulpit', Home],
+  ['/kalendarz', 'Kalendarz', CalendarDays],
+  ['/publikacje', 'Publikacje', Megaphone],
   ['/grafiki', 'Grafiki', LayoutGrid],
   ['/materialy', 'Materiały', Image],
   ['/eksporty', 'Eksporty', Download],
   ['/marka', 'Marka i partnerzy', ShieldCheck],
+  ['/ustawienia', 'Ustawienia', Settings],
 ] as const;
 
 export default function AppShell() {
   const client = useQueryClient();
   const navigate = useNavigate();
   const user = client.getQueryData<User>(keys.me);
-  const editing = !!useMatch('/grafiki/:id');
+  const graphicRoute = useMatch('/grafiki/:id');
+  const publicationRoute = useMatch('/publikacje/:id/*');
+  const editing = !!graphicRoute || !!publicationRoute;
   const catalog = useCatalog();
   const projects = useProjects();
   const [error, setError] = useState('');
   const [newOpen, setNewOpen] = useState(false);
   const [busy, setBusy] = useState(false);
-  const shell = useMemo(() => ({ openNew: () => setNewOpen(true), setError }), []);
+  const [newPublication, setNewPublication] = useState<NewPublicationPrefill | null>(null);
+  const shell = useMemo(
+    () => ({
+      openNew: () => setNewOpen(true),
+      openNewPublication: (p?: NewPublicationPrefill) => setNewPublication(p || {}),
+      setError,
+    }),
+    [],
+  );
 
   async function create(postType: string, style: string) {
     setBusy(true);
@@ -58,7 +83,7 @@ export default function AppShell() {
     <ShellContext.Provider value={shell}>
       <div className="app">
         <aside className="sidebar">
-          <NavLink className="brand" to="/grafiki" aria-label="BeKaPaKa Studio">
+          <NavLink className="brand" to="/" aria-label="BeKaPaKa Studio">
             <img src="/brand/sygnet2-kolor.svg" alt="" />
             <span>
               BEKAPAKA<b>STUDIO</b>
@@ -67,7 +92,12 @@ export default function AppShell() {
           <span className="workspace-label">PRACOWNIA KLUBU</span>
           <nav>
             {nav.map(([to, label, Icon]) => (
-              <NavLink key={to} to={to} className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <NavLink
+                key={to}
+                to={to}
+                end={to === '/'}
+                className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}
+              >
                 <Icon size={19} />
                 <span>{label}</span>
                 {to === '/grafiki' && projects.data && <small>{projects.data.length}</small>}
@@ -100,6 +130,7 @@ export default function AppShell() {
           )}
           <Outlet />
         </main>
+        {newPublication && <NewPublicationModal prefill={newPublication} onClose={() => setNewPublication(null)} />}
         {newOpen && (
           <Modal
             eyebrow="NOWY PROJEKT"

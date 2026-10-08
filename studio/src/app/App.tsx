@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, SESSION_EXPIRED } from '../lib/api';
 import { keys } from '../lib/queries';
@@ -12,6 +12,11 @@ import AssetsPage from '../pages/AssetsPage';
 import BrandPage from '../pages/BrandPage';
 import ExportsPage from '../pages/ExportsPage';
 import NotFound from '../pages/NotFound';
+import DashboardPage from '../pages/DashboardPage';
+import CalendarPage from '../pages/CalendarPage';
+import PublicationsPage from '../pages/PublicationsPage';
+import PublicationPage from '../pages/PublicationPage';
+import SettingsPage from '../pages/SettingsPage';
 
 function SessionGate() {
   const client = useQueryClient();
@@ -43,7 +48,11 @@ const router = createBrowserRouter([
       {
         element: <AppShell />,
         children: [
-          { index: true, element: <Navigate to="/grafiki" replace /> },
+          { index: true, element: <DashboardPage /> },
+          { path: 'kalendarz', element: <CalendarPage /> },
+          { path: 'publikacje', element: <PublicationsPage /> },
+          { path: 'publikacje/:id/:kanal?', element: <PublicationPage /> },
+          { path: 'ustawienia', element: <SettingsPage /> },
           { path: 'grafiki', element: <ProjectsPage /> },
           { path: 'grafiki/:id', element: <ProjectPage /> },
           { path: 'materialy', element: <AssetsPage /> },

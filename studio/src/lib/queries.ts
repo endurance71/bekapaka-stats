@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
 import type { Asset, Budget, ExportEntry, Partner, PostType, SourceItem, Template, View } from './types';
 import type { Season } from './seasons';
+import type { PublicationSummary, Settings, Suggestion } from './publications';
 
 export const keys = {
   me: ['me'],
@@ -15,6 +16,11 @@ export const keys = {
   seasons: ['seasons'],
   players: ['players'],
   brand: ['brand'],
+  playbooks: ['playbooks'],
+  publications: ['publications'],
+  publication: (id: string) => ['publication', id],
+  suggestions: ['suggestions'],
+  settings: ['settings'],
 } as const;
 
 type CatalogResponse = { brandVersion: string; templates: Template[]; postTypes: PostType[] };
@@ -46,8 +52,24 @@ export function useReloadLibrary() {
   const client = useQueryClient();
   return () =>
     Promise.all(
-      [keys.catalog, keys.assets, keys.partners, keys.budget, keys.exports, keys.projects].map((queryKey) =>
-        client.invalidateQueries({ queryKey }),
-      ),
+      [
+        keys.catalog,
+        keys.assets,
+        keys.partners,
+        keys.budget,
+        keys.exports,
+        keys.projects,
+        keys.publications,
+        keys.suggestions,
+      ].map((queryKey) => client.invalidateQueries({ queryKey })),
     ).then(() => undefined);
 }
+
+export const usePublications = (status: 'draft' | 'archived' = 'draft') =>
+  useQuery({
+    queryKey: [...keys.publications, status],
+    queryFn: () => api<PublicationSummary[]>(`/publications?status=${status}`),
+  });
+export const useSuggestions = () =>
+  useQuery({ queryKey: keys.suggestions, queryFn: () => api<Suggestion[]>('/publications/suggestions') });
+export const useSettings = () => useQuery({ queryKey: keys.settings, queryFn: () => api<Settings>('/settings') });

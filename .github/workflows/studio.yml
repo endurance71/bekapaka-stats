@@ -48,7 +48,7 @@ jobs:
           npm ci
           npx prisma generate
           npx prisma migrate deploy
-          npm test -- --run tests/unit/studio.test.js tests/unit/studio.catalog.test.js tests/unit/studio.worker.test.js tests/unit/studio.sources.test.js tests/unit/studio.composition-specs.test.js tests/unit/studio.integration.test.js
+          npm test -- --run tests/unit/studio.test.js tests/unit/studio.catalog.test.js tests/unit/studio.worker.test.js tests/unit/studio.sources.test.js tests/unit/studio.composition-specs.test.js tests/unit/studio.publications.test.js tests/unit/studio.integration.test.js tests/unit/studio.publications.integration.test.js
           /tmp/studio-python/bin/python -m unittest discover -s studio/renderer -p 'test_*.py'
       - name: Studio tests and build
         working-directory: studio

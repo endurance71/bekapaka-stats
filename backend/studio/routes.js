@@ -14,6 +14,7 @@ import { projectView, createProject, updateProject, validation, queueJob, contex
 import { budget, queueAi } from './ai.js';
 import { matchSnapshot, matches, cms, cmsMedia, sourceEnvelope, roundOptions } from './sources.js';
 import { createLoginThrottle } from '../lib/loginThrottle.js';
+import { publicationRoutes } from './publications/routes.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
 const jid = value => z.string().uuid().parse(value);
@@ -172,6 +173,7 @@ export function createStudioRouter({ db, loginUser }) {
   router.post('/partners', async (req, res) => { const data = partnerSchema.parse(req.body); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.create({ data: { ...data, id: crypto.randomUUID(), ownerId: req.studioOwner } })); });
   router.put('/partners/:id', async (req, res) => { const data = partnerSchema.parse(req.body); const p = await db.studioPartner.findFirst({ where: { id: req.params.id, ownerId: req.studioOwner } }); if (!p) fail(404, 'Partner nie istnieje'); if (data.assetId && !await db.studioAsset.findFirst({ where: { id: data.assetId, ownerId: req.studioOwner, kind: 'logo' } })) fail(422, 'Wybierz logo z biblioteki'); res.json(await db.studioPartner.update({ where: { id: p.id }, data })); });
   router.get('/ai/budget', async (req, res) => res.json(await budget(db, req.studioOwner)));
+  publicationRoutes(router, db);
   router.use((err, _req, res, _next) => {
     if (err instanceof ZodError) return res.status(400).json({ error: 'Sprawdź pola formularza', details: err.issues.map(i => ({ field: i.path.join('.'), message: i.message })) });
     if (err.code === 'LIMIT_FILE_SIZE') return res.status(413).json({ error: 'Plik przekracza 20 MB' });
