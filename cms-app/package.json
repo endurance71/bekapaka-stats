@@ -34,5 +34,8 @@
   "strapi": {
     "uuid": "e3393b34-b953-4104-b49e-3838bda909a2",
     "installId": "a3d5c1dcd7813daaf0e98fffac7a34cafec9009d3d35dce95c8886c874221252"
+  },
+  "overrides": {
+    "handlebars": "^4.7.10"
   }
 }
