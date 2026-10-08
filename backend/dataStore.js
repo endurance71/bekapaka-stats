@@ -79,6 +79,7 @@ import jwt from 'jsonwebtoken';
 import { getJwtSecret } from './lib/requireEnv.js';
 import { matchHasPlusMinus } from './kalk/v2/util.js';
 import { resolveMatchDay } from './lib/matchDay.js';
+import { rosterKalkSlug } from './kalk/v2/readModels.js';
 
 const SECRET_KEY = getJwtSecret();
 
@@ -423,6 +424,8 @@ export async function getRoster(querySeasonId = undefined) {
       number: r.number,
       position: r.position,
       starter: r.starter,
+      // Slug KALK (link z box score do profilu): kolumna albo `{sezon}__{slug}` z powiązania
+      kalkSlug: rosterKalkSlug({ kalkSlug: r.kalkSlug, kalkPlayerId }),
       ppg,
       rpg,
       apg,
