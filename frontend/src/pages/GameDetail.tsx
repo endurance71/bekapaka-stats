@@ -1,6 +1,6 @@
 import { MatchPresentationEditor } from '../components/games/MatchPresentationEditor';
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
@@ -12,6 +12,8 @@ import {
   Trophy,
   Zap,
   BarChart2,
+  Info,
+  ListOrdered,
 } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
@@ -22,10 +24,28 @@ import BoxScoreModern from '../features/games/BoxScoreModern';
 import TeamStats from '../components/games/TeamStats';
 import DashboardMomentum from '../components/games/DashboardMomentum';
 import OpponentComparison from '../components/games/OpponentComparison';
+import GameInfoPanel from '../components/games/GameInfoPanel';
+import PlayByPlayPanel from '../components/games/PlayByPlayPanel';
+import type { GameInfoResponse, PlayByPlayResponse } from '../components/games/kalkMatchTypes';
+
+type MainTab = 'stats' | 'info' | 'pbp';
+
+const mainTabs: { id: MainTab; label: string; icon: typeof BarChart2 }[] = [
+  { id: 'stats', label: 'Statystyki', icon: BarChart2 },
+  { id: 'info', label: 'Info', icon: Info },
+  { id: 'pbp', label: 'Akcja po akcji', icon: ListOrdered },
+];
 
 export default function GameDetail() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const querySeasonId = searchParams.get('seasonId');
   const [game, setGame] = useState<any | null>(null);
+  const [mainTab, setMainTab] = useState<MainTab>('stats');
+  const [info, setInfo] = useState<GameInfoResponse | null>(null);
+  const [infoState, setInfoState] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [pbp, setPbp] = useState<PlayByPlayResponse | null>(null);
+  const [pbpState, setPbpState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'bekapaka' | 'opponent'>('bekapaka');
   const [aiLoading, setAiLoading] = useState(false);
@@ -36,18 +56,75 @@ export default function GameDetail() {
     if (!id) return;
     setLoading(true);
     try {
-      const data = await fetchJSON<any>(`/api/games/${id}`);
+      // seasonId z linku (np. H2H) — to samo ID meczu może istnieć w kilku sezonach.
+      const q = querySeasonId ? `?seasonId=${encodeURIComponent(querySeasonId)}` : '';
+      const data = await fetchJSON<any>(`/api/games/${encodeURIComponent(id)}${q}`);
       setGame(data);
     } catch (error) {
       console.error('Błąd podczas pobierania meczu:', error);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, querySeasonId]);
 
   useEffect(() => {
     fetchGame();
   }, [fetchGame]);
+
+  // Nowy mecz (np. link z H2H) — wróć do statystyk i wyczyść dane zakładek.
+  useEffect(() => {
+    setMainTab('stats');
+    setInfo(null);
+    setInfoState('idle');
+    setPbp(null);
+    setPbpState('idle');
+  }, [id, querySeasonId]);
+
+  const isKalkGame = Boolean(game && (game.dataSource === 'kalk' || game.isFromKalkMatch));
+  const kalkMatchId = game ? String(game.kalkMatchId || game.id) : null;
+  const gameSeasonQuery = game?.seasonId ? `?seasonId=${encodeURIComponent(game.seasonId)}` : '';
+
+  // Info meczu (KALK v2) — pobierane po meczu; mówi też, czy jest akcja po akcji.
+  useEffect(() => {
+    if (!isKalkGame || !kalkMatchId) return;
+    let active = true;
+    setInfoState('loading');
+    fetchJSON<GameInfoResponse>(`/api/games/${encodeURIComponent(kalkMatchId)}/info${gameSeasonQuery}`)
+      .then((data) => {
+        if (!active) return;
+        setInfo(data);
+        setInfoState('idle');
+      })
+      .catch((error) => {
+        console.error('Błąd pobierania info meczu:', error);
+        if (active) setInfoState('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, [isKalkGame, kalkMatchId, gameSeasonQuery]);
+
+  // Akcja po akcji — dopiero po otwarciu zakładki.
+  useEffect(() => {
+    if (mainTab !== 'pbp' || pbp || !kalkMatchId) return;
+    let active = true;
+    setPbpState('loading');
+    fetchJSON<PlayByPlayResponse>(`/api/games/${encodeURIComponent(kalkMatchId)}/play-by-play${gameSeasonQuery}`)
+      .then((data) => {
+        if (!active) return;
+        setPbp(data);
+        setPbpState('idle');
+      })
+      .catch((error) => {
+        console.error('Błąd pobierania akcji po akcji:', error);
+        if (active) setPbpState('error');
+      });
+    return () => {
+      active = false;
+    };
+  }, [mainTab, pbp, kalkMatchId, gameSeasonQuery]);
+
+  const visibleTabs = mainTabs.filter((t) => t.id === 'stats' || (t.id === 'info' && isKalkGame) || (t.id === 'pbp' && info?.hasPlayByPlay));
 
   const handleGenerateAi = async (force = false) => {
     if (!id) return;
@@ -152,7 +229,7 @@ export default function GameDetail() {
               </div>
               <div className="flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
-                {game.venue || 'KOSiR Koszalin'}
+                {info?.venue || game.venue || 'KOSiR Koszalin'}
               </div>
             </div>
 
@@ -165,7 +242,7 @@ export default function GameDetail() {
               <div className="w-px h-3 bg-bkpk-border-strong" aria-hidden="true" />
               <div className="flex items-center gap-1">
                 <MapPin className="w-3.5 h-3.5 text-bkpk-primary" aria-hidden="true" />
-                {game.venue || 'KOSiR Koszalin'}
+                {info?.venue || game.venue || 'KOSiR Koszalin'}
               </div>
             </div>
 
@@ -197,8 +274,52 @@ export default function GameDetail() {
           ) : null}
         </section>
 
+        {/* Zakładki meczu — jak `.tabs` na bekapaka.pl (League.tsx): wersaliki, 3 px czerwone podkreślenie */}
+        {visibleTabs.length > 1 && (
+          <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Sekcje meczu">
+            {visibleTabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = mainTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setMainTab(tab.id)}
+                  className={cn(
+                    'relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-[13px] sm:text-sm transition-colors duration-200',
+                    'after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200',
+                    isActive ? 'text-bkpk-text-primary after:scale-x-100' : 'text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0'
+                  )}
+                >
+                  <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {mainTab === 'info' && (
+          info ? <GameInfoPanel info={info} /> : (
+            <TabPlaceholder state={infoState} loadingLabel="Pobieranie informacji o meczu..." errorLabel="Nie udało się pobrać informacji o meczu." />
+          )
+        )}
+
+        {mainTab === 'pbp' && (
+          pbp?.available ? <PlayByPlayPanel data={pbp} /> : (
+            <TabPlaceholder
+              state={pbp && !pbp.available ? 'empty' : pbpState}
+              loadingLabel="Pobieranie akcji po akcji..."
+              errorLabel="Nie udało się pobrać akcji po akcji."
+              emptyLabel="Ten mecz nie ma zapisu akcja po akcji w KALK."
+            />
+          )
+        )}
+
         {/* Content Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className={cn('grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12', mainTab !== 'stats' && 'hidden')}>
           {/* Main Content */}
           <div className="lg:col-span-8 space-y-10 md:space-y-12">
 
@@ -294,6 +415,12 @@ export default function GameDetail() {
                 playerStats={(activeTab === 'bekapaka' ? bekapaka : opponentTeam)?.players?.map((p: any) => ({
                   name: p.name,
                   number: p.number,
+                  starter: p.starter,
+                  offRebounds: p.orb,
+                  defRebounds: p.drb,
+                  fouls: p.pf,
+                  foulsDrawn: p.pfDrawn,
+                  blocksAgainst: p.blkAgainst,
                   minutes: p.min,
                   points: p.pts,
                   rebounds: p.reb || (p.orb + p.drb) || 0,
@@ -346,6 +473,22 @@ export default function GameDetail() {
           </aside>
         </div>
       </PageContainer>
+    </div>
+  );
+}
+
+function TabPlaceholder({ state, loadingLabel, errorLabel, emptyLabel }: {
+  state: 'idle' | 'loading' | 'error' | 'empty';
+  loadingLabel: string;
+  errorLabel: string;
+  emptyLabel?: string;
+}) {
+  if (state === 'loading' || state === 'idle') {
+    return <PageLoader label={loadingLabel} />;
+  }
+  return (
+    <div className="text-center py-16 bg-bkpk-surface border border-dashed border-bkpk-border-strong">
+      <p className="text-bkpk-text-secondary">{state === 'error' ? errorLabel : emptyLabel}</p>
     </div>
   );
 }

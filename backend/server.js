@@ -79,6 +79,7 @@ import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
+import { getGameInfo, getGamePlayByPlay, getPlayerCareer } from './kalk/v2/readModels.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -272,6 +273,38 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
   }
 });
 
+/** seasonId z query (opcjonalny) → id sezonu; brak = szukaj po ID meczu we wszystkich sezonach. */
+async function querySeasonId(req) {
+  const raw = typeof req.query.seasonId === 'string' ? req.query.seasonId.trim() : '';
+  if (!raw) return null;
+  const season = await getSeasonById(raw);
+  return season?.id ?? null;
+}
+
+// KALK v2: akcja po akcji (publiczne jak GET /api/games/:id — dane ligi).
+app.get(['/api/games/:id/play-by-play', '/games/:id/play-by-play'], async (req, res) => {
+  try {
+    const data = await getGamePlayByPlay(prisma, req.params.id, { seasonId: await querySeasonId(req) });
+    if (!data) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Play-by-play error:', err);
+    res.status(500).json({ error: 'Błąd pobierania akcji po akcji' });
+  }
+});
+
+// KALK v2: info meczu (MVP, sędziowie, liderzy, przebieg, źródła punktów, H2H, rekordy).
+app.get(['/api/games/:id/info', '/games/:id/info'], async (req, res) => {
+  try {
+    const data = await getGameInfo(prisma, req.params.id, { seasonId: await querySeasonId(req) });
+    if (!data) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Game info error:', err);
+    res.status(500).json({ error: 'Błąd pobierania informacji o meczu' });
+  }
+});
+
 app.patch('/api/admin/matches/:source/:seasonId/:id/presentation', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await updateMatchPresentation({ game: prisma.game, kalkMatch: prisma.kalkMatch, jsonNull: Prisma.DbNull }, { ...req.params, presentation: req.body.presentation });
@@ -340,6 +373,18 @@ app.get(['/api/players/:id', '/players/:id'], authenticateToken, async (req, res
     }));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania danych zawodnika' });
+  }
+});
+
+// Kariera zawodnika (KALK v2): profil + sezony od 2023/24 + podsumowanie logów meczowych.
+app.get(['/api/players/:id/career', '/players/:id/career'], authenticateToken, async (req, res) => {
+  try {
+    const data = await getPlayerCareer(prisma, req.params.id);
+    if (!data) return res.status(404).json({ error: 'Zawodnik nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Career error:', err);
+    res.status(500).json({ error: 'Błąd pobierania kariery zawodnika' });
   }
 });
 
