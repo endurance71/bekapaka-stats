@@ -58,7 +58,8 @@ import {
   archiveSeason,
   getSeasonSummary,
   rolloverRoster,
-  getSeasonById
+  getSeasonById,
+  resolveSeasonId
 } from './seasonService.js';
 import {
   generateGameAnalysis,
@@ -80,6 +81,7 @@ import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
 import { getGameInfo, getGamePlayByPlay, getPlayerCareer, getTeamsAllTime } from './kalk/v2/readModels.js';
+import { getPlayerHome } from './kalk/v2/home.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -377,6 +379,18 @@ app.get(['/api/players/:id', '/players/:id'], authenticateToken, async (req, res
 });
 
 // Kariera zawodnika (KALK v2): profil + sezony od 2023/24 + podsumowanie logów meczowych.
+// Start zawodnika: następny mecz drużyny, mój ostatni mecz, miejsce w tabeli.
+app.get(['/api/me/home', '/me/home'], authenticateToken, async (req, res) => {
+  try {
+    const seasonId = await resolveSeasonId(req.query.seasonId);
+    if (!seasonId) return res.json({ seasonId: null, team: null, nextMatch: null, myLastGame: null, remainingGames: 0, teamsInLeague: 0 });
+    res.json(await getPlayerHome(prisma, { userId: req.user.id, seasonId }));
+  } catch (err) {
+    console.error('Me home error:', err);
+    res.status(500).json({ error: 'Błąd pobierania pulpitu zawodnika' });
+  }
+});
+
 app.get(['/api/players/:id/career', '/players/:id/career'], authenticateToken, async (req, res) => {
   try {
     const data = await getPlayerCareer(prisma, req.params.id);
@@ -483,7 +497,7 @@ app.post(['/api/admin/seasons/rollover', '/admin/seasons/rollover'], authenticat
 });
 
 // --- TRENDS & ANALYTICS ---
-app.get(['/api/trends/team', '/trends/team'], async (req, res) => {
+app.get(['/api/trends/team', '/trends/team'], authenticateToken, async (req, res) => {
   try {
     const trends = await getTeamTrends(req.query.seasonId);
     res.json(trends);
@@ -492,7 +506,7 @@ app.get(['/api/trends/team', '/trends/team'], async (req, res) => {
   }
 });
 
-app.get(['/api/trends/league', '/trends/league'], async (req, res) => {
+app.get(['/api/trends/league', '/trends/league'], authenticateToken, async (req, res) => {
   try {
     const comparison = await getLeagueComparison(req.query.seasonId);
     res.json(comparison);
@@ -511,7 +525,7 @@ app.get(['/api/team/stats', '/team/stats'], async (req, res) => {
   }
 });
 
-app.get(['/api/scouting/next', '/scouting/next'], async (req, res) => {
+app.get(['/api/scouting/next', '/scouting/next'], authenticateToken, async (req, res) => {
   try {
     const scouting = await getNextOpponentScouting(req.query.seasonId);
     res.json(scouting);
@@ -520,7 +534,7 @@ app.get(['/api/scouting/next', '/scouting/next'], async (req, res) => {
   }
 });
 
-app.get(['/api/scouting/detailed', '/scouting/detailed'], async (req, res) => {
+app.get(['/api/scouting/detailed', '/scouting/detailed'], authenticateToken, async (req, res) => {
   try {
     const opponent = req.query.opponent;
     const scouting = await getDetailedScouting(opponent, req.query.seasonId);

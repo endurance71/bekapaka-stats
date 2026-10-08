@@ -7,13 +7,13 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { SeasonPreferenceProvider } from './context/SeasonPreferenceContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import RedirectPreserveSearch from './shared/ui/RedirectPreserveSearch';
 
 // Eager-loaded: pages the user lands on first
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/LoginPage';
 
 // Lazy-loaded: heavy pages loaded on demand
-const Roster = lazy(() => import('./pages/Roster'));
 const Trends = lazy(() => import('./pages/Trends'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Administration = lazy(() => import('./pages/Administration'));
@@ -23,7 +23,7 @@ const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
 const League = lazy(() => import('./pages/League'));
 const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
 const AiCenterPage = lazy(() => import('./pages/AiCenterPage'));
-const TacticsHub = lazy(() => import('./pages/TacticsHub'));
+const TeamPage = lazy(() => import('./pages/TeamPage'));
 const Glossary = lazy(() => import('./pages/Glossary'));
 
 
@@ -46,12 +46,22 @@ export default function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/slowniczek" element={<Glossary />} />
                       <Route path="/league" element={<League />} />
-                      <Route path="/scouting" element={<ScoutingPage />} />
-                      <Route path="/roster" element={<Roster />} />
-                      <Route path="/tactics" element={<TacticsHub />} />
+                      <Route path="/rywal" element={<ScoutingPage />} />
+                      <Route path="/druzyna" element={<TeamPage />} />
+                      {/* stare adresy (zakładki, linki z AI, skróty PWA) */}
+                      <Route path="/scouting" element={<RedirectPreserveSearch to="/rywal" />} />
+                      <Route path="/roster" element={<RedirectPreserveSearch to="/druzyna" />} />
+                      <Route path="/tactics" element={<RedirectPreserveSearch to="/druzyna" extra={{ widok: 'zagrywki' }} />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
-                      <Route path="/trends" element={<Trends />} />
+                      <Route
+                        path="/trends"
+                        element={
+                          <ProtectedRoute requireAdmin>
+                            <Trends />
+                          </ProtectedRoute>
+                        }
+                      />
                       <Route
                         path="/ai/:categorySlug?"
                         element={

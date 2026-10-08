@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { pluralPl } from '../../shared/lib/plural';
+import { Link } from 'react-router-dom';
+import { isBekapakaName } from '../../shared/lib/matchUtils';
+import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 
 interface Match {
     id: string;
@@ -13,6 +16,8 @@ interface Match {
     scoreHome: number | null;
     scoreAway: number | null;
     isFinished: boolean;
+    /** ID meczu KALK — link do szczegółów (mecze BeKaPaKa) */
+    kalkMatchId?: string | null;
     /** KALK v2: faza (np. „Sezon zasadniczy”, „Play-off”), kolejka, bilans przed meczem, hala. */
     phaseLabel?: string | null;
     stageId?: number | null;
@@ -71,6 +76,8 @@ interface LeagueScheduleModernProps {
 export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernProps) {
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
+    // Domyślnie tylko mecze BeKaPaKa — zawodnika interesuje własny terminarz
+    const [onlyOurs, setOnlyOurs] = useState(true);
 
     const fetchSchedule = useCallback(async () => {
         if (!seasonId) return;
@@ -89,7 +96,11 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
         fetchSchedule();
     }, [fetchSchedule]);
 
-    const groups = useMemo(() => groupMatchesByPhase(matches), [matches]);
+    const visible = useMemo(
+        () => (onlyOurs ? matches.filter((m) => isBekapakaName(m.homeTeam) || isBekapakaName(m.guestTeam)) : matches),
+        [matches, onlyOurs]
+    );
+    const groups = useMemo(() => groupMatchesByPhase(visible), [visible]);
     const showPhaseHeadings = groups.some((g) => g.label);
 
     if (loading) {
@@ -116,6 +127,19 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
     let rowIndex = -1;
     return (
         <div className="grid grid-cols-1">
+            <div className="flex gap-2 p-3 sm:px-5" role="group" aria-label="Które mecze">
+                {[{ v: true, l: 'Tylko BeKaPaKa' }, { v: false, l: 'Cała liga' }].map((o) => (
+                    <button
+                        key={o.l}
+                        type="button"
+                        aria-pressed={onlyOurs === o.v}
+                        onClick={() => setOnlyOurs(o.v)}
+                        className={cn('min-h-[44px] px-4 label-caps text-[12px]', onlyOurs === o.v ? bkpkActivePillClass : 'border border-bkpk-border-strong text-bkpk-text-secondary hover:text-bkpk-text-primary')}
+                    >
+                        {o.l}
+                    </button>
+                ))}
+            </div>
             {groups.map((group) => (
                 <Fragment key={group.key}>
                     {showPhaseHeadings && (
@@ -128,8 +152,8 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                         {group.matches.map((match) => {
                             rowIndex += 1;
                             const idx = rowIndex;
-                            const isHomeBkpk = match.homeTeam.toLowerCase().includes('bekapaka');
-                            const isAwayBkpk = match.guestTeam.toLowerCase().includes('bekapaka');
+                            const isHomeBkpk = isBekapakaName(match.homeTeam);
+                            const isAwayBkpk = isBekapakaName(match.guestTeam);
                             const isBkpkInvolved = isHomeBkpk || isAwayBkpk;
 
                             // Przegrany wynik konturem (Score na bekapaka.pl) — kształt, nie tylko kolor
@@ -146,7 +170,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                             };
 
                             const date = new Date(match.date);
-                            const time = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+                            const time = date.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
 
                             const homeRow = {
                                 key: 'home',
@@ -191,7 +215,10 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                             {date.getDate()}
                                         </span>
                                         <span className="label-caps text-[11px] text-bkpk-text-secondary leading-tight">
-                                            {date.toLocaleDateString(undefined, { month: 'short' })}
+                                            {date.toLocaleDateString('pl-PL', { month: 'short' }).replace('.', '')} {date.getFullYear()}
+                                        </span>
+                                        <span className="text-[11px] text-bkpk-text-muted leading-tight">
+                                            {date.toLocaleDateString('pl-PL', { weekday: 'short' }).replace('.', '')}
                                         </span>
                                         {roundLabel && (
                                             <span className="label-caps text-[10px] text-bkpk-text-muted leading-tight tabular-nums mt-1" title={match.roundLabel ?? undefined}>
@@ -254,6 +281,11 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                                     </span>
                                                 )}
                                             </div>
+                                        )}
+                                        {isBkpkInvolved && (
+                                            <Link to={`/games/${match.kalkMatchId ?? match.id}`} className="mt-2 inline-flex items-center min-h-[36px] label-caps text-[11px] text-bkpk-text-primary hover:text-bkpk-primary">
+                                                Mecz →
+                                            </Link>
                                         )}
                                     </div>
                                 </motion.li>

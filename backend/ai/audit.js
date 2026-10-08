@@ -243,7 +243,7 @@ export async function runAiAudit(options = {}) {
         ],
         generateKind: 'scouting',
         generateTarget: r.opponentName,
-        viewPath: `/scouting?opponent=${encodeURIComponent(r.opponentName)}`
+        viewPath: `/rywal?opponent=${encodeURIComponent(r.opponentName)}`
       };
       try {
         const ctx = await buildScoutingContext(r.opponentName, seasonId || activeSeason?.id);
@@ -333,7 +333,7 @@ export async function runAiAudit(options = {}) {
         issues: [],
         generateKind: 'pregame',
         generateTarget: c.opponentName,
-        viewPath: '/tactics'
+        viewPath: `/rywal?opponent=${encodeURIComponent(c.opponentName)}`
       };
       if (!row.complete) row.issues.push(`niekompletna karta (${keys.length} założeń, ${five.length} w piątce)`);
       if (c.venue === 'Hala Sportowa, Bobolice') row.issues.push('stara hala „Hala Sportowa, Bobolice” zamiast KOSiR Koszalin');
@@ -376,7 +376,7 @@ export async function runAiAudit(options = {}) {
           issues,
           generateKind: null,
           generateTarget: null,
-          viewPath: '/tactics'
+          viewPath: '/druzyna?widok=zagrywki'
         })
       );
     }

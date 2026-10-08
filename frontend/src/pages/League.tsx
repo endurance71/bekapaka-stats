@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
@@ -14,7 +14,12 @@ import PageHeader from '../shared/ui/PageHeader';
 type Tab = 'table' | 'schedule' | 'scorers' | 'alltime';
 
 export default function League() {
-    const [activeTab, setActiveTab] = useState<Tab>('table');
+    // Zakładka w adresie (?widok=terminarz…) — link do konkretnej zakładki
+    const [params, setParams] = useSearchParams();
+    const TAB_PARAM: Record<Tab, string> = { table: 'tabela', schedule: 'terminarz', scorers: 'liderzy', alltime: 'wszech-czasow' };
+    const fromParam = (Object.keys(TAB_PARAM) as Tab[]).find((t) => TAB_PARAM[t] === params.get('widok'));
+    const activeTab: Tab = fromParam ?? 'table';
+    const setActiveTab = (t: Tab) => setParams(t === 'table' ? {} : { widok: TAB_PARAM[t] }, { replace: true });
     const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
     const tabs = [

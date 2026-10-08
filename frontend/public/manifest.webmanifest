@@ -39,8 +39,8 @@
   ],
   "shortcuts": [
     {
-      "name": "Pulpit Główny",
-      "short_name": "Pulpit",
+      "name": "Start",
+      "short_name": "Start",
       "url": "/dashboard",
       "icons": [
         {
@@ -50,9 +50,9 @@
       ]
     },
     {
-      "name": "Tabela i Liderzy",
-      "short_name": "Liga",
-      "url": "/league",
+      "name": "Następny rywal",
+      "short_name": "Rywal",
+      "url": "/rywal",
       "icons": [
         {
           "src": "/favicon.png",
@@ -72,8 +72,8 @@
       ]
     },
     {
-      "name": "Mój Profil",
-      "short_name": "Profil",
+      "name": "Ja — moje statystyki",
+      "short_name": "Ja",
       "url": "/profile",
       "icons": [
         {

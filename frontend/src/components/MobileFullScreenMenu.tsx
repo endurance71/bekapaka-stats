@@ -19,6 +19,7 @@ export interface MobileMenuLink {
     to: string;
     label: string;
     icon: ComponentType<{ className?: string; strokeWidth?: number | string }>;
+    group?: 'player' | 'coach';
 }
 
 interface MenuUser {
@@ -304,9 +305,11 @@ export default function MobileFullScreenMenu({
                     aria-label="Sekcje aplikacji"
                 >
                     {links.map((link, index) => {
+                        const groupStart = link.group === 'coach' && links[index - 1]?.group !== 'coach';
                         return (
+                            <div key={link.to}>
+                            {groupStart && <p className="label-caps text-[11px] text-bkpk-text-muted pl-4 pt-5 pb-2">Trener</p>}
                             <NavLink
-                                key={link.to}
                                 to={link.to}
                                 onClick={handleRequestClose}
                                 className={({ isActive }) =>
@@ -331,6 +334,7 @@ export default function MobileFullScreenMenu({
                                     </>
                                 )}
                             </NavLink>
+                            </div>
                         );
                     })}
                     <button

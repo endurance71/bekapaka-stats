@@ -34,6 +34,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
     const [table, setTable] = useState<Team[]>([]);
     const [phase, setPhase] = useState<TablePhase>('regular');
     const [loading, setLoading] = useState(true);
+    // Przełącznik „Tabela play-out” tylko gdy play-out istnieje w sezonie
+    const [hasPlayout, setHasPlayout] = useState(false);
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
 
@@ -56,6 +58,17 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
         fetchTable();
     }, [fetchTable]);
 
+    useEffect(() => {
+        if (!seasonId) return;
+        let active = true;
+        fetchJSON<Team[]>(`/api/league/table?phase=playout&seasonId=${encodeURIComponent(seasonId)}`)
+            .then((rows) => active && setHasPlayout((rows || []).length > 0))
+            .catch(() => active && setHasPlayout(false));
+        return () => {
+            active = false;
+        };
+    }, [seasonId]);
+
     if (loading) {
         return (
             <div className="space-y-4">
@@ -77,24 +90,26 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
 
     return (
         <div className="space-y-6">
-            {/* Phase Selector — segment jak `.segmented` na bekapaka.pl */}
+            {/* Phase Selector — segment jak `.segmented` na bekapaka.pl (tylko gdy jest play-out) */}
+            {hasPlayout && (
             <div className="flex gap-2 w-full sm:w-fit">
                 <button
                     onClick={() => setPhase('regular')}
                     className={phaseButtonClass(phase === 'regular')}
                 >
-                    Runda Zasadnicza
+                    Sezon zasadniczy
                 </button>
                 <button
                     onClick={() => setPhase('playout')}
                     className={phaseButtonClass(phase === 'playout')}
                 >
-                    Tabela Play-out
+                    Play-out
                 </button>
             </div>
+            )}
 
             {table.length === 0 ? (
-                <KalkEmptyState title="Tabela Ligowa jest pusta" />
+                <KalkEmptyState title="Tabela jest pusta" message="Tabela pojawi się po pierwszych meczach sezonu." />
             ) : (
                 <BkpkCard variant="flat" padding="none" className="overflow-hidden bg-bkpk-bg">
             {showCards ? (

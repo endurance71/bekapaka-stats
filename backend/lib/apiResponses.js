@@ -11,6 +11,8 @@ export function toPublicRosterPlayer(player) {
     position: player.position,
     starter: player.starter,
     birthDate: player.birthDate,
+    // Tożsamość KALK (publiczna) — panel łączy nią box score z profilem zawodnika
+    kalkSlug: player.kalkSlug ?? null,
     heightCm: player.heightCm,
     photo: player.photo || player.data?.photo || null,
     photo_url: player.photo_url || null,

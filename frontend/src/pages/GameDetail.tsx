@@ -20,6 +20,7 @@ import GameInfoPanel from '../components/games/GameInfoPanel';
 import PlayByPlayPanel from '../components/games/PlayByPlayPanel';
 import type { GameInfoResponse, PlayByPlayResponse } from '../components/games/kalkMatchTypes';
 import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
+import { useRosterLinks } from '../shared/lib/useRosterLinks';
 
 type MainTab = 'stats' | 'info' | 'pbp';
 
@@ -31,10 +32,22 @@ const mainTabs: { id: MainTab; label: string; icon: IconComponent }[] = [
 
 export default function GameDetail() {
   const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const querySeasonId = searchParams.get('seasonId');
+  const rosterLinks = useRosterLinks();
+  // Zapowiedź meczu: bilans BeKaPaKa z rywalem (wszystkie sezony od 2023/24) i rywal w lidze
+  const [opponentAllTime, setOpponentAllTime] = useState<{ wins: number; losses: number; games: number; h2h: { wins: number; losses: number } | null } | null>(null);
   const [game, setGame] = useState<any | null>(null);
-  const [mainTab, setMainTab] = useState<MainTab>('stats');
+  // Zakładka w adresie (?widok=info|akcje) — link do konkretnego widoku i powrót przyciskiem „wstecz”
+  const mainTab: MainTab = searchParams.get('widok') === 'info' ? 'info' : searchParams.get('widok') === 'akcje' ? 'pbp' : 'stats';
+  const setMainTab = useCallback((tab: MainTab) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tab === 'stats') next.delete('widok');
+      else next.set('widok', tab === 'pbp' ? 'akcje' : 'info');
+      return next;
+    }, { replace: true });
+  }, [setSearchParams]);
   const [info, setInfo] = useState<GameInfoResponse | null>(null);
   const [infoState, setInfoState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [pbp, setPbp] = useState<PlayByPlayResponse | null>(null);
@@ -64,9 +77,23 @@ export default function GameDetail() {
     fetchGame();
   }, [fetchGame]);
 
+  const upcomingOpponent = game && game.isFinished === false ? String(game.opponent || '') : '';
+  useEffect(() => {
+    if (!upcomingOpponent) return;
+    let active = true;
+    fetchJSON<{ teams: Array<{ name: string; wins: number; losses: number; games: number; headToHead: { wins: number; losses: number } | null }> }>('/api/league/all-time')
+      .then((res) => {
+        const t = res?.teams?.find((x) => x.name.toLowerCase() === upcomingOpponent.toLowerCase());
+        if (active) setOpponentAllTime(t ? { wins: t.wins, losses: t.losses, games: t.games, h2h: t.headToHead } : null);
+      })
+      .catch(() => active && setOpponentAllTime(null));
+    return () => {
+      active = false;
+    };
+  }, [upcomingOpponent]);
+
   // Nowy mecz (np. link z H2H) — wróć do statystyk i wyczyść dane zakładek.
   useEffect(() => {
-    setMainTab('stats');
     setInfo(null);
     setInfoState('idle');
     setPbp(null);
@@ -296,8 +323,13 @@ export default function GameDetail() {
         {isUpcoming && (
           <BkpkCard variant="glass" className="space-y-3">
             <p className="text-bkpk-text-secondary">Mecz jeszcze się nie odbył — statystyki i analiza pojawią się po meczu.</p>
+            {opponentAllTime?.h2h && (
+              <p className="text-sm text-bkpk-text-secondary">
+                Bilans z rywalem: <strong className="text-bkpk-text-primary tabular-nums">{opponentAllTime.h2h.wins}–{opponentAllTime.h2h.losses}</strong> (od sezonu 2023/24)
+              </p>
+            )}
             <Link
-              to={`/scouting?opponent=${encodeURIComponent(opponentTeam.name || game.opponent || '')}`}
+              to={`/rywal?opponent=${encodeURIComponent(opponentTeam.name || game.opponent || '')}`}
               className="inline-flex items-center gap-2 min-h-[44px] label-caps text-xs text-bkpk-text-primary hover:text-bkpk-primary"
             >
               Raport o rywalu →
@@ -463,7 +495,8 @@ export default function GameDetail() {
                   threeP: `${p.three_pm}/${p.three_pa}`,
                   ft: `${p.ftm}/${p.fta}`,
                   plusMinus: p.plusMinus,
-                  eval: p.eval
+                  eval: p.eval,
+                  href: p.slug && rosterLinks.get(p.slug) ? `/players/${rosterLinks.get(p.slug)}` : null
                 })) || []}
                 showPlusMinus={matchPlusMinus}
               />
@@ -472,24 +505,15 @@ export default function GameDetail() {
 
           {/* Sidebar Area */}
           <aside className="lg:col-span-4 space-y-8">
-            {/* Match MVP */}
-            {game.mvp && (
-              <BkpkCard variant="glass" className="relative overflow-hidden group border-t-2 border-t-bkpk-medal-gold">
-                <div className="relative z-10 space-y-4 text-center">
-                  <span className="label-caps text-xs text-bkpk-medal-gold">Najbardziej Wartościowy Zawodnik (MVP)</span>
-                  <div className="flex flex-col items-center">
-                    <div className="w-16 h-16 flex items-center justify-center border-[1.5px] border-bkpk-medal-gold mb-4">
-                      <Trophy className="w-8 h-8 text-bkpk-medal-gold" aria-hidden="true" />
-                    </div>
-                    <h4 className="text-3xl leading-none font-display font-extrabold uppercase text-bkpk-text-primary">{game.mvp}</h4>
-                  </div>
-                </div>
-              </BkpkCard>
-            )}
-
             {/* Comparison Cards (Temporary wrappers for legacy sidebar components) */}
             <div className="space-y-8">
-              <TeamStats teamStats={bekapaka?.fourFactors || null} />
+              <details className="group border border-bkpk-border-subtle">
+                <summary className="cursor-pointer list-none min-h-[48px] px-4 flex items-center justify-between label-caps text-xs text-bkpk-text-secondary hover:text-bkpk-text-primary">
+                  Statystyki zespołowe (dla trenera)
+                  <span aria-hidden className="transition-transform group-open:rotate-180">▾</span>
+                </summary>
+                <TeamStats teamStats={bekapaka?.fourFactors || null} />
+              </details>
               <OpponentComparison
                 bekapaka={{ ...bekapaka, ...bekapaka.fourFactors }}
                 opponent={{ ...opponentTeam, ...opponentTeam.fourFactors }}

@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { fetchJSON, postJSON } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { DNASection } from '../components/scouting/DNASection';
@@ -8,7 +8,8 @@ import { MatchupComparison } from '../components/scouting/MatchupComparison';
 import { ScoutingProtocolBanner } from '../components/scouting/ScoutingProtocolBanner';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import BkpkCard from '../shared/ui/BkpkCard';
-import { ArrowLeft, Users, History } from 'lucide-react';
+import { Users, History } from 'lucide-react';
+import PreGameMatchCard, { type PreGameData } from '../components/tactics/PreGameMatchCard';
 import { cn } from '../shared/lib/utils';
 import { motion } from 'framer-motion';
 import { ScoutingMatchHeader } from '../components/scouting/ScoutingMatchHeader';
@@ -32,7 +33,8 @@ interface KeyPlayerRow {
 
 export default function ScoutingPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  // Odprawa przedmeczowa (dawniej Taktyka → Odprawa) — ten sam rywal co raport
+  const [pregame, setPregame] = useState<{ briefing: PreGameData | null; opponent: string | null }>({ briefing: null, opponent: null });
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [aiLoading, setAiLoading] = useState(false);
@@ -62,6 +64,23 @@ export default function ScoutingPage() {
     loadScouting();
   }, [searchParams, seasonId]);
 
+  const opponentName = (data?.teamInfo as { opponent?: { name?: string } } | undefined)?.opponent?.name ?? searchParams.get('opponent');
+  const loadPreGame = useCallback(async () => {
+    if (!opponentName) return;
+    try {
+      const q = new URLSearchParams({ opponent: opponentName });
+      if (seasonId) q.set('seasonId', seasonId);
+      const res = await fetchJSON<{ briefing?: PreGameData | null; opponent?: string | null }>(`/api/tactics/pregame?${q.toString()}`);
+      setPregame({ briefing: res?.briefing ?? null, opponent: res?.opponent ?? opponentName });
+    } catch (err) {
+      console.error('Error fetching pregame briefing:', err);
+    }
+  }, [opponentName, seasonId]);
+
+  useEffect(() => {
+    loadPreGame();
+  }, [loadPreGame]);
+
   const handleGenerateScoutingAi = async (force = false) => {
     setAiLoading(true);
     try {
@@ -86,9 +105,9 @@ export default function ScoutingPage() {
 
   if (!data) {
     return (
-      <div className="min-h-[100dvh] bg-bkpk-bg flex items-center justify-center px-4">
-        <div className="font-display text-2xl uppercase text-bkpk-text-secondary">Brak danych o rywalu.</div>
-      </div>
+      <PageContainer width="narrow">
+        <PageHeader kicker="Następny rywal" title="Brak rywala" description="Raport pojawi się, gdy w terminarzu będzie kolejny mecz BeKaPaKa." />
+      </PageContainer>
     );
   }
 
@@ -175,21 +194,20 @@ export default function ScoutingPage() {
       className="text-bkpk-text-primary pb-[max(2rem,env(safe-area-inset-bottom,0px))] space-y-6 md:space-y-8"
     >
       <div className="space-y-6">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard')}
-          className="group inline-flex min-h-[44px] items-center gap-2 text-bkpk-text-secondary transition-colors hover:text-bkpk-text-primary"
-        >
-          <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-          <span className="label-caps text-[12px] sm:text-[13px]">Powrót do pulpitu</span>
-        </button>
-
-        <PageHeader title="Scouting" />
+        <PageHeader kicker="Następny rywal" title={opponent.name} description="Odprawa, porównanie drużyn i kluczowi gracze rywala." />
 
         <ScoutingMatchHeader bekapaka={bekapaka} opponent={opponent} />
       </div>
 
       <div className="space-y-5 md:space-y-6">
+        <PreGameMatchCard
+          briefing={pregame.briefing}
+          opponent={pregame.opponent || opponent.name}
+          seasonId={seasonId}
+          onRefresh={loadPreGame}
+          canGenerate={isAdmin}
+        />
+
         {showProtocolBanner ? (
           <ScoutingProtocolBanner
             fallbackBasicOnly={advancedStats?.fallbackBasicOnly}

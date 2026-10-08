@@ -60,12 +60,13 @@ const COLUMNS: { key: StatKey; value: (r: CareerSeasonRow) => string; strong?: b
 ];
 
 /** Sekcja „Kariera” na profilu zawodnika: sezony KALK od 2023/24 (średnie na mecz) + profil. */
-export default function PlayerCareer({ career }: { career: PlayerCareerResponse }) {
+/** `showPersonal` — wzrost i rocznik tylko dla samego zawodnika i trenera. */
+export default function PlayerCareer({ career, showPersonal = false }: { career: PlayerCareerResponse; showPersonal?: boolean }) {
     const { profile, seasons, gameLogSummary } = career;
     const facts = [
         profile.position ? { label: 'Pozycja', value: getPositionLabel(profile.position) } : null,
-        profile.heightCm ? { label: 'Wzrost', value: `${profile.heightCm} cm` } : null,
-        profile.birthYear ? { label: 'Rocznik', value: String(profile.birthYear) } : null,
+        showPersonal && profile.heightCm ? { label: 'Wzrost', value: `${profile.heightCm} cm` } : null,
+        showPersonal && profile.birthYear ? { label: 'Rocznik', value: String(profile.birthYear) } : null,
         profile.lastNumber != null ? { label: 'Numer', value: `#${profile.lastNumber}` } : null,
     ].filter((f): f is { label: string; value: string } => Boolean(f));
 

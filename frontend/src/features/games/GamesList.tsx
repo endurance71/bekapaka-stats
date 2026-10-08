@@ -27,12 +27,15 @@ export default function GamesList({ games, loading }: GamesListProps) {
     const navigate = useNavigate();
     const [filter, setFilter] = useState<'all' | 'played' | 'upcoming'>('all');
 
+    // Najbliższy nadchodzący mecz na górze (rosnąco), potem rozegrane od najnowszych
     const filteredGames = useMemo(() => {
-        return games.filter(g => {
-            if (filter === 'played') return g.result !== null && g.result !== undefined;
-            if (filter === 'upcoming') return g.result === null || g.result === undefined;
-            return true;
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const isPlayed = (g: Game) => g.result !== null && g.result !== undefined;
+        const time = (g: Game) => new Date(g.date).getTime();
+        const upcoming = games.filter((g) => !isPlayed(g)).sort((a, b) => time(a) - time(b));
+        const played = games.filter(isPlayed).sort((a, b) => time(b) - time(a));
+        if (filter === 'played') return played;
+        if (filter === 'upcoming') return upcoming;
+        return [...upcoming, ...played];
     }, [games, filter]);
 
     if (loading) {
@@ -87,8 +90,12 @@ export default function GamesList({ games, loading }: GamesListProps) {
                     <div className="flex flex-col items-center justify-center py-20 bg-bkpk-surface border border-bkpk-border-subtle text-center space-y-3 px-4">
                         <Calendar className="w-12 h-12 text-bkpk-text-muted" aria-hidden="true" />
                         <div className="space-y-1">
-                            <p className="font-display text-xl uppercase text-bkpk-text-primary">Brak meczów w wybranym sezonie</p>
-                            <p className="text-bkpk-text-muted text-sm max-w-sm">Mecze pojawią się, gdy liga KALK opublikuje terminarz.</p>
+                            <p className="font-display text-xl uppercase text-bkpk-text-primary">
+                                {filter === 'upcoming' ? 'Brak nadchodzących meczów' : filter === 'played' ? 'Brak rozegranych meczów' : 'Brak meczów w wybranym sezonie'}
+                            </p>
+                            <p className="text-bkpk-text-muted text-sm max-w-sm">
+                                {games.length > 0 ? 'Zmień filtr powyżej.' : 'Mecze pojawią się, gdy liga KALK opublikuje terminarz.'}
+                            </p>
                         </div>
                     </div>
                 )}
