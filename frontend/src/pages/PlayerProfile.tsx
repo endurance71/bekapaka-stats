@@ -30,6 +30,8 @@ import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { getPositionLabel } from '../shared/lib/playerUtils';
 import PlayerCareer, { type PlayerCareerResponse } from '../components/players/PlayerCareer';
+import GoalsCard from '../features/me/GoalsCard';
+import { seasonValues, type GameLogEntry, type Goals } from '../features/me/meStats';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { pluralPl } from '../shared/lib/plural';
@@ -110,6 +112,8 @@ export default function PlayerProfile() {
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
     const [career, setCareer] = useState<PlayerCareerResponse | null>(null);
+    // Cele sezonu — backend zwraca je tylko zawodnikowi i trenerowi
+    const [goals, setGoals] = useState<Goals | null>(null);
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
     const isMobile = useIsMobile();
@@ -130,6 +134,7 @@ export default function PlayerProfile() {
             ]);
             setData(stats ? { ...stats, player: normalizePlayerIdentity(stats.player) } : stats);
             setAiSummary(playerRow?.aiDevelopmentSummary || null);
+            setGoals(playerRow?.goals ?? null);
             setAiMeta({
                 at: playerRow?.aiDevelopmentAt,
                 model: playerRow?.aiDevelopmentModel
@@ -297,6 +302,17 @@ export default function PlayerProfile() {
                         onGenerate={handleGenerateAi}
                         emptyHint="Brak planu rozwoju — użyj „Generuj” (potrzebne min. 3 mecze)."
                         playerEmptyHint="Plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach)."
+                    />
+                )}
+
+                {goals && id && (
+                    <GoalsCard
+                        playerId={id}
+                        goals={goals}
+                        values={seasonValues(gameLog as unknown as GameLogEntry[])}
+                        canEdit={isAdmin || user?.id === id}
+                        title={user?.id === id ? 'Moje cele na sezon' : 'Cele zawodnika na sezon'}
+                        emptyText={user?.id === id ? undefined : 'Zawodnik nie ustawił jeszcze celów.'}
                     />
                 )}
 

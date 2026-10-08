@@ -679,6 +679,9 @@ model LeagueMatch {
   homeRecordBefore  String?
   guestRecordBefore String?
   venue             String?
+  /// Dzień meczowy (wewnętrzne, nie dla strony publicznej): zbiórka, strój, uwagi trenera
+  matchDay          Json?
+  matchDayUpdatedAt DateTime?
   
   updatedAt   DateTime @updatedAt
 

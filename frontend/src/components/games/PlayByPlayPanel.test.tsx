@@ -87,4 +87,16 @@ describe('PlayByPlayPanel', () => {
         expect(screen.getByText('6 zdarzeń')).toBeInTheDocument();
         expect(screen.queryByRole('button', { name: 'Resetuj' })).not.toBeInTheDocument();
     });
+
+    it('„Moje akcje”: tylko zdarzenia zalogowanego zawodnika; bez przycisku, gdy nie grał', () => {
+        const mine = { ...data, events: data.events.map((e) => (e.seq === 3 || e.seq === 7 ? { ...e, playerSlug: 'jan-kowalski' } : e)) };
+        const { unmount } = render(<PlayByPlayPanel data={mine} mySlug="jan-kowalski" />);
+        fireEvent.click(screen.getByRole('button', { name: 'Moje akcje' }));
+        expect(screen.getByText('2 zdarzenia')).toBeInTheDocument();
+        fireEvent.click(screen.getByRole('button', { name: 'Resetuj' }));
+        expect(screen.getByText('6 zdarzeń')).toBeInTheDocument();
+        unmount();
+        render(<PlayByPlayPanel data={data} mySlug="jan-kowalski" />);
+        expect(screen.queryByRole('button', { name: 'Moje akcje' })).not.toBeInTheDocument();
+    });
 });

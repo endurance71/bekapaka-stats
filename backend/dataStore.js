@@ -78,6 +78,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from './lib/requireEnv.js';
 import { matchHasPlusMinus } from './kalk/v2/util.js';
+import { resolveMatchDay } from './lib/matchDay.js';
 
 const SECRET_KEY = getJwtSecret();
 
@@ -1588,6 +1589,8 @@ export async function getGameById(id, querySeasonId = undefined) {
       venue: leagueRow.venue ?? null,
       startsAt: leagueRow.date.toISOString(),
       roundLabel: leagueRow.roundLabel ?? null,
+      matchDay: resolveMatchDay(leagueRow.matchDay, leagueRow.date),
+      matchDayRaw: leagueRow.matchDay ?? null,
       // Mecz rozegrany bez statystyk w KALK (np. walkower); przed meczem — brak komunikatu
       boxScoreMissingHint: leagueRow.isFinished ? 'KALK nie opublikował statystyk zawodników tego meczu.' : null
     };

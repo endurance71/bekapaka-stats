@@ -9,6 +9,7 @@ import { FormTrendMiniChart } from '../features/dashboard/FormTrendMiniChart';
 import { NextChallengeWidget } from '../features/dashboard/NextChallengeWidget';
 import MyLastGameCard, { type MyLastGame } from '../features/dashboard/MyLastGameCard';
 import TeamStandingCard, { type TeamStanding } from '../features/dashboard/TeamStandingCard';
+import MatchDayCard, { type MatchDay } from '../features/match/MatchDayCard';
 import TopPlayersCard from '../components/dashboard/TopPlayersCard';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
@@ -51,6 +52,7 @@ interface PlayerHome {
     opponent: string;
     opponentKalkId: string | null;
     opponentTable: (TeamStanding & { name: string }) | null;
+    matchDay: MatchDay | null;
   } | null;
 }
 
@@ -146,7 +148,11 @@ export default function Dashboard() {
               difficulty={difficulty}
               host={nextMatch.host}
               matchId={nextMatch.id}
-            />
+            >
+              <div className="pt-4 border-t border-bkpk-border-subtle">
+                <MatchDayCard variant="inline" matchId={nextMatch.id} seasonId={seasonId} matchDay={nextMatch.matchDay} />
+              </div>
+            </NextChallengeWidget>
           ) : (
             <div className="p-6 bg-bkpk-surface border border-dashed border-bkpk-border-strong space-y-3">
               <Calendar className="w-8 h-8 text-bkpk-text-muted" aria-hidden="true" />

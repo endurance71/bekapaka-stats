@@ -1,3 +1,4 @@
+import { normalizeGoals } from './playerGoals.js';
 /**
  * Only fields intended for the public roster API. Legacy `data` and Prisma
  * records may contain account fields, so never spread them into a response.
@@ -70,7 +71,9 @@ export function toPlayerProfileResponse(player, { includeDevelopment = false } =
       ? {
           aiDevelopmentSummary: player.aiDevelopmentSummary,
           aiDevelopmentAt: player.aiDevelopmentAt,
-          aiDevelopmentModel: player.aiDevelopmentModel
+          aiDevelopmentModel: player.aiDevelopmentModel,
+          // Cele sezonu — jak plan rozwoju: tylko sam zawodnik i trener
+          goals: normalizeGoals(player.goals)
         }
       : {})
   };

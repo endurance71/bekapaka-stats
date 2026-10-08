@@ -22,6 +22,11 @@ import PageHeader from '../shared/ui/PageHeader';
 import PageLoader from '../shared/ui/PageLoader';
 
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
+import MatchDayCard, { type MatchDay } from '../features/match/MatchDayCard';
+import { formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
+
+type HomeNextMatch = { id: string; date: string; venue: string | null; opponent: string; matchDay: MatchDay | null };
+const sameName = (a?: string | null, b?: string | null) => Boolean(a && b && a.trim().toLowerCase() === b.trim().toLowerCase());
 
 interface KeyPlayerRow {
   name: string;
@@ -42,6 +47,14 @@ export default function ScoutingPage() {
   const { seasonId } = useSeasonPreferenceContext();
   const isAdmin = user?.role === 'ADMIN';
   const showPlayerCards = usePortraitMobile();
+  const [nextMatch, setNextMatch] = useState<HomeNextMatch | null>(null);
+
+  useEffect(() => {
+    if (!seasonId) return;
+    fetchJSON<{ nextMatch: HomeNextMatch | null }>(`/api/me/home?seasonId=${encodeURIComponent(seasonId)}`)
+      .then((res) => setNextMatch(res?.nextMatch ?? null))
+      .catch(() => setNextMatch(null));
+  }, [seasonId]);
 
   const loadScouting = async () => {
     setLoading(true);
@@ -198,6 +211,19 @@ export default function ScoutingPage() {
 
         <ScoutingMatchHeader bekapaka={bekapaka} opponent={opponent} />
       </div>
+
+      {nextMatch && sameName(nextMatch.opponent, opponent.name) && (
+        <BkpkCard variant="glass" className="space-y-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <span className="kicker text-bkpk-text-primary">Dzień meczowy</span>
+            <span className="text-sm font-semibold tabular-nums text-bkpk-text-primary">
+              {formatMatchDate(nextMatch.date)}, {formatMatchTime(nextMatch.date)}
+              {nextMatch.venue && <span className="font-normal text-bkpk-text-muted"> · {nextMatch.venue}</span>}
+            </span>
+          </div>
+          <MatchDayCard variant="inline" matchId={nextMatch.id} seasonId={seasonId} matchDay={nextMatch.matchDay} />
+        </BkpkCard>
+      )}
 
       <div className="space-y-5 md:space-y-6">
         <PreGameMatchCard

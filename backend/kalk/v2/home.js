@@ -4,6 +4,7 @@
  */
 import { isBekapakaTeamName } from '../parseMatchBoxScore.js';
 import { normalizeTeamNameForMatch } from '../../lib/kalkTeamNames.js';
+import { resolveMatchDay } from '../../lib/matchDay.js';
 
 const sameTeam = (a, b) => normalizeTeamNameForMatch(a) === normalizeTeamNameForMatch(b);
 const parseForm = (form) => (form ? String(form).split(',').map((s) => s.trim()).filter(Boolean) : []);
@@ -52,7 +53,8 @@ export async function getPlayerHome(prisma, { userId, seasonId, now = new Date()
       host: next.homeTeam,
       opponent,
       opponentKalkId: (usHome ? next.guestTeamKalkId : next.homeTeamKalkId) ?? null,
-      opponentTable: tableRow((table || []).find((t) => sameTeam(t.name, opponent)))
+      opponentTable: tableRow((table || []).find((t) => sameTeam(t.name, opponent))),
+      matchDay: resolveMatchDay(next.matchDay, next.date)
     };
   }
 
