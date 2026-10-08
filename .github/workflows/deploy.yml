@@ -7,9 +7,11 @@ on:
     branches: ['main']
   workflow_dispatch:
 
+# Deploy (push / ręcznie) — jedna kolejka produkcyjna. PR-y (tylko testy) mają własną grupę per gałąź:
+# GitHub trzyma w grupie jeden oczekujący przebieg, więc wspólna grupa wyrzucała czekające deploye z main.
 concurrency:
-  group: bekapaka-production
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('ci-pr-{0}', github.ref) || 'bekapaka-production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   REGISTRY: ghcr.io
