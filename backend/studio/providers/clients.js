@@ -26,11 +26,22 @@ export function portableSchema(node) {
 // `uncertain`: the provider may have billed a call whose outcome is unknown. Otherwise the call is known to have
 // failed; `usage` (when the provider reported it) settles the cost instead of the full reservation.
 export class ProviderError extends Error {
-  constructor(message, { uncertain = false, usage } = {}) {
+  constructor(message, { uncertain = false, usage, rejected = false } = {}) {
     super(message);
     this.uncertain = uncertain;
     this.usage = usage;
+    // The provider refused the request before generating (limits, key, bad request): nothing is billed.
+    this.rejected = rejected;
   }
+}
+const REJECTED = new Set([400, 401, 403, 404, 429]);
+export function failure(err) {
+  const status = Number(err?.status ?? err?.code);
+  const text = String(err?.message || err).slice(0, 200);
+  if (REJECTED.has(status) || /\b(429|Too Many Requests|quota|RESOURCE_EXHAUSTED|PERMISSION_DENIED|API key not valid)\b/i.test(text))
+    return new ProviderError(status === 429 || /429|Too Many|quota|RESOURCE_EXHAUSTED/i.test(text) ? 'Dostawca odrzucił zapytanie: limit zapytań lub brak dostępu do tego modelu na Twoim kluczu.' : `Dostawca odrzucił zapytanie: ${text}`, { rejected: true });
+  // Network errors and timeouts may still be billed: keep the reservation, never retry automatically.
+  return new ProviderError(`Dostawca AI nie odpowiedział poprawnie: ${text}`, { uncertain: true });
 }
 
 async function google({ apiKey, model, system, user, schema, maxOutputTokens }) {
@@ -99,8 +110,7 @@ export async function generateJson(params) {
     result = await call(params);
   } catch (err) {
     if (err instanceof ProviderError) throw err;
-    // Network errors and timeouts may still be billed: keep the reservation, never retry automatically.
-    throw new ProviderError(`Dostawca AI nie odpowiedział poprawnie: ${String(err.message || err).slice(0, 200)}`, { uncertain: true });
+    throw failure(err);
   }
   try {
     return { json: JSON.parse(result.text || '{}'), usage: result.usage };
@@ -121,7 +131,7 @@ export async function generateImage({ apiKey, model, prompt, maxOutputTokens }) 
       config: { responseModalities: ['IMAGE'], maxOutputTokens, imageConfig: { aspectRatio: '4:5', imageSize: '2K' } },
     });
   } catch (err) {
-    throw new ProviderError(`Dostawca AI nie odpowiedział poprawnie: ${String(err.message || err).slice(0, 200)}`, { uncertain: true });
+    throw failure(err);
   }
   const u = response.usageMetadata || {};
   const imageTokens = (u.candidatesTokensDetails || []).filter((t) => t.modality === 'IMAGE').reduce((s, t) => s + t.tokenCount, 0);
