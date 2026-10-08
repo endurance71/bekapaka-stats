@@ -65,6 +65,7 @@ export type Item = {
   issues: Issue[];
   ready: string[];
   stale: boolean;
+  cms?: { slug: string; documentId: string; syncedAt: string; upToDate: boolean } | null;
   events?: PublishEvent[];
 };
 export type Publication = {

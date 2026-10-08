@@ -63,6 +63,12 @@ describe('schematic copy', () => {
     expect(c.website.content).toContain('Mecz w liczbach: 24 pkt Jan Karpiński · 11 zb. Adam Gośniak');
     expect(c.website.content).toContain('- **Miejsce:** KOSiR Koszalin');
   });
+  it('keeps off-site pointers out of the website article and excerpt', () => {
+    for (const p of playbooks.filter((x) => x.items.website)) {
+      const c = schematicCopy(p, match).website;
+      expect(`${c.excerpt} ${c.content}`).not.toMatch(/bekapaka\.pl|link w bio/i);
+    }
+  });
   it('reports a loss plainly', () => {
     const c = schematicCopy(playbook('match-result'), { ...match, scoreUs: 60, scoreThem: 70 });
     expect(c.facebook.text).toMatch(/^Wynik meczu: BeKaPaKa Bobolice 60:70 Pantery\./);

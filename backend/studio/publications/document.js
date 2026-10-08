@@ -43,7 +43,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '3. **Grafiki** — projekty Studio (renderer marki 2.0). Zatwierdzenie kompozycji, potwierdzenie rewizji, eksport PNG.',
     '4. **Teksty kanałów** — ze schematu (deterministycznie), z AI w Studio (Gemini, budżet miesięczny, cache) albo od agenta przez MCP. Wszystkie przechodzą tę samą kontrolę marki.',
     '5. **Zatwierdzenie** — tylko właściciel, osobno dla każdego kanału. Zmiana tekstu, formatu lub grafiki cofa zatwierdzenie.',
-    '6. **Publikacja** — etap 1 ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”). Szkic na stronie (Strapi) i Meta API — kolejne etapy.',
+    '6. **Publikacja** — Instagram i Facebook ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”); strona bekapaka.pl przez szkic w CMS, podgląd w trybie draft i publikację ze Studio po zatwierdzeniu. Meta API — kolejny etap.',
     '',
     '## Kanały i limity',
     '',

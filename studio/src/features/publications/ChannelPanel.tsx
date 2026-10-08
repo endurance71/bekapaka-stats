@@ -21,6 +21,7 @@ import ExportFile from '../exports/ExportFile';
 import SocialPreview from '../graphic-editor/SocialPreview';
 import { Counter, HashtagInput, Issues, StatusPill } from './bits';
 import { useItemDraft } from './usePublication';
+import WebsiteActions, { useWebsiteConfig } from './WebsiteActions';
 
 function useGraphicImage(graphic: Graphic | null) {
   const exported = graphic?.exportJobId
@@ -56,6 +57,9 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState(item.externalUrl || '');
   const image = useGraphicImage(item.graphic);
+  const websiteConfig = useWebsiteConfig();
+  // With CMS configured, the website variant is published through Strapi, not marked by hand.
+  const viaCms = item.channel === 'website' && !!websiteConfig.data?.draft;
   const locked = item.status === 'published' || publication.status === 'archived';
   const issues = lintCopy(item.channel, draft, publication.facts);
   const spec = channels[item.channel];
@@ -233,6 +237,9 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
         </div>
       </div>
 
+      {item.channel === 'website' && item.status !== 'published' && item.status !== 'skipped' && (
+        <WebsiteActions publication={publication} item={item} busy={busy} dirty={dirty || saving} run={run} />
+      )}
       <footer className="channel-foot">
         {item.status === 'draft' && (
           <>
@@ -271,15 +278,17 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
                 <input value={url} type="url" placeholder="https://" onChange={(e) => setUrl(e.target.value)} />
               </label>
             )}
-            <button
-              className="primary"
-              disabled={busy || item.stale}
-              onClick={() =>
-                void run(() => send<Publication>(`${base}/published`, { expectedRevision: item.revision, url }))
-              }
-            >
-              Oznacz jako opublikowane
-            </button>
+            {!viaCms && (
+              <button
+                className="primary"
+                disabled={busy || item.stale}
+                onClick={() =>
+                  void run(() => send<Publication>(`${base}/published`, { expectedRevision: item.revision, url }))
+                }
+              >
+                Oznacz jako opublikowane
+              </button>
+            )}
           </>
         )}
         {item.status === 'published' && (

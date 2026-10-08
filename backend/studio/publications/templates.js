@@ -2,7 +2,7 @@
 // Missing facts drop whole sentences instead of leaving placeholders. Isomorphic (shared with the browser).
 import { copySchemas } from './channels.js';
 
-export const TEMPLATE_VERSION = '1.0.0';
+export const TEMPLATE_VERSION = '1.0.1';
 const CLUB = 'BeKaPaKa Bobolice';
 const ZONE = 'Europe/Warsaw';
 
@@ -220,14 +220,16 @@ function article(id, f, c) {
   // The score board replaces the hook that only repeats the score.
   return paragraphs(
     scoreLine || c.hook,
-    ...c.lines.filter((l) => !/bekapaka\.pl/.test(l)),
+    ...c.lines.filter((l) => !offSite(l)),
     numbers,
     facts.length >= 2 ? `## Najważniejsze informacje\n\n${facts.join('\n')}` : '',
   );
 }
 
+// On bekapaka.pl itself „more on bekapaka.pl / link in bio” sentences make no sense.
+const offSite = (line) => /bekapaka\.pl|link w bio/i.test(line);
 function excerpt(c) {
-  const text = [c.hook, ...c.lines].filter(has).join(' ').replace(/\s+/g, ' ');
+  const text = [c.hook, ...c.lines.filter((l) => !offSite(l))].filter(has).join(' ').replace(/\s+/g, ' ');
   return text.length <= 220 ? text : text.slice(0, 217).replace(/\s+\S*$/, '') + '…';
 }
 

@@ -2,7 +2,7 @@
 
 > Plik generowany z kodu Studio (`node scripts/studio/export-prompts.mjs`). Nie edytuj ręcznie — zmień `backend/studio/publications/*` i wygeneruj ponownie.
 
-Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.0.0 · prompty copy-2026.10-v1 · kontrola marki 1.1.0.
+Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.0.1 · prompty copy-2026.10-v1 · kontrola marki 1.1.0.
 
 ## Jak powstaje publikacja
 
@@ -11,7 +11,7 @@ Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.0.0 · prompty copy-202
 3. **Grafiki** — projekty Studio (renderer marki 2.0). Zatwierdzenie kompozycji, potwierdzenie rewizji, eksport PNG.
 4. **Teksty kanałów** — ze schematu (deterministycznie), z AI w Studio (Gemini, budżet miesięczny, cache) albo od agenta przez MCP. Wszystkie przechodzą tę samą kontrolę marki.
 5. **Zatwierdzenie** — tylko właściciel, osobno dla każdego kanału. Zmiana tekstu, formatu lub grafiki cofa zatwierdzenie.
-6. **Publikacja** — etap 1 ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”). Szkic na stronie (Strapi) i Meta API — kolejne etapy.
+6. **Publikacja** — Instagram i Facebook ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”); strona bekapaka.pl przez szkic w CMS, podgląd w trybie draft i publikację ze Studio po zatwierdzeniu. Meta API — kolejny etap.
 
 ## Kanały i limity
 
