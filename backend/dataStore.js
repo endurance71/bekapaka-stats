@@ -1998,10 +1998,19 @@ export async function syncPlayersFromKalk(options = {}) {
         continue;
       }
 
-      // Istniejący zawodnik: tylko powiązania KALK — imię i nazwisko zostają bez zmian.
+      // Istniejący zawodnik: powiązania KALK. Imię i nazwisko zostają, chyba że są dokładnie zamienione
+      // względem profilu KALK (stara strona podawała „Nazwisko Imię”) — wtedy kolejność z profilu.
       const link = {};
       if (existing.kalkPlayerId !== kalkPlayer.id) link.kalkPlayerId = kalkPlayer.id;
       if (slug && !existing.kalkSlug) link.kalkSlug = slug;
+      if (
+        profile?.firstName && profile?.lastName &&
+        stripDiacritics(existing.firstName) === stripDiacritics(profile.lastName) &&
+        stripDiacritics(existing.lastName) === stripDiacritics(profile.firstName)
+      ) {
+        link.firstName = profile.firstName.trim();
+        link.lastName = profile.lastName.trim();
+      }
       if (Object.keys(link).length) {
         await prisma.rosterPlayer.update({ where: { id: existing.id }, data: link });
         Object.assign(existing, link);
