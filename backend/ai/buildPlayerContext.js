@@ -1,8 +1,12 @@
 import { prisma } from '../lib/prisma.js';
 import { getPlayerStats, getTrainingPriorities } from '../dataStore.js';
-import { hashPayload } from './hash.js';
+import { isBekapakaTeamName } from '../kalk/parseMatchBoxScore.js';
+import { resolveSeasonId } from '../seasonService.js';
+import { hashAiPayload } from './hash.js';
 import { computePlayerSignals } from './playerSignals.js';
 import { AiValidationError } from './errors.js';
+import { intOrNull, pctOrNull, roundOrNull, sanitizeAiPayload } from './payloadUtils.js';
+import { seasonStatToKeyPlayer } from './scoutingData.js';
 
 
 function getPositionProfile(positionRaw) {
@@ -120,27 +124,155 @@ function buildDerivedMetrics({ averages, gameLog }) {
 }
 
 /**
- * @param {string} playerId
+ * @template T
+ * @param {() => Promise<T>} fn
+ * @param {T} fallback
+ * @returns {Promise<T>}
  */
-export async function buildPlayerContext(playerId) {
-  const stats = await getPlayerStats(playerId);
+async function safe(fn, fallback) {
+  try {
+    const value = await fn();
+    return value ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Średnie odniesienia dla sygnałów: PPG i straty na mecz przeciętnego zawodnika BeKaPaKa w sezonie
+ * (zawodnicy z ≥3 meczami). Z KalkPlayerGameLog (typowane kolumny lub legacy `stats`).
+ * @param {Array<{ kalkPlayerId: string, pts?: number | null, tov?: number | null, stats?: any }>} rows
+ * @returns {{ ppg: number | null, turnoversPerGame: number | null, playersCounted: number }}
+ */
+export function computeTeamPlayerAverages(rows) {
+  /** @type {Map<string, { games: number, pts: number, tov: number }>} */
+  const byPlayer = new Map();
+  for (const r of rows || []) {
+    const stats = r.stats && typeof r.stats === 'object' ? r.stats : {};
+    const pts = intOrNull(r.pts) ?? intOrNull(stats.pts);
+    const tov = intOrNull(r.tov) ?? intOrNull(stats.tov);
+    if (pts === null) continue;
+    const cur = byPlayer.get(r.kalkPlayerId) || { games: 0, pts: 0, tov: 0 };
+    cur.games += 1;
+    cur.pts += pts;
+    cur.tov += tov ?? 0;
+    byPlayer.set(r.kalkPlayerId, cur);
+  }
+  const regulars = [...byPlayer.values()].filter((p) => p.games >= 3);
+  if (regulars.length === 0) return { ppg: null, turnoversPerGame: null, playersCounted: 0 };
+  const ppg = regulars.reduce((a, p) => a + p.pts / p.games, 0) / regulars.length;
+  const tov = regulars.reduce((a, p) => a + p.tov / p.games, 0) / regulars.length;
+  return {
+    ppg: roundOrNull(ppg, 1),
+    turnoversPerGame: roundOrNull(tov, 1),
+    playersCounted: regulars.length
+  };
+}
+
+/**
+ * Wiersz logu meczu do promptu (z W/P i wynikiem).
+ * @param {Record<string, any>} g
+ * @param {{ result: string | null, score: string | null, round: string | null } | undefined} match
+ */
+function gameLogForPrompt(g, match) {
+  return {
+    date: g.date ?? null,
+    opponent: g.opponent ?? null,
+    result: match?.result ?? null,
+    score: match?.score ?? null,
+    round: match?.round ?? null,
+    min: g.min ?? null,
+    pts: intOrNull(g.pts),
+    reb: intOrNull(g.reb),
+    ast: intOrNull(g.ast),
+    stl: intOrNull(g.stl),
+    blk: intOrNull(g.blk),
+    tov: intOrNull(g.tov),
+    pf: intOrNull(g.pf),
+    fgm: intOrNull(g.fgm),
+    fga: intOrNull(g.fga),
+    three_pm: intOrNull(g.three_pm),
+    three_pa: intOrNull(g.three_pa),
+    ftm: intOrNull(g.ftm),
+    fta: intOrNull(g.fta),
+    efgPct: intOrNull(g.fga) ? roundOrNull((g.efg ?? 0) * 100, 1) : null,
+    plusMinus: intOrNull(g.plusMinus)
+  };
+}
+
+/**
+ * @param {string} playerId
+ * @param {{ seasonId?: string | null }} [options]
+ */
+export async function buildPlayerContext(playerId, options = {}) {
+  const seasonId = await resolveSeasonId(options.seasonId || undefined);
+  const stats = await getPlayerStats(playerId, seasonId);
   if (!stats) {
     throw new AiValidationError('Zawodnik nie znaleziony');
   }
   if (!stats.gameLog || stats.gameLog.length < 3) {
-    throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK, log zawodnika tab 3)');
+    throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK)');
   }
 
   const roster = await prisma.rosterPlayer.findUnique({
     where: { id: playerId },
-    select: { goals: true }
+    select: { goals: true, kalkSlug: true, heightCm: true, position: true }
   });
+  const slug = roster?.kalkSlug || stats.player?.kalkPlayer?.slug || null;
+  const statsSeasonId = stats.season?.id || seasonId;
 
-  const priorities = await getTrainingPriorities();
-  const teamAverages = {
-    turnoversPerGame: priorities.team?.turnovers,
-    ppg: null
-  };
+  const matchIds = stats.gameLog.map((g) => g.gameId).filter(Boolean).map(String);
+
+  const [priorities, teamLogRows, matchRows, careerRows, profile, seasons] = await Promise.all([
+    getTrainingPriorities(statsSeasonId),
+    safe(
+      () =>
+        prisma.kalkPlayerGameLog.findMany({
+          where: {
+            seasonId: statsSeasonId,
+            OR: [
+              { teamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+              { teamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+            ]
+          },
+          select: { kalkPlayerId: true, pts: true, tov: true, stats: true }
+        }),
+      []
+    ),
+    matchIds.length
+      ? safe(
+          () =>
+            prisma.kalkMatch.findMany({
+              where: { seasonId: statsSeasonId, id: { in: matchIds } },
+              select: { id: true, homeTeamName: true, scoreHome: true, scoreAway: true, roundLabel: true, roundCode: true }
+            }),
+          []
+        )
+      : [],
+    slug ? safe(() => prisma.kalkPlayerSeasonStat.findMany({ where: { playerSlug: slug } }), []) : [],
+    slug ? safe(() => prisma.kalkPlayerProfile.findUnique({ where: { slug } }), null) : null,
+    safe(() => prisma.kalkSeason.findMany({ select: { id: true, label: true, slug: true } }), [])
+  ]);
+
+  /** @type {Map<string, { result: string | null, score: string | null, round: string | null }>} */
+  const matchById = new Map(
+    matchRows.map((m) => {
+      const home = isBekapakaTeamName(m.homeTeamName);
+      const us = home ? m.scoreHome : m.scoreAway;
+      const them = home ? m.scoreAway : m.scoreHome;
+      const known = us !== null && us !== undefined && them !== null && them !== undefined;
+      return [
+        String(m.id),
+        {
+          result: known ? (us > them ? 'W' : us < them ? 'L' : null) : null,
+          score: known ? `${us}:${them}` : null,
+          round: m.roundLabel ?? m.roundCode ?? null
+        }
+      ];
+    })
+  );
+
+  const teamAverages = computeTeamPlayerAverages(teamLogRows);
 
   const signals = computePlayerSignals({
     averages: {
@@ -157,20 +289,77 @@ export async function buildPlayerContext(playerId) {
     gameLog: stats.gameLog
   });
 
-  const payload = {
-    player: stats.player,
-    positionProfile: getPositionProfile(stats.player?.position),
-    averages: stats.averages,
+  const seasonLabel = new Map(seasons.map((s) => [s.id, s.label || s.slug]));
+  const career = careerRows
+    .map((row) => ({
+      season: seasonLabel.get(row.seasonId) || row.seasonId,
+      seasonId: row.seasonId,
+      competition: row.competition,
+      team: row.teamName,
+      ...seasonStatToKeyPlayer(row),
+      name: undefined
+    }))
+    .sort((a, b) => String(a.seasonId).localeCompare(String(b.seasonId)));
+  const currentSeasonStats = career.filter((c) => c.seasonId === statsSeasonId);
+
+  const position = stats.player?.position || roster?.position || profile?.position || null;
+  const avg = stats.averages || {};
+
+  const payload = sanitizeAiPayload({
+    season: stats.season ? { id: stats.season.id, label: stats.season.label } : { id: statsSeasonId },
+    player: {
+      firstName: stats.player?.firstName ?? null,
+      lastName: stats.player?.lastName ?? null,
+      number: stats.player?.number ?? null,
+      position,
+      heightCm: roster?.heightCm ?? profile?.heightCm ?? null
+    },
+    positionProfile: getPositionProfile(position),
+    averages: {
+      ppg: roundOrNull(avg.ppg, 1),
+      rpg: roundOrNull(avg.rpg, 1),
+      apg: roundOrNull(avg.apg, 1),
+      efg: roundOrNull(avg.efg, 3),
+      ts: roundOrNull(avg.ts, 3),
+      plusMinusAvg: roundOrNull(avg.plusMinusAvg, 1),
+      gamesPlayed: intOrNull(avg.gamesPlayed),
+      minutesPlayed: intOrNull(avg.minutesPlayed)
+    },
     derived,
+    seasonStats: currentSeasonStats.length ? currentSeasonStats : null,
+    career: career.length ? career : null,
+    teamAverages,
     goals: roster?.goals || null,
-    gameLog: stats.gameLog.slice(0, 15),
+    gameLog: stats.gameLog.slice(0, 15).map((g) => gameLogForPrompt(g, matchById.get(String(g.gameId)))),
+    record: {
+      wins: [...matchById.values()].filter((m) => m.result === 'W').length,
+      losses: [...matchById.values()].filter((m) => m.result === 'L').length
+    },
     signals,
-    leagueKalk: stats.leagueKalk || null
-  };
+    leagueKalk: stats.leagueKalk
+      ? Object.fromEntries(
+          Object.entries(stats.leagueKalk).map(([k, v]) => [k, typeof v === 'number' ? roundOrNull(v, 1) : v ?? null])
+        )
+      : null,
+    teamContext: {
+      turnoversPerGame: priorities?.team?.turnovers ?? null,
+      efgPercentage: priorities?.team?.efgPercentage ?? null,
+      ftPercentage: priorities?.team?.ftPercentage ?? null
+    },
+    shootingSplits: {
+      ftPct: derived.ftPct,
+      threePct: derived.threePtPct,
+      fgPct: pctOrNull(
+        stats.gameLog.reduce((s, g) => s + (g.fgm || 0), 0),
+        stats.gameLog.reduce((s, g) => s + (g.fga || 0), 0)
+      )
+    }
+  });
 
   return {
     playerId,
-    hash: hashPayload(payload),
+    seasonId: statsSeasonId,
+    hash: hashAiPayload('player', payload),
     payload
   };
 }

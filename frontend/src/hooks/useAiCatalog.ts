@@ -12,16 +12,61 @@ export interface AiCatalogItem {
   model: string | null;
   hasContent: boolean;
   stale: boolean;
+  staleReason?: string | null;
+  isTemplate?: boolean;
   canGenerate: boolean;
   viewPath: string;
   generateKind: string;
   generateTarget: string | null;
+  seasonId?: string | null;
+}
+
+export interface AiCatalogSummary {
+  /** Pozycje możliwe do wygenerowania lub z treścią (bez meczów, których nie da się analizować). */
+  total: number;
+  withContent: number;
+  stale: number;
+  templates: number;
+  unavailable: number;
+  /** Mecze z terminarza w przyszłości — nie liczone jako oczekujące. */
+  upcomingExcluded: number;
 }
 
 export interface AiCatalogResponse {
   configured: boolean;
   model: string;
+  seasonId?: string | null;
   items: AiCatalogItem[];
+  summary?: AiCatalogSummary;
+}
+
+export interface AiAuditEntry {
+  type: 'match' | 'player' | 'scouting' | 'briefing' | 'pregame' | 'play';
+  id: string;
+  label: string;
+  seasonId: string | null;
+  generatedAt: string | null;
+  model: string | null;
+  reasons: string[];
+  suspiciousNumbers: Array<{ value: number; context: string }>;
+  suspiciousNames: Array<{ name: string; context: string }>;
+  generateKind: string | null;
+  generateTarget: string | null;
+  viewPath: string | null;
+}
+
+export interface AiAuditSummary {
+  generatedAt: string;
+  seasonId: string | null;
+  counts: {
+    total: number;
+    needsRegeneration: number;
+    stale: number;
+    incomplete: number;
+    templates: number;
+    suspicious: number;
+  };
+  toRegenerate: AiAuditEntry[];
 }
 
 export function useAiCatalog() {

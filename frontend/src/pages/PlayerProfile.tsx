@@ -28,6 +28,7 @@ import KalkEmptyState from '../shared/ui/KalkEmptyState';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import useIsMobile from '../hooks/useIsMobile';
 import { getPhotoUrl, getPositionLabel, resolvePlayerPhoto } from '../shared/lib/playerUtils';
+import PlayerCareer, { type PlayerCareerResponse } from '../components/players/PlayerCareer';
 
 interface StatSnapshot {
     gameId: string;
@@ -97,6 +98,7 @@ export default function PlayerProfile() {
     const [aiLoading, setAiLoading] = useState(false);
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
+    const [career, setCareer] = useState<PlayerCareerResponse | null>(null);
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
     const isMobile = useIsMobile();
@@ -131,6 +133,21 @@ export default function PlayerProfile() {
     useEffect(() => {
         fetchStats();
     }, [fetchStats]);
+
+    // Kariera KALK (wszystkie sezony od 2023/24) — niezależna od wybranego sezonu; błąd nie blokuje profilu.
+    useEffect(() => {
+        if (!id) return;
+        let active = true;
+        setCareer(null);
+        fetchJSON<PlayerCareerResponse>(`/api/players/${encodeURIComponent(id)}/career`)
+            .then((data) => {
+                if (active) setCareer(data);
+            })
+            .catch((error) => console.error('Error fetching player career:', error));
+        return () => {
+            active = false;
+        };
+    }, [id]);
 
     const handleGenerateAi = async (force = false) => {
         if (!id) return;
@@ -343,6 +360,8 @@ export default function PlayerProfile() {
                                 </div>
                             )}
                         </BkpkCard>
+
+                        {career && <PlayerCareer career={career} />}
 
                         {/* Advanced Box Score (Game Log) */}
                         <section className="space-y-4">

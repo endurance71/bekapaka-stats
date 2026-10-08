@@ -1,3 +1,4 @@
+import { runKalkV2Sync } from './kalk/v2/runSync.js';
 import { leagueMetadata } from './leagueMetadata.js';
 import { Prisma } from '@prisma/client';
 import { updateMatchPresentation, invalidateMatchPages } from './matchPresentation.js';
@@ -18,19 +19,12 @@ import {
   getGameById,
   listGames,
   upsertRoster,
-  ingestLeagueTable,
-  ingestLeagueSchedule,
-  ingestKalkPlayers,
-  ingestKalkTeams,
-  ingestKalkMatches,
-  ingestKalkPlayerGameLogs,
   logKalkScrapeRun,
   getLatestKalkScrapeRun,
   getKalkIngestSummary,
   getKalkDataAuditReport,
   listKalkPlayers,
   resetData,
-  syncPlayersFromKalk,
   getRoster,
   listAllPlayers,
   getPlayerById,
@@ -74,7 +68,9 @@ import {
   getTeamBriefingCached
 } from './ai/generate.js';
 import { getAiAnalysesCatalog } from './ai/catalog.js';
-import { isGeminiConfigured } from './ai/geminiClient.js';
+import { runAiAudit, summarizeAiAudit } from './ai/audit.js';
+import { getMatchAiStaleness } from './ai/buildMatchContext.js';
+import { AiTimeoutError, isGeminiConfigured } from './ai/geminiClient.js';
 import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -83,14 +79,11 @@ import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
-import { validateScrapeOutput } from './kalk/validateScrapeOutput.js';
+import { getGameInfo, getGamePlayByPlay, getPlayerCareer } from './kalk/v2/readModels.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const KALK_SCRAPLING_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scraper.py');
-const KALK_GAP_SCRAPE_SCRIPT = path.join(__dirname, 'scripts', 'kalk_scrape_gaps.py');
-const KALK_SCRAPLING_OUTPUT = path.join(__dirname, 'kalk_stats.json');
 const app = express();
 const loginThrottle = createLoginThrottle();
 const allowedOrigins = new Set([
@@ -264,9 +257,51 @@ app.get(['/api/games/:id', '/games/:id'], async (req, res) => {
   try {
     const game = await getGameById(req.params.id, req.query.seasonId);
     if (!game) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    // Mecze KALK: aktualność analizy AI liczona z pełnego kontekstu (typowane sumy, PBP, wersja promptu).
+    if (game.aiSummary && (game.isFromKalkMatch || game.dataSource === 'kalk')) {
+      const st = await getMatchAiStaleness({
+        gameId: String(game.kalkMatchId || game.id),
+        seasonId: game.seasonId,
+        aiSummary: game.aiSummary,
+        aiSummaryHash: game.aiSummaryHash
+      });
+      game.aiSummaryStale = st.stale;
+    }
     res.json(game);
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania meczu' });
+  }
+});
+
+/** seasonId z query (opcjonalny) → id sezonu; brak = szukaj po ID meczu we wszystkich sezonach. */
+async function querySeasonId(req) {
+  const raw = typeof req.query.seasonId === 'string' ? req.query.seasonId.trim() : '';
+  if (!raw) return null;
+  const season = await getSeasonById(raw);
+  return season?.id ?? null;
+}
+
+// KALK v2: akcja po akcji (publiczne jak GET /api/games/:id — dane ligi).
+app.get(['/api/games/:id/play-by-play', '/games/:id/play-by-play'], async (req, res) => {
+  try {
+    const data = await getGamePlayByPlay(prisma, req.params.id, { seasonId: await querySeasonId(req) });
+    if (!data) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Play-by-play error:', err);
+    res.status(500).json({ error: 'Błąd pobierania akcji po akcji' });
+  }
+});
+
+// KALK v2: info meczu (MVP, sędziowie, liderzy, przebieg, źródła punktów, H2H, rekordy).
+app.get(['/api/games/:id/info', '/games/:id/info'], async (req, res) => {
+  try {
+    const data = await getGameInfo(prisma, req.params.id, { seasonId: await querySeasonId(req) });
+    if (!data) return res.status(404).json({ error: 'Mecz nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Game info error:', err);
+    res.status(500).json({ error: 'Błąd pobierania informacji o meczu' });
   }
 });
 
@@ -338,6 +373,18 @@ app.get(['/api/players/:id', '/players/:id'], authenticateToken, async (req, res
     }));
   } catch (err) {
     res.status(500).json({ error: 'Błąd pobierania danych zawodnika' });
+  }
+});
+
+// Kariera zawodnika (KALK v2): profil + sezony od 2023/24 + podsumowanie logów meczowych.
+app.get(['/api/players/:id/career', '/players/:id/career'], authenticateToken, async (req, res) => {
+  try {
+    const data = await getPlayerCareer(prisma, req.params.id);
+    if (!data) return res.status(404).json({ error: 'Zawodnik nie znaleziony' });
+    res.json(data);
+  } catch (err) {
+    console.error('Career error:', err);
+    res.status(500).json({ error: 'Błąd pobierania kariery zawodnika' });
   }
 });
 
@@ -495,6 +542,9 @@ const handleAiRouteError = (err, res) => {
   if (err instanceof AiBusyError) {
     return res.status(409).json({ error: err.message });
   }
+  if (err instanceof AiTimeoutError) {
+    return res.status(504).json({ error: err.message });
+  }
   console.error('[AI]', err);
   return res.status(500).json({ error: err.message || 'Błąd generacji AI' });
 };
@@ -548,7 +598,10 @@ app.post(['/api/ai/briefing/generate', '/ai/briefing/generate'], authenticateTok
 
 app.post(['/api/games/:id/analyze', '/games/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await generateGameAnalysis(req.params.id, { force: Boolean(req.body?.force) });
+    const result = await generateGameAnalysis(req.params.id, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
   } catch (err) {
     handleAiRouteError(err, res);
@@ -557,7 +610,10 @@ app.post(['/api/games/:id/analyze', '/games/:id/analyze'], authenticateToken, re
 
 app.post(['/api/players/:id/analyze', '/players/:id/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const result = await generatePlayerDevelopment(req.params.id, { force: Boolean(req.body?.force) });
+    const result = await generatePlayerDevelopment(req.params.id, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
   } catch (err) {
     handleAiRouteError(err, res);
@@ -567,8 +623,24 @@ app.post(['/api/players/:id/analyze', '/players/:id/analyze'], authenticateToken
 app.post(['/api/scouting/analyze', '/scouting/analyze'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const opponent = req.query.opponent || req.body?.opponent;
-    const result = await generateScoutingReport(opponent, { force: Boolean(req.body?.force) });
+    const result = await generateScoutingReport(opponent, {
+      force: Boolean(req.body?.force),
+      seasonId: req.body?.seasonId || req.query.seasonId
+    });
     res.json(result);
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+// Audyt analiz AI (aktualność, szablon vs Gemini, kontrola faktów) — lista „Do regeneracji” w hubie AI.
+app.get(['/api/ai/audit', '/ai/audit'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const report = await runAiAudit({
+      seasonId: req.query.seasonId ? String(req.query.seasonId) : undefined,
+      factCheck: req.query.factCheck !== 'false'
+    });
+    res.json(summarizeAiAudit(report));
   } catch (err) {
     handleAiRouteError(err, res);
   }
@@ -663,156 +735,82 @@ async function ensureDefaultAdminUser() {
   console.log(`[AUTH] Created default admin user: ${username}`);
 }
 
-async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId = undefined) {
+async function runScrapeImportPipeline(triggerLabel = 'manual', targetSeasonId = undefined, options = {}) {
   if (scraperRunning) {
     throw new Error('Scraper już działa.');
   }
 
-  const activeSeason = targetSeasonId
-    ? await getSeasonById(targetSeasonId)
-    : await getActiveSeason();
-  const currentActiveSeason = await getActiveSeason();
-  if (!activeSeason || activeSeason.id !== currentActiveSeason?.id) {
-    throw new Error('Import KALK do nieaktywnego sezonu wymaga odrębnej migracji; przerwano bez zmian w bazie.');
+  const activeSeason = targetSeasonId ? await getSeasonById(targetSeasonId) : await getActiveSeason();
+  if (!activeSeason) {
+    throw new Error('Brak aktywnego sezonu KALK.');
   }
-  const divisionPath = activeSeason?.divisionPath || 'dzial,dywizja-2,4.html';
-  const seasonSlug = activeSeason?.slug || '2025-2026';
+  if (!activeSeason.kalkNumber && activeSeason.sourceSite !== 'v2') {
+    throw new Error(
+      `Sezon ${activeSeason.slug} pochodzi ze starej strony KALK — uzupełnij go backfillem (scripts/kalk-backfill.js), nie synchronizacją.`
+    );
+  }
+  const mode = options.mode || 'incremental';
 
   scraperRunning = true;
   scraperState.running = true;
-  scraperState.lastLog = `[${new Date().toLocaleTimeString()}] System: Inicjalizacja dla sezonu ${seasonSlug}...` + '\n';
-  scraperState.step = 'inicjalizacja';
-  scraperState.message = `Uruchamianie scrapera (${seasonSlug})...`;
+  scraperState.lastLog = `[${new Date().toLocaleTimeString()}] System: Inicjalizacja dla sezonu ${activeSeason.slug}...` + '\n';
+  scraperState.step = 'pobieranie';
+  scraperState.message = `Pobieranie danych KALK (${activeSeason.slug}, ${options.matches?.length ? 'wybrane mecze' : mode})...`;
   scraperState.progressCurrent = 0;
   scraperState.progressTotal = 0;
-
-  updateScraperLog(`Rozpoczynanie pełnego importu danych (sezon: ${seasonSlug}, ścieżka: ${divisionPath})...`);
+  updateScraperLog(`Trigger: ${triggerLabel}`);
 
   try {
-    scraperState.step = 'pobieranie';
-    scraperState.message = 'Pobieranie danych przez Scrapling...';
-    updateScraperLog(`Trigger: ${triggerLabel}`);
-    updateScraperLog(`Uruchamiam scrapling script dla ${divisionPath}...`);
-
-    const previousOutputMtime = await fs.stat(KALK_SCRAPLING_OUTPUT)
-      .then((stat) => stat.mtimeMs)
-      .catch((err) => {
-        if (err.code === 'ENOENT') return null;
-        throw err;
-      });
-
-    const child = execFileCb(
-      'python3',
-      [KALK_SCRAPLING_SCRIPT, '--division-path', divisionPath, '--season', seasonSlug],
-      {
-        cwd: __dirname,
-        timeout: 15 * 60 * 1000,
-        maxBuffer: 10 * 1024 * 1024,
-        env: {
-          ...process.env,
-          KALK_DIVISION_PATH: divisionPath,
-          KALK_SEASON_SLUG: seasonSlug
+    const sync = await runKalkV2Sync({
+      prisma,
+      seasonId: activeSeason.id,
+      mode,
+      matches: options.matches || null,
+      trigger: triggerLabel,
+      onProgress: (current, total) => {
+        scraperState.progressCurrent = current;
+        scraperState.progressTotal = total;
+        if (current >= total) {
+          scraperState.step = 'import-bazy';
+          scraperState.message = 'Import danych do bazy...';
         }
-      }
-    );
-
-    child.stdout.on('data', (data) => {
-      const text = data.toString();
-      const lines = text.split('\n');
-      for (let line of lines) {
-        line = line.trim();
-        if (!line) continue;
-        const progressMatch = line.match(/^::PROGRESS::\s*(\d+)\/(\d+)/);
-        if (progressMatch) {
-          scraperState.progressCurrent = parseInt(progressMatch[1], 10);
-          scraperState.progressTotal = parseInt(progressMatch[2], 10);
-        } else {
-          updateScraperLog(line);
-        }
-      }
+      },
+      onLog: (line) => updateScraperLog(line)
     });
 
-    child.stderr.on('data', (data) => {
-      const text = data.toString();
-      const lines = text.split('\n');
-      for (let line of lines) {
-        line = line.trim();
-        if (line) {
-          updateScraperLog(`STDERR: ${line}`);
-        }
-      }
-    });
-
-    await new Promise((resolve, reject) => {
-      child.on('close', (code) => {
-        if (code === 0) {
-          resolve();
-        } else {
-          reject(new Error(`Proces zakończył się kodem: ${code}`));
-        }
-      });
-      child.on('error', (err) => {
-        reject(err);
-      });
-    });
-
-    scraperState.step = 'import-bazy';
-    scraperState.message = 'Import danych ze scrapingu do bazy...';
-
-    const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
-    const stats = JSON.parse(statsRaw);
-    const currentOutputMtime = (await fs.stat(KALK_SCRAPLING_OUTPUT)).mtimeMs;
-    validateScrapeOutput(stats, previousOutputMtime, currentOutputMtime, seasonSlug);
-    if ((await getActiveSeason())?.id !== activeSeason.id) {
-      throw new Error('Aktywny sezon KALK zmienił się podczas scrapingu; import przerwany.');
-    }
-    await ingestLeagueTable(stats.table || [], 'regular');
-    if (stats.playout_table) {
-      await ingestLeagueTable(stats.playout_table, 'playout');
-    }
-    await ingestLeagueSchedule(stats.schedule || []);
-    const playersIngest = await ingestKalkPlayers(stats.players || []);
-    const teamsIngest = await ingestKalkTeams(stats.teams || []);
-    const matchesIngest = await ingestKalkMatches(stats.matches || []);
-    const logsIngest = await ingestKalkPlayerGameLogs(stats.playerGameLogs || []);
-
-    await prisma.kalkSyncRun.create({
-      data: {
-        seasonId: activeSeason.id,
-        mode: 'full',
-        trigger: triggerLabel,
-        status: 'success',
-        httpEstimate: stats.scrapeManifest?.httpCount ?? null,
-        sectionsChanged: stats.scrapeManifest?.sections || [],
-        probeHashes: stats.scrapeManifest || null,
-        finishedAt: new Date()
-      }
-    });
-
-    scraperState.step = 'synchronizacja';
-    scraperState.message = 'Synchronizacja zawodników...';
-    await syncPlayersFromKalk();
     await ensureDefaultAdminUser();
 
+    const r = sync.result;
     scraperState.progressCurrent = scraperState.progressTotal;
     scraperRunning = false;
     scraperState.running = false;
     scraperState.step = 'idle';
-    scraperState.message = 'Zakończono pomyślnie';
+    scraperState.message =
+      sync.status === 'partial'
+        ? `Zakończono z pominięciami (${sync.manifest.failures?.length || 0}) — szczegóły w logu`
+        : 'Zakończono pomyślnie';
     scraperState.lastFinishedAt = new Date().toISOString();
-
-    updateScraperLog('Import zakończony sukcesem.');
+    for (const failure of sync.manifest.failures || []) {
+      updateScraperLog(`POMINIĘTO: ${failure.url || failure.section} — ${failure.error}`);
+    }
+    updateScraperLog(
+      `Import zakończony (${sync.status}): mecze +${r.matches.created} ~${r.matches.updated}, logi ${r.gameLogs.written}, PBP ${r.pbp.eventsWritten}, zapytania ${sync.manifest.httpCount}.`
+    );
     return {
       success: true,
-      source: 'scrapling',
-      version: stats.version || 1,
-      teams: teamsIngest?.total ?? (Array.isArray(stats.table) ? stats.table.length : 0),
-      schedule: Array.isArray(stats.schedule) ? stats.schedule.length : 0,
-      kalkMatches: matchesIngest?.total || 0,
-      kalkMatchesLinked: matchesIngest?.linked || 0,
-      playerGameLogs: logsIngest?.total || 0,
-      playerGameLogsSkipped: logsIngest?.skipped || 0,
-      players: playersIngest?.total || 0
+      status: sync.status,
+      source: 'kalk-v2',
+      version: 3,
+      season: sync.season,
+      httpCount: sync.manifest.httpCount,
+      failures: sync.manifest.failures || [],
+      teams: r.leagueTeams.created + r.leagueTeams.updated + r.leagueTeams.unchanged,
+      schedule: r.leagueMatches.created + r.leagueMatches.updated + r.leagueMatches.unchanged,
+      kalkMatches: r.matches.created + r.matches.updated + r.matches.unchanged,
+      kalkMatchesLinked: r.matches.created + r.matches.updated + r.matches.unchanged,
+      playerGameLogs: r.gameLogs.written,
+      playerGameLogsSkipped: 0,
+      players: r.kalkPlayers.created + r.kalkPlayers.updated + r.kalkPlayers.unchanged
     };
   } catch (err) {
     scraperRunning = false;
@@ -841,47 +839,28 @@ app.post(['/api/scrape/kalk/div2/run', '/scrape/kalk/div2/run'], authenticateTok
  */
 app.post(['/api/scrape/kalk/gaps', '/scrape/kalk/gaps'], authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const urls = Array.isArray(req.body?.urls)
-      ? req.body.urls.filter((u) => typeof u === 'string' && u.startsWith('http'))
-      : [];
+    const fromBody = Array.isArray(req.body?.matchIds)
+      ? req.body.matchIds
+      : (Array.isArray(req.body?.urls) ? req.body.urls : []).map((u) => String(u).match(/\/mecz\/(\d+)/)?.[1]);
+    const ids = new Set(fromBody.filter((id) => /^\d+$/.test(String(id || ''))).map(String));
 
-    if (!urls.length) {
+    if (!ids.size) {
       const summary = await getKalkIngestSummary();
       for (const row of summary?.bekapakaMissingBoxScore || []) {
-        if (row.scrapeUrl) urls.push(row.scrapeUrl);
+        if (row.kalkMatchId && /^\d+$/.test(String(row.kalkMatchId))) ids.add(String(row.kalkMatchId));
       }
     }
 
-    if (!urls.length) {
-      return res.status(400).json({ error: 'Brak URL-i meczów do pobrania (podaj urls[] lub uzupełnij terminarz).' });
+    if (!ids.size) {
+      return res.status(400).json({ error: 'Brak meczów do pobrania (podaj matchIds[] lub uzupełnij terminarz).' });
     }
 
-    await new Promise((resolve, reject) => {
-      const child = execFileCb(
-        'python3',
-        [KALK_GAP_SCRAPE_SCRIPT, ...urls],
-        { cwd: __dirname, timeout: 5 * 60 * 1000, maxBuffer: 5 * 1024 * 1024 },
-        (err) => (err ? reject(err) : resolve())
-      );
-      child.stdout?.on('data', (d) => updateScraperLog(String(d).trim()));
-      child.stderr?.on('data', (d) => updateScraperLog(`GAP: ${String(d).trim()}`));
-    });
-
-    const statsRaw = await fs.readFile(KALK_SCRAPLING_OUTPUT, 'utf-8');
-    const stats = JSON.parse(statsRaw);
-    const activeSeason = await getActiveSeason();
-    if (!activeSeason || stats.scrapeManifest?.seasonSlug !== activeSeason.slug) {
-      throw new Error('Plik uzupełniający KALK nie należy do aktywnego sezonu; import przerwany.');
-    }
-    const matchesIngest = await ingestKalkMatches(stats.matches || []);
-
-    res.json({
-      success: true,
-      urlsScraped: urls.length,
-      kalkMatches: matchesIngest?.total || 0,
-      kalkMatchesLinked: matchesIngest?.linked || 0
-    });
+    const result = await runScrapeImportPipeline('manual-gaps', undefined, { matches: [...ids] });
+    res.json({ ...result, urlsScraped: ids.size });
   } catch (err) {
+    if (err.message === 'Scraper już działa.' || err.code === 'KALK_LOCKED') {
+      return res.status(409).json({ error: err.message });
+    }
     console.error('KALK gap scrape error:', err);
     res.status(500).json({ error: err.message });
   }
@@ -1165,19 +1144,16 @@ app.post(['/api/internal/kalk/sync', '/internal/kalk/sync'], async (req, res) =>
   if (!secret || provided !== secret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
+  // KALK v2: cron zawsze przyrostowo (sonda tabeli/terminarza → tylko nowe/zmienione mecze).
+  // Pełna resynchronizacja sezonu tylko jawnie: mode=resync.
   const mode = req.query.mode || 'auto';
-  if (mode === 'probe') {
-    return res.json({
-      success: true,
-      mode: 'probe',
-      message: 'Probe — pełny import w kolejnej fazie (Faza 2 planu). Uruchom mode=full.'
-    });
-  }
+  const syncMode = mode === 'resync' ? 'full' : 'incremental';
   try {
-    const result = await runScrapeImportPipeline(`cron-${mode}`);
+    const result = await runScrapeImportPipeline(`cron-${mode}`, undefined, { mode: syncMode });
     res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    const status = err.message === 'Scraper już działa.' || err.code === 'KALK_LOCKED' ? 409 : 500;
+    res.status(status).json({ error: err.message });
   }
 });
 

@@ -1,9 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bot, ChevronRight, ExternalLink, Loader2 } from 'lucide-react';
-import { postJSON } from '../../lib/api';
+import { fetchJSON, postJSON } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
-import { useAiCatalog, type AiCatalogItem } from '../../hooks/useAiCatalog';
+import {
+  useAiCatalog,
+  type AiAuditEntry,
+  type AiAuditSummary,
+  type AiCatalogItem
+} from '../../hooks/useAiCatalog';
+import { useSeasonPreferenceContext } from '../../context/SeasonPreferenceContext';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import PageHeader from '../../shared/ui/PageHeader';
@@ -30,29 +36,209 @@ function formatGeneratedAt(iso: string | null): string {
   });
 }
 
-async function runGenerate(item: AiCatalogItem, force: boolean): Promise<void> {
+type GenerateTarget = Pick<AiCatalogItem, 'generateKind' | 'generateTarget'> & {
+  seasonId?: string | null;
+};
+
+/** Ręczna (re)generacja analizy — sezon z pozycji katalogu lub z wybranego sezonu panelu. */
+async function runGenerate(
+  item: GenerateTarget,
+  force: boolean,
+  fallbackSeasonId: string | null
+): Promise<void> {
+  const seasonId = item.seasonId || fallbackSeasonId || undefined;
   switch (item.generateKind) {
     case 'briefing':
-      await postJSON('/api/ai/briefing/generate', { force });
+      await postJSON('/api/ai/briefing/generate', { force, seasonId });
       return;
     case 'match':
       if (!item.generateTarget) throw new Error('Brak identyfikatora meczu');
-      await postJSON(`/api/games/${item.generateTarget}/analyze`, { force });
+      await postJSON(`/api/games/${item.generateTarget}/analyze`, { force, seasonId });
       return;
     case 'player':
       if (!item.generateTarget) throw new Error('Brak identyfikatora zawodnika');
-      await postJSON(`/api/players/${item.generateTarget}/analyze`, { force });
+      await postJSON(`/api/players/${item.generateTarget}/analyze`, { force, seasonId });
       return;
     case 'scouting':
       if (!item.generateTarget) throw new Error('Brak nazwy rywala');
       await postJSON(
         `/api/scouting/analyze?opponent=${encodeURIComponent(item.generateTarget)}`,
-        { force }
+        { force, seasonId }
       );
+      return;
+    case 'pregame':
+      if (!item.generateTarget) throw new Error('Brak nazwy rywala');
+      await postJSON('/api/tactics/pregame/generate', {
+        force,
+        seasonId,
+        opponent: item.generateTarget
+      });
       return;
     default:
       throw new Error('Nieobsługiwany typ analizy');
   }
+}
+
+const AUDIT_TYPE_LABEL: Record<AiAuditEntry['type'], string> = {
+  match: 'Mecz',
+  player: 'Zawodnik',
+  scouting: 'Scouting',
+  briefing: 'Briefing',
+  pregame: 'Odprawa',
+  play: 'Zagrywka AI'
+};
+
+/** Kompaktowa lista „Do regeneracji” z audytu AI (tylko admin). Regeneracja ręczna — przyciskiem. */
+function AiRegenerationPanel({
+  seasonId,
+  configured,
+  onRegenerated
+}: {
+  seasonId: string | null;
+  configured: boolean;
+  onRegenerated: () => Promise<void> | void;
+}) {
+  const [audit, setAudit] = useState<AiAuditSummary | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const loadAudit = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const q = seasonId ? `?seasonId=${encodeURIComponent(seasonId)}` : '';
+      setAudit(await fetchJSON<AiAuditSummary>(`/api/ai/audit${q}`));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nie udało się wykonać audytu AI');
+    } finally {
+      setLoading(false);
+    }
+  }, [seasonId]);
+
+  useEffect(() => {
+    void loadAudit();
+  }, [loadAudit]);
+
+  const regenerate = async (entry: AiAuditEntry) => {
+    const key = `${entry.type}:${entry.id}`;
+    setBusyId(key);
+    try {
+      await runGenerate(
+        { generateKind: entry.generateKind ?? '', generateTarget: entry.generateTarget, seasonId: entry.seasonId },
+        true,
+        seasonId
+      );
+      await Promise.all([loadAudit(), onRegenerated()]);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Błąd generacji AI');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const entries = audit?.toRegenerate ?? [];
+
+  return (
+    <section aria-labelledby="ai-regeneration" className="space-y-3">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="space-y-2">
+          <span className="kicker">Audyt AI</span>
+          <h2 id="ai-regeneration" className="text-[22px] sm:text-[24px] leading-none text-bkpk-text-primary">
+            Do regeneracji{' '}
+            <span className="tabular-nums text-bkpk-text-muted">
+              {audit ? `${audit.counts.needsRegeneration} / ${audit.counts.total}` : '—'}
+            </span>
+          </h2>
+          {audit ? (
+            <p className="text-xs text-bkpk-text-muted tabular-nums">
+              Nieaktualne {audit.counts.stale} · niekompletne {audit.counts.incomplete} · szablony{' '}
+              {audit.counts.templates} · podejrzane fakty {audit.counts.suspicious}
+            </p>
+          ) : null}
+        </div>
+        <BkpkButton variant="ghost" size="sm" onClick={() => void loadAudit()} disabled={loading}>
+          {loading ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden /> : null}
+          Sprawdź ponownie
+        </BkpkButton>
+      </div>
+
+      {error ? (
+        <p className="border border-bkpk-text-danger border-l-4 bg-bkpk-surface px-4 py-3 text-sm text-bkpk-text-danger">
+          {error}
+        </p>
+      ) : null}
+
+      {loading && !audit ? <p className="text-sm text-bkpk-text-muted">Audyt analiz AI…</p> : null}
+
+      {audit && entries.length === 0 ? (
+        <p className="border border-bkpk-border-subtle bg-bkpk-surface px-4 py-3 text-sm text-bkpk-text-secondary">
+          Wszystkie analizy są kompletne i aktualne.
+        </p>
+      ) : null}
+
+      {entries.length > 0 ? (
+        <ul className="space-y-2">
+          {entries.map((entry) => {
+            const key = `${entry.type}:${entry.id}`;
+            const canRegenerate = Boolean(entry.generateKind) && configured;
+            return (
+              <li
+                key={key}
+                className="flex flex-col gap-3 border border-bkpk-border-subtle bg-bkpk-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0 flex-1 space-y-1.5">
+                  <span className="kicker">{AUDIT_TYPE_LABEL[entry.type]}</span>
+                  <p className="truncate text-sm font-semibold text-bkpk-text-primary">{entry.label}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {entry.reasons.map((reason) => (
+                      <span key={reason} className="status-flag text-bkpk-text-danger">
+                        {reason}
+                      </span>
+                    ))}
+                  </div>
+                  {entry.suspiciousNumbers.length || entry.suspiciousNames.length ? (
+                    <p className="text-xs text-bkpk-text-muted">
+                      Poza danymi:{' '}
+                      {[
+                        ...entry.suspiciousNumbers.map((n) => String(n.value)),
+                        ...entry.suspiciousNames.map((n) => n.name)
+                      ].join(', ')}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                  {entry.viewPath ? (
+                    <Link
+                      to={entry.viewPath}
+                      className="label-caps inline-flex min-h-[44px] items-center px-3 text-[12px] text-bkpk-text-secondary hover:text-bkpk-text-primary"
+                    >
+                      Zobacz
+                    </Link>
+                  ) : null}
+                  {canRegenerate ? (
+                    <BkpkButton
+                      variant="ghost"
+                      size="sm"
+                      disabled={busyId !== null}
+                      onClick={() => void regenerate(entry)}
+                    >
+                      {busyId === key ? (
+                        <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden />
+                      ) : (
+                        <Bot className="mr-1.5 h-4 w-4" aria-hidden />
+                      )}
+                      Regeneruj
+                    </BkpkButton>
+                  ) : null}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
+  );
 }
 
 function AiCatalogItemRow({
@@ -95,6 +281,11 @@ function AiCatalogItemRow({
             {item.stale && item.hasContent ? (
               <p className="mt-1.5 text-xs font-semibold text-bkpk-text-danger">
                 Raport może być nieaktualny — rozważ ponowną generację.
+              </p>
+            ) : null}
+            {item.isTemplate && item.hasContent ? (
+              <p className="mt-1.5 text-xs font-semibold text-bkpk-text-danger">
+                Plan z szablonu (bez Gemini) — wygeneruj ponownie.
               </p>
             ) : null}
             {!item.canGenerate && isAdmin && item.type === 'match' ? (
@@ -166,19 +357,32 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
   const navigate = useNavigate();
   const isAdmin = user?.role === 'ADMIN';
   const { catalog, loading, error, loadCatalog } = useAiCatalog();
+  const { seasonId } = useSeasonPreferenceContext();
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const stats = useMemo(() => {
+    if (catalog?.summary) {
+      return {
+        total: catalog.summary.total,
+        withContent: catalog.summary.withContent,
+        upcomingExcluded: catalog.summary.upcomingExcluded
+      };
+    }
     const items = catalog?.items ?? [];
-    const withContent = items.filter((i) => i.hasContent).length;
-    return { total: items.length, withContent };
-  }, [catalog?.items]);
+    // Pozycje, których nie da się wygenerować (brak box score), nie są liczone jako oczekujące.
+    const actionable = items.filter((i) => i.hasContent || i.canGenerate);
+    return {
+      total: actionable.length,
+      withContent: items.filter((i) => i.hasContent).length,
+      upcomingExcluded: 0
+    };
+  }, [catalog?.items, catalog?.summary]);
 
   const categoryStats = useMemo(() => {
     const map = new Map<string, { total: number; withContent: number }>();
     for (const item of catalog?.items ?? []) {
       const current = map.get(item.category) ?? { total: 0, withContent: 0 };
-      current.total += 1;
+      if (item.hasContent || item.canGenerate) current.total += 1;
       if (item.hasContent) current.withContent += 1;
       map.set(item.category, current);
     }
@@ -195,7 +399,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
     if (!isAdmin) return;
     setGeneratingId(item.id);
     try {
-      await runGenerate(item, force);
+      await runGenerate(item, force, seasonId);
       await loadCatalog();
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Błąd generacji AI';
@@ -269,6 +473,9 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
               <p className="mt-1 text-xs text-bkpk-text-muted">
                 Model: {catalog?.model ?? '—'}
                 {catalog?.configured === false ? ' · Gemini nie skonfigurowane' : ''}
+                {stats.upcomingExcluded > 0
+                  ? ` · ${stats.upcomingExcluded} przyszłych meczów pominiętych`
+                  : ''}
               </p>
             </div>
           </div>
@@ -283,6 +490,14 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
         <p className="border border-bkpk-text-danger border-l-4 bg-bkpk-surface px-4 py-3 text-sm text-bkpk-text-danger">
           {error}
         </p>
+      ) : null}
+
+      {!categorySlug && isAdmin ? (
+        <AiRegenerationPanel
+          seasonId={seasonId}
+          configured={catalog?.configured ?? false}
+          onRegenerated={loadCatalog}
+        />
       ) : null}
 
       {!categorySlug ? (

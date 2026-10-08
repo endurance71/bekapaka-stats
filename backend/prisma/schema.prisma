@@ -11,6 +11,10 @@ model KalkSeason {
   slug         String   @unique
   label        String
   divisionPath String   @default("dzial,dywizja-2,4.html")
+  /// Numer sezonu na kalk-koszalin.com (`?sezon=`), np. 50 = 2026/2027
+  kalkNumber   Int?     @unique
+  /// "v2" = nowa strona (SportSync), "legacy" = stara strona
+  sourceSite   String   @default("legacy")
   isActive     Boolean  @default(false)
   startsAt     DateTime?
   endsAt       DateTime?
@@ -28,6 +32,9 @@ model KalkSeason {
   syncRuns      KalkSyncRun[]
   sectionSnapshots KalkSectionSnapshot[]
   preGameBriefings PreGameBriefing[]
+  teamGameStats    KalkTeamGameStat[]
+  playByPlayEvents KalkPlayByPlayEvent[]
+  playerSeasonStats KalkPlayerSeasonStat[]
 }
 
 model Game {
@@ -81,6 +88,8 @@ model RosterPlayer {
   // Powiązanie z KALK
   kalkPlayerId String?  @unique
   kalkPlayer   KalkPlayer? @relation(fields: [kalkPlayerId], references: [id])
+  /// Stała tożsamość KALK v2 (slug zawodnika, ten sam we wszystkich sezonach)
+  kalkSlug     String?  @unique
   
   // Statystyki (obliczane z meczów)
   gamesPlayed  Int      @default(0)
@@ -158,6 +167,8 @@ model LoginLog {
 model KalkPlayer {
   id            String   @id
   seasonId      String
+  /// Slug KALK v2 (bez prefiksu sezonu)
+  slug          String?
   season        KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   name          String
   team          String?
@@ -199,6 +210,8 @@ model KalkPlayer {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+
+  @@index([seasonId, slug])
 }
 
 model KalkTeam {
@@ -212,6 +225,8 @@ model KalkTeam {
   sponsors   String?
   profileUrl String?
   playerIds  String[] @default([])
+  captainSlug String?
+  logoUrl    String?
   raw        Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
@@ -244,6 +259,31 @@ model KalkMatch {
   scrapedAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   playerGameLogs KalkPlayerGameLog[]
+  teamGameStats  KalkTeamGameStat[]
+  playByPlayEvents KalkPlayByPlayEvent[]
+
+  // KALK v2 (nowa strona): faza, kolejka, logistyka, sekcje
+  stageId        Int?
+  stageLabel     String?
+  roundId        Int?
+  roundLabel     String?
+  roundNumber    Int?
+  venue          String?
+  startsAtUtc    DateTime?
+  overtimes      Int      @default(0)
+  hasPlayByPlay  Boolean  @default(false)
+  sectionsAvailable String[] @default([])
+  sectionHashes  Json?
+  parserVersion  String?
+  sourceSite     String   @default("legacy")
+  mvpPlayerSlug  String?
+  mvpEval        Int?
+  commissioner   String?
+  refereeList    String[] @default([])
+  /// Prezentacja: liderzy meczu, przebieg co 5 min, obsada
+  info           Json?
+  /// Opcjonalne: rekordy, pojedynki, piątka meczu, P5 i rezerwowi
+  extras         Json?
 
   aiSummary      String?   @db.Text
   aiSummaryAt    DateTime?
@@ -251,6 +291,9 @@ model KalkMatch {
   aiSummaryHash  String?
 
   @@unique([seasonId, id])
+  @@index([seasonId, date])
+  @@index([seasonId, homeTeamId])
+  @@index([seasonId, guestTeamId])
 }
 
 model KalkPlayerGameLog {
@@ -268,7 +311,208 @@ model KalkPlayerGameLog {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  // KALK v2: typowane kolumny (wszyscy zawodnicy z box score)
+  playerSlug     String?
+  teamKalkId     String?
+  side           String?
+  number         Int?
+  starter        Boolean?
+  secondsPlayed  Int?
+  pts            Int?
+  twoPm          Int?
+  twoPa          Int?
+  threePm        Int?
+  threePa        Int?
+  fgm            Int?
+  fga            Int?
+  ftm            Int?
+  fta            Int?
+  orb            Int?
+  drb            Int?
+  reb            Int?
+  ast            Int?
+  stl            Int?
+  tov            Int?
+  pf             Int?
+  pfDrawn        Int?
+  blk            Int?
+  blkAgainst     Int?
+  eval           Int?
+  plusMinus      Int?
+
   @@unique([seasonId, kalkPlayerId, kalkMatchId])
+  @@index([seasonId, playerSlug])
+  @@index([seasonId, kalkMatchId])
+}
+
+/// Sumy drużyny w meczu (KALK v2) — typowane, do analiz i AI
+model KalkTeamGameStat {
+  seasonId        String
+  season          KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  kalkMatchId     String
+  kalkMatch       KalkMatch @relation(fields: [seasonId, kalkMatchId], references: [seasonId, id], onDelete: Cascade)
+  side            String
+  teamKalkId      String?
+  teamName        String
+  opponentKalkId  String?
+  opponentName    String
+  isWin           Boolean?
+  pts             Int
+  ptsAgainst      Int
+  q1              Int?
+  q2              Int?
+  q3              Int?
+  q4              Int?
+  otPts           Int?
+  minutesSec      Int?
+  fgm             Int
+  fga             Int
+  twoPm           Int
+  twoPa           Int
+  threePm         Int
+  threePa         Int
+  ftm             Int
+  fta             Int
+  orb             Int
+  drb             Int
+  reb             Int
+  ast             Int
+  stl             Int
+  tov             Int
+  pf              Int
+  pfDrawn         Int
+  blk             Int
+  blkAgainst      Int
+  eval            Int
+  startersPts     Int?
+  benchPts        Int?
+  ptsOffTurnovers Int?
+  ptsInPaint      Int?
+  secondChancePts Int?
+  fastBreakPts    Int?
+  updatedAt       DateTime @updatedAt
+
+  @@id([seasonId, kalkMatchId, side])
+  @@index([seasonId, teamKalkId])
+}
+
+/// Akcja po akcji (KALK v2, od sezonu 2026/2027)
+model KalkPlayByPlayEvent {
+  seasonId      String
+  season        KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  kalkMatchId   String
+  kalkMatch     KalkMatch @relation(fields: [seasonId, kalkMatchId], references: [seasonId, id], onDelete: Cascade)
+  seq           Int
+  period        Int
+  clockSec      Int?
+  elapsedSec    Int?
+  side          String?
+  teamKalkId    String?
+  playerName    String?
+  playerSlug    String?
+  playerNumber  Int?
+  actionRaw     String
+  actionType    String
+  shotValue     Int?
+  made          Boolean?
+  blocked       Boolean?
+  reboundType   String?
+  subOutNumber  Int?
+  subOutSlug    String?
+  scoreHome     Int
+  scoreAway     Int
+  isScoring     Boolean  @default(false)
+
+  @@id([seasonId, kalkMatchId, seq])
+  @@index([seasonId, playerSlug, actionType])
+}
+
+/// Statystyki sezonowe zawodnika (strona zawodnika KALK + sumy z box score)
+model KalkPlayerSeasonStat {
+  seasonId     String
+  season       KalkSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  playerSlug   String
+  competition  String
+  teamKey      String
+  teamName     String
+  teamKalkId   String?
+  games        Int
+  minutesTotal Int?
+  pts          Int
+  twoPm        Int
+  twoPa        Int?
+  twoPct       Float?
+  threePm      Int
+  threePa      Int?
+  threePct     Float?
+  ftm          Int
+  fta          Int?
+  ftPct        Float?
+  orb          Int
+  drb          Int
+  reb          Int
+  ast          Int
+  stl          Int
+  tov          Int
+  blk          Int
+  pf           Int
+  pfDrawn      Int
+  eval         Int
+  plusMinus    Int
+  source       String
+  updatedAt    DateTime @updatedAt
+
+  @@id([seasonId, playerSlug, competition, teamKey])
+  @@index([seasonId, teamKalkId])
+}
+
+/// Profil zawodnika (globalny, slug KALK) — bez pełnej daty urodzenia
+model KalkPlayerProfile {
+  slug        String   @id
+  fullName    String
+  firstName   String?
+  lastName    String?
+  position    String?
+  heightCm    Int?
+  birthYear   Int?
+  lastNumber  Int?
+  otherCompetitions Json?
+  career      Json?
+  profileHash String?
+  scrapedAt   DateTime?
+  updatedAt   DateTime @updatedAt
+}
+
+/// Profil drużyny (globalny, ID KALK) — bilans wszech czasów
+model KalkTeamProfile {
+  id                   String   @id
+  slug                 String
+  name                 String
+  sinceDate            DateTime?
+  captainSlug          String?
+  allTimeGames         Int?
+  allTimeWins          Int?
+  allTimeLosses        Int?
+  allTimePointsFor     Int?
+  allTimePointsAgainst Int?
+  quartersWon          Int?
+  quartersLost         Int?
+  overtimes            Int?
+  overtimeWins         Int?
+  overtimeLosses       Int?
+  history              Json?
+  scrapedAt            DateTime?
+  updatedAt            DateTime @updatedAt
+}
+
+/// Stare ID meczów (stara strona KALK) → nowe ID (v2), dla linków i AI
+model KalkMatchIdAlias {
+  legacyId    String @id
+  seasonId    String
+  kalkMatchId String
+  createdAt   DateTime @default(now())
+
+  @@index([seasonId, kalkMatchId])
 }
 
 model KalkScrapeRun {
@@ -295,6 +539,12 @@ model KalkSyncRun {
   errorMessage     String?
   startedAt        DateTime @default(now())
   finishedAt       DateTime?
+  httpCount        Int?
+  requestBudget    Int?
+  parserVersion    String?
+  manifest         Json?
+  failures         Json?
+  counts           Json?
 }
 
 model KalkSectionSnapshot {
@@ -420,6 +670,15 @@ model LeagueMatch {
   phaseLabel  String?
   protocolUrl String?
   details     Json?
+  // KALK v2
+  stageId           Int?
+  roundId           Int?
+  roundLabel        String?
+  homeTeamKalkId    String?
+  guestTeamKalkId   String?
+  homeRecordBefore  String?
+  guestRecordBefore String?
+  venue             String?
   
   updatedAt   DateTime @updatedAt
 

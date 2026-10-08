@@ -2,7 +2,39 @@
  * Engine for automated basketball insights.
  */
 
-export function generateGameInsights(game, bekapakaStats, opponentStats) {
+/**
+ * Liczba z danych lub null (nigdy 0 udające wartość, gdy pola brak).
+ * @param {unknown} value
+ * @returns {number | null}
+ */
+function dataNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * Punkty ławki z box score — tylko gdy box ma oznaczenie pierwszej piątki (starter === true).
+ * @param {object | undefined} team
+ * @returns {number | null}
+ */
+function benchPointsFromBox(team) {
+    const players = Array.isArray(team?.players) ? team.players : [];
+    const starters = players.filter((p) => p?.starter === true);
+    if (players.length === 0 || starters.length !== 5) return null;
+    return players
+        .filter((p) => p?.starter !== true)
+        .reduce((sum, p) => sum + (Number(p?.pts) || 0), 0);
+}
+
+/**
+ * Reguły wniosków meczowych (bez LLM).
+ * Punkty po szybkim ataku / ławki / drugiej szansy / po stratach — WYŁĄCZNIE z typowanych danych
+ * (`extras.pointsSources`, `extras.benchPts` z KalkTeamGameStat). Gdy pola brak, reguła jest pomijana.
+ * @param {object} game
+ * @param {object} bekapakaStats — four factors BeKaPaKa (efg, tovPct jako ułamki)
+ * @param {object} opponentStats
+ * @param {{ pointsSources?: { fastBreakPts?: number | null, secondChancePts?: number | null, ptsOffTurnovers?: number | null } | null, benchPts?: number | null }} [extras]
+ */
+export function generateGameInsights(game, bekapakaStats, opponentStats, extras = {}) {
     const insights = [];
 
     if (!bekapakaStats || !opponentStats) return insights;
@@ -26,9 +58,11 @@ export function generateGameInsights(game, bekapakaStats, opponentStats) {
         });
     }
 
-    // 2. Fast Break / Transition
-    const fbPoints = game.teamStats?.['Punkty po szybkim ataku']?.home || 0;
-    if (fbPoints > 15) {
+    const sources = extras?.pointsSources || null;
+
+    // 2. Fast Break / Transition — tylko gdy KALK podał punkty z kontry
+    const fbPoints = dataNumber(sources?.fastBreakPts);
+    if (fbPoints !== null && fbPoints > 15) {
         insights.push({
             type: 'success',
             category: 'transition',
@@ -37,13 +71,34 @@ export function generateGameInsights(game, bekapakaStats, opponentStats) {
         });
     }
 
-    // 3. Bench Contribution
-    const benchPoints = game.teamStats?.['Punkty zmienników']?.home || 0;
-    if (benchPoints > 20) {
+    // 3. Bench Contribution — KalkTeamGameStat.benchPts lub box score z oznaczoną piątką
+    const benchPoints = dataNumber(extras?.benchPts) ?? benchPointsFromBox(extras?.team);
+    if (benchPoints !== null && benchPoints > 20) {
         insights.push({
             type: 'success',
             category: 'depth',
             text: `Silne wsparcie z ławki (${benchPoints} pkt) było istotnym atutem zespołu.`,
+            impact: 'medium'
+        });
+    }
+
+    // 3b. Druga szansa / punkty po stratach rywala
+    const secondChance = dataNumber(sources?.secondChancePts);
+    if (secondChance !== null && secondChance >= 12) {
+        insights.push({
+            type: 'success',
+            category: 'rebounding',
+            text: `Zbiórka ofensywna przełożyła się na ${secondChance} pkt drugiej szansy.`,
+            impact: 'medium'
+        });
+    }
+
+    const offTurnovers = dataNumber(sources?.ptsOffTurnovers);
+    if (offTurnovers !== null && offTurnovers >= 15) {
+        insights.push({
+            type: 'success',
+            category: 'defense',
+            text: `Presja w obronie dała ${offTurnovers} pkt po stratach rywala.`,
             impact: 'medium'
         });
     }

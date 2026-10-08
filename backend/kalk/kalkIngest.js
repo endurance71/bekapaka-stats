@@ -65,6 +65,10 @@ function prepareBoxScoreForPersist(boxScore) {
  * @param {string} seasonId
  */
 async function findLeagueMatchForKalkRecord(record, seasonId) {
+  if (record.id) {
+    const byId = await prisma.leagueMatch.findFirst({ where: { seasonId, kalkMatchId: String(record.id) } });
+    if (byId) return byId;
+  }
   const date = record.date instanceof Date ? record.date : new Date(record.date);
   const start = new Date(date);
   start.setHours(0, 0, 0, 0);
@@ -390,14 +394,21 @@ export async function ingestLeagueScheduleKalk(scheduleData) {
     const endOfDay = new Date(matchDate);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const existingMatch = await prisma.leagueMatch.findFirst({
-      where: {
-        seasonId: activeSeason.id,
-        homeTeam: match.homeTeam,
-        guestTeam: match.guestTeam,
-        date: { gte: startOfDay, lte: endOfDay }
-      }
-    });
+    // Klucz: kalkMatchId (przełożony mecz = ten sam wiersz), fallback: dzień + drużyny.
+    const kalkMatchId = match.meczId ? String(match.meczId) : null;
+    const existingMatch =
+      (kalkMatchId &&
+        (await prisma.leagueMatch.findFirst({
+          where: { seasonId: activeSeason.id, kalkMatchId }
+        }))) ||
+      (await prisma.leagueMatch.findFirst({
+        where: {
+          seasonId: activeSeason.id,
+          homeTeam: match.homeTeam,
+          guestTeam: match.guestTeam,
+          date: { gte: startOfDay, lte: endOfDay }
+        }
+      }));
 
     const data = {
       seasonId: activeSeason.id,
@@ -407,8 +418,9 @@ export async function ingestLeagueScheduleKalk(scheduleData) {
       scoreHome: match.scoreHome,
       scoreAway: match.scoreAway,
       isFinished: !!match.isFinished,
-      kalkMatchId: match.meczId ? String(match.meczId) : null,
-      roundUrl: match.roundUrl || null
+      kalkMatchId,
+      roundUrl: match.roundUrl || null,
+      ...(match.roundCode ? { roundLabel: match.roundCode } : {})
     };
 
     if (existingMatch) {

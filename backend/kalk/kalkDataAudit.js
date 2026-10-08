@@ -3,6 +3,8 @@ import { buildKalkPlayerDbId, parseKalkExternalId } from '../lib/kalkSeason.js';
 import { ensureDefaultSeason, getActiveSeason } from '../seasonService.js';
 import { isBekapakaTeamName } from './parseMatchBoxScore.js';
 import { matchPairDayKey, normalizeTeamNameForMatch } from '../lib/kalkTeamNames.js';
+import { kalkMatchUrl } from './v2/util.js';
+import { auditSeasonIntegrity } from './v2/audit.js';
 
 
 const BEKAPAKA_LEAGUE_MATCH_OR = [
@@ -40,7 +42,8 @@ function opponentLabel(lm) {
 
 /**
  * Kompleksowy audyt spójności danych KALK dla aktywnego sezonu.
- * @param {{ seasonId?: string }} [opts]
+ * KPI (panel Admin) zawsze; pełne kontrole E1–E13/S1–S7 gdy `integrity: true` (CLI, raport ADMIN).
+ * @param {{ seasonId?: string, integrity?: boolean, now?: Date }} [opts]
  */
 export async function runKalkDataAudit(opts = {}) {
   await ensureDefaultSeason();
@@ -115,9 +118,7 @@ export async function runKalkDataAudit(opts = {}) {
         score: `${lm.scoreHome ?? '–'}:${lm.scoreAway ?? '–'}`,
         homeTeam: lm.homeTeam,
         guestTeam: lm.guestTeam,
-        scrapeUrl: lm.kalkMatchId
-          ? `https://www.kalk-koszalin.com/mecz,x,${lm.kalkMatchId},0.html`
-          : null
+        scrapeUrl: lm.kalkMatchId ? kalkMatchUrl(lm.kalkMatchId) : null
       });
     }
 
@@ -182,10 +183,21 @@ export async function runKalkDataAudit(opts = {}) {
     return hasLegacy && (logsByPlayer.get(p.id) || 0) === 0 && (logsByPlayer.get(legacyId) || 0) > 0;
   });
 
+  let integrity = null;
+  if (opts.integrity) {
+    const currentActive = await getActiveSeason();
+    integrity = await auditSeasonIntegrity(
+      prisma,
+      { ...activeSeason, isActive: activeSeason.id === currentActive?.id },
+      { now: opts.now }
+    );
+  }
+
   return {
     generatedAt: new Date().toISOString(),
     seasonId,
     seasonSlug,
+    integrity,
     matches: {
       bekapakaScheduleFinished: leagueFinished.length,
       bekapakaWithKalkRow: kalkBekapaka.length,
@@ -260,6 +272,21 @@ export function formatKalkAuditMarkdown(report) {
   lines.push('');
   lines.push('### API');
   lines.push(`- Pozostałe wiersze Game (legacy): **${report.apiReadiness.legacyGameRows}**`);
+
+  const integ = report.integrity;
+  if (integ) {
+    lines.push('');
+    lines.push('### Integralność (E1–E13, S1–S7)');
+    lines.push(`- Błędy: **${integ.counts.errors}**, ostrzeżenia: **${integ.counts.warnings}**`);
+    const codes = Object.entries(integ.counts.byCode).map(([k, v]) => `${k}×${v}`).join(', ');
+    if (codes) lines.push(`- Wg kodu: ${codes}`);
+    for (const i of [...integ.errors, ...integ.warnings].slice(0, 40)) {
+      lines.push(`- [${i.severity === 'error' ? 'BŁĄD' : 'uwaga'}] ${i.code}${i.kalkMatchId ? ` mecz ${i.kalkMatchId}` : ''}: ${i.message}`);
+    }
+    for (const m of (integ.missingMatches || []).slice(0, 40)) {
+      lines.push(`  - brak box score: ${m.date} ${m.homeTeam} – ${m.guestTeam} ${m.url || '(brak id)'}`);
+    }
+  }
 
   return lines.join('\n');
 }

@@ -34,7 +34,7 @@ Przed SSH, Dockerem na produkcji lub zmianą Caddy przeczytaj: `docs/vps-runbook
 
 - Tylko kontenery `bkpk-*` i sieć `bkpk-network`.
 - Deploy: `docker compose -f docker-compose.prod.yml up -d --build` w `/opt/bekapaka-stats`.
-- Scraping wyłącznie przez Scrapling: `backend/scripts/kalk_scraper.py` — szczegóły: `docs/scraping.md`.
+- Scraping wyłącznie przez Scrapling: `backend/scripts/kalk_sync.py` — szczegóły: `docs/scraping.md`.
 
 ## DNS
 

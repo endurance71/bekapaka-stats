@@ -1,315 +1,81 @@
-# Scraping danych ligowych (KALK Dywizja II)
+# Scraping KALK (v2) — Dywizja II
 
-Dokumentacja pipeline pobierania danych z [kalk-koszalin.com](https://www.kalk-koszalin.com/) przy użyciu biblioteki **[Scrapling](https://github.com/D4Vinci/Scrapling)**.
+Źródło: [kalk-koszalin.com](https://www.kalk-koszalin.com) (platforma SportSync, od 2026-09-29). Pobieramy **wyłącznie Dywizję II**, sezony BeKaPaKa od **2023/2024**. Narzędzie: **Scrapling** + BeautifulSoup (`backend/scripts/requirements.txt`) — nie dodawaj innych klientów HTTP (axios/cheerio/requests).
 
-## Przegląd
+Kontrakt danych skraper → import: [`docs/kalk-v2-contract.md`](kalk-v2-contract.md).
 
-| Warstwa | Plik / komponent | Rola |
-|---------|------------------|------|
-| Pobieranie | `backend/scripts/kalk_scraper.py`, `kalk_new_site.py` | Scrapling + BeautifulSoup → `kalk_stats.json` |
-| Orkiestracja | `backend/server.js` → `runScrapeImportPipeline` | Uruchamia Python, importuje JSON do DB |
-| Import | `backend/dataStore.js`, `backend/kalk/kalkIngest.js` | Liga + `ingestKalkTeams`, `ingestKalkMatches`, `ingestKalkPlayerGameLogs`, `syncPlayersFromKalk` |
-| Parser meczu | `backend/kalk/parseMatchBoxScore.js` | HTML `/mecz,...,0.html` → box score JSON |
-| UI | `frontend/src/pages/Administration.tsx` | Przycisk „Uruchom pełny import danych” |
-| Zależności | `backend/scripts/requirements.txt` | `scrapling[fetchers]`, `beautifulsoup4` |
+## Warstwy
 
-**Wyłącznie Scrapling (D4Vinci).** Katalog `backend/scrapers/` i scraper Node.js (`kalkScraper.js`, `kalkDiv2.js`) zostały usunięte — nie dodawaj ponownie `cheerio`/`axios` pod scraping KALK.
+| Warstwa | Pliki |
+|---|---|
+| Skraper (Python) | `backend/scripts/kalk_sync.py` (CLI) + pakiet `backend/scripts/kalk/` (`http`, `seasons`, `league`, `schedule`, `match_info`, `boxscore`, `pbp`, `resolve`, `players`, `teams`, `validate`, `pipeline`) |
+| Import (Node) | `backend/kalk/v2/ingestSeason.js` (+ `mapBox`, `mapPlayer`, `validateBundle`, `resolveMatch`, `lock`) |
+| Orkiestracja | `backend/kalk/v2/runSync.js` — stan z bazy → `kalk_sync.py` → walidacja → import pod blokadą advisory → `KalkSyncRun` |
+| Audyt | `backend/kalk/v2/audit.js`, `backend/scripts/kalk-data-audit.js` |
+| Odczyt dla panelu | `backend/kalk/v2/readModels.js` (`/api/games/:id/info`, `/play-by-play`, `/api/players/:id/career`) |
 
-## Źródło prawdy (KALK-only)
+## Co pobieramy
 
-Import protokołów (`POST /api/import`, `backend/parser.js`, strona `/protocols`) jest **wyłączony** (HTTP 410). Jedyny pipeline danych meczowych i scoutingu to scraping KALK + import v2.
+| Strona KALK | Dane |
+|---|---|
+| `/liga/dywizja-ii/tabela?sezon=N` | tabela (forma, seria) |
+| `/liga/dywizja-ii/terminarz?sezon=N` | wszystkie fazy (sezon zasadniczy, play-off, play-out, o miejsca), kolejki, data (epoch), hala, bilans przed meczem |
+| `/liga/dywizja-ii/zawodnicy`, `/zespoly` | katalog zawodników i drużyn |
+| `/mecz/{id}` | kwarty (+OT), przebieg co 5 min, liderzy, MVP, sędziowie/komisarz, źródła punktów (tylko mecze z PBP) |
+| `/mecz/{id}/statystyki` | box score: min, 2/3/FG/FT, ZB A/O/S, AS, PRZ, STR, F, Fw, BL, BL otrzymane, EVAL, +/-, piątka, wiersz SUMA |
+| `/mecz/{id}/akcja-po-akcji` | pełna chronologia (od 2026/27; starsze mecze nie mają PBP) |
+| `/zawodnik/{slug}/statystyki`, `/profil` | statystyki wszystkich sezonów, pozycja, numer, wzrost (z daty urodzenia tylko rok) |
+| `/druzyna/{id}/{slug}` | bilans wszech czasów, kwarty W–P, dogrywki, kapitan |
 
-| API | Opis |
-|-----|------|
-| `POST /api/scrape/kalk/div2/run` | Pełny scrape + import (do ~15 min) |
-| `POST /api/scrape/kalk/gaps` | Targeted scrape brakujących meczów (URL-e z body lub z audytu) |
-| `GET /api/kalk/ingest-summary` | KPI + lista meczów BeKaPaKa bez box score (Admin) |
-| `GET /api/kalk/audit` | Pełny raport audytu JSON (Admin) |
+Numery sezonów (`?sezon=`): 47 = 2023/24, 48 = 2024/25, 49 = 2025/26, 50 = 2026/27. Mapa rzutów nie jest pobierana.
 
-## Źródło danych
+## Uruchamianie
 
-Od 2026-09-29 KALK korzysta z nowej witryny. Aktywny sezon **2026/2027** (numer KALK `50`) pobieramy z `/liga/dywizja-ii/{tabela,terminarz,zawodnicy,zespoly}?sezon=50`, stron `/mecz/<id>/statystyki` i `/zawodnik/<slug>/statystyki?sezon=50`. Parser `kalk_new_site.py` jest odrębny od parsera historycznej witryny i odmawia importu, gdy struktura jest niepełna. Docelowa ścieżka zapisana w `KalkSeason.divisionPath` dla tego sezonu jest ignorowana przez adapter nowej witryny; sezon musi być jawnie obsługiwany w `SUPPORTED_SEASONS`.
+| Kiedy | Jak |
+|---|---|
+| Panel → Administracja → „Uruchom pełny import danych” | `POST /api/scrape/kalk/div2/run` — sync **przyrostowy** aktywnego sezonu |
+| Timer systemd na VPS (pon 07:30, wt 18:00) | `POST /api/internal/kalk/sync` (`X-Cron-Secret`) — przyrostowo; `?mode=resync` = pełny sezon |
+| Brakujące mecze | `POST /api/scrape/kalk/gaps` (`matchIds[]` lub automatycznie z audytu) → `kalk_sync.py --matches` |
+| Backfill / ręcznie | `docker exec -w /app bkpk-backend-prod node scripts/kalk-sync-v2.js --season history` |
+| Import gotowego pliku | `node scripts/kalk-import-v2.js <plik.json> [--dry-run]` |
+| Zamiana sezonu ze starej strony | `node scripts/kalk-replace-season.js --season 2025-2026 --bundle <plik> --dry-run` (potem bez `--dry-run`) |
 
-Nowe identyfikatory meczów i zawodników **nie są zgodne** z dawnymi. Historyczny sezon 2025/2026 pozostaje w bazie bez ponownego scrapowania; nie wolno mieszać plików pośrednich z różnych sezonów. `scrapeManifest.seasonSlug` jest sprawdzany przez backend przed importem. Targeted scrape nowego meczu wymaga wcześniejszego pełnego terminarza w aktualnym `kalk_stats.json`.
+Tryb przyrostowy: sonda tabeli i terminarza (hash) → pobiera tylko nowe/zmienione mecze, mecze z ostatnich 14 dni (KALK poprawia statystyki) i nowych zawodników. Typowo 4–40 zapytań. Pełny sezon: ~600–700 zapytań (1 zapytanie/s).
 
-Poniższe adresy i opis warstw dotyczą archiwalnej witryny KALK oraz historycznego sezonu 2025/2026:
+Katalog roboczy: `KALK_DATA_DIR` (produkcja: wolumen `./data/kalk` → `/data/kalk`): `runs/` (pliki JSON przebiegów), `cache/` (HTML, gzip), `state/`.
 
-- **Dywizja:** [dywizja-2](https://www.kalk-koszalin.com/dzial,dywizja-2,4.html)
-- **Sekcje:** Tabela, Terminarz (kolejki), Statystyki indywidualne
-- **Dodatkowo:** Terminarz zespołu BeKaPaKa (`klub,bekapaka-bobolice,222,2.html`) — scalany z terminarzem ogólnym; link do meczu (`meczId`, `meczUrl`) jest w kolumnie **WYNIK** (nie w nazwach drużyn)
+### CLI skrapera
 
-## Przepływ danych
-
-```text
-kalk-koszalin.com
-        │
-        ▼
-kalk_scraper.py  (wyłącznie Scrapling Fetcher.get; błąd pobrania przerywa import)
-        │
-        ▼
-kalk_stats.json   (w katalogu backend: backend/kalk_stats.json)
-        │
-        ▼
-runScrapeImportPipeline()
-  ├── ingestLeagueTable(table + playout)
-  ├── ingestLeagueSchedule(schedule)      # delta upsert, kalkMatchId z terminarza
-  ├── ingestKalkPlayers(players)          # wszystkie kategorie ligowe
-  ├── ingestKalkTeams(teams)
-  ├── ingestKalkMatches(matches)          # box score → KalkMatch + LeagueMatch.details
-  ├── ingestKalkPlayerGameLogs(logs)      # tab 3 kadry BeKaPaKa
-  ├── KalkSyncRun (manifest)
-  └── syncPlayersFromKalk()               # PPG/RPG z KalkPlayer
+```bash
+cd backend/scripts
+python3 kalk_sync.py --season current|all|2025-2026|49 [--sections league,schedule,matches,pbp,players,profiles,teams]
+  [--matches 4116,4120] [--mode full|incremental] [--state state.json] [--output plik.json|katalog]
+  [--budget N] [--rate 1.0] [--cache-dir DIR] [--cache-mode read|refresh|off] [--plan] [--save-fixtures DIR]
 ```
 
-### Warstwy scrape (v2)
+Kody wyjścia: 0 = zapisano (możliwe pominięcia w `manifest.failures` / `truncated`), 2 = nie pobrano stron ligi (brak pliku, baza bez zmian), 1 = złe argumenty.
 
-| Warstwa | HTTP (szac.) | Dane |
-|---------|--------------|------|
-| A — liga | ~35–45 | tabela, play-out, terminarz+kolejki, wszystkie `<select>` statystyk, drużyny, przewinienia |
-| B — mecze | ~60–90 | każdy zakończony `/mecz,...,0.html` → `matches[]` |
-| C — kadra | ~12–18 | `zawodnik,...,3.html` → `playerGameLogs[]` |
+## Walidacja i błędy
 
-### Bootstrap przy starcie backendu
-
-Jeśli tabele `LeagueTeam`, `LeagueMatch` i `KalkPlayer` są puste, po ~5 s od startu serwera uruchamia się automatycznie `runScrapeImportPipeline('startup-bootstrap')`.
-
-## Format `kalk_stats.json`
-
-Plik generowany przez skrypt Python (przykład struktury):
-
-```json
-{
-  "version": 2,
-  "timestamp": "2026-06-03T12:00:00Z",
-  "scrapeManifest": {
-    "parserVersion": "1.0.0",
-    "httpCount": 120,
-    "sections": ["tabela", "terminarz", "matches", "teams", "playerGameLogs"]
-  },
-  "table": [
-    {
-      "position": 1,
-      "name": "MŁODE WILKI",
-      "matches": 10,
-      "wins": 9,
-      "losses": 1,
-      "pointsFor": 739,
-      "pointsAgainst": 479,
-      "points": 19
-    }
-  ],
-  "schedule": [
-    {
-      "date": "21-09-2025 14:40",
-      "homeTeam": "EMET",
-      "guestTeam": "BrdCrew",
-      "scoreHome": 49,
-      "scoreAway": 34,
-      "isFinished": true,
-      "meczId": "4601",
-      "meczUrl": "https://www.kalk-koszalin.com/mecz,...",
-      "roundUrl": "https://www.kalk-koszalin.com/..."
-    }
-  ],
-  "teams": [{ "id": "222", "slug": "bekapaka-bobolice", "name": "BeKaPaKa Bobolice" }],
-  "matches": [{ "id": "4601", "boxScore": { "teams": [] }, "isFinished": true }],
-  "playerGameLogs": [{ "kalk_match_id": "4601", "id_zawodnika": "43340", "pts": 12 }],
-  "players": [
-    {
-      "id_zawodnika": "zawodnikigor-gierlowski43340",
-      "imie_nazwisko": "Gierłowski Igor",
-      "druzyna": "PIWIARNIA BUMERANG",
-      "mecze_rozegrane": 8,
-      "punkty_suma": 272,
-      "srednia_punktow": 34.0,
-      "profile_url": "https://www.kalk-koszalin.com/zawodnik,...",
-      "photo_url": "https://www.kalk-koszalin.com/public/image/zaw/big/..."
-    }
-  ]
-}
-```
-
-### Mapowanie do bazy (Prisma)
-
-| Pole JSON (`players`) | Model `KalkPlayer` |
-|-----------------------|---------------------|
-| `id_zawodnika` | `id` |
-| `imie_nazwisko` | `name` |
-| `druzyna` | `team` |
-| `punkty_suma` | `pointsTotal` |
-| `srednia_punktow` | `pointsAverage` |
-| `mecze_rozegrane` | `matchesPlayed` |
-| `profile_url` | `profileUrl` |
-| cały obiekt | `raw` (JSON) |
-
-| Pole JSON (`table`) | Model `LeagueTeam` |
-|---------------------|-------------------|
-| `name`, `matches`, `wins`, `losses`, `pointsFor`, `pointsAgainst`, `points` | pola 1:1 |
-
-| Pole JSON (`schedule`) | Model `LeagueMatch` |
-|------------------------|---------------------|
-| `date`, `homeTeam`, `guestTeam`, `scoreHome`, `scoreAway`, `isFinished` | pola 1:1 (`date` parsowane w `ingestLeagueSchedule`) |
-
-## API (admin)
-
-Wymagane: token JWT użytkownika z rolą `ADMIN`.
-
-Szczegóły odpowiedzi: [api.md](./api.md#kalk-div2--scraping).
-
-| Metoda | Endpoint | Opis |
-|--------|----------|------|
-| `GET` | `/api/scrape/kalk/div2/status` | Stan bieżący (`running`, `step`, `message`, `lastLog`, `lastFinishedAt`) |
-| `POST` | `/api/scrape/kalk/div2/run` | Pełny scrape + import (timeout do 15 min) |
-| `POST` | `/api/scrape/kalk/gaps` | Pobranie wybranych meczów (`urls[]` lub URL-e z audytu) + `ingestKalkMatches` |
-| `GET` | `/api/kalk/ingest-summary` | KPI importu + `bekapakaMissingBoxScore[]` |
-| `GET` | `/api/kalk/audit` | Pełny audyt spójności danych |
-
-Przykład odpowiedzi po sukcesie:
-
-```json
-{
-  "success": true,
-  "source": "scrapling",
-  "version": 2,
-  "kalkMatches": 72,
-  "kalkMatchesLinked": 68,
-  "playerGameLogs": 15,
-  "playerGameLogsSkipped": 2,
-  "players": 140
-}
-```
+- Mecz łamiący inwariant (Σ punktów ≠ wynik, SUMA ≠ Σ wierszy, FGM/PTS/REB, Σ kwart, PBP) **nie trafia do bazy** — jest w `manifest.failures`, a przebieg ma status `partial`.
+- Niespójności źródła, które nie blokują meczu, idą do `manifest.warnings`: „dogrywka bez remisu” (np. mecz 3205), walkower bez box score (np. 3438, 20:0).
+- Wyjście atomowe (`.tmp` + rename); jeden sync naraz (Postgres advisory lock); każdy przebieg ma wpis `KalkSyncRun` (running / success / partial / error, licznik zapytań, manifest).
 
 ## Audyt danych KALK
 
-Skrypt read-only (lokalnie lub w kontenerze):
+```bash
+node backend/scripts/kalk-data-audit.js --season <slug|all> [--strict] [--fail-on error|warn] [--json]
+# produkcja
+docker exec -w /app bkpk-backend-prod node scripts/kalk-data-audit.js --season all --strict
+```
+
+Kontrole meczu E1–E13 (box score vs terminarz, sumy, kwarty, przebieg, PBP vs box score, piątka, minuty, bloki, sekcje) i sezonu S1–S7 (brakujące mecze z linkami `/mecz/{id}`, tabela przeliczona z wyników, statystyki sezonowe vs logi, duplikaty, unikalność ID, aktualność syncu). Kod wyjścia 1 przy problemach w trybie `--strict`.
+
+## Testy
 
 ```bash
-node backend/scripts/kalk-data-audit.js
-docker exec bkpk-backend-prod node scripts/kalk-data-audit.js
+cd backend/scripts && python3 -m unittest discover -p 'test_kalk_*.py' -v   # parsery na realnych stronach (tests/fixtures/kalk_v2)
+cd backend && npm test -- --run                                             # import, audyt, odczyt
 ```
 
-Sekcje raportu: mecze BeKaPaKa vs terminarz, braki box score, duplikaty `KalkPlayer`, legacy ID, gotowość API.
-
-### Checklist po sync
-
-| KPI | Oczekiwane |
-|-----|------------|
-| `bekapakaScheduleFinished` | Liczba rozegranych meczów BeKaPaKa w terminarzu |
-| `bekapakaWithBoxScore` | Powinno być równe liczbie rozegranych (np. 15) |
-| `playerGameLogsSkipped` | &lt; 5% wierszy z JSON (brak `KalkMatch` / `KalkPlayer` po migracji ID) |
-| `duplicatePlayersCount` | 0 po `migrate-kalk-player-ids.js` |
-
-Migracja legacy ID zawodników (jednorazowo):
-
-```bash
-node backend/scripts/migrate-kalk-player-ids.js --dry-run
-node backend/scripts/migrate-kalk-player-ids.js
-```
-
-Targeted scrape luk:
-
-```bash
-KALK_GAP_URLS='https://www.kalk-koszalin.com/mecz,...,0.html' python3 backend/scripts/kalk_scrape_gaps.py
-# lub POST /api/scrape/kalk/gaps (Admin) bez body — URL-e z audytu
-```
-
-### Ograniczenia
-
-- **Dynamika meczu:** kwarty z HTML (`quartersRaw` → `quarters`) — parser **Python** (`kalk_parsers.parse_match_page`) i **Node** (`parseMatchHtml`); ingest zapisuje je w `KalkMatch.boxScore`. Panel: wykres z kwart (krok 10 min, skumulowane punkty); `fiveMinute` tylko jeśli kiedyś pojawi się w źródle. Po zmianie parsera wymagany ponowny scrape + import.
-- **Scraper ligi:** domyślnie pobiera wszystkie zakończone mecze dywizji (scouting rywali); opcjonalnie `SCRAPE_SCOPE=bekapaka` w przyszłości.
-
-Kody błędów:
-
-- `409` — scraper już działa
-- `500` — błąd Pythona, brak `kalk_stats.json`, błąd importu (szczegóły w `lastLog` ze statusu)
-
-Jeżeli choć jedno pobranie strony KALK nie powiedzie się, skrypt kończy się błędem przed zapisem JSON. Backend nie importuje wtedy starego pliku ani pliku z innego sezonu. Targeted scrape luk zachowuje się tak samo: przy błędzie któregokolwiek URL-a nie zapisuje częściowego wyniku. Testy regresyjne: `cd backend/scripts && python3 -m unittest discover -p 'test_kalk_*.py' -v` (po instalacji `requirements.txt`).
-
-Skrypt odrzuca również stronę przerwy technicznej (brak sekcji tabeli i terminarza) oraz pustą tabelę/terminarz. Jeśli serwis KALK jest niedostępny, zachowaj ostatnie poprawne dane i ponów sync po przywróceniu źródła; nie obchodź tego warunku ręcznym importem pustego JSON.
-
-## Uruchomienie lokalne (dev)
-
-```bash
-cd backend
-pip3 install -r scripts/requirements.txt
-python3 scripts/kalk_scraper.py
-# wynik: ../kalk_stats.json
-```
-
-W kontenerze Docker (produkcja):
-
-```bash
-docker compose -f docker-compose.prod.yml exec bkpk-backend \
-  python3 /app/scripts/kalk_scraper.py
-```
-
-## Produkcja (VPS)
-
-- Backend musi mieć **Python 3** i zależności z `requirements.txt` (obraz `backend/Dockerfile` instaluje je przy buildzie).
-- Pełny deploy i ograniczenia względem MOYA: [vps-runbook.md](./vps-runbook.md).
-
-## Zdjęcia zawodników
-
-- Skrypt zapisuje `photo_url` z profilu KALK (często placeholder `empty.jpg`).
-- Frontend (**Skład**, **Profil**) preferuje lokalne pliki `frontend/public/photos/{imie}-{nazwisko}.png`.
-- URL z KALK jest używany tylko gdy nie zawiera `empty.jpg`.
-- Po deployzie frontendu pliki w kontenerze muszą być czytelne dla Nginx (`chmod` w `frontend/Dockerfile.prod`).
-
-## Walidacja danych (checklist)
-
-Po `POST /api/scrape/kalk/div2/run` lub bootstrapie:
-
-### Plik `kalk_stats.json`
-
-```bash
-# w kontenerze backendu
-python3 -c "import json; d=json.load(open('/kalk_stats.json')); print(len(d.get('table',[])), len(d.get('schedule',[])), len(d.get('players',[])))"
-```
-
-Oczekiwane rzędy wielkości (sezon 2025/26): ~12 drużyn, ~80+ meczów, ~140 zawodników.
-
-### Baza PostgreSQL
-
-```sql
-SELECT
-  (SELECT COUNT(*) FROM "LeagueTeam") AS teams,
-  (SELECT COUNT(*) FROM "LeagueMatch") AS matches,
-  (SELECT COUNT(*) FROM "KalkPlayer") AS players;
-```
-
-### Reguły integralności
-
-| Sprawdzenie | Oczekiwany wynik |
-|-------------|------------------|
-| `LeagueTeam`: null w polach liczbowych | 0 |
-| `matches = wins + losses` | 0 wyjątków |
-| `LeagueMatch`: puste nazwy drużyn | 0 |
-| `isFinished=true` bez wyniku | 0 |
-| `KalkPlayer`: ujemne statystyki | 0 |
-| Duplikaty `(name, team)` | 0 grup |
-
-### API smoke
-
-```bash
-curl -s http://127.0.0.1:4001/health
-curl -s http://127.0.0.1:4001/api/league/table | jq length
-curl -s http://127.0.0.1:4001/api/league/schedule | jq length
-curl -s 'http://127.0.0.1:4001/api/league/scorers?limit=20' | jq length
-```
-
-## Rozwiązywanie problemów
-
-| Objaw | Przyczyna | Działanie |
-|-------|-----------|-----------|
-| Scraper kończy się błędem timeout | Dużo kolejek / wolna strona KALK | Ponów; sprawdź logi w `/api/scrape/.../status` |
-| `kalk_stats.json` brak | Skrypt nie doszedł do zapisu | Uruchom ręcznie `python3 scripts/kalk_scraper.py`, sprawdź stderr |
-| Pusta tabela w panelu | Brak importu lub stara baza | Uruchom scrape z Administracji |
-| Zdjęcia puste | KALK zwraca `empty.jpg` | Uzupełnij `frontend/public/photos/` |
-| Stary scraper JS | Legacy | Upewnij się, że deploy zawiera tylko pipeline Scrapling |
-
-## Powiązane dokumenty
-
-- [api.md](./api.md) — endpointy REST
-- [data-model.md](./data-model.md) — modele Prisma
-- [vps-runbook.md](./vps-runbook.md) — VPS, MOYA, deploy
-- [architecture.md](./architecture.md) — architektura aplikacji
+Fixtures to prawdziwe strony KALK (tylko `<title>` + `<main>`). Przy zmianie markupu KALK: zapisz nowe strony (`kalk_sync.py --save-fixtures`), popraw parser, podbij `PARSER_VERSION` (`kalk/pipeline.py`) — mecze zostaną przeparsowane przy kolejnym syncu.

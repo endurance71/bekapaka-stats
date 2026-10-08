@@ -12,6 +12,11 @@ Boisko zdefiniowane jest w układzie współrzędnych 0–100 x 0–100:
 - y: 0 (linia końcowa pod koszem, kosz znajduje się w punkcie x: 50, y: 14) do 100 (linia połowy boiska).
 - Linia rzutów za 3 punkty rozciąga się wokół kosza (szczyt za 3 to około y: 65, rogi za 3 to x: 10, y: 18 oraz x: 90, y: 18).
 
+Zasady:
+- Dokładnie 10 graczy (O1–O5 atak, D1–D5 obrona), każdy z min. 2 klatkami; czasy klatek w zakresie 0.0–duration, współrzędne x i y w zakresie 0–100.
+- Używaj wyłącznie zawodników z podanej kadry (imię, nazwisko, numer dokładnie jak w danych). Gdy kadry brak — nazwy ról (np. "Rozgrywający") zamiast wymyślonych nazwisk.
+- Nie podawaj statystyk skuteczności zagrywki — nie ma ich w danych.
+
 Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego tekstu) o następującej strukturze:
 {
   "name": "Nazwa zagrywki (np. Horns Flare vs Strefa 2-3)",
@@ -70,7 +75,7 @@ Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego
         "isOffense": true,
         "keyframes": [
           { "time": 0.0, "x": 18, "y": 65, "heading": 180, "action": "idle" },
-          { "time": 5.5, "x": 22, "y": 75, "heading: 90, "action": "idle" }
+          { "time": 5.5, "x": 22, "y": 75, "heading": 90, "action": "idle" }
         ]
       },
       {
@@ -81,7 +86,7 @@ Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego
         "isOffense": true,
         "keyframes": [
           { "time": 0.0, "x": 82, "y": 65, "heading": 180, "action": "idle" },
-          { "time": 3.6, "x": 90, "y: 22, "heading": 270, "action": "cut" },
+          { "time": 3.6, "x": 90, "y": 22, "heading": 270, "action": "cut" },
           { "time": 4.2, "x": 90, "y": 22, "heading": 270, "action": "catch" },
           { "time": 5.5, "x": 90, "y": 22, "heading": 270, "action": "shoot" }
         ]
