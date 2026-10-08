@@ -87,8 +87,9 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                             <span className="text-bkpk-primary font-display text-sm leading-none shrink-0" title="Pierwsza piątka">*<span className="sr-only"> (pierwsza piątka)</span></span>
                         )}
                     </div>
-                    <span className="text-[11px] font-normal text-bkpk-text-muted tabular-nums truncate lg:hidden">
-                        {player.fg ?? '-'} · {player.threeP ?? '-'} · {player.ft ?? '-'}
+                    {/* Telefon: kolumny rzutów są ukryte — skrót z podpisami */}
+                    <span className="text-xs font-normal text-bkpk-text-muted tabular-nums truncate lg:hidden">
+                        Z gry {player.fg ?? '–'} · Za 3 {player.threeP ?? '–'} · Wolne {player.ft ?? '–'}
                     </span>
                 </div>
             </td>

@@ -15,6 +15,7 @@ import PlayerAvatar from '../../shared/ui/PlayerAvatar';
 import type { PhotoSource } from '../../shared/lib/playerUtils';
 import { Link } from 'react-router-dom';
 import { useRosterLinks } from '../../shared/lib/useRosterLinks';
+import { formatStatFixed, fmtPct } from '../../shared/lib/formatStat';
 
 interface Scorer {
     id: string;
@@ -110,37 +111,37 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
         switch (cat) {
             case 'points':
                 return {
-                    main: player.pointsAverage ? player.pointsAverage.toFixed(1) : '0.0',
+                    main: formatStatFixed(player.pointsAverage),
                     sub: player.pointsTotal ? `${player.pointsTotal} pkt` : '0 pkt',
                     label: 'pkt/m'
                 };
             case 'three':
                 return {
                     main: player.threePointsMade ? `${player.threePointsMade}` : '0',
-                    sub: player.threePointsPct != null ? `${Number(player.threePointsPct).toFixed(1)}% (${player.threePointsMade ?? 0}/${player.threePointsAttempted ?? 0})` : '0%',
+                    sub: player.threePointsPct != null ? `${fmtPct(Number(player.threePointsPct))} (${player.threePointsMade ?? 0}/${player.threePointsAttempted ?? 0})` : '–',
                     label: 'celne'
                 };
             case 'assists':
                 return {
-                    main: player.assistsAverage ? player.assistsAverage.toFixed(1) : '0.0',
-                    sub: player.assistsTotal ? `${player.assistsTotal} ast` : '0 ast',
+                    main: formatStatFixed(player.assistsAverage),
+                    sub: `${player.assistsTotal ?? 0} as`,
                     label: 'as/m'
                 };
             case 'rebounds':
                 return {
-                    main: player.reboundsAverage ? player.reboundsAverage.toFixed(1) : '0.0',
+                    main: formatStatFixed(player.reboundsAverage),
                     sub: player.reboundsTotal ? `${player.reboundsTotal} zb` : '0 zb',
                     label: 'zb/m'
                 };
             case 'steals':
                 return {
-                    main: player.stealsAverage ? player.stealsAverage.toFixed(1) : '0.0',
+                    main: formatStatFixed(player.stealsAverage),
                     sub: player.stealsTotal ? `${player.stealsTotal} prz` : '0 prz',
                     label: 'prz/m'
                 };
             case 'blocks':
                 return {
-                    main: player.blocksAverage ? player.blocksAverage.toFixed(1) : '0.0',
+                    main: formatStatFixed(player.blocksAverage),
                     sub: player.blocksTotal ? `${player.blocksTotal} bl` : '0 bl',
                     label: 'bl/m'
                 };

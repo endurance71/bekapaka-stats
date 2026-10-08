@@ -8,6 +8,7 @@ import { MobileDataCard, MobileDataList } from '../../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../../shared/ui/ScrollableTableShell';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
+import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 
 /** GET /api/league/all-time (backend/kalk/v2/readModels.js → getTeamsAllTime). */
 interface HeadToHead {
@@ -51,8 +52,6 @@ interface AllTimeResponse {
 
 type Scope = 'active' | 'all';
 
-const fmt1 = (v: number | null | undefined) => (v == null ? '–' : v.toFixed(1).replace('.', ','));
-const fmtPct = (v: number | null | undefined) => (v == null ? '–' : `${v.toFixed(1).replace('.', ',')}%`);
 const sinceYear = (iso: string | null) => (iso ? new Date(iso).getFullYear() : null);
 const wl = (w: number | null | undefined, l: number | null | undefined) => (w == null || l == null ? '–' : `${w}–${l}`);
 
@@ -186,12 +185,12 @@ export default function AllTimeTableModern() {
                                 highlight={
                                     <div className="flex flex-col items-center justify-center min-w-[3.75rem] px-2.5 py-1.5 bg-bkpk-bg border border-bkpk-border-strong border-b-2 border-b-bkpk-primary">
                                         <div className="text-xl font-display text-bkpk-text-primary tabular-nums leading-none">{fmtPct(team.winPct)}</div>
-                                        <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">zw.</div>
+                                        <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">wygr.</div>
                                     </div>
                                 }
                                 stats={[
                                     { label: 'M', value: team.games, tone: 'muted' },
-                                    { label: 'Z', value: team.wins, tone: 'success' },
+                                    { label: 'W', value: team.wins, tone: 'success' },
                                     { label: 'P', value: team.losses, tone: 'danger' },
                                     { label: 'Pkt/m', value: fmt1(team.pointsForPerGame), tone: 'muted' },
                                     { label: 'Strac./m', value: fmt1(team.pointsAgainstPerGame), tone: 'muted' },
@@ -217,9 +216,9 @@ export default function AllTimeTableModern() {
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-left sticky left-0 z-10 shadow-[1px_0_0_var(--c-ink-500)]">Drużyna</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="W lidze od">Od</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="Mecze">M</th>
-                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="Zwycięstwa">Z</th>
+                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="Wygrane">W</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center" title="Porażki">P</th>
-                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]" title="Procent zwycięstw">%Z</th>
+                                    <th scope="col" className="h-12 px-3 sm:px-4 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]" title="Procent wygranych">%W</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Punkty zdobyte na mecz">Pkt/m</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Punkty stracone na mecz">Strac./m</th>
                                     <th scope="col" className="h-12 px-3 sm:px-4 text-center whitespace-nowrap" title="Kwarty wygrane–przegrane">Kwarty</th>

@@ -80,3 +80,14 @@ describe('rekordy kariery', () => {
     expect(r.doubleDoubles).toBe(1);
   });
 });
+
+describe('nazwy zawodników rywala', async () => {
+  const { displayPlayerName, playerSurname } = await import('../../kalk/v2/mapPlayer.js');
+  it('nowa strona KALK: bez zamiany; stara: „Nazwisko Imię” → „Imię Nazwisko”', () => {
+    expect(displayPlayerName('Krzysztof Czaplicki', 'v2')).toBe('Krzysztof Czaplicki');
+    expect(displayPlayerName('Karpiński Filip', 'legacy')).toBe('Filip Karpiński');
+    expect(displayPlayerName('Jan Maria Rokita', 'legacy')).toBe('Jan Maria Rokita');
+    expect(playerSurname('Krzysztof Czaplicki', 'v2')).toBe('Czaplicki');
+    expect(playerSurname('Karpiński Filip', 'legacy')).toBe('Karpiński');
+  });
+});

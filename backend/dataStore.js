@@ -33,7 +33,7 @@ import {
 } from './lib/leagueTeamResolve.js';
 import { kalkMatchToGameDetail, kalkMatchToListItem } from './kalk/kalkGameView.js';
 import { resolveKalkMatchById } from './kalk/v2/resolveMatch.js';
-import { splitPlayerName } from './kalk/v2/mapPlayer.js';
+import { splitPlayerName, displayPlayerName, playerSurname } from './kalk/v2/mapPlayer.js';
 import { enrichKalkTeamStats, isBekapakaTeamName } from './kalk/parseMatchBoxScore.js';
 import { buildMatchup } from './lib/matchup.js';
 
@@ -317,6 +317,14 @@ export async function getRoster(querySeasonId = undefined, { includeInactive = f
   const rows = includeInactive || !targetSeason?.id
     ? allRows
     : allRows.filter((r) => !(r.inactiveSeasonIds || []).includes(targetSeason.id));
+  // Pozycja z profilu KALK (jak na profilu zawodnika), potem ze składu — jedno źródło w całym panelu
+  const profileSlugs = rows.map((r) => rosterKalkSlug(r)).filter(Boolean);
+  const positionBySlug = new Map(
+    (profileSlugs.length
+      ? (await prisma.kalkPlayerProfile.findMany({ where: { slug: { in: profileSlugs } }, select: { slug: true, position: true } })) || []
+      : []
+    ).map((pr) => [pr.slug, pr.position])
+  );
 
   return Promise.all(
     rows.map(async (r) => {
@@ -430,7 +438,7 @@ export async function getRoster(querySeasonId = undefined, { includeInactive = f
       firstName: r.firstName,
       lastName: r.lastName,
       number: r.number,
-      position: r.position,
+      position: positionBySlug.get(rosterKalkSlug(r)) || r.position,
       starter: r.starter,
       // Slug KALK (link z box score do profilu): kolumna albo `{sezon}__{slug}` z powiązania
       kalkSlug: rosterKalkSlug({ kalkSlug: r.kalkSlug, kalkPlayerId }),
@@ -2989,6 +2997,8 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
     where: { seasonId, phase: 'regular' },
     orderBy: LEAGUE_TABLE_ORDER_BY
   });
+  // Kolejność imienia i nazwiska zależy od strony KALK, z której pochodzi sezon
+  const sourceSite = (await getSeasonById(seasonId))?.sourceSite ?? null;
 
   const { team: opponent, rank: oppRank } = resolveLeagueTeamFromList(
     leagueTableTeams,
@@ -3069,7 +3079,7 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
     ? 'Brak rozegranych meczów w tym sezonie.'
     : recentWins >= 3 ? 'Są obecnie na fali wznoszącej (seria zwycięstw).' : (recentWins === 0 ? 'Przeżywają obecnie kryzys formy.' : 'Grają w kratkę, przeplatając dobre mecze słabymi.');
 
-  const keyPlayerNames = keyPlayers.slice(0, 2).map(p => p.name.split(' ')[1] || p.name).join(' i ');
+  const keyPlayerNames = keyPlayers.slice(0, 2).map((p) => playerSurname(p.name, sourceSite)).join(' i ');
   const offenseStrength = oppPpg > 60 ? 'Potrafią seryjnie zdobywać punkty' : 'Miewają przestoje w ataku';
   const defenseStrength = oppOppg < 50 ? 'Dysponują szczelną defensywą' : 'Tracą sporo punktów';
   const oppTovPct = advancedStats?.fourFactors?.tov;
@@ -3130,7 +3140,7 @@ export async function getDetailedScouting(opponentName, seasonIdParam = undefine
     let stats3pt = p.threePointStats;
 
     return {
-      name: p.name.split(/\s+/).length === 2 ? `${p.name.split(/\s+/)[1]} ${p.name.split(/\s+/)[0]}` : p.name,
+      name: displayPlayerName(p.name, sourceSite),
       ppg: p.pointsAverage ?? 0,
       totalPoints: p.pointsTotal || 0,
       matches: p.matchesPlayed || 0,

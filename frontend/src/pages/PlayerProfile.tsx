@@ -36,6 +36,7 @@ import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { pluralPl } from '../shared/lib/plural';
 import BkpkTooltip from '../shared/ui/BkpkTooltip';
+import StatLabel from '../shared/ui/StatLabel';
 
 interface StatSnapshot {
     gameId: string;
@@ -280,7 +281,7 @@ export default function PlayerProfile() {
                                             idx >= 2 && "mt-3 lg:mt-0 border-t lg:border-t-0 lg:border-l border-bkpk-border-subtle"
                                         )}
                                     >
-                                        <div className="label-caps text-[11px] text-bkpk-text-muted">{s.label}</div>
+                                        <div className="label-caps text-[11px] text-bkpk-text-muted">{s.label === 'Eval' ? <StatLabel k="eval" /> : s.label}</div>
                                         <div className={cn("text-4xl sm:text-5xl leading-[0.9] font-display font-extrabold tabular-nums mt-2", s.color)}>{s.value}</div>
                                     </div>
                                 ))}

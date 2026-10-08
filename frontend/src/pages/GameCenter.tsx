@@ -33,7 +33,7 @@ export default function GameCenter() {
         <PageHeader
           kicker="Sezon"
           title="Mecze"
-          description="Analiza meczów i box score z oficjalnej strony KALK"
+          description="Wyniki, statystyki zawodników i przebieg meczów z oficjalnej strony KALK"
         />
 
         {/* Content Section */}

@@ -65,7 +65,7 @@ describe('PlayByPlayPanel', () => {
 
     it('filters by quarter and scoring events', () => {
         render(<PlayByPlayPanel data={data} />);
-        fireEvent.click(screen.getByRole('button', { name: 'Q2' }));
+        fireEvent.click(screen.getByRole('button', { name: '2. kw.' }));
         expect(screen.queryByRole('region', { name: 'Kwarta 1' })).not.toBeInTheDocument();
         expect(screen.getByText('2 zdarzenia')).toBeInTheDocument();
         fireEvent.change(screen.getByLabelText('Rodzaj akcji'), { target: { value: 'score' } });

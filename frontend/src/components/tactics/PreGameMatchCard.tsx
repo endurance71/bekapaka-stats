@@ -35,6 +35,9 @@ export interface PreGameSchedule {
 
 const NONE = '—';
 
+/** Wartość `focus` z AI → etykieta po polsku. */
+const FOCUS_LABEL: Record<string, string> = { offense: 'Atak', defense: 'Obrona', transition: 'Kontra', rebounding: 'Zbiórki', mental: 'Nastawienie' };
+
 /** Data, godziny, strój i hala odprawy: najpierw terminarz/dzień meczowy, potem zapis odprawy; nigdy zmyślone wartości. */
 export function pregameLogistics(briefing: PreGameData, schedule?: PreGameSchedule | null) {
   const date = schedule?.date || briefing.matchDate || null;
@@ -115,7 +118,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
   if (!opponent && !briefing) {
     return (
       <KalkEmptyState
-        title="Brak Nadchodzącego Rywala w Terminarzu"
+        title="Brak nadchodzącego rywala w terminarzu"
         message="Odprawa przedmeczowa będzie dostępna, gdy w terminarzu sezonu pojawi się zaplanowany mecz BeKaPaKa."
       />
     );
@@ -127,7 +130,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h3 className="text-[24px] sm:text-[28px] leading-tight text-bkpk-text-primary">
-            Odprawa Meczowa: vs {opponent || briefing?.opponentName}
+            Odprawa meczowa: vs {opponent || briefing?.opponentName}
           </h3>
           {canGenerate && (
             <p className="text-[14px] text-bkpk-text-muted">
@@ -156,7 +159,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
             loading={generating}
           >
             <Sparkles className="w-4 h-4 mr-1.5" />
-            {briefing ? 'Wygeneruj Ponownie AI' : 'Generuj Odprawę AI'}
+            {briefing ? 'Wygeneruj ponownie (AI)' : 'Generuj odprawę (AI)'}
           </BkpkButton>}
         </div>
       </div>
@@ -176,7 +179,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
           {canGenerate && (
             <BkpkButton variant="primary" onClick={() => handleGenerate(false)} loading={generating}>
               <Sparkles className="w-4 h-4 mr-2" />
-              Przygotuj Odprawę Przedmeczową
+              Przygotuj odprawę przedmeczową
             </BkpkButton>
           )}
         </BkpkCard>
@@ -247,7 +250,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
             <div className="my-8">
               <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary mb-4 flex items-center gap-2">
                 <Target className="w-4 h-4 text-bkpk-primary shrink-0" />
-                3 Kluczowe Założenia Meczowe (Game Directives)
+                3 kluczowe założenia na mecz
               </h3>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -282,7 +285,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                                   : "text-brand-green-400"
                             )}
                           >
-                            {key.focus || 'Taktyka'}
+                            {FOCUS_LABEL[key.focus] ?? 'Taktyka'}
                           </span>
                         </div>
                         <h4 className="font-display uppercase text-[18px] leading-tight text-bkpk-text-primary mb-1.5">{key.title}</h4>
@@ -298,7 +301,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
             <div className="my-8">
               <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary mb-4 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-bkpk-primary shrink-0" />
-                Wyjściowa Piątka &amp; Zadania Indywidualne (Matchup Assignments)
+                Pierwsza piątka i zadania w obronie
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
@@ -341,7 +344,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
               {briefing.benchKeys && (
                 <div className="p-4 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle">
                   <span className="label-caps text-[11px] text-bkpk-text-muted block mb-1">
-                    ⚡ Rola Ławki Rezerwowych
+                    Rola rezerwowych
                   </span>
                   <p className="text-[13px] text-bkpk-text-secondary leading-relaxed">
                     {briefing.benchKeys}
@@ -354,7 +357,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                   <Zap className="w-5 h-5 text-bkpk-primary shrink-0" />
                   <div>
                     <span className="label-caps text-[11px] text-bkpk-primary block mb-0.5">
-                      Motto Meczowe
+                      Motto meczowe
                     </span>
                     <p className="text-[15px] font-semibold text-bkpk-text-primary italic">
                       "{briefing.motivationalMotto}"

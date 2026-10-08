@@ -6,9 +6,8 @@ import type { StatKey } from '../../shared/lib/statGlossary';
 import { chartAxisProps, chartColors, chartGridProps, chartTooltipItemStyle, chartTooltipLabelStyle, chartTooltipStyle } from '../../shared/lib/chartTheme';
 import { cn } from '../../shared/lib/utils';
 import type { shootingSeries } from './meStats';
+import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 
-const fmt1 = (v: number | null | undefined) => (v == null ? '–' : v.toFixed(1).replace('.', ','));
-const fmtPct = (v: number | null | undefined) => (v == null ? '–' : `${v.toFixed(1).replace('.', ',')}%`);
 
 /** Sezon w Karierze (CareerSeasonRow) — tylko pola potrzebne do porównania. */
 interface SeasonRow {
@@ -34,7 +33,7 @@ function Delta({ now, before }: { now: number | null; before: number | null }) {
     if (d === 0) return <span className="text-xs text-bkpk-text-muted">bez zmian</span>;
     return (
         <span className={cn('text-xs tabular-nums', d > 0 ? 'text-bkpk-success' : 'text-bkpk-text-danger-subtle')}>
-            {d > 0 ? '▲' : '▼'} {Math.abs(d).toFixed(1).replace('.', ',')}
+            {d > 0 ? '▲' : '▼'} {fmt1(Math.abs(d))}
         </span>
     );
 }

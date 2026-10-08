@@ -16,13 +16,15 @@ Zasady:
 - Dokładnie 10 graczy (O1–O5 atak, D1–D5 obrona), każdy z min. 2 klatkami; czasy klatek w zakresie 0.0–duration, współrzędne x i y w zakresie 0–100.
 - Używaj wyłącznie zawodników z podanej kadry (imię, nazwisko, numer dokładnie jak w danych). Gdy kadry brak — nazwy ról (np. "Rozgrywający") zamiast wymyślonych nazwisk.
 - Nie podawaj statystyk skuteczności zagrywki — nie ma ich w danych.
+- Język: wszystkie teksty dla zawodników (name, targetDefense, description, coachingKeys, title, description i coachingCues faz) pisz prostą polszczyzną dla amatorów, bez angielskiego żargonu i bez emoji. Pozycje opisuj po polsku: rozgrywający, rzucający obrońca, niski skrzydłowy, silny skrzydłowy, środkowy (w zdaniu np. „3 (niski skrzydłowy)” przy pierwszym użyciu, potem samo „3”) — nie PG/SG/SF/PF/C. Zamiast „pick and roll”, „layup”, „closeout”, „spacing”, „T-Bar” pisz: zasłona na piłce, dwutakt, doskok, szerokie ustawienie, zasłona; „za 3”, „+3 pkt”.
+- Angielska nazwa zagrywki może się pojawić najwyżej raz, w nawiasie i tylko w polu name (np. „Rogi z zasłoną odchodzącą (Horns Flare)”). Pola role i category zostają jako klucze techniczne (PG… / half_court…).
 
 Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego tekstu) o następującej strukturze:
 {
-  "name": "Nazwa zagrywki (np. Horns Flare vs Strefa 2-3)",
+  "name": "Polska nazwa zagrywki (np. Rogi z zasłoną odchodzącą (Horns Flare))",
   "category": "half_court | blob | slob | ato | fastbreak | defense",
-  "targetDefense": "Nazwa obrony rywala (np. Strefa 2-3, Drop PnR, Każdy Swego)",
-  "description": "Krótkie i zwięzłe streszczenie idei zagrywki (2-3 zdania)",
+  "targetDefense": "Obrona rywala po polsku (np. Strefa 2-3, Obrona każdy swego (cofnięcie / zmiana krycia))",
+  "description": "Krótkie streszczenie idei zagrywki prostym językiem (2-3 zdania)",
   "diagramData": {
     "duration": 5.5,
     "coachingKeys": [
@@ -34,23 +36,23 @@ Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego
       {
         "startTime": 0.0,
         "endTime": 1.8,
-        "title": "Faza 1: Rozegranie i Ustawienie",
+        "title": "Faza 1: Rozegranie i ustawienie",
         "description": "Opis pierwszego etapu akcji",
-        "coachingCues": ["Szeroki spacing", "Cierpliwe rozegranie"]
+        "coachingCues": ["Szerokie ustawienie", "Cierpliwe rozegranie"]
       },
       {
         "startTime": 1.8,
         "endTime": 3.6,
-        "title": "Faza 2: Zasłona i Ścięcie",
+        "title": "Faza 2: Zasłona i ścięcie",
         "description": "Opis manewru zasłony i ruchu bez piłki",
         "coachingCues": ["Twardy kontakt", "Sprint po łuku"]
       },
       {
         "startTime": 3.6,
         "endTime": 5.5,
-        "title": "Faza 3: Podanie i Rzut",
+        "title": "Faza 3: Podanie i rzut",
         "description": "Finalizacja akcji i rzut",
-        "coachingCues": ["Catch & Shoot", "Zbiórka ofensywna"]
+        "coachingCues": ["Rzut od razu po chwycie", "Zbiórka w ataku"]
       }
     ],
     "players": [
@@ -201,5 +203,6 @@ Zadbaj o:
 1. Płynność klatek czasowych od 0.0s do 5.5s dla wszystkich 10 graczy i piłki.
 2. Wyraźne uwzględnienie zasłony (action: "set_screen"), ścięcia (action: "cut") i rzutu (action: "shoot").
 3. Śledzenie posiadania piłki i trajektorii podania/rzutu w sekcji "ball.keyframes".
-4. 3 zsynchronizowane fazy z opisami w "phaseDirectives".`;
+4. 3 zsynchronizowane fazy z opisami w "phaseDirectives".
+5. Nazwę, opisy i wskazówki po polsku, prostym językiem dla amatorów — bez angielskiego żargonu i emoji (angielska nazwa najwyżej raz, w nawiasie w polu name).`;
 }

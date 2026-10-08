@@ -6,6 +6,7 @@ import { cn } from '../../shared/lib/utils';
 import { getPositionLabel } from '../../shared/lib/playerUtils';
 import StatLabel from '../../shared/ui/StatLabel';
 import type { StatKey } from '../../shared/lib/statGlossary';
+import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 
 /** GET /api/players/:id/career (backend/kalk/v2/readModels.js → getPlayerCareer). */
 export interface CareerSeasonRow {
@@ -41,8 +42,6 @@ export interface PlayerCareerResponse {
     gameLogSummary: CareerGameLogSummary[];
 }
 
-const fmt1 = (v: number | null | undefined) => (v == null ? '–' : v.toFixed(1).replace('.', ','));
-const fmtPct = (v: number | null | undefined) => (v == null ? '–' : `${v.toFixed(1).replace('.', ',')}%`);
 
 const COLUMNS: { key: StatKey; value: (r: CareerSeasonRow) => string; strong?: boolean; pct?: boolean }[] = [
     { key: 'games', value: (r) => String(r.games) },
@@ -169,7 +168,7 @@ export default function PlayerCareer({ career, showPersonal = false }: { career:
                                     className="mt-3 flex items-center justify-between gap-3 min-h-[44px] border-t border-bkpk-border-subtle pt-2 hover:text-bkpk-text-primary text-bkpk-text-secondary transition-colors"
                                 >
                                     <span className="text-xs truncate">Najlepszy mecz: vs {s.bestPts.opponent}</span>
-                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-medal-gold shrink-0">{s.bestPts.value} PTS</span>
+                                    <span className="font-display text-lg leading-none tabular-nums text-bkpk-medal-gold shrink-0">{s.bestPts.value} pkt</span>
                                 </Link>
                             )}
                         </BkpkCard>
