@@ -198,7 +198,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         <NavItems links={links} collapsed={navCollapsed} />
 
         {!navCollapsed && (
-          <div className="mt-6 pt-6 border-t border-bkpk-border-subtle">
+          <div className="mt-4 pt-4 border-t border-bkpk-border-subtle">
             <SeasonSelector
               seasons={seasons}
               seasonId={seasonId}
@@ -209,7 +209,8 @@ export default function Shell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <div className="mt-auto pt-4 border-t border-bkpk-border-subtle space-y-4">
+        {/* Tylko wylogowanie — stopka jest na dole treści, żeby menu mieściło się bez przewijania paska */}
+        <div className="mt-auto pt-4 border-t border-bkpk-border-subtle">
           <button
             type="button"
             onClick={handleLogout}
@@ -223,14 +224,14 @@ export default function Shell({ children }: { children: ReactNode }) {
             <LogOut className="w-5 h-5 shrink-0" />
             {!navCollapsed && <span>Wyloguj</span>}
           </button>
-          {!navCollapsed && <AppFooter className="px-2 pb-1" />}
         </div>
       </motion.aside>
 
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+      {/* md:overflow-hidden — na telefonie przewija się okno, więc wrapper nie może przycinać, inaczej sticky nagłówka nie działa */}
+      <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
 
         {/* Mobile header — pasek statusu + 0,5 rem (jak nagłówek MobileFullScreenMenu, PWA na iOS: black-translucent) */}
-        <header className="md:hidden sticky top-0 z-40 shrink-0 relative flex items-center px-3 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
+        <header className="md:hidden sticky top-0 z-40 shrink-0 flex items-center px-3 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
@@ -270,7 +271,7 @@ export default function Shell({ children }: { children: ReactNode }) {
           )}
         >
           {children}
-          <div className="md:hidden px-4 pb-2">
+          <div className="px-4 pb-2 md:px-8 md:pb-6">
             <AppFooter />
           </div>
         </main>

@@ -1,6 +1,16 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 import BkpkButton from '../shared/ui/BkpkButton';
+import { isChunkLoadError, reloadOnceForNewVersion } from '../lib/newVersionReload';
+
+/** Szczegóły błędu tylko dla trenera (rola z zapamiętanego profilu — kontekst logowania może nie działać). */
+function cachedUserIsAdmin(): boolean {
+  try {
+    return JSON.parse(localStorage.getItem('bkpk_user') || 'null')?.role === 'ADMIN';
+  } catch {
+    return false;
+  }
+}
 
 interface Props {
   children: ReactNode;
@@ -23,12 +33,14 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // In production, this could report to an error tracking service
     console.error('[ErrorBoundary]', error, info.componentStack);
+    // Nowa wersja panelu po wdrożeniu — jedno ciche przeładowanie
+    if (isChunkLoadError(error)) reloadOnceForNewVersion();
   }
 
+  // Pełne przeładowanie: lazy() pamięta nieudany import, sam reset stanu nic nie da
   handleRetry = () => {
-    this.setState({ hasError: false, error: null });
+    window.location.reload();
   };
 
   render() {
@@ -47,18 +59,21 @@ export default class ErrorBoundary extends Component<Props, State> {
               Coś poszło nie tak
             </h2>
             <p className="text-base text-bkpk-text-secondary leading-relaxed">
-              Wystąpił nieoczekiwany błąd. Spróbuj odświeżyć stronę lub kliknij przycisk poniżej.
+              Wystąpił nieoczekiwany błąd. Odśwież panel przyciskiem poniżej albo wróć na Start.
             </p>
-            {this.state.error && (
+            {this.state.error && cachedUserIsAdmin() && (
               <pre className="text-xs text-bkpk-text-muted bg-bkpk-bg border border-bkpk-border-subtle p-4 overflow-x-auto whitespace-pre-wrap break-words">
                 {this.state.error.message}
               </pre>
             )}
-            <div className="pt-2">
+            <div className="pt-2 flex flex-wrap items-center gap-4">
               <BkpkButton variant="primary" onClick={this.handleRetry}>
                 <RotateCcw className="w-4 h-4" />
                 Spróbuj ponownie
               </BkpkButton>
+              <a href="/dashboard" className="inline-flex items-center min-h-[44px] label-caps text-xs text-bkpk-text-primary hover:text-bkpk-primary">
+                Wróć na Start
+              </a>
             </div>
           </div>
         </div>

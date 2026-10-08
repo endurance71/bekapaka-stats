@@ -31,13 +31,16 @@ export function difficultyFromOpponent({ wins, losses, h2h }: OpponentForm): 1 |
     return Math.min(5, Math.max(1, level)) as 1 | 2 | 3 | 4 | 5;
 }
 
+/** Mecze KALK są w Polsce — czas polski niezależnie od strefy telefonu. */
+const MATCH_TZ = 'Europe/Warsaw';
+
 /** „niedz., 18.10.2026” */
 export function formatMatchDate(iso: string | Date): string {
     const d = new Date(iso);
-    return d.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' });
+    return d.toLocaleDateString('pl-PL', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: MATCH_TZ });
 }
 
 /** „14:40” */
 export function formatMatchTime(iso: string | Date): string {
-    return new Date(iso).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: MATCH_TZ });
 }

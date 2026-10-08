@@ -228,6 +228,11 @@ export default function ScoutingPage() {
       <div className="space-y-5 md:space-y-6">
         <PreGameMatchCard
           briefing={pregame.briefing}
+          schedule={
+            nextMatch && sameName(nextMatch.opponent, opponent.name)
+              ? { date: nextMatch.date, venue: nextMatch.venue, gatheringTime: nextMatch.matchDay?.gatheringTime, kit: nextMatch.matchDay?.kit }
+              : null
+          }
           opponent={pregame.opponent || opponent.name}
           seasonId={seasonId}
           onRefresh={loadPreGame}

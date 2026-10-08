@@ -30,7 +30,7 @@ export default function LoginPage() {
         try {
             await login(username, password);
             const redirect = searchParams.get('redirect');
-            navigate(redirect && redirect.startsWith('/') ? redirect : '/dashboard');
+            navigate(redirect && redirect.startsWith('/') && !redirect.startsWith('/login') ? redirect : '/dashboard');
         } catch {
             setError('Błędny login lub hasło');
         } finally {

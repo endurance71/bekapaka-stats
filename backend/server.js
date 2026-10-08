@@ -5,7 +5,7 @@ import { updateMatchPresentation, invalidateMatchPages } from './matchPresentati
 import express from 'express';
 import { createStudioRouter } from './studio/routes.js';
 import cors from 'cors';
-import { loginUser, getLoginLogs, touchUserActivity } from './dataStore.js';
+import { loginUser, getLoginLogs, touchUserActivity, getSessionUser, signSessionToken } from './dataStore.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import fs from 'node:fs/promises';
@@ -127,23 +127,39 @@ app.get('/api/ping', (req, res) => res.send('pong'));
 
 const SECRET_KEY = getJwtSecret();
 
+const SESSION_EXPIRED = { error: 'Sesja wygasła — zaloguj się ponownie.' };
+
+/**
+ * Brak, nieważny lub wygasły token → 401 (panel wylogowuje tylko przy 401).
+ * Rola z bazy, nie z tokenu; token ze starszą wersją (po zmianie hasła) → 401.
+ */
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    return res.sendStatus(401);
+    return res.status(401).json(SESSION_EXPIRED);
   }
 
-  jwt.verify(token, SECRET_KEY, (err, user) => {
+  jwt.verify(token, SECRET_KEY, async (err, payload) => {
     if (err) {
-      return res.sendStatus(403);
+      return res.status(401).json(SESSION_EXPIRED);
     }
-    req.user = user;
+    let session;
+    try {
+      session = await getSessionUser(payload.id);
+    } catch (e) {
+      console.error('Session lookup failed:', e.message);
+      return res.status(503).json({ error: 'Serwer chwilowo niedostępny — spróbuj ponownie.' });
+    }
+    if (!session || !session.username || (session.tokenVersion ?? 0) !== (payload.tv ?? 0)) {
+      return res.status(401).json(SESSION_EXPIRED);
+    }
+    req.user = { ...payload, role: session.role, username: session.username };
 
     const skipActivityPaths = ['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'];
     if (!skipActivityPaths.some((p) => req.path === p || req.url.startsWith(p))) {
-      void touchUserActivity(user.id, req.ip);
+      void touchUserActivity(payload.id, req.ip);
     }
 
     next();
@@ -1049,6 +1065,7 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
       if (username === null || username.trim() === '') {
         updateData.username = null;
         updateData.password = null;
+        updateData.tokenVersion = { increment: 1 };
       } else {
         const cleanUsername = username.toLowerCase().trim();
         if (cleanUsername !== existingUser.username) {
@@ -1069,6 +1086,7 @@ app.put(['/api/admin/users/:id', '/admin/users/:id'], authenticateToken, require
         return res.status(400).json({ error: 'Nie można ustawić hasła bez nazwy użytkownika' });
       }
       updateData.password = await bcrypt.hash(password, 10);
+      updateData.tokenVersion = { increment: 1 }; // nowe hasło od trenera wylogowuje stare sesje
     }
 
     if (photo !== undefined) {
@@ -1120,12 +1138,13 @@ app.put(['/api/profile/password', '/profile/password'], authenticateToken, async
     }
 
     const newPasswordHash = await bcrypt.hash(newPassword, 10);
-    await prisma.rosterPlayer.update({
+    // Nowa wersja tokenu wylogowuje inne urządzenia; to urządzenie dostaje świeży token
+    const updated = await prisma.rosterPlayer.update({
       where: { id: req.user.id },
-      data: { password: newPasswordHash }
+      data: { password: newPasswordHash, tokenVersion: { increment: 1 } }
     });
 
-    res.json({ success: true, message: 'Hasło zostało pomyślnie zmienione' });
+    res.json({ success: true, message: 'Hasło zostało pomyślnie zmienione', token: signSessionToken(updated) });
   } catch (err) {
     console.error('Failed to update profile password:', err);
     res.status(500).json({ error: 'Błąd zmiany hasła' });

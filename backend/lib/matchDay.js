@@ -38,3 +38,18 @@ export function resolveMatchDay(matchDay, startsAt) {
   }
   return { gatheringTime, gatheringEstimated, kit: md.kit ?? null, notes: md.notes ?? null };
 }
+
+const warsawTime = (d) => d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Warsaw' });
+
+/**
+ * Logistyka meczu z terminarza (LeagueMatch): godzina meczu i zbiórki (czas polski), strój.
+ * Brak meczu w terminarzu → same null (nie zgadujemy godzin ani stroju).
+ */
+export function matchLogistics(leagueMatch) {
+  const date = leagueMatch?.date ? new Date(leagueMatch.date) : null;
+  if (!date || Number.isNaN(date.getTime())) {
+    return { matchDate: null, tipoffTime: null, gatheringTime: null, kit: null };
+  }
+  const md = resolveMatchDay(leagueMatch.matchDay, date);
+  return { matchDate: date, tipoffTime: warsawTime(date), gatheringTime: md.gatheringTime, kit: md.kit };
+}

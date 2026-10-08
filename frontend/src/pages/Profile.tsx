@@ -22,7 +22,7 @@ type TeamPlayer = { id: string; ppg?: number | null; rpg?: number | null; apg?: 
 type LeagueLeader = { id: string; pointsAverage?: number | null; rosterPlayer?: { id: string } | null };
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, updateToken } = useAuth();
     const navigate = useNavigate();
 
     // Password State
@@ -160,10 +160,12 @@ export default function Profile() {
 
         setPasswordLoading(true);
         try {
-            await putJSON('/api/profile/password', {
+            const res = await putJSON<{ token?: string }>('/api/profile/password', {
                 currentPassword,
                 newPassword
             });
+            // Serwer unieważnia stare sesje (inne telefony); to urządzenie dostaje nowy token
+            if (res?.token) updateToken(res.token);
             setPasswordSuccess('Hasło zostało pomyślnie zmienione.');
             setCurrentPassword('');
             setNewPassword('');

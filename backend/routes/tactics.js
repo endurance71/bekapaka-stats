@@ -15,6 +15,7 @@ import { findScoutingReport } from '../ai/scoutingData.js';
 import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
 import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
+import { matchLogistics } from '../lib/matchDay.js';
 import { computeTeamSynergy, emptySynergy } from '../kalk/v2/synergy.js';
 
 export const tacticsRouter = express.Router();
@@ -346,18 +347,9 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
       })
       .filter(Boolean);
 
-    const matchDate = nextMatch?.date ? new Date(nextMatch.date) : new Date();
-    const isHome = nextMatch?.homeTeam?.toLowerCase().includes('bekapaka') ?? true;
-
-    const tipoff = matchDate && !isNaN(matchDate.getTime())
-      ? matchDate.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-      : '18:30';
-
-    // Godzina zbiórki: 45 minut przed meczem
-    const gatheringDate = new Date(matchDate.getTime() - 45 * 60 * 1000);
-    const gathering = !isNaN(gatheringDate.getTime())
-      ? gatheringDate.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
-      : '17:45';
+    // Godziny i strój tylko z terminarza i dnia meczowego (czas polski) — bez zgadywania
+    const { matchDate, tipoffTime: tipoff, gatheringTime: gathering, kit } = matchLogistics(nextMatch);
+    const jerseyColor = kit || '';
 
     const saved = await prisma.preGameBriefing.upsert({
       where: {
@@ -372,7 +364,7 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
         matchDate,
         gatheringTime: gathering,
         tipoffTime: tipoff,
-        jerseyColor: isHome ? 'Czarne' : 'Białe',
+        jerseyColor,
         venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
         tacticalKeys: parsed.tacticalKeys || [],
         startingFive: parsed.startingFive || [],
@@ -385,7 +377,7 @@ tacticsRouter.post('/pregame/generate', async (req, res) => {
         venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
         gatheringTime: gathering,
         tipoffTime: tipoff,
-        jerseyColor: isHome ? 'Czarne' : 'Białe',
+        jerseyColor,
         tacticalKeys: parsed.tacticalKeys || [],
         startingFive: parsed.startingFive || [],
         benchKeys: parsed.benchKeys || null,
