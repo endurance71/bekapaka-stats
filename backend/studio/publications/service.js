@@ -7,6 +7,7 @@ import { designFormats, postType, projectTemplateVersion } from '../post-types.j
 import { hash, filePath } from '../storage.js';
 import { matches, sourceEnvelope } from '../sources.js';
 import { statisticalSnapshot } from '../statistics.js';
+import { matchReport } from './match-report.js';
 import { projectView, validation } from '../service.js';
 import { channelIds, channels, copySchemas, factsSchema } from './channels.js';
 import { graphicFormats, playbook } from './playbooks.js';
@@ -56,7 +57,8 @@ export function romanToInt(roman) {
 
 /** Confirmed public facts of a KALK match: score, round and leaders from the stats system. */
 export async function matchFacts(db, seasonId, id) {
-  const match = (await matches(db, seasonId)).find((m) => m.id === id);
+  const seasonMatches = await matches(db, seasonId);
+  const match = seasonMatches.find((m) => m.id === id);
   if (!match) fail(404, 'Mecz nie jest już dostępny w źródle');
   const season = await db.kalkSeason.findUnique({ where: { id: seasonId } });
   let leaders = [];
@@ -68,11 +70,20 @@ export async function matchFacts(db, seasonId, id) {
       // Box score is optional: a result without player statistics stays publishable.
     }
   }
+  let report = null;
+  if (match.scoreUs !== null && match.scoreThem !== null) {
+    try {
+      report = await matchReport(db, match, seasonMatches);
+    } catch {
+      // Same rule as leaders: missing statistics never block the result.
+    }
+  }
   const facts = factsSchema.parse({
     kind: 'match',
     competition: 'KALK',
     seasonLabel: season?.label || '',
-    round: match.round,
+    // KALK labels rounds „Kolejka - 3”; copy says „3. kolejka”.
+    round: match.round.match(/\d+/)?.[0] ?? match.round,
     opponent: match.opponent,
     date: match.date,
     venue: match.venue,
@@ -80,8 +91,21 @@ export async function matchFacts(db, seasonId, id) {
     scoreUs: match.scoreUs,
     scoreThem: match.scoreThem,
     leaders,
+    report,
   });
   return { facts, source: sourceEnvelope('match', match).source };
+}
+
+// Text on the neutral rival shield (no other club's crest, brand rule M8): initials of a multi-word name
+// („Młode Wilki” → MW, „Kosz-All-In” → KAI), a short name as is, otherwise its first 4 letters.
+export function opponentShort(name) {
+  const words = String(name || '')
+    .split(/[\s\-–]+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
+    .filter((w) => w.length > 1 || /\p{N}/u.test(w));
+  if (!words.length) return '';
+  const short = words.length > 1 ? words.map((w) => w[0]).join('').slice(0, 4) : words[0].length <= 5 ? words[0] : words[0].slice(0, 4);
+  return short.toLocaleUpperCase('pl-PL');
 }
 
 // Prefill a graphic project from the facts; the project keeps its own revisions afterwards.
@@ -94,6 +118,7 @@ function projectFromFacts(definition, facts, source, title, partnerIds, alt = ''
   const content = {
     ...base.content,
     opponent: facts.opponent,
+    opponentShort: opponentShort(facts.opponent).slice(0, 8),
     date: facts.date,
     originalDate: facts.originalDate,
     venue: facts.venue || base.content.venue,
@@ -310,7 +335,7 @@ export async function updatePublication(db, owner, id, input) {
 }
 
 // Fields the stats system owns; owner-entered facts (notes, person, link…) stay untouched.
-const sourceKeys = ['competition', 'seasonLabel', 'round', 'opponent', 'date', 'venue', 'scoreUs', 'scoreThem', 'leaders'];
+const sourceKeys = ['competition', 'seasonLabel', 'round', 'opponent', 'date', 'venue', 'scoreUs', 'scoreThem', 'leaders', 'report'];
 export async function refreshFacts(db, owner, id, expectedRevision) {
   const p = await db.studioPublication.findFirst({ where: { id, ownerId: owner } });
   if (!p) fail(404, 'Publikacja nie istnieje');

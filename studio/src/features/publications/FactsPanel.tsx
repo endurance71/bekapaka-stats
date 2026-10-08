@@ -4,7 +4,7 @@ import { message, send } from '../../lib/api';
 import { warsawInput, warsawIso } from '../../lib/dates';
 import type { Facts, Playbook, Publication } from '../../lib/publications';
 
-type Key = Exclude<keyof Facts, 'kind' | 'leaders' | 'scoreUs' | 'scoreThem'>;
+type Key = Exclude<keyof Facts, 'kind' | 'leaders' | 'scoreUs' | 'scoreThem' | 'report'>;
 const labels: Record<Key, string> = {
   title: 'Tytuł / nagłówek',
   competition: 'Rozgrywki',
@@ -213,6 +213,25 @@ export default function FactsPanel({
               </button>
             )}
           </fieldset>
+        )}
+        {facts.report && (
+          <div className="report-summary" role="note">
+            <b>Statystyki meczu z KALK</b>
+            <span>
+              {[
+                facts.report.quarters.length
+                  ? `kwarty: ${facts.report.quarters.map((q) => `${q.us}:${q.them}`).join(', ')}`
+                  : '',
+                facts.report.players.length ? `${facts.report.players.length} zawodników BeKaPaKa` : '',
+                facts.report.team ? 'statystyki zespołów' : '',
+                facts.report.mvp ? `MVP: ${facts.report.mvp.name}` : '',
+                facts.report.nextMatch ? `następny mecz: ${facts.report.nextMatch.opponent}` : '',
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+            <small>Relacja na stronę korzysta z tych danych. Aktualizują się przez „Odśwież z KALK”.</small>
+          </div>
         )}
       </div>
       <div className="facts-actions">
