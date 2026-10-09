@@ -8,6 +8,7 @@ import BkpkButton from '../shared/ui/BkpkButton';
 import { putJSON, fetchJSON } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Key, ExternalLink, RefreshCw } from 'lucide-react';
+import { CardGrid, MainAside } from '../shared/ui/PageLayout';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import { PasswordInput } from '../shared/ui/PasswordInput';
@@ -190,140 +191,135 @@ export default function Profile() {
                     description={`Twój sezon, rekordy i cele${selectedSeason ? ` — ${selectedSeason.label}` : ''}. Sezon wybierasz w menu.`}
                 />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <SeasonCompareCard current={compare.current} previous={compare.previous} />
-                    <RankCard ranks={ranks} />
-                    <GoalsCard playerId={user.id} goals={goals} values={values} canEdit={goals !== null} />
-                    <RecordsCard records={careerRecords} />
-                    <div className="lg:col-span-2">
-                        <ShootingTrendCard series={series} />
-                    </div>
-                </div>
-
-                <AiAnalysisBlock
-                    title="Twój plan rozwoju (AI)"
-                    content={aiSummary}
-                    generatedAt={aiMeta.at}
-                    model={aiMeta.model}
-                    loading={aiLoading}
-                    playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach w sezonie)."
-                />
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    
-                    {/* Left Column: Player Card Visualizer */}
-                    <div className="lg:col-span-5 flex flex-col items-center gap-6">
-                        <div className="w-full max-w-[320px]">
-                            <h2 className="kicker text-bkpk-text-primary mb-4 w-full justify-center lg:justify-start">
-                                Moja karta zawodnika
-                            </h2>
-                            <PlayerCard
-                                id={user.id}
-                                firstName={user.firstName}
-                                lastName={user.lastName}
-                                number={user.number || 0}
-                                position={user.position}
-                                photoUrl={userPhoto}
-                                ppg={seasonAverages?.ppg ?? 0}
-                                rpg={seasonAverages?.rpg ?? 0}
-                                apg={seasonAverages?.apg ?? 0}
-                                isStarter={Boolean(user.starter)}
-                                onClick={() => navigate(`/players/${user.id}`)}
-                            />
-                        </div>
-                        
-                        <BkpkButton
-                            variant="ghost"
-                            onClick={() => navigate(`/players/${user.id}`)}
-                            className="w-full max-w-[320px] flex items-center justify-center gap-2"
-                        >
-                            <span>
-                                Statystyki
-                                {selectedSeason ? ` — ${selectedSeason.label}` : ''}
-                            </span>
-                            <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                        </BkpkButton>
-                    </div>
-
-                    {/* Right Column: Account Management Forms */}
-                    <div className="lg:col-span-7 space-y-6">
-                        {/* Change Password Form */}
-                        <BkpkCard
-                            title="Bezpieczeństwo konta"
-                            icon={<Key className="w-5 h-5 text-bkpk-primary" />}
-                            animateEntrance={false}
-                        >
-                            <form onSubmit={handlePasswordChange} className="space-y-4">
-                                <div className="flex items-center gap-3 p-3 bg-bkpk-bg border border-bkpk-border-subtle text-sm text-bkpk-text-secondary">
-                                    <ShieldCheck className="w-4 h-4 text-bkpk-success shrink-0" aria-hidden="true" />
-                                    <span>Zalogowany jako: <strong className="text-bkpk-text-primary">@{user.username}</strong> ({getPositionLabel(user.position)}{user.number != null ? ` #${user.number}` : ''})</span>
-                                </div>
-
-                                {passwordError && (
-                                    <div className="p-3 text-sm bg-bkpk-bg text-bkpk-text-danger-subtle border border-bkpk-danger border-l-4">
-                                        {passwordError}
-                                    </div>
-                                )}
-                                {passwordSuccess && (
-                                    <div className="p-3 text-sm bg-bkpk-bg text-bkpk-success border border-bkpk-success border-l-4">
-                                        {passwordSuccess}
-                                    </div>
-                                )}
-
-                                <PasswordInput
-                                    label="Aktualne hasło *"
-                                    placeholder="Wpisz obecne hasło..."
-                                    value={currentPassword}
-                                    onChange={setCurrentPassword}
-                                    required
-                                    autoComplete="current-password"
-                                    showPassword={showCurrentPwd}
-                                    onToggleShow={() => setShowCurrentPwd((v) => !v)}
-                                />
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <PasswordInput
-                                        label="Nowe hasło *"
-                                        placeholder="Min. 6 znaków..."
-                                        value={newPassword}
-                                        onChange={setNewPassword}
-                                        required
-                                        autoComplete="new-password"
-                                        showPassword={showNewPwd}
-                                        onToggleShow={() => setShowNewPwd((v) => !v)}
-                                    />
-                                    <PasswordInput
-                                        label="Powtórz nowe hasło *"
-                                        placeholder="Powtórz nowe hasło..."
-                                        value={confirmNewPassword}
-                                        onChange={setConfirmNewPassword}
-                                        required
-                                        autoComplete="new-password"
-                                        showPassword={showConfirmPwd}
-                                        onToggleShow={() => setShowConfirmPwd((v) => !v)}
+                {/* Treść: sezon, cele, rekordy, skuteczność, AI; kolumna boczna: karta zawodnika i konto */}
+                <MainAside
+                    aside={
+                        <>
+                            <div className="flex flex-col items-center gap-6">
+                                <div className="w-full max-w-[320px]">
+                                    <h2 className="kicker text-bkpk-text-primary mb-4 w-full justify-center">
+                                        Moja karta zawodnika
+                                    </h2>
+                                    <PlayerCard
+                                        id={user.id}
+                                        firstName={user.firstName}
+                                        lastName={user.lastName}
+                                        number={user.number || 0}
+                                        position={user.position}
+                                        photoUrl={userPhoto}
+                                        ppg={seasonAverages?.ppg ?? 0}
+                                        rpg={seasonAverages?.rpg ?? 0}
+                                        apg={seasonAverages?.apg ?? 0}
+                                        isStarter={Boolean(user.starter)}
+                                        onClick={() => navigate(`/players/${user.id}`)}
                                     />
                                 </div>
 
-                                <div className="pt-2 border-t border-bkpk-border-subtle flex justify-end">
-                                    <BkpkButton
-                                        variant="primary"
-                                        type="submit"
-                                        disabled={passwordLoading}
-                                    >
-                                        {passwordLoading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
-                                        Zmień hasło
-                                    </BkpkButton>
-                                </div>
-                            </form>
-                        </BkpkCard>
+                                <BkpkButton
+                                    variant="ghost"
+                                    onClick={() => navigate(`/players/${user.id}`)}
+                                    className="w-full max-w-[320px] flex items-center justify-center gap-2"
+                                >
+                                    <span>
+                                        Statystyki
+                                        {selectedSeason ? ` — ${selectedSeason.label}` : ''}
+                                    </span>
+                                    <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                                </BkpkButton>
+                            </div>
+                            {/* Change Password Form */}
+                            <BkpkCard
+                                title="Bezpieczeństwo konta"
+                                icon={<Key className="w-5 h-5 text-bkpk-primary" />}
+                                animateEntrance={false}
+                            >
+                                <form onSubmit={handlePasswordChange} className="space-y-4">
+                                    <div className="flex items-center gap-3 p-3 bg-bkpk-bg border border-bkpk-border-subtle text-sm text-bkpk-text-secondary">
+                                        <ShieldCheck className="w-4 h-4 text-bkpk-success shrink-0" aria-hidden="true" />
+                                        <span>Zalogowany jako: <strong className="text-bkpk-text-primary">@{user.username}</strong> ({getPositionLabel(user.position)}{user.number != null ? ` #${user.number}` : ''})</span>
+                                    </div>
 
-                        <p className="text-sm text-bkpk-text-secondary">
-                            Nie wiesz, co znaczy skrót?{' '}
-                            <Link to="/slowniczek" className="text-bkpk-text-primary underline underline-offset-2 hover:text-bkpk-primary">Słowniczek statystyk</Link>
-                        </p>
-                    </div>
+                                    {passwordError && (
+                                        <div className="p-3 text-sm bg-bkpk-bg text-bkpk-text-danger-subtle border border-bkpk-danger border-l-4">
+                                            {passwordError}
+                                        </div>
+                                    )}
+                                    {passwordSuccess && (
+                                        <div className="p-3 text-sm bg-bkpk-bg text-bkpk-success border border-bkpk-success border-l-4">
+                                            {passwordSuccess}
+                                        </div>
+                                    )}
 
-                </div>
+                                    <PasswordInput
+                                        label="Aktualne hasło *"
+                                        placeholder="Wpisz obecne hasło..."
+                                        value={currentPassword}
+                                        onChange={setCurrentPassword}
+                                        required
+                                        autoComplete="current-password"
+                                        showPassword={showCurrentPwd}
+                                        onToggleShow={() => setShowCurrentPwd((v) => !v)}
+                                    />
+
+                                    <div className="grid grid-cols-1 @md:grid-cols-2 gap-4">
+                                        <PasswordInput
+                                            label="Nowe hasło *"
+                                            placeholder="Min. 6 znaków..."
+                                            value={newPassword}
+                                            onChange={setNewPassword}
+                                            required
+                                            autoComplete="new-password"
+                                            showPassword={showNewPwd}
+                                            onToggleShow={() => setShowNewPwd((v) => !v)}
+                                        />
+                                        <PasswordInput
+                                            label="Powtórz nowe hasło *"
+                                            placeholder="Powtórz nowe hasło..."
+                                            value={confirmNewPassword}
+                                            onChange={setConfirmNewPassword}
+                                            required
+                                            autoComplete="new-password"
+                                            showPassword={showConfirmPwd}
+                                            onToggleShow={() => setShowConfirmPwd((v) => !v)}
+                                        />
+                                    </div>
+
+                                    <div className="pt-2 border-t border-bkpk-border-subtle flex justify-end">
+                                        <BkpkButton
+                                            variant="primary"
+                                            type="submit"
+                                            disabled={passwordLoading}
+                                        >
+                                            {passwordLoading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
+                                            Zmień hasło
+                                        </BkpkButton>
+                                    </div>
+                                </form>
+                            </BkpkCard>
+
+                            <p className="text-sm text-bkpk-text-secondary">
+                                Nie wiesz, co znaczy skrót?{' '}
+                                <Link to="/slowniczek" className="text-bkpk-text-primary underline underline-offset-2 hover:text-bkpk-primary">Słowniczek statystyk</Link>
+                            </p>
+                        </>
+                    }
+                >
+                    <CardGrid min={420}>
+                        <SeasonCompareCard current={compare.current} previous={compare.previous} />
+                        <RankCard ranks={ranks} />
+                        <GoalsCard playerId={user.id} goals={goals} values={values} canEdit={goals !== null} />
+                        <RecordsCard records={careerRecords} />
+                    </CardGrid>
+                    <ShootingTrendCard series={series} />
+                    <AiAnalysisBlock
+                        title="Twój plan rozwoju (AI)"
+                        content={aiSummary}
+                        generatedAt={aiMeta.at}
+                        model={aiMeta.model}
+                        loading={aiLoading}
+                        playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach w sezonie)."
+                    />
+                </MainAside>
             </PageContainer>
         </div>
     );

@@ -9,6 +9,7 @@ import BkpkButton from '../shared/ui/BkpkButton';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import SectionHeading from '../shared/ui/SectionHeading';
+import { CardGrid } from '../shared/ui/PageLayout';
 import { cn } from '../shared/lib/utils';
 import { compressImage } from '../shared/lib/imageCompression';
 import { PasswordInput } from '../shared/ui/PasswordInput';
@@ -170,7 +171,9 @@ export default function Administration() {
                     description="Narzędzia do zarządzania danymi i aktualizacji systemowych."
                 />
 
-                <section className="space-y-4">
+                {/* Narzędzia obok siebie na szerokim ekranie, sezony i użytkownicy na całą szerokość */}
+                <CardGrid min={560} max={2}>
+                <section className="space-y-5">
                 <SectionHeading kicker="Analizy" title="Centrum analiz AI" />
                 <BkpkCard variant="flat" className="space-y-4">
                     <p className="text-bkpk-text-secondary text-sm">
@@ -187,16 +190,7 @@ export default function Administration() {
                 </BkpkCard>
 
                 </section>
-
-                <section className="space-y-4">
-                <SectionHeading kicker="Sezony" title="Sezony i Rozgrywki" />
-                <BkpkCard variant="flat" className="space-y-6">
-                    <SeasonManagement onSeasonChanged={refreshStatus} />
-                </BkpkCard>
-
-                </section>
-
-                <section className="space-y-4">
+                <section className="space-y-5">
                 <SectionHeading kicker="Dane KALK" title="Synchronizacja z ligą KALK" />
                 <BkpkCard variant="flat" className="space-y-6">
                     <div className="flex items-center gap-3 p-4 bg-bkpk-bg border border-bkpk-border-subtle">
@@ -295,8 +289,17 @@ export default function Administration() {
                 </BkpkCard>
 
                 </section>
+                </CardGrid>
 
-                <section className="space-y-4">
+                <section className="space-y-5">
+                <SectionHeading kicker="Sezony" title="Sezony i Rozgrywki" />
+                <BkpkCard variant="flat" className="space-y-6">
+                    <SeasonManagement onSeasonChanged={refreshStatus} />
+                </BkpkCard>
+
+                </section>
+
+                <section className="space-y-5">
                 <SectionHeading kicker="Użytkownicy" title="Zarządzanie Zawodnikami i Użytkownikami" />
                 <BkpkCard variant="flat" className="space-y-6">
                     <UserManagement />
@@ -304,7 +307,7 @@ export default function Administration() {
 
                 </section>
 
-                <section className="space-y-4">
+                <section className="space-y-5">
                 <SectionHeading kicker="Uwaga" title="Strefa Niebezpieczna" />
                 <BkpkCard variant="flat" className="space-y-6 border-l-4 border-l-bkpk-danger">
                     <p className="text-bkpk-text-secondary text-sm">
