@@ -12,7 +12,7 @@ export interface BkpkCardProps {
     title?: ReactNode;
     icon?: ReactNode;
     overflowVisible?: boolean;
-    /** Wyłącz animację wejścia — formularze z inputami nie tracą focusu przy re-renderze */
+    /** Animacja wejścia (domyślnie wyłączona — treść widać od razu) */
     animateEntrance?: boolean;
 }
 
@@ -40,7 +40,7 @@ export function BkpkCard({
     title,
     icon,
     overflowVisible = false,
-    animateEntrance = true,
+    animateEntrance = false,
 }: BkpkCardProps) {
     const prefersReducedMotion = useReducedMotion();
     const handleKeyDown = (e: React.KeyboardEvent) => {

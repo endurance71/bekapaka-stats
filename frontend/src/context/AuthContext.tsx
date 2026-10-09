@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
-import { postJSON, fetchJSON, setUnauthorizedHandler, ApiError } from '../lib/api';
+import { postJSON, fetchJSON, setUnauthorizedHandler, ApiError, clearApiCache } from '../lib/api';
 import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 
 interface User {
@@ -86,6 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(null);
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        clearApiCache();
         void clearOfflineData();
     }, []);
 

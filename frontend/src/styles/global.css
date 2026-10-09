@@ -107,6 +107,19 @@ html.is-scroll-locked {
   }
 }
 
+/* Dotyk: przytrzymanie przycisku, paska albo menu nie zaznacza tekstu i nie otwiera dymka Safari (jak w aplikacji) */
+@media (hover: none) {
+  button,
+  [role='button'],
+  header,
+  nav,
+  .mobile-fullscreen-menu-root {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
 /* ---------- Role semantyczne: płyta (jak bekapaka.pl) ---------- */
 :root,
 [data-theme='plyta'] {

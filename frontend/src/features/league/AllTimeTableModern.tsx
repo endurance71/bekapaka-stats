@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { fetchJSON } from '../../lib/api';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
@@ -10,6 +8,7 @@ import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import useIsMobile, { usePortraitMobile } from '../../hooks/useIsMobile';
 import { fmt1, fmtPct } from '../../shared/lib/formatStat';
 import LoadError from '../../shared/ui/LoadError';
+import { useCachedJSON } from '../../hooks/useCachedJSON';
 
 /** GET /api/league/all-time (backend/kalk/v2/readModels.js → getTeamsAllTime). */
 interface HeadToHead {
@@ -77,29 +76,15 @@ function TeamName({ team }: { team: AllTimeTeam }) {
 
 /** Zakładka Liga → „Wszech czasów”: bilans drużyn Dywizji II od założenia (KALK) i bilans z BeKaPaKa. */
 export default function AllTimeTableModern() {
-    const [data, setData] = useState<AllTimeResponse | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<unknown>(null);
-    const [attempt, setAttempt] = useState(0);
+    // Bilans wszech czasów nie zależy od sezonu — pamięć na 10 min
+    const allTimeQ = useCachedJSON<AllTimeResponse>('/api/league/all-time', 10 * 60_000);
+    const data = allTimeQ.data;
+    const loading = allTimeQ.loading;
+    const error = allTimeQ.error;
     const [scope, setScope] = useState<Scope>('active');
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
 
-    useEffect(() => {
-        let active = true;
-        setLoading(true);
-        setError(null);
-        fetchJSON<AllTimeResponse>('/api/league/all-time')
-            .then((res) => active && setData(res))
-            .catch((err) => {
-                console.error(err);
-                if (active) setError(err);
-            })
-            .finally(() => active && setLoading(false));
-        return () => {
-            active = false;
-        };
-    }, [attempt]);
 
     const bekapaka = data?.teams.find((t) => t.isBekapaka) ?? null;
     const hasActive = Boolean(data?.teams.some((t) => t.isActive));
@@ -120,7 +105,7 @@ export default function AllTimeTableModern() {
     }
 
     if (error) {
-        return <LoadError title="Nie udało się wczytać bilansu" error={error} onRetry={() => setAttempt((n) => n + 1)} />;
+        return <LoadError title="Nie udało się wczytać bilansu" error={error} onRetry={() => void allTimeQ.reload()} />;
     }
 
     if (!data || data.teams.length === 0) {
@@ -242,11 +227,8 @@ export default function AllTimeTableModern() {
                                 {teams.map((team, index) => {
                                     const isOddRow = index % 2 === 0;
                                     return (
-                                        <motion.tr
+                                        <tr
                                             key={team.kalkId}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.02 }}
                                             className={cn(
                                                 'transition-colors',
                                                 team.isBekapaka ? 'bkpk-row-highlight' : isOddRow && '[&>*]:bg-bkpk-bg hover:[&>*]:bg-ink-700'
@@ -268,7 +250,7 @@ export default function AllTimeTableModern() {
                                             <td className="h-12 px-3 sm:px-4 text-center">
                                                 {team.isBekapaka ? <span className="text-bkpk-text-muted">—</span> : <H2HCell h2h={team.headToHead} />}
                                             </td>
-                                        </motion.tr>
+                                        </tr>
                                     );
                                 })}
                             </tbody>

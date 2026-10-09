@@ -77,9 +77,6 @@ export default function GamesList({ games, loading }: GamesListProps) {
                 {filteredGames.map((game, idx) => (
                     <motion.div
                         key={game.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.05, duration: 0.4 }}
                     >
                         <MatchCard
                             {...game}

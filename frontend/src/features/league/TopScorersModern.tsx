@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { fetchJSON } from '../../lib/api';
 import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
@@ -17,6 +16,7 @@ import { Link } from 'react-router-dom';
 import { useRosterLinks } from '../../shared/lib/useRosterLinks';
 import { formatStatFixed, fmtPct } from '../../shared/lib/formatStat';
 import LoadError from '../../shared/ui/LoadError';
+import { useCachedJSON } from '../../hooks/useCachedJSON';
 
 interface Scorer {
     id: string;
@@ -64,9 +64,6 @@ interface TopScorersModernProps {
 
 export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const [activeCategory, setActiveCategory] = useState<LeaderCategory>('points');
-    const [leaders, setLeaders] = useState<Scorer[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<unknown>(null);
     const rosterLinks = useRosterLinks();
     // Zawodnik BeKaPaKa → link do profilu (powiązanie w tym sezonie albo slug KALK)
     const profileHref = (player: Scorer): string | null => {
@@ -81,29 +78,13 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
 
-    const fetchLeaders = useCallback(async () => {
-        if (!seasonId) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const q = new URLSearchParams({
-                category: activeCategory,
-                limit: '20',
-                seasonId
-            });
-            const data = await fetchJSON<Scorer[]>(`/api/league/leaders?${q.toString()}`);
-            setLeaders(data || []);
-        } catch (err) {
-            console.error(err);
-            setError(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [activeCategory, seasonId]);
-
-    useEffect(() => {
-        fetchLeaders();
-    }, [fetchLeaders]);
+    const leadersQ = useCachedJSON<Scorer[]>(
+        seasonId ? `/api/league/leaders?${new URLSearchParams({ category: activeCategory, limit: '20', seasonId }).toString()}` : null
+    );
+    const leaders = leadersQ.data || [];
+    const loading = leadersQ.loading;
+    const error = leadersQ.error;
+    const fetchLeaders = () => void leadersQ.reload();
 
     // Zawodnik BeKaPaKa → portret/zdjęcie jak w składzie; rywal → zdjęcie z KALK albo monogram.
     const leaderPhotoSource = (player: Scorer): PhotoSource =>
@@ -213,9 +194,6 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                             return (
                                 <motion.div
                                     key={player.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.1 }}
                                 >
                                     <BkpkCard
                                         variant="flat"
@@ -330,11 +308,8 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             // Nieparzyste wiersze: nieprzezroczyste tło pod przyklejoną kolumną
                                             const isOddRow = index % 2 === 0;
                                             return (
-                                                <motion.tr
+                                                <tr
                                                     key={player.id}
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    transition={{ delay: index * 0.02 }}
                                                     className={cn(
                                                         "transition-colors",
                                                         isBkpk
@@ -359,7 +334,7 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                                     <td className="h-12 px-3 sm:px-5 text-center font-display text-[19px] leading-none text-bkpk-text-primary tabular-nums">
                                                         {stats.main}
                                                     </td>
-                                                </motion.tr>
+                                                </tr>
                                             );
                                         })}
                                     </tbody>

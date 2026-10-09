@@ -133,10 +133,19 @@ export default function Administration() {
 
     useEffect(() => {
         refreshStatus();
-        // Poll faster if modal is open to show live logs
+        // Poll faster if modal is open to show live logs; w tle (inna aplikacja / zablokowany ekran) bez zapytań
         const intervalTime = isModalOpen ? 1000 : 5000;
-        const interval = setInterval(refreshStatus, intervalTime);
-        return () => clearInterval(interval);
+        const interval = setInterval(() => {
+            if (document.visibilityState === 'visible') refreshStatus();
+        }, intervalTime);
+        const onVisible = () => {
+            if (document.visibilityState === 'visible') refreshStatus();
+        };
+        document.addEventListener('visibilitychange', onVisible);
+        return () => {
+            clearInterval(interval);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
     }, [isModalOpen]);
 
     const triggerScraper = async () => {

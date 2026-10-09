@@ -25,9 +25,6 @@ export function FormTrendMiniChart({ matches, loading }: FormTrendProps) {
                         <motion.div
                             key={match.id}
                             title={`${match.result === 'W' ? 'Wygrana' : 'Porażka'} ${match.score}`}
-                            initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                            animate={{ opacity: 1, scale: 1, x: 0 }}
-                            transition={{ delay: idx * 0.05, duration: 0.3 }}
                             className="min-w-[44px]"
                         >
                             <Link to={`/games/${match.id}`} className="flex flex-col items-center gap-1.5 group min-h-[44px]">

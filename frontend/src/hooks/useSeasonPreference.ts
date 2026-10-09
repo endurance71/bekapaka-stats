@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchJSON, putJSON } from '../lib/api';
 
 export interface KalkSeasonOption {
@@ -61,15 +61,17 @@ export function useSeasonPreference(playerId: string | undefined) {
     [playerId]
   );
 
-  const selectedSeason = seasons.find((s) => s.id === seasonId) ?? null;
-
-  return {
-    seasons,
-    seasonId,
-    selectedSeason,
-    loading,
-    error,
-    reload,
-    setSeasonId: handleSeasonChange
-  };
+  // Stała wartość kontekstu między renderami — strony z sezonem nie renderują się bez potrzeby
+  return useMemo(
+    () => ({
+      seasons,
+      seasonId,
+      selectedSeason: seasons.find((s) => s.id === seasonId) ?? null,
+      loading,
+      error,
+      reload,
+      setSeasonId: handleSeasonChange
+    }),
+    [seasons, seasonId, loading, error, reload, handleSeasonChange]
+  );
 }

@@ -1,6 +1,4 @@
-import { Fragment, useEffect, useState, useCallback } from 'react';
-import { fetchJSON } from '../../lib/api';
-import { motion } from 'framer-motion';
+import { Fragment, useState } from 'react';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
@@ -11,6 +9,7 @@ import { FormBadges, StreakBadge } from '../../shared/ui/FormBadges';
 import StatLabel from '../../shared/ui/StatLabel';
 import LoadError from '../../shared/ui/LoadError';
 import { useRefetchOnFocus } from '../../hooks/useRefetchOnFocus';
+import { useCachedJSON } from '../../hooks/useCachedJSON';
 
 interface Team {
     name: string;
@@ -104,47 +103,19 @@ interface LeagueTableModernProps {
 }
 
 export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) {
-    const [table, setTable] = useState<Team[]>([]);
     const [phase, setPhase] = useState<TablePhase>('regular');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<unknown>(null);
-    // Przełącznik „Tabela play-out” tylko gdy play-out istnieje w sezonie
-    const [hasPlayout, setHasPlayout] = useState(false);
     const showCards = usePortraitMobile();
     const isNarrow = useIsMobile(1024);
-
-    const fetchTable = useCallback(async () => {
-        if (!seasonId) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const q = new URLSearchParams({ phase });
-            q.set('seasonId', seasonId);
-            const data = await fetchJSON<Team[]>(`/api/league/table?${q.toString()}`);
-            setTable(data || []);
-        } catch (err) {
-            console.error(err);
-            setError(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [phase, seasonId]);
-
-    useEffect(() => {
-        fetchTable();
-    }, [fetchTable]);
-    useRefetchOnFocus(() => void fetchTable());
-
-    useEffect(() => {
-        if (!seasonId) return;
-        let active = true;
-        fetchJSON<Team[]>(`/api/league/table?phase=playout&seasonId=${encodeURIComponent(seasonId)}`)
-            .then((rows) => active && setHasPlayout((rows || []).length > 0))
-            .catch(() => active && setHasPlayout(false));
-        return () => {
-            active = false;
-        };
-    }, [seasonId]);
+    // Pamięć między stronami — tabela od razu po powrocie, świeża w tle
+    const tableQ = useCachedJSON<Team[]>(seasonId ? `/api/league/table?phase=${phase}&seasonId=${encodeURIComponent(seasonId)}` : null);
+    // Przełącznik „Tabela play-out” tylko gdy play-out istnieje w sezonie
+    const playoutQ = useCachedJSON<Team[]>(seasonId ? `/api/league/table?phase=playout&seasonId=${encodeURIComponent(seasonId)}` : null, 10 * 60_000);
+    const table = tableQ.data || [];
+    const loading = tableQ.loading;
+    const error = tableQ.error;
+    const hasPlayout = (playoutQ.data || []).length > 0;
+    const fetchTable = () => void tableQ.reload();
+    useRefetchOnFocus(fetchTable);
 
     if (loading) {
         return (
@@ -221,11 +192,8 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                             // Nieparzyste wiersze: nieprzezroczyste tło, żeby przyklejona kolumna nie prześwitywała
                             const isOddRow = index % 2 === 0;
                             return (
-                                <motion.tr
+                                <tr
                                     key={team.name}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.03 }}
                                     className={cn(
                                         "transition-colors",
                                         isBkpk
@@ -257,7 +225,7 @@ export default function LeagueTableModern({ seasonId }: LeagueTableModernProps) 
                                     <td className="h-12 px-3 sm:px-5 text-center">
                                         <StreakBadge streak={team.streak} />
                                     </td>
-                                </motion.tr>
+                                </tr>
                             );
                         })}
                     </tbody>

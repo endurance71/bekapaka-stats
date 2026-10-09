@@ -57,7 +57,7 @@ export default function BkpkTooltip({ content, children, className, label = 'Wyj
             const t = e.target as Node;
             if (!triggerRef.current?.contains(t) && !popupRef.current?.contains(t)) hide();
         };
-        window.addEventListener('scroll', updatePosition, true);
+        window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
         window.addEventListener('resize', updatePosition);
         document.addEventListener('keydown', onKey);
         document.addEventListener('pointerdown', onPointer);

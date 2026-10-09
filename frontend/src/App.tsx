@@ -8,23 +8,24 @@ import { AuthProvider } from './context/AuthContext';
 import { SeasonPreferenceProvider } from './context/SeasonPreferenceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import RedirectPreserveSearch from './shared/ui/RedirectPreserveSearch';
+import { pageImports } from './routes/pageImports';
 
 // Eager-loaded: pages the user lands on first
 import Dashboard from './pages/Dashboard';
 import LoginPage from './pages/LoginPage';
 
 // Lazy-loaded: heavy pages loaded on demand
-const Trends = lazy(() => import('./pages/Trends'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Administration = lazy(() => import('./pages/Administration'));
-const GameCenter = lazy(() => import('./pages/GameCenter'));
-const GameDetail = lazy(() => import('./pages/GameDetail'));
-const PlayerProfile = lazy(() => import('./pages/PlayerProfile'));
-const League = lazy(() => import('./pages/League'));
-const ScoutingPage = lazy(() => import('./pages/ScoutingPage'));
-const AiCenterPage = lazy(() => import('./pages/AiCenterPage'));
-const TeamPage = lazy(() => import('./pages/TeamPage'));
-const Glossary = lazy(() => import('./pages/Glossary'));
+const Trends = lazy(pageImports.trends);
+const Profile = lazy(pageImports.profile);
+const Administration = lazy(pageImports.administration);
+const GameCenter = lazy(pageImports.gameCenter);
+const GameDetail = lazy(pageImports.gameDetail);
+const PlayerProfile = lazy(pageImports.playerProfile);
+const League = lazy(pageImports.league);
+const ScoutingPage = lazy(pageImports.scouting);
+const AiCenterPage = lazy(pageImports.aiCenter);
+const TeamPage = lazy(pageImports.team);
+const Glossary = lazy(pageImports.glossary);
 
 
 export default function App() {

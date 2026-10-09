@@ -121,7 +121,7 @@ export default function ScoutingPage() {
   };
 
   if (loading) {
-    return <PageLoader fullScreen label="Ładowanie raportu..." />;
+    return <PageLoader label="Ładowanie raportu..." />;
   }
 
   if (!data) {
@@ -289,17 +289,11 @@ export default function ScoutingPage() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
         >
           <MatchupComparison opponent={radarOpponent} bekapaka={radarBeKaPaKa} />
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
         >
           <AiAnalysisBlock
             title="Analiza kadry (AI)"
@@ -318,9 +312,6 @@ export default function ScoutingPage() {
 
         {hasProtocolDna ? (
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
           >
             <DNASection data={advancedStats as Parameters<typeof DNASection>[0]['data']} />
           </motion.div>
@@ -328,9 +319,6 @@ export default function ScoutingPage() {
 
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
           >
             <BkpkCard
               title="Kluczowi gracze rywala"
@@ -401,9 +389,6 @@ export default function ScoutingPage() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
           >
             <BkpkCard
               title="Ostatnie mecze rywala"

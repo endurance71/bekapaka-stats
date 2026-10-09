@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import useIsMobile from '../../hooks/useIsMobile';
@@ -72,11 +71,8 @@ const cell = 'px-2 sm:px-4 py-2 sm:py-3 text-center tabular-nums';
 /** Memoized table row to prevent unnecessary re-renders */
 const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus }: { player: PlayerStat; idx: number; extended: boolean; showPlusMinus: boolean }) {
     return (
-        <motion.tr
+        <tr
             key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.03 }}
             className="group"
             aria-current={player.isMe ? 'true' : undefined}
         >
@@ -125,7 +121,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                 </td>
             )}
             <td className={cn(cell, 'font-semibold text-bkpk-text-primary text-xs sm:text-sm')}>{player.eval ?? '-'}</td>
-        </motion.tr>
+        </tr>
     );
 });
 

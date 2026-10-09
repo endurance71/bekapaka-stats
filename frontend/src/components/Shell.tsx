@@ -28,6 +28,9 @@ import { InstallPromptBanner } from './pwa/InstallPromptBanner';
 import { UpdateNotification } from './pwa/UpdateNotification';
 import { JerseyIcon, MatchIcon, TrophyIcon } from '../shared/ui/BrandIcon';
 import LoadError from '../shared/ui/LoadError';
+import { useScrollRestoration } from '../hooks/useScrollRestoration';
+import { prefetchPages, prefetchPagesWhenIdle } from '../routes/pageImports';
+import { usePWAUpdate } from '../lib/pwa';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
@@ -122,6 +125,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const pwaUpdate = usePWAUpdate();
   const mainRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -138,10 +142,18 @@ export default function Shell({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setIsMenuOpen(false);
-    // Nowa strona zaczyna się od góry (telefon: okno, desktop: <main>); zmiana samego ?widok= nie przewija
-    window.scrollTo(0, 0);
-    mainRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [location.pathname]);
+
+  // Nowa strona od góry, „Wstecz” wraca w to samo miejsce
+  useScrollRestoration(mainRef);
+
+  // Kod najczęstszych stron w tle po starcie i od razu przy otwarciu menu — przejście bez loadera
+  useEffect(() => {
+    prefetchPagesWhenIdle();
+  }, []);
+  useEffect(() => {
+    if (isMenuOpen) prefetchPages();
+  }, [isMenuOpen]);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
@@ -289,8 +301,9 @@ export default function Shell({ children }: { children: ReactNode }) {
         />
 
         <OfflineIndicator />
-        <InstallPromptBanner />
-        <UpdateNotification />
+        {/* Jedna informacja na dole naraz: nowa wersja ma pierwszeństwo przed zachętą do instalacji */}
+        {!pwaUpdate.updateAvailable && <InstallPromptBanner />}
+        <UpdateNotification {...pwaUpdate} />
 
       </div>
     </div>
