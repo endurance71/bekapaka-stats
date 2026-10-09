@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.3.0';
+export const LINT_VERSION = '1.4.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -19,6 +19,11 @@ const rules = [
   { re: /bilet/i, level: 'error', message: 'Mecze są bezpłatne — piszemy „Wstęp wolny”, bez biletów.' },
   { re: /\b(na wyjeździe|wyjazdow\w*|u siebie|mecz\w* domow\w*|w roli gospodarza)\b/i, level: 'warning', message: 'Mecze KALK są w jednej hali — bez oznaczeń dom/wyjazd, podaj miejsce.' },
   { re: /\b(najlepsz\w+ w historii|legendarn\w+|niesamowit\w+|epick\w+)\b/i, level: 'warning', message: 'Fakty zamiast patosu.' },
+  {
+    re: /(miażdż\p{L}*|zmiażdż\p{L}*|bezlitosn\p{L}*|rozgromi\p{L}*|pogrom\p{L}*|demolk\p{L}*|upokorz\p{L}*|deklasacj\p{L}*|nokaut\p{L}*)/iu,
+    level: 'warning',
+    message: 'Bez triumfalizmu — wysoką wygraną pokaż liczbami, z szacunkiem dla rywala.',
+  },
   // Judgements backed by a clear result are fine („zdominowaliśmy” at 86:20); otherwise they need numbers.
   {
     re: /(kontrolowa\p{L}*|dominowa\p{L}*|zdominowa\p{L}*|pod dyktando|narzuci\p{L}* (swój|nasz)|od (samego )?początku (meczu|spotkania))/iu,
