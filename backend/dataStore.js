@@ -317,13 +317,13 @@ export async function getRoster(querySeasonId = undefined, { includeInactive = f
   const rows = includeInactive || !targetSeason?.id
     ? allRows
     : allRows.filter((r) => !(r.inactiveSeasonIds || []).includes(targetSeason.id));
-  // Pozycja z profilu KALK (jak na profilu zawodnika), potem ze składu — jedno źródło w całym panelu
+  // Profil KALK: pozycja (jak na profilu zawodnika) i numer, gdy trener go nie wpisał w składzie
   const profileSlugs = rows.map((r) => rosterKalkSlug(r)).filter(Boolean);
-  const positionBySlug = new Map(
+  const profileBySlug = new Map(
     (profileSlugs.length
-      ? (await prisma.kalkPlayerProfile.findMany({ where: { slug: { in: profileSlugs } }, select: { slug: true, position: true } })) || []
+      ? (await prisma.kalkPlayerProfile.findMany({ where: { slug: { in: profileSlugs } }, select: { slug: true, position: true, lastNumber: true } })) || []
       : []
-    ).map((pr) => [pr.slug, pr.position])
+    ).map((pr) => [pr.slug, pr])
   );
 
   return Promise.all(
@@ -437,8 +437,8 @@ export async function getRoster(querySeasonId = undefined, { includeInactive = f
       id: r.id,
       firstName: r.firstName,
       lastName: r.lastName,
-      number: r.number,
-      position: positionBySlug.get(rosterKalkSlug(r)) || r.position,
+      number: r.number ?? profileBySlug.get(rosterKalkSlug(r))?.lastNumber ?? null,
+      position: profileBySlug.get(rosterKalkSlug(r))?.position || r.position,
       starter: r.starter,
       // Slug KALK (link z box score do profilu): kolumna albo `{sezon}__{slug}` z powiązania
       kalkSlug: rosterKalkSlug({ kalkSlug: r.kalkSlug, kalkPlayerId }),
@@ -620,7 +620,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
       let kalkProfile = null;
       if (player.kalkSlug) {
         try {
-          kalkProfile = await prisma.kalkPlayerProfile.findUnique({ where: { slug: player.kalkSlug }, select: { position: true } });
+          kalkProfile = await prisma.kalkPlayerProfile.findUnique({ where: { slug: player.kalkSlug }, select: { position: true, lastNumber: true } });
         } catch {
           kalkProfile = null;
         }
@@ -641,7 +641,8 @@ export async function getPlayerStats(playerId, seasonIdParam) {
           id: player.id,
           firstName: player.firstName,
           lastName: player.lastName,
-          number: player.number,
+          // Numer ze składu (trener), inaczej ostatni numer z KALK
+          number: player.number ?? kalkProfile?.lastNumber ?? null,
           // Jedno źródło pozycji: profil KALK (jak Kariera), potem skład
           position: kalkProfile?.position || player.position,
           kalkPlayer: kalkPlayer || null
