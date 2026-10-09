@@ -7,6 +7,7 @@ import { hash } from './storage.js';
 import { brandVoice, buildCopyPrompt } from './publications/prompts.js';
 import { buildReportPrompt, reportPartsSchema, reportReady } from './publications/report-prompt.js';
 import { assembleReport } from './publications/templates.js';
+import { currentSponsorFooter } from './publications/sponsors.js';
 import { copySchemas } from './publications/channels.js';
 import { playbook } from './publications/playbooks.js';
 import { CATALOG_VERSION, costMicros, findModel, providers, reservationMicros, tasks } from './providers/catalog.js';
@@ -117,9 +118,13 @@ export async function queueCopy(db, owner, publication, channelList, { brief = '
   const bytes = (p) => Buffer.byteLength(p.system + p.user + JSON.stringify(p.schema));
   if (prompt && bytes(prompt) > tasks.copy.maxInputBytes) fail(422, 'Dane do AI przekraczają limit bezpiecznej rezerwacji. Skróć notatki w faktach.');
   if (reportPrompt && bytes(reportPrompt) > tasks.report.maxInputBytes) fail(422, 'Dane meczu do relacji przekraczają limit bezpiecznej rezerwacji.');
-  const cacheKey = reportPrompt
-    ? hash({ copy: prompt && copyCacheKey(model.id, prompt), report: copyCacheKey(reportModel.id, reportPrompt) })
-    : copyCacheKey(model.id, prompt);
+  // The Facebook sponsor footer comes from bekapaka.pl/sponsorzy, not from the model.
+  const sponsorFooter = social.includes('facebook') ? await currentSponsorFooter() : '';
+  const cacheKey = hash({
+    copy: prompt && copyCacheKey(model.id, prompt),
+    report: reportPrompt && copyCacheKey(reportModel.id, reportPrompt),
+    sponsors: sponsorFooter,
+  });
   const cached = await db.studioCopyCache.findFirst({ where: { id: cacheKey, ownerId: owner } });
   if (cached) return { cached: true, result: cached.result };
   const calls = [...(prompt ? [{ model, taskId: 'copy' }] : []), ...(reportPrompt ? [{ model: reportModel, taskId: 'report' }] : [])];
@@ -133,7 +138,7 @@ export async function queueCopy(db, owner, publication, channelList, { brief = '
         data: {
           ownerId: owner,
           kind: 'ai-copy',
-          payload: { model, reportModel, publicationId: publication.id, factsHash: publication.factsHash, channels: channelList, prompt, reportPrompt, facts: reportPrompt ? facts : null, cacheKey },
+          payload: { model, reportModel, publicationId: publication.id, factsHash: publication.factsHash, channels: channelList, prompt, reportPrompt, facts: reportPrompt ? facts : null, sponsorFooter, cacheKey },
         },
       }),
     calls,
@@ -192,7 +197,7 @@ async function generateCopyJob(job, db) {
       for (const channel of channels.filter((c) => !(reportPrompt && c === 'website'))) {
         const parsed = copySchemas[channel].safeParse(out.json?.[channel]);
         if (!parsed.success) throw unusable(`AI zwróciło niepoprawny tekst kanału ${channel}`, model, out.usage, reserved);
-        copy[channel] = parsed.data;
+        copy[channel] = channel === 'facebook' ? { ...parsed.data, sponsors: job.payload.sponsorFooter || '' } : parsed.data;
       }
       return out;
     });

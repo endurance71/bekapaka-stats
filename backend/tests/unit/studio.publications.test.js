@@ -95,8 +95,12 @@ describe('schematic copy', () => {
 describe('brand lint', () => {
   const ig = (caption, extra = {}) => ({ caption, hashtags: ['#BKPK'], firstComment: '', altText: 'Wynik meczu', ...extra });
   it('accepts schematic copy', () => {
-    const c = schematicCopy(playbook('match-result'), match);
+    const c = schematicCopy(playbook('match-result'), match, { sponsorFooter: 'Dziękujemy naszym sponsorom: Gmina Bobolice · ShipApp' });
     for (const [channel, copy] of Object.entries(c)) expect(lintCopy(channel, copy, match)).toEqual([]);
+  });
+  it('requires the sponsor footer under Facebook posts', () => {
+    const c = schematicCopy(playbook('match-result'), match);
+    expect(lintCopy('facebook', c.facebook, match)).toEqual([expect.objectContaining({ level: 'error', field: 'sponsors' })]);
   });
   it('blocks wrong club names and tickets', () => {
     expect(hasErrors(lintCopy('instagram_feed', ig('Bekapaka gra dziś'), match))).toBe(true);
@@ -138,11 +142,40 @@ describe('publication helpers', () => {
   });
   it('lists what blocks approval', () => {
     const p = { facts: match, factsHash: 'a', factsConfirmedHash: null };
-    const item = { channel: 'facebook', copy: schematicCopy(playbook('match-result'), match).facebook, projectId: 'x', format: 'feed' };
+    const item = { channel: 'facebook', copy: schematicCopy(playbook('match-result'), match, { sponsorFooter: 'Dziękujemy naszym sponsorom: Gmina Bobolice' }).facebook, projectId: 'x', format: 'feed' };
     expect(readiness(p, item, { hasFormat: true, valid: false, exportJobId: null })).toEqual([
       'Potwierdź fakty publikacji',
       'Zatwierdź grafikę (dane, wygląd, kompozycja)',
     ]);
     expect(readiness({ ...p, factsConfirmedHash: 'a' }, item, { hasFormat: true, valid: true, exportJobId: 'j' })).toEqual([]);
+  });
+});
+
+describe('sponsors under Facebook posts', async () => {
+  const { sponsorFooter } = await import('../../studio/publications/channels.js');
+  const { channelTexts } = await import('../../studio/publications/texts.js');
+  const { fetchSponsors, resetSponsorCache } = await import('../../studio/publications/sponsors.js');
+  it('names every sponsor in the order of the site and goes into the pasted post', () => {
+    const footer = sponsorFooter([{ name: 'Gmina Bobolice' }, { name: ' Majster Plus Koszalin ' }, { name: '' }]);
+    expect(footer).toBe('Dziękujemy naszym sponsorom: Gmina Bobolice · Majster Plus Koszalin');
+    expect(sponsorFooter([])).toBe('');
+    const post = channelTexts({ channel: 'facebook', copy: { text: 'Wygraliśmy.', hashtags: ['#BKPK'], link: 'https://bekapaka.pl/a', altText: 'x', sponsors: footer } })['post.txt'];
+    expect(post).toBe(`Wygraliśmy.\n\n${footer}\n\nhttps://bekapaka.pl/a\n\n#BKPK`);
+  });
+  it('reads the list from the site API, sorted, and keeps the last list during an outage', async () => {
+    resetSponsorCache();
+    const original = globalThis.fetch;
+    let ok = true;
+    globalThis.fetch = async () => (ok ? new Response(JSON.stringify({ sponsors: [{ name: 'B', order: 2 }, { name: 'A', order: 1, facebookUrl: 'https://www.facebook.com/a' }] })) : new Response('down', { status: 502 }));
+    try {
+      expect((await fetchSponsors()).map((s) => s.name)).toEqual(['A', 'B']);
+      ok = false;
+      expect((await fetchSponsors({ fresh: true })).map((s) => s.name)).toEqual(['A', 'B']);
+      resetSponsorCache();
+      await expect(fetchSponsors()).rejects.toThrow(/sponsorów/);
+    } finally {
+      globalThis.fetch = original;
+      resetSponsorCache();
+    }
   });
 });

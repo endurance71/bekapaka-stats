@@ -18,7 +18,7 @@ export function channelTexts(item, graphic) {
     };
   if (item.channel === 'facebook')
     return {
-      'post.txt': `${c.text}${c.link ? `\n\n${c.link}` : ''}${c.hashtags.length ? `\n\n${c.hashtags.join(' ')}` : ''}${ai}`,
+      'post.txt': `${c.text}${c.sponsors ? `\n\n${c.sponsors}` : ''}${c.link ? `\n\n${c.link}` : ''}${c.hashtags.length ? `\n\n${c.hashtags.join(' ')}` : ''}${ai}`,
       'tekst-alternatywny.txt': c.altText,
     };
   return {

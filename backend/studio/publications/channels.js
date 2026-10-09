@@ -59,6 +59,8 @@ export const copySchemas = {
       hashtags: z.array(hashtag).max(2).default([]),
       link: z.string().trim().max(500).url().or(z.literal('')).default(''),
       altText: text(1500),
+      // Sponsor footer from the list on bekapaka.pl/sponsorzy, added by Studio (never written by AI).
+      sponsors: text(1500),
     })
     .strict(),
   website: z
@@ -72,6 +74,12 @@ export const copySchemas = {
     .strict(),
 };
 export const emptyCopy = (channel) => copySchemas[channel].parse({});
+
+/** Facebook footer naming every sponsor of bekapaka.pl/sponsorzy, in the order of that page. */
+export function sponsorFooter(sponsors = []) {
+  const names = sponsors.map((s) => String(s.name || '').trim()).filter(Boolean);
+  return names.length ? `Dziękujemy naszym sponsorom: ${names.join(' · ')}` : '';
+}
 
 // Full public statistics of a played KALK match (box score, quarters, team totals), filled by the stats system.
 // Every number a match report may quote lives here, so the brand lint can verify it.
