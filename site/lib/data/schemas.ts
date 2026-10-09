@@ -67,6 +67,8 @@ export const sponsorSchema = z.object({
   slug: z.string(),
   tier: z.enum(['main','strategic','supporting','local']).optional(),
   websiteUrl: z.string(),
+  /** Profil sponsora na Facebooku — do oznaczeń pod postami Studio (link z oficjalnej strony sponsora). */
+  facebookUrl: z.string().url().optional(),
   order: z.number(),
   logoUrl: z.string().optional(),
   /** Kolor tła ramki loga — dopasowany do pliku (np. czerwień Majster, biel Baumal). */

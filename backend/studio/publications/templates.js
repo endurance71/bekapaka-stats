@@ -457,7 +457,7 @@ export function schematicCopy(playbookDef, facts, settings = {}) {
   const out = {
     instagram_feed: { caption: body.replace(/Pełna relacja na bekapaka\.pl\./, 'Pełna relacja: link w bio.').replace('Więcej na bekapaka.pl.', 'Więcej: link w bio.'), hashtags: igTags, firstComment: '', altText: alt },
     instagram_story: { stickerText: (c.sticker || '').slice(0, 60), sticker: playbookDef.id === 'match-preview' ? 'countdown' : 'none', link: '', altText: alt },
-    facebook: { text: body, hashtags: fbTags, link: facts.link || '', altText: alt },
+    facebook: { text: body, hashtags: fbTags, link: facts.link || '', altText: alt, sponsors: settings.sponsorFooter || '' },
     website: {
       title: (reportTitle(playbookDef.id, facts) || c.hook || facts.title || playbookDef.label).replace(/[.!]$/, '').slice(0, 90),
       excerpt: reportExcerpt(playbookDef.id, facts) || excerpt(c),

@@ -1,10 +1,11 @@
 import { z } from 'zod';
-import { channelIds, channels, itemStatuses, PUBLICATION_VERSION } from './channels.js';
+import { channelIds, channels, itemStatuses, PUBLICATION_VERSION, sponsorFooter } from './channels.js';
 import { playbooks, PLAYBOOK_VERSION } from './playbooks.js';
 import { TEMPLATE_VERSION } from './templates.js';
 import { LINT_VERSION } from './brand-lint.js';
 import { PROMPT_VERSION } from './prompts.js';
 import { queueCopy } from '../ai.js';
+import { fetchSponsors } from './sponsors.js';
 import { createAgentToken, listAgentTokens, revokeAgentToken } from '../agent/tokens.js';
 import { contentSystemDocument } from './document.js';
 import { tools as agentTools } from '../agent/mcp.js';
@@ -33,6 +34,11 @@ const revision = z.object({ expectedRevision: z.number().int().min(1) }).strict(
 
 /** Studio 2 publication endpoints; mounted after Studio authentication. */
 export function publicationRoutes(router, db) {
+  // Sponsors of bekapaka.pl/sponsorzy for the Facebook footer and the tagging checklist.
+  router.get('/publications/sponsors', async (req, res) => {
+    const sponsors = await fetchSponsors({ fresh: req.query.fresh === '1' });
+    res.json({ sponsors, footer: sponsorFooter(sponsors) });
+  });
   router.get('/playbooks', (_req, res) =>
     res.json({
       versions: { publication: PUBLICATION_VERSION, playbooks: PLAYBOOK_VERSION, templates: TEMPLATE_VERSION, lint: LINT_VERSION, prompts: PROMPT_VERSION },

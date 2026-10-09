@@ -7,6 +7,7 @@ import { createStudioRouter } from '../../studio/routes.js';
 
 const enabled = !!process.env.STUDIO_TEST_DATABASE_URL;
 const owner = `studio-pub-${crypto.randomUUID()}`;
+let sponsorServer;
 let db, server, base, cookie;
 async function request(url, body, method = 'GET') {
   const res = await fetch(base + url, {
@@ -20,6 +21,12 @@ async function request(url, body, method = 'GET') {
 
 describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
   beforeAll(async () => {
+    // The site's sponsor list (bekapaka.pl/api/sponsors) for the Facebook footer.
+    const site = express();
+    site.get('/api/sponsors', (_req, res) => res.json({ sponsors: [{ name: 'Gmina Bobolice', order: 1, websiteUrl: '', facebookUrl: '' }] }));
+    sponsorServer = site.listen(0, '127.0.0.1');
+    await new Promise((resolve) => sponsorServer.once('listening', resolve));
+    process.env.STUDIO_SPONSORS_URL = `http://127.0.0.1:${sponsorServer.address().port}/api/sponsors`;
     process.env.STUDIO_OWNER_ID = owner;
     process.env.STUDIO_ORIGIN = 'http://localhost:5174';
     db = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.STUDIO_TEST_DATABASE_URL }) });
@@ -34,6 +41,8 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     cookie = login.res.headers.get('set-cookie').split(';')[0];
   }, 20_000);
   afterAll(async () => {
+    await new Promise((resolve) => sponsorServer.close(resolve));
+    delete process.env.STUDIO_SPONSORS_URL;
     await new Promise((resolve) => server.close(resolve));
     await db.studioPublication.deleteMany({ where: { ownerId: { in: [owner, `${owner}-other`] } } });
     await db.studioSetting.deleteMany({ where: { ownerId: owner } });
