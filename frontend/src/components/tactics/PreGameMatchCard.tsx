@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Printer, Copy, Check, Shield, Target, Zap, Shirt, AlertCircle } from 'lucide-react';
 import { ClockIcon as Clock, VenueIcon as MapPin, CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import BkpkButton from '../../shared/ui/BkpkButton';
 import { cn } from '../../shared/lib/utils';
-import { postJSON } from '../../lib/api';
+import { fetchJSON, postJSON } from '../../lib/api';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
 import { formatMatchTime } from '../../shared/lib/matchUtils';
 
@@ -111,8 +111,42 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
     setTimeout(() => setCopied(null), 2500);
   };
 
+  // Druk A4 / PDF: strona generowana przez serwer pod podpisanym linkiem (działa w Safari i w aplikacji na iPhonie,
+  // gdzie window.print() nie działa). Link pobieramy z wyprzedzeniem — otwarcie okna musi nastąpić od razu po stuknięciu.
+  const printOpponent = briefing?.opponentName || opponent;
+  const printLinkRef = useRef<{ url: string; at: number } | null>(null);
+  const [printError, setPrintError] = useState<string | null>(null);
+  const fetchPrintLink = useCallback(async () => {
+    const q = new URLSearchParams({ opponent: printOpponent || '' });
+    if (seasonId) q.set('seasonId', seasonId);
+    const res = await fetchJSON<{ url: string }>(`/api/tactics/pregame/print-link?${q.toString()}`);
+    printLinkRef.current = { url: res.url, at: Date.now() };
+    return res.url;
+  }, [printOpponent, seasonId]);
+
+  useEffect(() => {
+    if (!briefing || !printOpponent) return;
+    fetchPrintLink().catch(() => undefined);
+  }, [briefing, printOpponent, fetchPrintLink]);
+
   const handlePrint = () => {
-    window.print();
+    setPrintError(null);
+    const cached = printLinkRef.current;
+    if (cached && Date.now() - cached.at < 12 * 60 * 1000) {
+      window.open(cached.url, '_blank', 'noopener');
+      return;
+    }
+    // Link wygasł: okno otwieramy od razu (inaczej Safari je zablokuje), adres podstawiamy po pobraniu
+    const win = window.open('', '_blank');
+    fetchPrintLink()
+      .then((url) => {
+        if (win) win.location.href = url;
+        else window.location.href = url;
+      })
+      .catch(() => {
+        win?.close();
+        setPrintError('Nie udało się przygotować druku — spróbuj ponownie.');
+      });
   };
 
   if (!opponent && !briefing) {
@@ -163,6 +197,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
           </BkpkButton>}
         </div>
       </div>
+      {printError && <p role="alert" className="text-sm text-bkpk-text-danger-subtle">{printError}</p>}
 
       {/* Karta Główna Odprawy (Print & Screen ready) */}
       {!briefing ? (

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useOverlayViewportHeight, usePageScrollLock } from '@bekapaka/safari-overlay';
+import { useOverlayViewportHeight } from '@bekapaka/safari-overlay';
 import type { ComponentType } from 'react';
 import { ChevronRight, LogOut, X } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
@@ -172,6 +172,15 @@ export default function MobileFullScreenMenu({
         };
     }, [finishUnmount]);
 
+    /** Przejście do innej strony: menu znika od razu (bez 280 ms wysuwania), nowa strona jest widoczna natychmiast. */
+    const handleNavigate = useCallback(() => {
+        if (!isMounted) return;
+        closeCleanupRef.current?.();
+        closeCleanupRef.current = null;
+        finishUnmount();
+        onClose();
+    }, [isMounted, finishUnmount, onClose]);
+
     const handleRequestClose = useCallback(() => {
         if (!isMounted || isClosingRef.current) return;
         startCloseAnimation();
@@ -221,7 +230,17 @@ export default function MobileFullScreenMenu({
     }, [isMounted, handleRequestClose]);
 
     useOverlayViewportHeight(isMounted);
-    usePageScrollLock(isMounted, { htmlClass: 'is-overlay-open' });
+    // Lekka blokada przewijania: tylko overflow na <html>. Bez body {position: fixed} strona pod menu zostaje
+    // narysowana, więc po zamknięciu nie ma czarnej klatki ani skoku przewijania (iOS PWA).
+    useEffect(() => {
+        if (!isMounted) return;
+        const html = document.documentElement;
+        const prevOverflow = html.style.overflow;
+        html.style.overflow = 'hidden';
+        return () => {
+            html.style.overflow = prevOverflow;
+        };
+    }, [isMounted]);
     // Fokus w menu (klawiatura, czytnik ekranu); Esc obsługuje efekt wyżej
     useFocusTrap(panelRef, isVisible);
 
@@ -242,15 +261,22 @@ export default function MobileFullScreenMenu({
             aria-modal="true"
             aria-label="Menu nawigacji"
             className={cn(
-                'mobile-fullscreen-menu-root lg:hidden fixed left-0 right-0 z-[9999] w-full min-h-[100lvh] max-h-none bg-bkpk-bg overlay-viewport-fill',
+                // Przezroczysty kontener: przy wysuwaniu/chowaniu widać stronę pod spodem, nie czarne tło
+                'mobile-fullscreen-menu-root lg:hidden fixed left-0 right-0 z-[9999] w-full overlay-viewport-fill',
                 isVisible ? 'pointer-events-auto' : 'pointer-events-none'
             )}
         >
             <div
+                aria-hidden="true"
+                className={cn(
+                    'absolute inset-0 bg-black/60 transition-opacity duration-[280ms]',
+                    isVisible ? 'opacity-100' : 'opacity-0'
+                )}
+            />
+            <div
                 ref={panelRef}
                 className={cn(
                     'mobile-fullscreen-menu-panel absolute inset-0 flex flex-col bg-bkpk-bg text-bkpk-text-primary',
-                    'min-h-[100lvh] max-h-none overlay-viewport-fill',
                     'transition-transform duration-[280ms] ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform',
                     isVisible ? 'translate-x-0' : '-translate-x-full'
                 )}
@@ -272,30 +298,18 @@ export default function MobileFullScreenMenu({
 
                     <Link
                         to="/dashboard"
-                        onClick={handleRequestClose}
+                        onClick={handleNavigate}
                         className="absolute inset-x-4 z-[5] flex flex-col items-center justify-center text-center min-w-0 px-12 touch-manipulation"
                         aria-label="Przejdź do pulpitu"
                     >
                         <BrandMark size="sm" />
                     </Link>
 
-                    {user ? (
-                        <Link
-                            to="/profile"
-                            onClick={handleRequestClose}
-                            className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0"
-                            aria-label="Mój profil"
-                        >
-                            <PlayerAvatar player={user as PhotoSource} className="w-full h-full" />
-                        </Link>
-                    ) : (
-                        <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />
-                    )}
                 </header>
 
                 <MenuProfileSection
                     user={user}
-                    onClose={handleRequestClose}
+                    onClose={handleNavigate}
                     seasons={seasons}
                     seasonId={seasonId}
                     seasonsLoading={seasonsLoading}
@@ -304,7 +318,7 @@ export default function MobileFullScreenMenu({
                 />
 
                 <nav
-                    className="flex-1 min-h-0 mx-4 mb-2 overflow-y-auto no-scrollbar"
+                    className="flex-1 min-h-0 mx-4 mb-2 overflow-y-auto overscroll-contain no-scrollbar"
                     aria-label="Sekcje aplikacji"
                 >
                     {links.map((link, index) => {
@@ -314,7 +328,7 @@ export default function MobileFullScreenMenu({
                             {groupStart && <p className="label-caps text-[11px] text-bkpk-text-muted pl-4 pt-5 pb-2">Trener</p>}
                             <NavLink
                                 to={link.to}
-                                onClick={handleRequestClose}
+                                onClick={handleNavigate}
                                 className={({ isActive }) =>
                                     cn(
                                         'group relative flex items-center gap-4 pl-4 pr-2 min-h-[50px] py-1 border-b border-bkpk-border-subtle transition-colors duration-150',

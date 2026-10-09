@@ -58,6 +58,13 @@ afterAll(async () => {
 });
 
 describe('API authorization', () => {
+  it('pregame print page needs a valid signed link, not a session', async () => {
+    expect((await request('/api/print/pregame')).status).toBe(401);
+    expect((await request('/api/print/pregame?t=x.y.z')).status).toBe(401);
+    expect((await request('/api/print/pregame?t=' + token('player-1', 'USER'))).status).toBe(401);
+    expect((await request('/api/tactics/pregame/print-link?opponent=X')).status).toBe(401);
+  });
+
   it('session: invalid, expired, revoked or deleted token is 401; role comes from the database', async () => {
     expect((await request('/api/players/player-1', 'GET', 'not-a-jwt')).status).toBe(401);
     const expired = jwt.sign({ id: 'player-1', exp: Math.floor(Date.now() / 1000) - 60 }, secret);

@@ -223,7 +223,7 @@ export default function PlayByPlayPanel({ data, mySlug = null }: { data: PlayByP
                         const endRight = g.endScore ? (left === 'home' ? g.endScore.away : g.endScore.home) : null;
                         return (
                             <section key={g.period} aria-label={periodLongLabel(g.period)}>
-                                <header className="sticky top-0 z-10 flex items-center justify-between min-h-[48px] px-3 py-2 bg-[var(--table-head-bg)] text-[var(--table-head-text)]">
+                                <header className="sticky top-[var(--app-header-h,0px)] md:top-0 z-10 flex items-center justify-between min-h-[48px] px-3 py-2 bg-[var(--table-head-bg)] text-[var(--table-head-text)]">
                                     <h4 className="font-display font-extrabold uppercase text-xl leading-none">{periodLongLabel(g.period)}</h4>
                                     {g.endScore && (
                                         <span className="text-xs">

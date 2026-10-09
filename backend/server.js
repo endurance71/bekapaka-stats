@@ -82,9 +82,10 @@ import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponse
 import { createLoginThrottle } from './lib/loginThrottle.js';
 import { getGameInfo, getGamePlayByPlay, getPlayerCareer, getTeamsAllTime } from './kalk/v2/readModels.js';
 import { getPlayerHome } from './kalk/v2/home.js';
-import { resolveMatchDay, validateMatchDay } from './lib/matchDay.js';
+import { matchLogistics, resolveMatchDay, validateMatchDay } from './lib/matchDay.js';
 import { buildIcsCalendar, leagueMatchToEvent, selectTeamMatches } from './lib/calendarIcs.js';
 import { normalizeGoals, validateGoals } from './lib/playerGoals.js';
+import { PRINT_SCRIPT, printErrorHtml, renderPregamePrintHtml, verifyPrintToken } from './lib/pregamePrint.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -177,6 +178,38 @@ app.use(['/api/tactics', '/tactics'], authenticateToken, (req, res, next) => {
   }
   next();
 }, tacticsRouter);
+
+// Druk odprawy (A4/PDF): bez sesji, tylko z podpisanym linkiem z GET /api/tactics/pregame/print-link
+app.get(['/api/print/print.js', '/print/print.js'], (req, res) => {
+  res.type('application/javascript').set('Cache-Control', 'public, max-age=300').send(PRINT_SCRIPT);
+});
+
+app.get(['/api/print/pregame', '/print/pregame'], async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const target = verifyPrintToken(SECRET_KEY, req.query.t);
+  if (!target) return res.status(401).type('html').send(printErrorHtml('Link do druku wygasł — wróć do panelu i stuknij „Drukuj A4 / PDF” ponownie.'));
+  try {
+    const { seasonId, opponent } = target;
+    const [briefing, nextMatch] = await Promise.all([
+      prisma.preGameBriefing.findFirst({ where: { seasonId, opponentName: { equals: opponent, mode: 'insensitive' } } }),
+      prisma.leagueMatch.findFirst({
+        where: {
+          seasonId,
+          isFinished: false,
+          AND: [
+            { OR: [{ homeTeam: { contains: 'bekapaka', mode: 'insensitive' } }, { guestTeam: { contains: 'bekapaka', mode: 'insensitive' } }] },
+            { OR: [{ homeTeam: { equals: opponent, mode: 'insensitive' } }, { guestTeam: { equals: opponent, mode: 'insensitive' } }] }
+          ]
+        },
+        orderBy: { date: 'asc' }
+      })
+    ]);
+    res.type('html').send(renderPregamePrintHtml({ briefing, logistics: matchLogistics(nextMatch), venue: nextMatch?.venue ?? null, opponent }));
+  } catch (err) {
+    console.error('Pregame print error:', err);
+    res.status(500).type('html').send(printErrorHtml('Nie udało się przygotować odprawy do druku.'));
+  }
+});
 
 app.post(['/api/auth/login', '/auth/login'], async (req, res) => {
   const { username, password } = req.body || {};
