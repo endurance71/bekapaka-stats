@@ -21,6 +21,8 @@ import { upgradePresetPlays } from '../lib/playbookUpgrade.js';
 // Raz na proces: zagrywki z presetów pod starymi nazwami → polska wersja
 let presetUpgrade = null;
 import { computeTeamSynergy, emptySynergy } from '../kalk/v2/synergy.js';
+import { signPrintToken } from '../lib/pregamePrint.js';
+import { getJwtSecret } from '../lib/requireEnv.js';
 
 export const tacticsRouter = express.Router();
 
@@ -251,6 +253,20 @@ tacticsRouter.get('/pregame', async (req, res) => {
   } catch (err) {
     console.error('Error fetching pregame briefing:', err);
     res.status(500).json({ error: 'Błąd pobierania odprawy przedmeczowej' });
+  }
+});
+
+// GET /api/tactics/pregame/print-link — krótki podpisany link do strony A4 (działa w Safari bez sesji aplikacji)
+tacticsRouter.get('/pregame/print-link', async (req, res) => {
+  try {
+    const seasonId = await resolveSeasonId(req.query.seasonId);
+    const opponent = typeof req.query.opponent === 'string' ? req.query.opponent.trim() : '';
+    if (!seasonId || !opponent) return res.status(400).json({ error: 'Brak rywala do druku odprawy' });
+    const t = signPrintToken(getJwtSecret(), { seasonId, opponent });
+    res.json({ url: `/api/print/pregame?t=${encodeURIComponent(t)}` });
+  } catch (err) {
+    console.error('Print link error:', err);
+    res.status(500).json({ error: 'Nie udało się przygotować druku' });
   }
 });
 

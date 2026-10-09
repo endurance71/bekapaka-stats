@@ -26,7 +26,6 @@ import { useBreakpoint } from '../hooks/useIsMobile';
 import { OfflineIndicator } from './pwa/OfflineIndicator';
 import { InstallPromptBanner } from './pwa/InstallPromptBanner';
 import { UpdateNotification } from './pwa/UpdateNotification';
-import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { JerseyIcon, MatchIcon, TrophyIcon } from '../shared/ui/BrandIcon';
 import LoadError from '../shared/ui/LoadError';
 
@@ -124,6 +123,18 @@ export default function Shell({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   const mainRef = useRef<HTMLElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Wysokość paska aplikacji dla przyklejonych nagłówków w treści (np. kwarty w akcji po akcji)
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header || typeof ResizeObserver === 'undefined') return;
+    const set = () => document.documentElement.style.setProperty('--app-header-h', `${header.offsetHeight}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(header);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -131,18 +142,6 @@ export default function Shell({ children }: { children: ReactNode }) {
     window.scrollTo(0, 0);
     mainRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    const prevHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      document.documentElement.style.overflow = prevHtmlOverflow;
-    };
-  }, [isMenuOpen]);
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
@@ -238,8 +237,8 @@ export default function Shell({ children }: { children: ReactNode }) {
       {/* md:overflow-hidden — na telefonie przewija się okno, więc wrapper nie może przycinać, inaczej sticky nagłówka nie działa */}
       <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden relative">
 
-        {/* Mobile header — pasek statusu + 0,5 rem (jak nagłówek MobileFullScreenMenu, PWA na iOS: black-translucent) */}
-        <header className="md:hidden sticky top-0 z-40 shrink-0 flex items-center px-3 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
+        {/* Mobile header — przypięty u góry; w PWA na iOS pasek statusu jest czarny (status-bar-style: black) */}
+        <header ref={headerRef} className="md:hidden sticky top-0 z-40 shrink-0 flex items-center px-3 pb-2 pt-[calc(env(safe-area-inset-top,0px)+0.5rem)] bg-bkpk-bg border-b border-bkpk-border-subtle min-h-[56px] after:absolute after:inset-x-0 after:-bottom-px after:h-[2px] after:bg-bkpk-primary">
           <button
             type="button"
             onClick={() => setIsMenuOpen(true)}
@@ -258,23 +257,13 @@ export default function Shell({ children }: { children: ReactNode }) {
             <BrandMark size="sm" />
           </Link>
 
-          {user ? (
-            <Link
-              to="/profile"
-              className="relative z-10 ml-auto flex items-center justify-center w-11 h-11 border border-bkpk-border-strong overflow-hidden bg-ink-700 shrink-0 touch-manipulation"
-              aria-label="Mój profil"
-            >
-              <PlayerAvatar player={user} className="w-full h-full" />
-            </Link>
-          ) : (
-            <div className="relative z-10 ml-auto w-11 h-11 shrink-0" aria-hidden />
-          )}
         </header>
 
         <main
           ref={mainRef}
           className={cn(
-            'flex-1 w-full relative z-10 overflow-y-auto overflow-x-hidden',
+            // Telefon: przewija się okno (main bez overflow — inaczej sticky w treści przyklejałby się do main)
+            'flex-1 w-full relative z-10 overflow-x-clip md:overflow-y-auto md:overflow-x-hidden',
             'pb-[max(0.5rem,var(--safe-area-bottom))] md:pb-0',
             'md:min-h-0 md:no-scrollbar md:scroll-smooth md:bg-bkpk-bg'
           )}

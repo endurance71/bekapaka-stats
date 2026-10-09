@@ -51,23 +51,21 @@ html.is-overlay-open body {
 
 html {
   height: 100%;
-  height: -webkit-fill-available;
   background-color: var(--c-black, #0b0b0b);
+  /* Przewija się okno (html) — tu, nie na body, działa blokada „gumowego” przewinięcia */
+  overscroll-behavior-y: none;
 }
 
 body {
   min-height: 100%;
   min-height: 100dvh;
   min-height: 100svh;
-  min-height: -webkit-fill-available;
   background-color: var(--c-black, #0b0b0b);
-  overscroll-behavior-y: none;
 }
 
 #root {
   min-height: 100dvh;
   min-height: 100svh;
-  min-height: -webkit-fill-available;
   isolation: isolate;
 }
 
@@ -90,25 +88,22 @@ html.is-scroll-locked {
   overflow: hidden;
 }
 
-/* Mobile Safari: scroll całej strony (nie fixed shell) */
+/*
+ * Mobile Safari: przewija się okno (nie „fixed shell”).
+ * Bez overflow-y na html/body i z overflow-x: clip — `hidden` wymusza overflow-y: auto, przez co body
+ * stawało się własnym kontenerem przewijania, a przyklejony nagłówek (sticky) odjeżdżał pod pasek statusu.
+ */
 @supports (-webkit-touch-callout: none) {
   @media (max-width: 1023px) {
     html,
     body {
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow-x: clip;
     }
 
     #root {
       min-height: auto;
       isolation: auto;
     }
-  }
-
-  .mobile-fullscreen-menu-root,
-  .mobile-fullscreen-menu-panel {
-    min-height: -webkit-fill-available;
   }
 }
 
@@ -364,7 +359,7 @@ html.is-scroll-locked {
     color: var(--text);
     font-family: var(--font-text);
     font-feature-settings: "tnum" 0;
-    @apply antialiased overflow-x-hidden;
+    @apply antialiased overflow-x-clip;
   }
 
   h1,
