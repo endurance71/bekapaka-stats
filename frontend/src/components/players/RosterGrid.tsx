@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { CardGrid } from '../../shared/ui/PageLayout';
 import { useNavigate } from 'react-router-dom';
 import { useCachedJSON } from '../../hooks/useCachedJSON';
 import PlayerCard from '../../shared/ui/PlayerCard';
@@ -36,15 +37,16 @@ export default function RosterGrid() {
     const loading = rosterQ.loading;
     const error = Boolean(rosterQ.error) && !rosterQ.data;
 
-    const grid = 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-x-4 gap-y-8 sm:gap-x-6 sm:gap-y-10';
+    // Karty ~220 px: na telefonie zawsze 2 w rzędzie, na szerokim ekranie tyle, ile się zmieści
+    const gridProps = { min: 'min(220px, calc((100% - 24px) / 2))', mode: 'fill' } as const;
 
     if (loading) {
         return (
-            <div className={grid}>
+            <CardGrid {...gridProps}>
                 {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                     <div key={i} className="aspect-[4/5] bg-bkpk-surface border border-bkpk-border-subtle animate-pulse" />
                 ))}
-            </div>
+            </CardGrid>
         );
     }
 
@@ -61,10 +63,10 @@ export default function RosterGrid() {
     }
 
     return (
-        <div className={grid}>
+        <CardGrid {...gridProps}>
             {players.map((player) => (
                 <PlayerCard key={player.id} {...player} photoUrl={resolvePlayerImage(player)} isStarter={player.starter} onClick={(id) => navigate(`/players/${id}`)} />
             ))}
-        </div>
+        </CardGrid>
     );
 }

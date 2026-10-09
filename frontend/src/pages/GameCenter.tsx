@@ -18,7 +18,7 @@ export default function GameCenter() {
 
   return (
     <div className="bg-bkpk-bg">
-      <PageContainer width="narrow" className="max-w-[1200px]">
+      <PageContainer>
         <PageHeader
           kicker="Sezon"
           title="Mecze"

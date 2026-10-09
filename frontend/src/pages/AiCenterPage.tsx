@@ -11,7 +11,7 @@ export default function AiCenterPage() {
   }
 
   return (
-    <PageContainer width="narrow">
+    <PageContainer>
         <AiCatalogHub
           categorySlug={
             categorySlug && isValidAiCategorySlug(categorySlug)

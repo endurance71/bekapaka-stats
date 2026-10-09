@@ -165,7 +165,7 @@ export default function Dashboard() {
         </>
       }
       main={
-        <div className="space-y-8">
+        <>
           <FormTrendMiniChart matches={recentForm} loading={loading} />
           {/* Zawodnik nie widzi pustego bloku — tylko gotowe podsumowanie; trener widzi zawsze (przycisk Generuj) */}
           {(isAdmin || briefing?.contentMd) && (
@@ -185,7 +185,7 @@ export default function Dashboard() {
           />
           </Suspense>
           )}
-        </div>
+        </>
       }
       sidebar={<TopPlayersCard players={players} loading={loading} />}
     />

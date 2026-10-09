@@ -287,7 +287,8 @@ export default function Shell({ children }: { children: ReactNode }) {
           ) : (
             children
           )}
-          <div className="px-4 pb-2 md:px-8 md:pb-6">
+          {/* Te same marginesy i szerokość co PageContainer — stopka w jednej linii z treścią */}
+          <div className="w-full max-w-[1920px] px-4 md:px-8 lg:px-10 pb-2 md:pb-6">
             <AppFooter />
           </div>
         </main>

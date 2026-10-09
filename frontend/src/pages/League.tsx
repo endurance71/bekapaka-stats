@@ -6,7 +6,9 @@ import AllTimeTableModern from '../features/league/AllTimeTableModern';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import { Target, History } from 'lucide-react';
 import { TrophyIcon as Trophy, CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
-import { cn } from '../shared/lib/utils';
+import PageTabs from '../shared/ui/PageTabs';
+import { MainAside } from '../shared/ui/PageLayout';
+import NextRoundCard, { useNextRound } from '../features/league/NextRoundCard';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 
@@ -20,6 +22,8 @@ export default function League() {
     const activeTab: Tab = fromParam ?? 'table';
     const setActiveTab = (t: Tab) => setParams(t === 'table' ? {} : { widok: TAB_PARAM[t] }, { replace: true });
     const { seasonId, selectedSeason } = useSeasonPreferenceContext();
+    // Tabela + najbliższa kolejka obok (szeroki ekran); terminarz z tej samej pamięci danych co zakładka
+    const nextRoundData = useNextRound(seasonId);
 
     const tabs = [
         { id: 'table' as Tab, label: 'Tabela', icon: Trophy },
@@ -39,43 +43,20 @@ export default function League() {
                 }
             />
 
-            {/* Zakładki — jak `.tabs` na bekapaka.pl: wersaliki, 3 px czerwone podkreślenie aktywnej */}
-            <div role="tablist" aria-label="Sekcje ligi" className="flex overflow-x-auto no-scrollbar max-w-full gap-4 sm:gap-8 border-b border-bkpk-border-subtle">
-                {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    const isActive = activeTab === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            type="button"
-                            role="tab"
-                            aria-selected={isActive}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={cn(
-                                "relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-xs sm:text-sm transition-colors duration-200",
-                                "after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200",
-                                isActive
-                                    ? "text-bkpk-text-primary after:scale-x-100"
-                                    : "text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0"
-                            )}
-                        >
-                            {/* Na telefonie bez ikon — wszystkie zakładki mieszczą się bez obcinania */}
-                            <Icon className="hidden sm:block w-4 h-4 shrink-0" aria-hidden="true" />
-                            {tab.label}
-                        </button>
-                    );
-                })}
-            </div>
+            <PageTabs tabs={tabs} active={activeTab} onChange={setActiveTab} label="Sekcje ligi" />
 
             {/* Content Area */}
             {/* Zakładka od razu, bez animacji wyjścia/wejścia */}
             <div className="min-h-[600px]">
-                    {activeTab === 'table' && <LeagueTableModern seasonId={seasonId} />}
-                    {activeTab === 'schedule' && (
-                        <div className="border-t border-bkpk-border-subtle bg-bkpk-bg">
-                            <LeagueSchedule seasonId={seasonId} />
-                        </div>
-                    )}
+                    {activeTab === 'table' &&
+                        (nextRoundData ? (
+                            <MainAside aside={<NextRoundCard round={nextRoundData} />} asideFrom="7xl">
+                                <LeagueTableModern seasonId={seasonId} />
+                            </MainAside>
+                        ) : (
+                            <LeagueTableModern seasonId={seasonId} />
+                        ))}
+                    {activeTab === 'schedule' && <LeagueSchedule seasonId={seasonId} />}
                     {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
                     {activeTab === 'alltime' && <AllTimeTableModern />}
             </div>

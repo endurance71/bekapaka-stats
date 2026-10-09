@@ -1,5 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { Target, Shield, Zap, Sparkles, Award } from 'lucide-react';
@@ -17,6 +16,7 @@ import { useRosterLinks } from '../../shared/lib/useRosterLinks';
 import { formatStatFixed, fmtPct } from '../../shared/lib/formatStat';
 import LoadError from '../../shared/ui/LoadError';
 import { useCachedJSON } from '../../hooks/useCachedJSON';
+import { MAIN_ASIDE_GRID } from '../../shared/ui/PageLayout';
 
 interface Scorer {
     id: string;
@@ -183,19 +183,17 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
             ) : leaders.length === 0 ? (
                 <KalkEmptyState title={`Ranking dla kategorii ${currentCatInfo.label} jest pusty`} />
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Top 3 Podium */}
-                    <div className="md:col-span-12 lg:col-span-4 space-y-3 order-1">
+                <div className={MAIN_ASIDE_GRID}>
+                    {/* Podium (top 3): na telefonie nad tabelą, na szerokim ekranie w kolumnie bocznej po prawej */}
+                    <div className="min-w-0 space-y-3 @5xl:col-start-2 @5xl:row-start-1">
                         <SectionHeading as="h3" title={`Liderzy: ${currentCatInfo.label}`} className="mb-5" />
 
                         {leaders.slice(0, 3).map((player, idx) => {
                             const isBkpk = player.team?.toLowerCase().includes('bekapaka');
                             const stats = getCategoryStats(player, activeCategory);
                             return (
-                                <motion.div
-                                    key={player.id}
-                                >
-                                    <BkpkCard
+                                <BkpkCard
+                                        key={player.id}
                                         variant="flat"
                                         className={cn(
                                             "relative overflow-hidden group",
@@ -235,13 +233,12 @@ export default function TopScorersModern({ seasonId }: TopScorersModernProps) {
                                             {idx + 1}
                                         </div>
                                     </BkpkCard>
-                                </motion.div>
                             );
                         })}
                     </div>
 
                     {/* Rest of the List (4-20) */}
-                    <div className="md:col-span-12 lg:col-span-8 order-2">
+                    <div className="min-w-0 @5xl:col-start-1 @5xl:row-start-1">
                         <BkpkCard variant="flat" padding="none" className="overflow-hidden bg-bkpk-bg">
                             {showCards ? (
                             <MobileDataList>
