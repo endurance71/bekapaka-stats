@@ -33,6 +33,8 @@ export const models = [
 // Studio tasks that call a model. Limits drive the worst-case reservation of each call.
 export const tasks = {
   copy: { label: 'Teksty publikacji (IG, FB, WWW)', kind: 'text', maxInputBytes: 24000, maxOutputTokens: 10000, default: 'gemini-3.5-flash' },
+  // Written match report for bekapaka.pl (report-prompt.js); the model thinks before writing.
+  report: { label: 'Relacja meczowa na stronę', kind: 'text', maxInputBytes: 16000, maxOutputTokens: 12000, default: 'gemini-3.5-flash', thinking: true },
   text: { label: 'Opis i tekst alternatywny grafiki', kind: 'text', maxInputBytes: 16000, maxOutputTokens: 2000, default: 'gemini-3.5-flash' },
   image: { label: 'Tła AI (2K, bez ludzi)', kind: 'image', maxInputBytes: 4000, maxOutputTokens: 4096, default: 'gemini-3.1-flash-image' },
 };

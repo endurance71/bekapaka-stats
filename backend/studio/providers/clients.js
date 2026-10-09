@@ -44,16 +44,17 @@ export function failure(err) {
   return new ProviderError(`Dostawca AI nie odpowiedział poprawnie: ${text}`, { uncertain: true });
 }
 
-async function google({ apiKey, model, system, user, schema, maxOutputTokens }) {
+async function google({ apiKey, model, system, user, schema, maxOutputTokens, think = false }) {
   const client = new GoogleGenAI({ apiKey, httpOptions: { timeout: TIMEOUT_MS, retryOptions: { attempts: 1 } } });
   const response = await client.models.generateContent({
     model: model.id,
     contents: user,
     config: {
       systemInstruction: system,
-      temperature: 0.4,
+      temperature: think ? 0.7 : 0.4,
       maxOutputTokens,
-      ...(model.thinking === 'off' ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+      // A task that asks for thinking (the written report) gets a bounded budget even on „thinking off” models.
+      ...(think ? { thinkingConfig: { thinkingBudget: 4096 } } : model.thinking === 'off' ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
       responseMimeType: 'application/json',
       responseJsonSchema: schema,
     },
@@ -64,7 +65,7 @@ async function google({ apiKey, model, system, user, schema, maxOutputTokens }) 
   return { text: response.text || '', usage };
 }
 
-async function anthropic({ apiKey, model, system, user, schema, maxOutputTokens }) {
+async function anthropic({ apiKey, model, system, user, schema, maxOutputTokens, think = false }) {
   const client = new Anthropic({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 });
   // Current Claude models think adaptively; low effort keeps copywriting fast and cheap.
   const response = await client.messages.create({
@@ -72,7 +73,7 @@ async function anthropic({ apiKey, model, system, user, schema, maxOutputTokens 
     max_tokens: maxOutputTokens,
     system,
     messages: [{ role: 'user', content: user }],
-    output_config: { effort: 'low', format: { type: 'json_schema', schema: portableSchema(schema) } },
+    output_config: { effort: think ? 'medium' : 'low', format: { type: 'json_schema', schema: portableSchema(schema) } },
   });
   const usage = { inputTokens: response.usage?.input_tokens, outputTokens: response.usage?.output_tokens };
   if (response.stop_reason === 'refusal') throw new ProviderError('Model odmówił odpowiedzi. Zmień fakty lub wskazówkę.', { usage });
@@ -81,7 +82,7 @@ async function anthropic({ apiKey, model, system, user, schema, maxOutputTokens 
   return { text, usage };
 }
 
-async function openai({ apiKey, model, system, user, schema, maxOutputTokens }) {
+async function openai({ apiKey, model, system, user, schema, maxOutputTokens, think = false }) {
   const client = new OpenAI({ apiKey, timeout: TIMEOUT_MS, maxRetries: 0 });
   const response = await client.responses.create({
     model: model.id,

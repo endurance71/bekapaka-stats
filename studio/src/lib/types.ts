@@ -59,7 +59,7 @@ export type Template = {
   status: string;
 };
 export type Report = { valid: boolean; errors: { field: string; message: string }[] };
-export type AiTaskId = 'copy' | 'text' | 'image';
+export type AiTaskId = 'copy' | 'report' | 'text' | 'image';
 export type AiProviderId = 'google' | 'anthropic' | 'openai';
 export type AiModel = {
   id: string;

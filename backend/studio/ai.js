@@ -5,6 +5,8 @@ import { context } from './service.js';
 import { fail } from './config.js';
 import { hash } from './storage.js';
 import { brandVoice, buildCopyPrompt } from './publications/prompts.js';
+import { buildReportPrompt, reportPartsSchema, reportReady } from './publications/report-prompt.js';
+import { assembleReport } from './publications/templates.js';
 import { copySchemas } from './publications/channels.js';
 import { playbook } from './publications/playbooks.js';
 import { CATALOG_VERSION, costMicros, findModel, providers, reservationMicros, tasks } from './providers/catalog.js';
@@ -55,14 +57,16 @@ async function resolveModel(db, owner, taskId, modelId) {
 }
 
 /** Reserves the worst case of one call under the owner's monthly budget lock, then creates the job. */
-async function reserve(db, owner, model, taskId, createJob) {
-  const reserved = reservationMicros(model, taskId);
+async function reserve(db, owner, model, taskId, createJob, calls = [{ model, taskId }]) {
+  const reserved = calls.reduce((sum, c) => sum + reservationMicros(c.model, c.taskId), 0);
   return db.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`studio-ai-budget:${owner}:${month()}`}))`;
     const remaining = budgetLimit() - (await usedMicros(tx, owner));
     if (remaining < reserved) fail(402, `Miesięczny budżet AI nie wystarcza na to wywołanie (rezerwacja ${usd(reserved)}, zostało ${usd(Math.max(0, remaining))}). Wybierz tańszy model.`);
     const job = await createJob(tx);
-    await tx.studioAiUsage.create({ data: { ownerId: owner, jobId: job.id, month: month(), reservedMicros: reserved, model: model.id, pricingVersion: model.custom ? `custom/${CATALOG_VERSION}` : CATALOG_VERSION } });
+    const ids = [...new Set(calls.map((c) => c.model.id))].join(' + ');
+    const custom = calls.some((c) => c.model.custom);
+    await tx.studioAiUsage.create({ data: { ownerId: owner, jobId: job.id, month: month(), reservedMicros: reserved, model: ids, pricingVersion: custom ? `custom/${CATALOG_VERSION}` : CATALOG_VERSION } });
     return job;
   });
 }
@@ -94,19 +98,45 @@ export async function queueAi(db, owner, view, type, brief = '', modelId) {
 
 export const copyCacheKey = (model, prompt) => hash({ model, version: prompt.version, system: prompt.system, user: prompt.user, schema: prompt.schema });
 
-/** Queues (or serves from cache) AI copy for channels of a publication with confirmed facts. */
+/**
+ * Queues (or serves from cache) AI copy for channels of a publication with confirmed facts.
+ * The website article of a match with KALK statistics is a separate call: the reporter prompt (report-prompt.js)
+ * writes prose and Studio assembles the article. Social channels share one copy call. Both run in one job.
+ */
 export async function queueCopy(db, owner, publication, channelList, { brief = '', hashtags, aiArtwork = false, model: modelId } = {}) {
-  const model = await resolveModel(db, owner, 'copy', modelId);
-  if (!publication.factsConfirmedHash || publication.factsConfirmedHash !== publication.factsHash) fail(422, 'Potwierdź fakty publikacji przed wysłaniem ich do AI');
   const def = playbook(publication.playbook);
   if (!def) fail(422, 'Nieznany schemat publikacji');
-  const prompt = buildCopyPrompt({ playbookDef: def, facts: publication.facts, channelList, hashtags, brief, aiArtwork });
-  if (Buffer.byteLength(prompt.system + prompt.user + JSON.stringify(prompt.schema)) > tasks.copy.maxInputBytes) fail(422, 'Dane do AI przekraczają limit bezpiecznej rezerwacji. Skróć notatki w faktach.');
-  const cacheKey = copyCacheKey(model.id, prompt);
+  const facts = publication.facts;
+  const withReport = channelList.includes('website') && ['match-result', 'match-report'].includes(def.id) && reportReady(facts);
+  const social = withReport ? channelList.filter((c) => c !== 'website') : channelList;
+  const model = social.length ? await resolveModel(db, owner, 'copy', modelId) : null;
+  const reportModel = withReport ? await resolveModel(db, owner, 'report', modelId) : null;
+  if (!publication.factsConfirmedHash || publication.factsConfirmedHash !== publication.factsHash) fail(422, 'Potwierdź fakty publikacji przed wysłaniem ich do AI');
+  const prompt = social.length ? buildCopyPrompt({ playbookDef: def, facts, channelList: social, hashtags, brief, aiArtwork }) : null;
+  const reportPrompt = withReport ? buildReportPrompt(facts, brief) : null;
+  const bytes = (p) => Buffer.byteLength(p.system + p.user + JSON.stringify(p.schema));
+  if (prompt && bytes(prompt) > tasks.copy.maxInputBytes) fail(422, 'Dane do AI przekraczają limit bezpiecznej rezerwacji. Skróć notatki w faktach.');
+  if (reportPrompt && bytes(reportPrompt) > tasks.report.maxInputBytes) fail(422, 'Dane meczu do relacji przekraczają limit bezpiecznej rezerwacji.');
+  const cacheKey = reportPrompt
+    ? hash({ copy: prompt && copyCacheKey(model.id, prompt), report: copyCacheKey(reportModel.id, reportPrompt) })
+    : copyCacheKey(model.id, prompt);
   const cached = await db.studioCopyCache.findFirst({ where: { id: cacheKey, ownerId: owner } });
   if (cached) return { cached: true, result: cached.result };
-  const job = await reserve(db, owner, model, 'copy', (tx) =>
-    tx.studioJob.create({ data: { ownerId: owner, kind: 'ai-copy', payload: { model, publicationId: publication.id, factsHash: publication.factsHash, channels: channelList, prompt, cacheKey } } }),
+  const calls = [...(prompt ? [{ model, taskId: 'copy' }] : []), ...(reportPrompt ? [{ model: reportModel, taskId: 'report' }] : [])];
+  const job = await reserve(
+    db,
+    owner,
+    calls[0].model,
+    calls[0].taskId,
+    (tx) =>
+      tx.studioJob.create({
+        data: {
+          ownerId: owner,
+          kind: 'ai-copy',
+          payload: { model, reportModel, publicationId: publication.id, factsHash: publication.factsHash, channels: channelList, prompt, reportPrompt, facts: reportPrompt ? facts : null, cacheKey },
+        },
+      }),
+    calls,
   );
   return { cached: false, job };
 }
@@ -117,8 +147,91 @@ const notCalled = (message) => Object.assign(new Error(message), { notCalled: tr
 // The call was made and its usage is known, but the answer is unusable: the worker settles the actual cost.
 const unusable = (message, model, usage, reserved) => Object.assign(new Error(message), { usage, chargedMicros: costMicros(model, usage, reserved) });
 
+async function keyFor(db, owner, model) {
+  let key;
+  try {
+    key = await providerKey(db, owner, model.provider);
+  } catch (err) {
+    throw notCalled(err.message);
+  }
+  if (!key) throw notCalled(`Brak klucza API ${providers[model.provider].label}`);
+  return key;
+}
+
+/** Copy job: social channels (one call) and/or the written match report (reporter call), in that order. */
+async function generateCopyJob(job, db) {
+  const { prompt, reportPrompt, channels, facts } = job.payload;
+  const model = typeof job.payload.model === 'string' ? findModel(job.payload.model) : job.payload.model;
+  const reportModel = job.payload.reportModel || null;
+  if ((prompt && !model) || (reportPrompt && !reportModel)) throw notCalled('Nieznany model zadania AI');
+  // Keys first: a missing second key must not leave the first, already billed call unaccounted.
+  const key = prompt ? await keyFor(db, job.ownerId, model) : null;
+  const reportKey = reportPrompt ? await keyFor(db, job.ownerId, reportModel) : null;
+  let charged = 0;
+  const usage = {};
+  const copy = {};
+  const step = async (m, taskId, fn) => {
+    const reserved = reservationMicros(m, taskId);
+    try {
+      const out = await fn(reserved);
+      usage[taskId] = out.usage;
+      charged += costMicros(m, out.usage, reserved);
+      return out;
+    } catch (err) {
+      if (err instanceof ProviderError && err.rejected && !charged) throw notCalled(err.message);
+      if (err instanceof ProviderError && err.rejected) throw Object.assign(new Error(err.message), { usage, chargedMicros: charged });
+      if (err instanceof ProviderError && !err.uncertain) throw Object.assign(err, { usage, chargedMicros: charged + costMicros(m, err.usage, reserved) });
+      if (Number.isFinite(err.chargedMicros)) throw Object.assign(err, { usage, chargedMicros: charged + err.chargedMicros });
+      throw err;
+    }
+  };
+  if (prompt) {
+    await step(model, 'copy', async (reserved) => {
+      const out = await generateJson({ apiKey: key.apiKey, model, system: prompt.system, user: prompt.user, schema: prompt.schema, maxOutputTokens: tasks.copy.maxOutputTokens });
+      // Every channel must satisfy the same contract as manual copy; invalid answers are not partially applied.
+      for (const channel of channels.filter((c) => !(reportPrompt && c === 'website'))) {
+        const parsed = copySchemas[channel].safeParse(out.json?.[channel]);
+        if (!parsed.success) throw unusable(`AI zwróciło niepoprawny tekst kanału ${channel}`, model, out.usage, reserved);
+        copy[channel] = parsed.data;
+      }
+      return out;
+    });
+  }
+  if (reportPrompt) {
+    await step(reportModel, 'report', async (reserved) => {
+      const out = await generateJson({ apiKey: reportKey.apiKey, model: reportModel, system: reportPrompt.system, user: reportPrompt.user, schema: reportPrompt.schema, maxOutputTokens: tasks.report.maxOutputTokens, think: true });
+      const parts = reportPartsSchema.safeParse(out.json);
+      if (!parts.success) throw unusable('AI zwróciło niepełną relację meczu', reportModel, out.usage, reserved);
+      const website = (() => {
+        try {
+          return assembleReport(parts.data, facts);
+        } catch {
+          return null;
+        }
+      })();
+      if (!website) throw unusable('Relacja AI nie mieści się w kontrakcie strony', reportModel, out.usage, reserved);
+      copy.website = website;
+      return out;
+    });
+  }
+  const ids = [...new Set([model?.id, reportModel?.id].filter(Boolean))];
+  return {
+    result: {
+      copy,
+      promptVersion: [prompt?.version, reportPrompt?.version].filter(Boolean).join(' + '),
+      model: ids.join(' + '),
+      provider: [...new Set([model?.provider, reportModel?.provider].filter(Boolean))].join(' + '),
+      publicationId: job.payload.publicationId,
+      factsHash: job.payload.factsHash,
+    },
+    usage,
+    chargedMicros: charged,
+  };
+}
+
 /** Runs one AI job in the worker. Returns the result with provider usage and the charged cost. */
 export async function generateAi(job, db) {
+  if (job.kind === 'ai-copy') return generateCopyJob(job, db);
   const taskId = taskOf[job.kind];
   // Jobs queued before multi-provider support stored only the model id.
   const model = typeof job.payload.model === 'string' ? findModel(job.payload.model) : job.payload.model;
@@ -153,18 +266,5 @@ export async function generateAi(job, db) {
     if (!parsed.success) throw unusable('AI zwróciło nieprawidłową treść', model, usage, reserved);
     return { result: { ...parsed.data, model: model.id }, usage, chargedMicros: costMicros(model, usage, reserved) };
   }
-  const { prompt, channels } = job.payload;
-  const { json, usage } = await call(() => generateJson({ apiKey: key.apiKey, model, system: prompt.system, user: prompt.user, schema: prompt.schema, maxOutputTokens: tasks.copy.maxOutputTokens }));
-  // Every channel must satisfy the same contract as manual copy; invalid answers are not partially applied.
-  const copy = {};
-  for (const channel of channels) {
-    const parsed = copySchemas[channel].safeParse(json?.[channel]);
-    if (!parsed.success) throw unusable(`AI zwróciło niepoprawny tekst kanału ${channel}`, model, usage, reserved);
-    copy[channel] = parsed.data;
-  }
-  return {
-    result: { copy, promptVersion: prompt.version, model: model.id, provider: model.provider, publicationId: job.payload.publicationId, factsHash: job.payload.factsHash },
-    usage,
-    chargedMicros: costMicros(model, usage, reserved),
-  };
+  throw notCalled('Nieznany rodzaj zadania AI');
 }

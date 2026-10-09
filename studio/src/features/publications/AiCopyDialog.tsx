@@ -51,10 +51,22 @@ export default function AiCopyDialog({
   const [busy, setBusy] = useState(false);
   const b = budget.data;
   // Empty choice = the model set for this task in Settings.
+  // The website article of a match with KALK statistics is written by the reporter call (own task and model).
+  const withReport =
+    selected.includes('website') &&
+    ['match-result', 'match-report'].includes(publication.playbook) &&
+    !!publication.facts.report;
+  const social = selected.filter((c) => !(withReport && c === 'website'));
   const task = b?.tasks.find((t) => t.id === 'copy');
+  const reportTask = b?.tasks.find((t) => t.id === 'report');
   const chosen = model ? b?.models.find((m) => m.id === model) : b?.models.find((m) => m.id === task?.model);
-  const ready = !!(model ? chosen?.available : task?.available);
-  const maxCall = model ? chosen?.maxCallMicros?.copy : task?.maxCallMicros;
+  const reportModel = model ? chosen : b?.models.find((m) => m.id === reportTask?.model);
+  const ready =
+    (!social.length || !!(model ? chosen?.available : task?.available)) &&
+    (!withReport || !!(model ? chosen?.available : reportTask?.available));
+  const maxCall =
+    (social.length ? (model ? chosen?.maxCallMicros?.copy : task?.maxCallMicros) || 0 : 0) +
+    (withReport ? (model ? chosen?.maxCallMicros?.report : reportTask?.maxCallMicros) || 0 : 0);
 
   useEffect(() => {
     if (!job || !['queued', 'running'].includes(job.status)) return;
@@ -156,7 +168,7 @@ export default function AiCopyDialog({
                 kind="text"
                 value={model}
                 onChange={setModel}
-                defaultLabel={`Z ustawień: ${b.models.find((m) => m.id === task?.model)?.label ?? task?.model ?? '—'}`}
+                defaultLabel={`Z ustawień: ${[social.length ? (b.models.find((m) => m.id === task?.model)?.label ?? task?.model) : '', withReport ? `relacja: ${reportModel?.label ?? reportTask?.model}` : ''].filter(Boolean).join(' · ') || '—'}`}
               />
             </label>
           )}

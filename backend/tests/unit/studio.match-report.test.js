@@ -162,3 +162,54 @@ describe('reporter language in the brand lint', () => {
     expect(lintCopy('website', copy('Wspaniała atmosfera na trybunach.'), clear).some((i) => /Zdarzenie, którego nie ma/.test(i.message))).toBe(true);
   });
 });
+
+describe('AI reporter prompt and article assembly', async () => {
+  const { buildReportPrompt, reportPartsSchema, storyline } = await import('../../studio/publications/report-prompt.js');
+  const { assembleReport } = await import('../../studio/publications/templates.js');
+  const facts = factsSchema.parse({
+    kind: 'match', competition: 'KALK', seasonLabel: 'Sezon 2026/2027', round: '5', opponent: 'Pantery', date: '2026-10-04T10:00:00.000Z', venue: 'KOSiR Koszalin', entryInfo: 'Wstęp wolny', scoreUs: 12, scoreThem: 5,
+    report: {
+      quarters: [{ label: '1. kwarta', us: 7, them: 3 }, { label: '2. kwarta', us: 5, them: 2 }], halftime: { us: 12, them: 5 },
+      players: [{ name: 'Jan Kowalski', number: 7, pts: 10, reb: 4, ast: 2, stl: 1, fg: '4/6', three: '', eval: 12 }],
+      team: { us: { fg: '5/9', fgPct: 56, three: '1/2', threePct: 50, ft: '1/2', ftPct: 50, reb: 9, ast: 4, stl: 3, tov: 2, blk: 0, benchPts: 2, fastBreakPts: 4, ptsOffTurnovers: 3 }, them: { fg: '2/8', fgPct: 25, three: '0/3', threePct: 0, ft: '1/1', ftPct: 100, reb: 5, ast: 1, stl: 1, tov: 4, blk: 0, benchPts: 0, fastBreakPts: 0, ptsOffTurnovers: 1 } },
+      opponentTop: [{ name: 'Piotr Rywal', pts: 5, reb: 3 }],
+      mvp: { name: 'Jan Kowalski', eval: 12 },
+      nextMatch: { opponent: 'Młode Wilki', date: '2026-10-11T16:00:00.000Z', venue: 'KOSiR Koszalin' },
+      flow: matchFlow(game, 'home'),
+    },
+  });
+
+  it('gives the model a storyline in match order with local times and run quarters', () => {
+    const lines = storyline(facts);
+    expect(lines[0]).toBe('Mecz: BeKaPaKa Bobolice – Pantery 12:5 (wygrana BeKaPaKa), 5. kolejka KALK, sezon 2026/2027.');
+    expect(lines).toContain('Termin: w niedzielę, 4 października, o 12:00, KOSiR Koszalin.');
+    expect(lines.join('\n')).toContain('Seria 10:0 BeKaPaKa od 2. do 12. minuty (1.–2. kwarta): z 2:3 na 12:3; punkty: Jan Kowalski 8 i Adam Nowak 2.');
+    expect(lines.at(-1)).toBe('Następny mecz BeKaPaKa: Młode Wilki, w niedzielę, 11 października, o 18:00, KOSiR Koszalin.');
+    const p = buildReportPrompt(facts);
+    expect(p.system).toContain('reporterem sportowym');
+    expect(p.system).not.toContain('mediów społecznościowych');
+    expect(p.user).toContain('OŚ MECZU');
+    expect(p.user).not.toContain('"report"');
+  });
+
+  it('assembles the article: prose from the model, data block from facts', () => {
+    const parts = reportPartsSchema.parse({
+      title: 'Seria 10:0 dała zwycięstwo. BeKaPaKa lepsza od Pantery',
+      excerpt: 'BeKaPaKa Bobolice wygrała z zespołem Pantery 12:5. Mecz ustawiła seria 10:0 w pierwszej połowie.',
+      lead: 'BeKaPaKa Bobolice wygrała z zespołem Pantery 12:5. O wyniku przesądziła seria 10:0.',
+      story: ['## Akapit pierwszy z **pogrubieniem**.', 'Akapit drugi.'],
+      heroes: ['Jan Kowalski rzucił 10 punktów.'],
+      coverAlt: 'Grafika z wynikiem 12:5.',
+    });
+    expect(parts.story[0]).toBe('Akapit pierwszy z pogrubieniem.');
+    const w = assembleReport(parts, facts);
+    expect(w.title).toBe('Seria 10:0 dała zwycięstwo. BeKaPaKa lepsza od Pantery');
+    expect(w.content).toContain('BeKaPaKa Bobolice 12:5 Pantery');
+    expect(w.content).toContain('## Przebieg meczu\n\nAkapit pierwszy z pogrubieniem.\n\nAkapit drugi.');
+    expect(w.content).toContain('## Bohaterowie meczu\n\nJan Kowalski rzucił 10 punktów.');
+    expect(w.content).toContain('## Mecz w danych\n\n- **1. kwarta:** 7:3');
+    expect(w.content).toContain('- **Rzuty z gry:** BeKaPaKa 5/9 (56%) · Pantery 2/8 (25%)');
+    expect(w.content).toContain('## Następny mecz');
+    expect(lintCopy('website', w, facts).filter((i) => i.level === 'error')).toEqual([]);
+  });
+});

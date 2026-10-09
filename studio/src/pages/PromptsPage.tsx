@@ -5,6 +5,8 @@ import {
   brandVoice,
   channelIds,
   channelInstructions,
+  reportSystem,
+  REPORT_PROMPT_VERSION,
   channels,
   playbooks,
   PROMPT_VERSION,
@@ -45,6 +47,14 @@ export default function PromptsPage() {
             <pre>{channelInstructions[c]}</pre>
           </details>
         ))}
+      </section>
+      <section className="prompt-block">
+        <h2>Relacja meczowa na stronę</h2>
+        <p className="muted">
+          Wersja <b>{REPORT_PROMPT_VERSION}</b>. Model dostaje oś meczu z danych KALK i pisze wyłącznie prozę; wynik,
+          kwarty, porównanie zespołów i następny mecz Studio dokłada z faktów.
+        </p>
+        <pre>{reportSystem}</pre>
       </section>
       <section className="prompt-block">
         <h2>Schematy publikacji ({playbooks.length})</h2>
