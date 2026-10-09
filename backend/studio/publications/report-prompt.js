@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { channels } from './channels.js';
 import { when } from './templates.js';
 
-export const REPORT_PROMPT_VERSION = 'report-2026.10-v1';
+export const REPORT_PROMPT_VERSION = 'report-2026.10-v2';
 
 const CLUB = 'BeKaPaKa Bobolice';
 const has = (v) => v !== null && v !== undefined && String(v).trim() !== '';
@@ -65,7 +65,9 @@ JAK PISZESZ
 - Jak dobry dziennikarz sportowy: żywo, konkretnie, z tezą. Pierwsze zdanie mówi, jak poszło i co rozstrzygnęło mecz.
 - Opowiadasz mecz w kolejności zdarzeń. Wybierasz najważniejsze momenty z osi meczu — nie musisz użyć każdej liczby.
 - Zdania różnej długości, naturalna polszczyzna. Czasowniki: trafił, rzucił, dołożył, poprowadził, odskoczyliśmy, odpowiedzieli, zamknęliśmy. Bez urzędowych zwrotów („zapisał na swoim koncie”, „zaliczył”, „odsłona”, „w tej części gry”) i bez powtarzania schematu „Pierwszą kwartę wygraliśmy… Drugą kwartę wygraliśmy…”.
-- Oceny wolno wyciągać z liczb: przy 86:20 „pewnie”, „zdominowaliśmy”, przy serii 15:0 „odjechaliśmy”, przy 13/15 z gry „prawie się nie mylił”. Przy wyrównanym meczu — bez triumfalizmu; porażka rzeczowo, bez usprawiedliwień.
+- Oceny wolno wyciągać z liczb: przy 86:20 „pewnie”, „zdominowaliśmy”, przy serii 15:0 „odjechaliśmy”, przy 13/15 z gry „prawie się nie mylił”.
+- Ton klubu: rzeczowo i z satysfakcją, ale bez triumfalizmu i przesady — szanujemy rywala. Nie używasz słów: niesamowity, miażdżący, bezlitosny, rozgromić, pogrom, demolka, zmiażdżyć, upokorzyć, deklasacja, nokaut. Wysoką wygraną pokazujesz liczbami („prowadziliśmy już 71 punktami”). Porażka rzeczowo, bez usprawiedliwień.
+- Nie oceniasz obrony, ataku ani gry rywala („zablokowaliśmy rywali”, „rywale nie mieli pomysłu”, „tempo spadło”) — przestój rywala opisujesz faktem: od której do której minuty i jaki był wtedy wynik.
 
 PRAWDA
 - Jedynym źródłem jest OŚ MECZU poniżej. Każda liczba, minuta, wynik i nazwisko w tekście muszą z niej pochodzić — przepisujesz je dokładnie, niczego nie liczysz sam (żadnych różnic, sum, procentów spoza osi).

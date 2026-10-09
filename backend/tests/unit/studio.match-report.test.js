@@ -160,6 +160,7 @@ describe('reporter language in the brand lint', () => {
     expect(lintCopy('website', text, clear).some((i) => /Ocena przebiegu/.test(i.message))).toBe(false);
     expect(lintCopy('website', text, close).some((i) => /Ocena przebiegu/.test(i.message))).toBe(true);
     expect(lintCopy('website', copy('Wspaniała atmosfera na trybunach.'), clear).some((i) => /Zdarzenie, którego nie ma/.test(i.message))).toBe(true);
+    expect(lintCopy('website', copy('Rozgromiliśmy rywala, pieczętując pogrom.'), clear).some((i) => /Bez triumfalizmu/.test(i.message))).toBe(true);
   });
 });
 
