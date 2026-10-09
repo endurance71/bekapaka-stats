@@ -186,6 +186,7 @@ describe('AI reporter prompt and article assembly', async () => {
     expect(lines).toContain('Termin: w niedzielę, 4 października, o 12:00, KOSiR Koszalin.');
     expect(lines.join('\n')).toContain('Seria 10:0 BeKaPaKa od 2. do 12. minuty (1.–2. kwarta): z 2:3 na 12:3; punkty: Jan Kowalski 8 i Adam Nowak 2.');
     expect(lines.at(-1)).toBe('Następny mecz BeKaPaKa: Młode Wilki, w niedzielę, 11 października, o 18:00, KOSiR Koszalin.');
+    expect(lines.join('\n')).toContain('Najmocniejsze fakty meczu: skuteczność z gry: BeKaPaKa 5/9 (56%), rywal 2/8 (25%); rywal stracił 4 piłek, BeKaPaKa zdobyła po nich 3 punktów');
     const p = buildReportPrompt(facts);
     expect(p.system).toContain('reporterem sportowym');
     expect(p.system).not.toContain('mediów społecznościowych');
@@ -212,5 +213,16 @@ describe('AI reporter prompt and article assembly', async () => {
     expect(w.content).toContain('- **Rzuty z gry:** BeKaPaKa 5/9 (56%) · Pantery 2/8 (25%)');
     expect(w.content).toContain('## Następny mecz');
     expect(lintCopy('website', w, facts).filter((i) => i.level === 'error')).toEqual([]);
+  });
+
+  it('puts the closing paragraph before the data block and drops the duplicate rival line', () => {
+    const parts = reportPartsSchema.parse({
+      title: 'Seria 10:0 dała zwycięstwo z zespołem Pantery', excerpt: 'BeKaPaKa Bobolice wygrała z zespołem Pantery 12:5 po serii 10:0 w pierwszej połowie meczu.',
+      lead: 'Wygraliśmy 12:5.', story: ['Jeden.', 'Dwa.'], heroes: ['Bohater.'], closing: 'U rywali najwięcej punktów zdobył Piotr Rywal – 5. Zapraszamy na kolejny mecz – wstęp wolny.', coverAlt: '',
+    });
+    const w = assembleReport(parts, facts);
+    expect(w.content).toContain('Bohater.\n\nU rywali najwięcej punktów zdobył Piotr Rywal – 5.');
+    expect(w.content).not.toContain('Najwięcej punktów dla Pantery');
+    expect(lintCopy('website', { ...w, content: 'Rzucił 10 oczek i przypieczętował wygraną.' }, facts).some((i) => /Wytarty zwrot/.test(i.message))).toBe(true);
   });
 });

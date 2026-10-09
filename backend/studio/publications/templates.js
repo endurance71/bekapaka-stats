@@ -395,10 +395,12 @@ export function assembleReport(parts, f) {
     d.scoreLine,
     `## Przebieg meczu\n\n${parts.story.join('\n\n')}`,
     `## Bohaterowie meczu\n\n${parts.heroes.join('\n\n')}`,
+    parts.closing || '',
     d.strip.length >= 2 ? `BeKaPaKa w liczbach: ${d.strip.join(' · ')}` : '',
     data.length >= 2 ? `## Mecz w danych\n\n${data.join('\n')}` : '',
     d.playerRows.length >= 2 ? `### Nasi zawodnicy\n\n${d.playerRows.join('\n')}` : '',
-    d.opponentLine,
+    // The closing paragraph already names the rival's top scorer.
+    parts.closing ? '' : d.opponentLine,
     d.nextRows.length >= 2 ? `## Następny mecz\n\n${d.nextRows.join('\n')}` : '',
   );
   return copySchemas.website.parse({ title: parts.title, excerpt: parts.excerpt, content, tags: ['mecz', 'kalk'], coverAlt: parts.coverAlt || altText({ id: 'match-result', label: 'Wynik meczu' }, f).slice(0, 300) });
