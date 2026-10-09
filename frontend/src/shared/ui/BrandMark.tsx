@@ -18,10 +18,10 @@ export function BrandMark({ compact = false, label, size = 'md', className }: Br
 
     return (
         <span className={cn('inline-flex items-center gap-3 min-h-[44px] min-w-0', className)}>
-            <img src={sygnetUrl} alt="" className={cn(markH, 'w-auto aspect-[912/981] shrink-0')} />
+            <img src={sygnetUrl} alt="" width={912} height={981} decoding="async" className={cn(markH, 'w-auto aspect-[912/981] shrink-0')} />
             {!compact && (
                 <span className="flex flex-col gap-1 min-w-0">
-                    <img src={wordmarkUrl} alt="BeKaPaKa" className={cn(wordW, 'h-auto')} />
+                    <img src={wordmarkUrl} alt="BeKaPaKa" width={1216} height={300} decoding="async" className={cn(wordW, 'h-auto')} />
                     {label && (
                         <span className="label-caps text-[11px] leading-none text-bkpk-text-muted truncate">
                             {label}

@@ -1,30 +1,48 @@
 /**
  * BeKaPaKa — Service Worker panelu.
- * __BUILD_ID__ podmienia build (vite.config.ts → serviceWorkerVersionPlugin): każde wdrożenie = nowy plik,
- * przeglądarka wykrywa aktualizację i panel pokazuje „Dostępna nowa wersja”.
+ * Build (vite.config.ts → serviceWorkerVersionPlugin) podmienia __BUILD_ID__ i __PRECACHE_ASSETS__:
+ * każde wdrożenie = nowy plik, przeglądarka wykrywa aktualizację i panel pokazuje pigułkę „Nowa wersja”.
  */
 
-const CACHE_NAME = 'bkpk-stats-__BUILD_ID__';
+const BUILD_ID = '__BUILD_ID__';
+const CACHE_NAME = `bkpk-stats-${BUILD_ID}`;
+const SHELL_URL = '/index.html';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
+  SHELL_URL,
   '/manifest.webmanifest',
   '/favicon.ico',
   '/favicon.png',
   '/icon-192.png',
 ];
+// Wszystkie pliki z dist/assets (z hashem w nazwie) — start i każda strona działają od razu, także offline
+const PRECACHE_ASSETS = /*__PRECACHE_ASSETS__*/[];
 
-// 1. Install: Precache shell assets
+// 1. Install: powłoka + pliki wersji. Pliki z hashem, które telefon już ma (poprzednia wersja), kopiujemy
+//    z poprzedniego cache zamiast pobierać ponownie — aktualizacja ściąga tylko to, co się zmieniło.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.addAll(STATIC_ASSETS.map((url) => new Request(url, { cache: 'reload' })));
+      await Promise.all(
+        PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const previous = await caches.match(url);
+            if (previous) return cache.put(url, previous);
+            const response = await fetch(url);
+            if (response.ok) await cache.put(url, response);
+          } catch {
+            // Pojedynczy plik nie blokuje instalacji — dociągnie się przy pierwszym użyciu
+          }
+        })
+      );
+    })()
   );
-  // Bez skipWaiting: nowa wersja czeka, aż zawodnik stuknie „Zaktualizuj teraz” (SKIP_WAITING) albo zamknie aplikację
+  // Bez skipWaiting: nowa wersja czeka na „Odśwież” w pigułce (SKIP_WAITING), powrót do aplikacji po dłuższej
+  // przerwie albo zamknięcie aplikacji
 });
 
-// 2. Activate: Purge obsolete caches
+// 2. Activate: usunięcie cache poprzednich wersji
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -47,6 +65,9 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
 
+  // Strony serwera otwierane w nowym oknie (np. druk A4 odprawy z podpisanym linkiem) — prosto z sieci, bez cache
+  if (request.mode === 'navigate' && url.pathname.startsWith('/api/')) return;
+
   // Strategy A: API requests -> Network-First with cache fallback.
   // Odpowiedzi z tokenem (dane zawodnika) nigdy nie trafiają do cache — po wylogowaniu nic nie zostaje w telefonie.
   if (url.pathname.startsWith('/api/')) {
@@ -65,7 +86,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Strategy C: HTML Navigation -> Stale-While-Revalidate with index.html fallback
+  // Strategy C: nawigacja w aplikacji -> powłoka z cache (natychmiastowy start), sieć tylko gdy jej brak
   if (request.mode === 'navigate') {
     event.respondWith(navigationHandler(request));
     return;
@@ -130,31 +151,32 @@ async function cacheFirst(request) {
   }
 }
 
-// Navigation Handler (Stale-While-Revalidate + index.html fallback)
+// Nawigacja: każdy adres panelu to ta sama powłoka SPA (jeden klucz /index.html) z cache tej wersji.
+// Nowy HTML przychodzi razem z nową wersją SW (inny BUILD_ID), więc powłoka zawsze pasuje do plików z cache.
 async function navigationHandler(request) {
-  try {
-    const networkResponse = await fetch(request);
-    if (networkResponse && networkResponse.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, networkResponse.clone());
-      return networkResponse;
-    }
-  } catch {
-    // Network failed, try exact cached request or index.html shell
-  }
-
-  const cached = await caches.match(request);
-  if (cached) return cached;
-
-  const shell = await caches.match('/index.html');
+  const cache = await caches.open(CACHE_NAME);
+  const shell = await cache.match(SHELL_URL);
   if (shell) return shell;
 
-  return caches.match('/');
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse && networkResponse.ok && (networkResponse.headers.get('content-type') || '').includes('text/html')) {
+      cache.put(SHELL_URL, networkResponse.clone());
+    }
+    return networkResponse;
+  } catch (err) {
+    const anyShell = await caches.match(SHELL_URL);
+    if (anyShell) return anyShell;
+    throw err;
+  }
 }
 
-// 4. Message Handler for SKIP_WAITING
+// 4. Wiadomości z panelu: SKIP_WAITING (włącz nową wersję), GET_VERSION (zamknięcie pigułki per wersja)
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  } else if (event.data.type === 'GET_VERSION' && event.ports[0]) {
+    event.ports[0].postMessage(BUILD_ID);
   }
 });

@@ -76,9 +76,6 @@ export default function TopPlayersCard({ players, loading }: TopPlayersCardProps
                     return (
                         <Link key={player.id} to={`/players/${player.id}`} className="block">
                         <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.1 }}
                             className={cn(
                                 "group relative flex items-center gap-4 p-3 sm:p-4 border transition-colors duration-200",
                                 isFirst

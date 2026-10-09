@@ -38,8 +38,16 @@ export const syncPwaSafeArea = (): void => {
 export const initPwaSafeArea = (): void => {
   syncPwaSafeArea()
 
-  window.addEventListener('resize', syncPwaSafeArea)
-  window.addEventListener('orientationchange', syncPwaSafeArea)
-  window.visualViewport?.addEventListener('resize', syncPwaSafeArea)
-  window.visualViewport?.addEventListener('scroll', syncPwaSafeArea)
+  // Pomiar wymusza przeliczenie układu — najwyżej raz na klatkę i tylko przy zmianie rozmiaru (nie przy przewijaniu)
+  let frame = 0
+  const schedule = () => {
+    if (frame) return
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      syncPwaSafeArea()
+    })
+  }
+  window.addEventListener('resize', schedule)
+  window.addEventListener('orientationchange', schedule)
+  window.visualViewport?.addEventListener('resize', schedule)
 }

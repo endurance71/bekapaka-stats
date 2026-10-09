@@ -13,7 +13,12 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
     return undefined;
   }
 
-  // Only register in production or localhost
+  // Tylko build produkcyjny: w `vite dev` powłoka z cache SW zasłaniałaby zmiany — stary worker wyrejestrowujemy
+  if (import.meta.env.DEV) {
+    void navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => void r.unregister()));
+    return undefined;
+  }
+
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', {
       scope: '/',
@@ -121,32 +126,62 @@ export function useOnlineStatus(): boolean {
   return isOnline;
 }
 
+const UPDATE_DISMISSED_KEY = 'bkpk-update-dismissed';
+/** Po takiej przerwie w tle powrót do aplikacji od razu włącza nową wersję (krótkie przełączenie nie gubi stanu). */
+const AUTO_APPLY_AFTER_HIDDEN_MS = 10 * 60_000;
+
+/** Numer wersji czekającego workera (do zapamiętania „×” per wersja). */
+function askWorkerVersion(worker: ServiceWorker): Promise<string> {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timer = setTimeout(() => resolve('unknown'), 1500);
+    channel.port1.onmessage = (e) => {
+      clearTimeout(timer);
+      resolve(typeof e.data === 'string' ? e.data : 'unknown');
+    };
+    try {
+      worker.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+    } catch {
+      clearTimeout(timer);
+      resolve('unknown');
+    }
+  });
+}
+
+function readDismissed(): string | null {
+  try {
+    return sessionStorage.getItem(UPDATE_DISMISSED_KEY);
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Hook to detect and trigger PWA updates when a new Service Worker is waiting.
+ * Nowa wersja panelu (czekający Service Worker): pigułka „Odśwież”, zamknięcie „×” zapamiętane dla tej wersji,
+ * a po dłuższym pobycie aplikacji w tle nowa wersja włącza się sama przy powrocie.
  */
 export function usePWAUpdate() {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+  const [version, setVersion] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState<string | null>(readDismissed);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
+    const found = (worker: ServiceWorker) => {
+      setWaitingWorker(worker);
+      void askWorkerVersion(worker).then(setVersion);
+    };
+
     navigator.serviceWorker.ready.then((reg) => {
-      // Check if a worker is already waiting
-      if (reg.waiting) {
-        setWaitingWorker(reg.waiting);
-        setUpdateAvailable(true);
-      }
+      if (reg.waiting) found(reg.waiting);
 
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
         if (!newWorker) return;
 
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            setWaitingWorker(newWorker);
-            setUpdateAvailable(true);
-          }
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) found(newWorker);
         });
       });
     });
@@ -169,5 +204,33 @@ export function usePWAUpdate() {
     }
   }, [waitingWorker]);
 
-  return { updateAvailable, applyUpdate };
+  // Powrót po dłuższej przerwie (aplikacja w tle) = nowa wersja od razu, zanim zawodnik zacznie czytać
+  useEffect(() => {
+    if (!waitingWorker) return;
+    let hiddenAt: number | null = null;
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        hiddenAt = Date.now();
+      } else if (hiddenAt !== null && Date.now() - hiddenAt >= AUTO_APPLY_AFTER_HIDDEN_MS) {
+        applyUpdate();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [waitingWorker, applyUpdate]);
+
+  const dismiss = useCallback(() => {
+    if (!version) return;
+    setDismissed(version);
+    try {
+      sessionStorage.setItem(UPDATE_DISMISSED_KEY, version);
+    } catch {
+      // bez zapisu — zamknięcie działa do przeładowania
+    }
+  }, [version]);
+
+  // Czekamy na numer wersji, żeby zamknięta wcześniej pigułka nie mignęła
+  const updateAvailable = Boolean(waitingWorker) && version !== null && dismissed !== version;
+
+  return { updateAvailable, applyUpdate, dismiss };
 }

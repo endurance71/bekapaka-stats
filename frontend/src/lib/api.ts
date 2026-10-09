@@ -66,8 +66,29 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   return handleResponse<T>(res, Boolean(authHeaders.Authorization));
 }
 
+/**
+ * Pamięć ostatnich odpowiedzi GET (w pamięci karty, nie na dysku): strona otwarta drugi raz pokazuje dane od razu,
+ * a świeże dociąga w tle (`useCachedJSON`). Czyszczona przy wylogowaniu.
+ */
+const responseCache = new Map<string, { data: unknown; at: number }>();
+const CACHE_LIMIT = 80;
+
+export function peekApiCache<T>(path: string): { data: T; at: number } | undefined {
+  return responseCache.get(path) as { data: T; at: number } | undefined;
+}
+
+export function clearApiCache() {
+  responseCache.clear();
+}
+
 export async function fetchJSON<T>(path: string, options: RequestInit = {}): Promise<T> {
-  return request<T>(path, { ...options, cache: 'no-store' });
+  const data = await request<T>(path, { ...options, cache: 'no-store' });
+  if (!options.method || options.method === 'GET') {
+    responseCache.delete(path);
+    responseCache.set(path, { data, at: Date.now() });
+    if (responseCache.size > CACHE_LIMIT) responseCache.delete(responseCache.keys().next().value as string);
+  }
+  return data;
 }
 
 export async function postJSON<T>(path: string, body: unknown): Promise<T> {

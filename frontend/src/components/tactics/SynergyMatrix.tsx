@@ -209,9 +209,6 @@ export default function SynergyMatrix({ data, loading }: { data: SynergyResponse
           {filteredDuos.map((duo, idx) => (
             <motion.div
               key={duo.id}
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(idx, 20) * 0.02 }}
               className="grid grid-cols-12 gap-2 px-3 py-3 even:bg-bkpk-surface-tint-1 border-b border-bkpk-border-subtle items-center min-w-[500px]"
             >
               <div className="col-span-6 flex items-center gap-2 min-w-0">

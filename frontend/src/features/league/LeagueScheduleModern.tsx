@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useState, useCallback, useMemo } from 'react';
-import { fetchJSON } from '../../lib/api';
 import { motion } from 'framer-motion';
 import { cn } from '../../shared/lib/utils';
 import KalkEmptyState from '../../shared/ui/KalkEmptyState';
@@ -8,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { isBekapakaName } from '../../shared/lib/matchUtils';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import LoadError from '../../shared/ui/LoadError';
+import { useCachedJSON } from '../../hooks/useCachedJSON';
 
 interface Match {
     id: string;
@@ -75,30 +75,13 @@ interface LeagueScheduleModernProps {
 }
 
 export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernProps) {
-    const [matches, setMatches] = useState<Match[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<unknown>(null);
     // Domyślnie tylko mecze BeKaPaKa — zawodnika interesuje własny terminarz
     const [onlyOurs, setOnlyOurs] = useState(true);
-
-    const fetchSchedule = useCallback(async () => {
-        if (!seasonId) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await fetchJSON<Match[]>(`/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}`);
-            setMatches(data || []);
-        } catch (err) {
-            console.error(err);
-            setError(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [seasonId]);
-
-    useEffect(() => {
-        fetchSchedule();
-    }, [fetchSchedule]);
+    const scheduleQ = useCachedJSON<Match[]>(seasonId ? `/api/league/schedule?seasonId=${encodeURIComponent(seasonId)}` : null);
+    const matches = scheduleQ.data || [];
+    const loading = scheduleQ.loading;
+    const error = scheduleQ.error;
+    const fetchSchedule = () => void scheduleQ.reload();
 
     const visible = useMemo(
         () => (onlyOurs ? matches.filter((m) => isBekapakaName(m.homeTeam) || isBekapakaName(m.guestTeam)) : matches),
@@ -205,9 +188,6 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                             return (
                                 <motion.li
                                     key={match.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: Math.min(idx, 20) * 0.05 }}
                                     className={cn(
                                         "grid grid-cols-[3.25rem_minmax(0,1fr)_auto] sm:grid-cols-[3.75rem_minmax(0,1fr)_auto] gap-3 sm:gap-5 items-center px-3 sm:px-5 py-4 sm:py-5 border-b border-bkpk-border-subtle min-w-0 transition-colors",
                                         isBkpkInvolved

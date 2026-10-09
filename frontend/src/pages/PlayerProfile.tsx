@@ -201,7 +201,7 @@ export default function PlayerProfile() {
     }, [data]);
 
     if (loading) {
-        return <PageLoader fullScreen label="Analizowanie Profilu..." />;
+        return <PageLoader label="Analizowanie Profilu..." />;
     }
 
     if (!data) {
@@ -455,7 +455,7 @@ export default function PlayerProfile() {
                                             <motion.div
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${Math.min(100, stat.progress)}%` }}
-                                                transition={{ duration: 0.3, delay: 0.2 + (i * 0.05) }}
+                                                transition={{ duration: 0.3 }}
                                                 className={cn(
                                                     "h-full",
                                                     ('key' in stat && stat.key === 'plusMinus') ? ((averages.plusMinusAvg ?? 0) >= 0 ? "bg-bkpk-success" : "bg-bkpk-danger") : "bg-bkpk-primary"

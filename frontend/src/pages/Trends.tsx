@@ -115,7 +115,7 @@ export default function Trends() {
   const enoughGames = bkMatches >= MIN_GAMES_FOR_CONCLUSIONS;
 
   if (loading) {
-    return <PageLoader fullScreen label="Analizowanie DNA wyników..." />;
+    return <PageLoader label="Analizowanie DNA wyników..." />;
   }
 
   const sectionIconClass = "w-9 h-9 border border-bkpk-border-strong flex items-center justify-center shrink-0";

@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -29,7 +29,17 @@ const serviceWorkerVersionPlugin = () => ({
     const out = resolve(__dirname, 'dist', 'sw.js');
     if (!existsSync(out)) cpSync(resolve(__dirname, 'public', 'sw.js'), out);
     const buildId = Date.now().toString(36);
-    writeFileSync(out, readFileSync(out, 'utf8').replaceAll('__BUILD_ID__', buildId));
+    const assetsDir = resolve(__dirname, 'dist', 'assets');
+    // Lista plików wersji do precache w SW (bez map źródeł)
+    const assets = existsSync(assetsDir)
+      ? readdirSync(assetsDir).filter((f) => !f.endsWith('.map')).sort().map((f) => `/assets/${f}`)
+      : [];
+    writeFileSync(
+      out,
+      readFileSync(out, 'utf8')
+        .replaceAll('__BUILD_ID__', buildId)
+        .replace('/*__PRECACHE_ASSETS__*/[]', JSON.stringify(assets)),
+    );
   },
 });
 

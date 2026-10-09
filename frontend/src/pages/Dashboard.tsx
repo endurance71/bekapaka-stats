@@ -1,5 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
-import { fetchJSON, postJSON } from '../lib/api';
+import { lazy, Suspense, useMemo, useState } from 'react';
+import { postJSON } from '../lib/api';
 import { useIsAdmin } from '../context/AuthContext';
 import { CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import PageHeader from '../shared/ui/PageHeader';
@@ -15,6 +15,8 @@ import { normalizePlayerIdentity } from '../shared/lib/playerIdentity';
 import { difficultyFromOpponent, formatMatchDate, formatMatchTime } from '../shared/lib/matchUtils';
 import LoadError from '../shared/ui/LoadError';
 import { useRefetchOnFocus } from '../hooks/useRefetchOnFocus';
+import { useCachedJSON } from '../hooks/useCachedJSON';
+import RefreshChip from '../shared/ui/RefreshChip';
 
 // Leniwie: blok AI ciągnie bibliotekę markdown (~150 kB), a zawodnik zwykle go nie widzi
 const AiAnalysisBlock = lazy(() => import('../components/ai/AiAnalysisBlock'));
@@ -67,55 +69,41 @@ type AllTimeTeam = { kalkId: string; headToHead: { wins: number; losses: number 
  * Wskaźniki drużyny na 100 akcji są w Analizach (sekcja trenera).
  */
 export default function Dashboard() {
-  const [home, setHome] = useState<PlayerHome | null>(null);
-  const [games, setGames] = useState<Game[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [allTimeTeams, setAllTimeTeams] = useState<AllTimeTeam[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [homeError, setHomeError] = useState<unknown>(null);
-  const [briefing, setBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(null);
-  const [briefingLoading, setBriefingLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
   const isAdmin = useIsAdmin();
   const { seasonId, selectedSeason } = useSeasonPreferenceContext();
+  // Pamięć między stronami: powrót na Start pokazuje dane od razu, świeże dociągają się w tle
+  const q = seasonId ? new URLSearchParams({ seasonId }).toString() : null;
+  const homeQ = useCachedJSON<PlayerHome>(q ? `/api/me/home?${q}` : null);
+  const gamesQ = useCachedJSON<Game[]>(q ? `/api/games?${q}` : null);
+  const playersQ = useCachedJSON<Player[]>(q ? `/api/players?${q}` : null);
+  const briefingQ = useCachedJSON<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(q ? `/api/ai/briefing?${q}` : null);
+  const allTimeQ = useCachedJSON<{ teams: AllTimeTeam[] }>('/api/league/all-time', 10 * 60_000);
+  const [generatedBriefing, setGeneratedBriefing] = useState<{ contentMd?: string; generatedAt?: string; model?: string; stale?: boolean } | null>(null);
+  const [briefingLoading, setBriefingLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
-  const fetchDashboardData = useCallback(async () => {
-    if (!seasonId) return;
-    setLoading(true);
-    try {
-      const q = new URLSearchParams({ seasonId }).toString();
-      const settled = await Promise.allSettled([
-        fetchJSON<PlayerHome>(`/api/me/home?${q}`),
-        fetchJSON<Game[]>(`/api/games?${q}`),
-        fetchJSON<Player[]>(`/api/players?${q}`),
-        fetchJSON<any>(`/api/ai/briefing?${q}`),
-        fetchJSON<{ teams: AllTimeTeam[] }>('/api/league/all-time')
-      ]);
-      const pick = <T,>(idx: number, fallback: T): T =>
-        settled[idx].status === 'fulfilled' ? (settled[idx] as PromiseFulfilledResult<T>).value : fallback;
-
-      setHome(pick<PlayerHome | null>(0, null));
-      setHomeError(settled[0].status === 'rejected' ? settled[0].reason : null);
-      setGames(pick<Game[]>(1, []) || []);
-      setPlayers((pick<Player[]>(2, []) || []).map((p) => normalizePlayerIdentity(p)));
-      setBriefing(pick<any>(3, null));
-      setAllTimeTeams(pick<{ teams: AllTimeTeam[] } | null>(4, null)?.teams ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }, [seasonId]);
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [fetchDashboardData]);
-  useRefetchOnFocus(() => void fetchDashboardData());
+  const home = homeQ.data;
+  const homeError = homeQ.error;
+  const loading = homeQ.loading;
+  const games = gamesQ.data || [];
+  const players = useMemo(() => (playersQ.data || []).map((p) => normalizePlayerIdentity(p)), [playersQ.data]);
+  const briefing = generatedBriefing ?? briefingQ.data;
+  const allTimeTeams = allTimeQ.data?.teams ?? [];
+  const reloadAll = () => {
+    void homeQ.reload();
+    void gamesQ.reload();
+    void playersQ.reload();
+    void briefingQ.reload();
+  };
+  const fetchDashboardData = reloadAll;
+  useRefetchOnFocus(reloadAll);
 
   const handleGenerateBriefing = async (force = false) => {
     setBriefingLoading(true);
     setAiError(null);
     try {
       const result = await postJSON<{ contentMd: string; generatedAt: string; model?: string }>('/api/ai/briefing/generate', { force, seasonId });
-      setBriefing({ contentMd: result.contentMd, generatedAt: result.generatedAt, model: result.model, stale: false });
+      setGeneratedBriefing({ contentMd: result.contentMd, generatedAt: result.generatedAt, model: result.model, stale: false });
     } catch (error: any) {
       setAiError(error?.message || 'Nie udało się wygenerować podsumowania');
     } finally {
@@ -143,6 +131,7 @@ export default function Dashboard() {
           kicker="BeKaPaKa Bobolice"
           title="Start"
           description={selectedSeason ? `Sezon ${selectedSeason.label.replace(/^Sezon\s*/i, '')}` : undefined}
+          actions={<RefreshChip updatedAt={homeQ.updatedAt} refreshing={homeQ.refreshing} onRefresh={reloadAll} />}
         />
       }
       hero={

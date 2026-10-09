@@ -19,7 +19,7 @@ export function normalizePolishChars(str: string): string {
 /** Build a local photo URL from player's first/last name */
 export function getPhotoUrl(firstName?: string, lastName?: string): string {
   if (!firstName || !lastName) return '/photos/default.png';
-  return `/photos/${normalizePolishChars(firstName)}-${normalizePolishChars(lastName)}.png`;
+  return `/photos/${normalizePolishChars(firstName)}-${normalizePolishChars(lastName)}.webp`;
 }
 
 /** Map position abbreviation to Polish label */
@@ -90,8 +90,8 @@ export function resolvePlayerImage(player: PhotoSource): string | null {
   if (!firstName || !lastName) return null;
   const forward = `${normalizePolishChars(firstName)}-${normalizePolishChars(lastName)}`;
   const reversed = `${normalizePolishChars(lastName)}-${normalizePolishChars(firstName)}`;
-  if (LOCAL_PHOTOS.has(forward)) return `/photos/${forward}.png`;
-  if (LOCAL_PHOTOS.has(reversed)) return `/photos/${reversed}.png`;
+  if (LOCAL_PHOTOS.has(forward)) return `/photos/${forward}.webp`;
+  if (LOCAL_PHOTOS.has(reversed)) return `/photos/${reversed}.webp`;
   return null;
 }
 

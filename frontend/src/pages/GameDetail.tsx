@@ -188,7 +188,7 @@ export default function GameDetail() {
   const isLoss = game?.result === 'L';
 
   if (loading) {
-    return <PageLoader fullScreen label="Pobieranie danych meczu..." />;
+    return <PageLoader label="Pobieranie danych meczu..." />;
   }
 
   if (!game) {
@@ -414,9 +414,6 @@ export default function GameDetail() {
                     {game.insights.map((insight: any, idx: number) => (
                       <motion.div
                         key={idx}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: idx * 0.1 }}
                         className={cn(
                           "p-4 bg-bkpk-surface border border-bkpk-border-subtle border-l-4 flex gap-4 items-start text-bkpk-text-primary",
                           insight.type === 'success' ? "border-l-bkpk-success" :

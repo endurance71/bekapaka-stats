@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
 
 interface DashboardLayoutProps {
     header: ReactNode;
@@ -18,13 +17,11 @@ export default function DashboardLayout({ header, hero, main, sidebar }: Dashboa
                 </div>
 
                 {/* Hero Row - 3 Column Grid */}
-                <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
+                <section
                     className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
                 >
                     {hero}
-                </motion.section>
+                </section>
 
                 {/* Main Content Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

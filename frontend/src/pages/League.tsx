@@ -1,5 +1,4 @@
 import { useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import LeagueTableModern from '../features/league/LeagueTableModern';
 import LeagueSchedule from '../features/league/LeagueScheduleModern';
 import TopScorersModern from '../features/league/TopScorersModern';
@@ -69,15 +68,8 @@ export default function League() {
             </div>
 
             {/* Content Area */}
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={activeTab}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                    className="min-h-[600px]"
-                >
+            {/* Zakładka od razu, bez animacji wyjścia/wejścia */}
+            <div className="min-h-[600px]">
                     {activeTab === 'table' && <LeagueTableModern seasonId={seasonId} />}
                     {activeTab === 'schedule' && (
                         <div className="border-t border-bkpk-border-subtle bg-bkpk-bg">
@@ -86,8 +78,7 @@ export default function League() {
                     )}
                     {activeTab === 'scorers' && <TopScorersModern seasonId={seasonId} />}
                     {activeTab === 'alltime' && <AllTimeTableModern />}
-                </motion.div>
-            </AnimatePresence>
+            </div>
         </PageContainer>
     );
 }

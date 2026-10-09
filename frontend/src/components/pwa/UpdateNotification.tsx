@@ -1,45 +1,41 @@
-import { usePWAUpdate } from '../../lib/pwa';
-import { RefreshCw, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { RefreshCw, X } from 'lucide-react';
 
-export function UpdateNotification() {
-  const { updateAvailable, applyUpdate } = usePWAUpdate();
+interface UpdateNotificationProps {
+  updateAvailable: boolean;
+  applyUpdate: () => void;
+  dismiss: () => void;
+}
+
+/** Mała pigułka nad paskiem gestów: „Nowa wersja · Odśwież · ×” — nie zasłania treści. */
+export function UpdateNotification({ updateAvailable, applyUpdate, dismiss }: UpdateNotificationProps) {
+  if (!updateAvailable) return null;
 
   return (
-    <AnimatePresence>
-      {updateAvailable && (
-        <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.95 }}
-          className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] left-4 right-4 sm:left-auto sm:right-6 z-50 sm:max-w-sm sm:w-full bg-bkpk-surface-elevated border border-bkpk-border-strong border-t-2 border-t-bkpk-primary p-4 shadow-2xl"
-          role="alert"
-          aria-live="polite"
+    <div
+      className="fixed inset-x-0 bottom-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] z-50 flex justify-center px-4 pointer-events-none"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="pointer-events-auto flex items-center h-11 bg-bkpk-surface-elevated border border-bkpk-border-strong shadow-2xl select-none">
+        <span className="pl-3.5 pr-2 label-caps text-[11px] text-bkpk-text-secondary whitespace-nowrap">Nowa wersja</span>
+        <button
+          type="button"
+          onClick={applyUpdate}
+          className="flex items-center gap-1.5 h-full px-3 bkpk-btn-primary text-bkpk-on-primary label-caps text-[11px] touch-manipulation"
         >
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 border border-bkpk-border-strong flex items-center justify-center text-bkpk-primary shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-display uppercase text-lg leading-none text-bkpk-text-primary">Dostępna nowa wersja</h4>
-              <p className="text-xs text-bkpk-text-muted mt-0.5 leading-relaxed">
-                Zaktualizuj aplikację, aby wczytać najnowsze statystyki i funkcje.
-              </p>
-            </div>
-          </div>
-          <div className="mt-3 flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={applyUpdate}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bkpk-btn-primary text-bkpk-on-primary label-caps text-xs min-h-[44px] transition-colors touch-manipulation"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Zaktualizuj teraz
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+          Odśwież
+        </button>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Zamknij informację o nowej wersji"
+          className="flex items-center justify-center w-11 h-full text-bkpk-text-muted hover:text-bkpk-text-primary touch-manipulation"
+        >
+          <X className="w-4 h-4" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
   );
 }
 export default UpdateNotification;
