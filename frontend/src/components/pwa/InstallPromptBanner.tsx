@@ -149,7 +149,7 @@ function IosInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => 
               3
             </span>
             <span>
-              Kliknij <strong>„Dodaj”</strong> w prawym górnym rogu. Gotowe!
+              Stuknij <strong>„Dodaj”</strong> w prawym górnym rogu. Gotowe!
             </span>
           </li>
         </ol>

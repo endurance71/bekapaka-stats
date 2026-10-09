@@ -231,7 +231,7 @@ export default function PlaybookList({
                     <div className="pt-3 border-t border-bkpk-border-subtle flex items-center justify-between gap-2">
                       <span className="label-caps text-[11px] text-bkpk-primary flex items-center gap-1">
                         <PlayIcon className="w-3.5 h-3.5 fill-current" />
-                        {isSelected ? 'Odtwarzana teraz' : 'Kliknij, aby odtworzyć'}
+                        {isSelected ? 'Odtwarzana teraz' : 'Wybierz, aby odtworzyć'}
                       </span>
 
                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>

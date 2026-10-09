@@ -174,7 +174,7 @@ export default function Administration() {
                 <SectionHeading kicker="Analizy" title="Centrum analiz AI" />
                 <BkpkCard variant="flat" className="space-y-4">
                     <p className="text-bkpk-text-secondary text-sm">
-                        Generowanie i przegląd raportów Gemini przeniesiono do osobnego ekranu — krótszy panel administracyjny, czytelniejsze kategorie.
+                        Odprawy, analizy meczów, plany rozwoju zawodników i scouting rywali — generowanie i przegląd w jednym miejscu.
                     </p>
                     <Link
                         to="/ai"

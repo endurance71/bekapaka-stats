@@ -99,6 +99,8 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
     return (
         <div className="space-y-6 mb-8">
             <SectionHeading title="Styl gry rywala" className="mb-4" />
+            {/* Mało meczów: jedna informacja zamiast dwóch pustych „rekomendacji” */}
+            {fewGames && <p className="-mt-2 text-sm text-bkpk-text-muted">{sampleNote}</p>}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -119,6 +121,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                         <div className="text-[64px] leading-none text-bkpk-text-primary font-display tabular-nums mb-3">{formatStatFixed(pace)}</div>
                         <div className={`status-flag mb-6 ${paceColor}`}>{paceLabel}</div>
 
+{!fewGames && (
                         <div className="bg-bkpk-bg p-4 border border-bkpk-border-subtle border-l-2 border-l-bkpk-primary w-full">
                             <div className="text-sm text-bkpk-text-secondary leading-relaxed font-medium">
                                 <div className="flex items-center gap-2 mb-2 text-bkpk-text-primary">
@@ -128,6 +131,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                                 {getPaceAdvice()}
                             </div>
                         </div>
+                        )}
                     </div>
                 </BkpkCard>
 
@@ -184,6 +188,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                         ))}
                     </div>
 
+{!fewGames && (
                     <div className="bg-bkpk-bg p-4 border border-bkpk-border-subtle border-l-2 border-l-bkpk-primary w-full">
                         <div className="text-sm text-bkpk-text-secondary leading-relaxed font-medium">
                             <div className="flex items-center gap-2 mb-2 text-bkpk-text-primary">
@@ -193,6 +198,7 @@ export const DNASection: React.FC<DNAProps> = ({ data }) => {
                             {getShotProfileAdvice()}
                         </div>
                     </div>
+                    )}
                 </BkpkCard>
 
                 {/* FOUR FACTORS */}

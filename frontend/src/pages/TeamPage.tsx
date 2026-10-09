@@ -26,7 +26,7 @@ export default function TeamPage() {
                 kicker="Drużyna"
                 title="BeKaPaKa Bobolice"
                 description={tab === 'sklad'
-                    ? `Kadra${selectedSeason ? ` — ${selectedSeason.label}` : ''}. Kliknij zawodnika, aby zobaczyć jego statystyki.`
+                    ? `Kadra${selectedSeason ? ` — ${selectedSeason.label}` : ''}. Wybierz zawodnika, aby zobaczyć jego statystyki.`
                     : 'Zagrywki drużyny na animowanej tablicy.'}
             />
             <div className="flex overflow-x-auto no-scrollbar max-w-full gap-6 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Drużyna">

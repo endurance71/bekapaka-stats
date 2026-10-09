@@ -45,7 +45,8 @@ export function pregameLogistics(briefing: PreGameData, schedule?: PreGameSchedu
     date: date ? new Date(date).toLocaleDateString('pl-PL', { timeZone: 'Europe/Warsaw' }) : NONE,
     tipoff: schedule?.date ? formatMatchTime(schedule.date) : briefing.tipoffTime || NONE,
     gathering: schedule?.gatheringTime || briefing.gatheringTime || NONE,
-    kit: schedule?.kit || briefing.jerseyColor || NONE,
+    // Jak w karcie dnia meczowego i na wydruku — brak wpisu znaczy, że strój poda trener
+    kit: schedule?.kit || briefing.jerseyColor || 'trener poda',
     venue: schedule?.venue || briefing.venue || NONE
   };
 }
@@ -310,6 +311,8 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                           <span className="w-8 h-8 bg-bkpk-primary text-brand-white text-[18px] flex items-center justify-center font-display tabular-nums">
                             {key.number}
                           </span>
+                          {/* Etykieta tylko, gdy wnosi coś ponad tytuł (np. tytuł „Obrona” przy obszarze „Obrona”) */}
+                          {(FOCUS_LABEL[key.focus] ?? 'Taktyka').toLowerCase() !== key.title?.trim().toLowerCase() && (
                           <span
                             className={cn(
                               "status-flag",
@@ -322,6 +325,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                           >
                             {FOCUS_LABEL[key.focus] ?? 'Taktyka'}
                           </span>
+                          )}
                         </div>
                         <h4 className="font-display uppercase text-[18px] leading-tight text-bkpk-text-primary mb-1.5">{key.title}</h4>
                         <p className="text-[13px] text-bkpk-text-secondary leading-relaxed">{key.description}</p>
@@ -339,6 +343,9 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                 Pierwsza piątka i zadania w obronie
               </h3>
 
+              {!briefing.startingFive?.length && (
+                <p className="text-sm text-bkpk-text-muted">Trener poda piątkę i zadania przed meczem.</p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                 {briefing.startingFive?.map((player) => (
                   <div

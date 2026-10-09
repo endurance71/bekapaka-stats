@@ -69,6 +69,14 @@ export function hasPlusMinus(rows: Array<{ plusMinus?: number | string | null }>
 const cell = 'px-2 sm:px-4 py-2 sm:py-3 text-center tabular-nums';
 
 /** Memoized table row to prevent unnecessary re-renders */
+/** „Z gry 4/5 · Wolne 4/6” — tylko oddane rodzaje rzutów; nic nie oddał → „Bez rzutów”. */
+export function shotSummary(player: Pick<PlayerStat, 'fg' | 'threeP' | 'ft'>): string {
+    const parts = ([['Z gry', player.fg], ['Za 3', player.threeP], ['Wolne', player.ft]] as const)
+        .filter(([, v]) => v && v !== '0/0')
+        .map(([label, v]) => `${label} ${v}`);
+    return parts.length ? parts.join(' · ') : 'Bez rzutów';
+}
+
 const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus }: { player: PlayerStat; idx: number; extended: boolean; showPlusMinus: boolean }) {
     return (
         <tr
@@ -82,7 +90,7 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                     <div className="flex items-center gap-1.5 min-w-0">
                         {player.number && <span className="font-display text-xs sm:text-sm text-bkpk-primary tabular-nums shrink-0">#{player.number}</span>}
                         {player.href ? (
-                            <Link to={player.href} className="truncate text-xs sm:text-sm hover:text-bkpk-primary underline-offset-2 hover:underline">{player.name}</Link>
+                            <Link to={player.href} className="truncate py-3 -my-3 text-xs sm:text-sm hover:text-bkpk-primary underline-offset-2 hover:underline">{player.name}</Link>
                         ) : (
                             <span className="truncate text-xs sm:text-sm">{player.name}</span>
                         )}
@@ -92,9 +100,9 @@ const PlayerRow = memo(function PlayerRow({ player, idx, extended, showPlusMinus
                         )}
                     </div>
                     {player.subtitle && <span className="text-xs font-normal text-bkpk-text-muted tabular-nums">{player.subtitle}</span>}
-                    {/* Telefon: kolumny rzutów są ukryte — skrót z podpisami */}
+                    {/* Telefon: kolumny rzutów są ukryte — skrót z podpisami, bez rodzajów rzutów 0/0 */}
                     <span className="text-xs font-normal text-bkpk-text-muted tabular-nums truncate lg:hidden">
-                        Z gry {player.fg ?? '–'} · Za 3 {player.threeP ?? '–'} · Wolne {player.ft ?? '–'}
+                        {shotSummary(player)}
                     </span>
                 </div>
             </td>

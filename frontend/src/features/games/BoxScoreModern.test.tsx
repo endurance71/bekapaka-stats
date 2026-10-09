@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
-import BoxScore, { hasExtendedBoxColumns } from './BoxScoreModern';
+import BoxScore, { hasExtendedBoxColumns, shotSummary } from './BoxScoreModern';
 
 beforeAll(() => {
     // jsdom bez matchMedia — widok desktopowy
@@ -28,5 +28,12 @@ describe('BoxScoreModern', () => {
         render(<MemoryRouter><BoxScore playerStats={[{ name: 'Rywal', points: 10 }]} /></MemoryRouter>);
         expect(screen.queryByRole('columnheader', { name: 'Zb A/O' })).not.toBeInTheDocument();
         expect(screen.getByRole('columnheader', { name: 'Pkt' })).toBeInTheDocument();
+    });
+});
+
+describe('shotSummary — skrót rzutów na telefonie', () => {
+    it('pomija rodzaje rzutów 0/0', () => {
+        expect(shotSummary({ fg: '4/5', threeP: '0/0', ft: '4/6' })).toBe('Z gry 4/5 · Wolne 4/6');
+        expect(shotSummary({ fg: '0/0', threeP: '0/0', ft: '0/0' })).toBe('Bez rzutów');
     });
 });
