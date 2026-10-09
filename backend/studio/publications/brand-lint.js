@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.4.0';
+export const LINT_VERSION = '1.5.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -23,6 +23,11 @@ const rules = [
     re: /(miażdż\p{L}*|zmiażdż\p{L}*|bezlitosn\p{L}*|rozgromi\p{L}*|pogrom\p{L}*|demolk\p{L}*|upokorz\p{L}*|deklasacj\p{L}*|nokaut\p{L}*)/iu,
     level: 'warning',
     message: 'Bez triumfalizmu — wysoką wygraną pokaż liczbami, z szacunkiem dla rywala.',
+  },
+  {
+    re: /(\boczk(a|ami|ach|o)\b|zalicz\p{L}* (seri|trafien|zbiórk|asyst)|przypieczętow\p{L}*|narzuci\p{L}* (swój )?rytm|zapisał\p{L}* na swoim koncie)/iu,
+    level: 'warning',
+    message: 'Wytarty zwrot — napisz prościej (np. „punkty”, „trafił”, „zamknęliśmy mecz”).',
   },
   // Judgements backed by a clear result are fine („zdominowaliśmy” at 86:20); otherwise they need numbers.
   {
