@@ -346,6 +346,64 @@ function reportArticle(f) {
   );
 }
 
+// Data block of a match report: score line, quarters, numbers strip, team comparison, rival scorers, next match.
+// Built from facts only — shared by the schematic report and the AI-written one (assembleReport).
+export function reportData(f) {
+  const r = f.report;
+  const opp = f.opponent;
+  const t = r.team?.us;
+  const them = r.team?.them;
+  const quarterRows = r.quarters.map((x) => `- **${x.label}:** ${x.us}:${x.them}`);
+  if (r.halftime) quarterRows.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
+  const strip = t
+    ? [t.reb ? count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', t.ast ? count(t.ast, 'asysta', 'asysty', 'asyst') : '', t.stl ? count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów') : '', Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : ''].filter(has)
+    : [];
+  const teamRows = t && them
+    ? [
+        pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
+        pair('Za 3 punkty', shot(t.three, t.threePct), shot(them.three, them.threePct), opp),
+        pair('Rzuty wolne', shot(t.ft, t.ftPct), shot(them.ft, them.ftPct), opp),
+        pair('Zbiórki', t.reb, them.reb, opp),
+        pair('Asysty', t.ast, them.ast, opp),
+        pair('Przechwyty', t.stl, them.stl, opp),
+        pair('Straty', t.tov, them.tov, opp),
+        pair('Punkty z ławki', t.benchPts, them.benchPts, opp),
+      ].filter(has)
+    : [];
+  const playerRows = r.players.slice(0, 8).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${[`${p.pts} pkt`, has(p.fg) ? `${p.fg} z gry` : '', `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : ''].filter(has).join(', ')}`);
+  const next = r.nextMatch;
+  const nextRows = next
+    ? [`- **Rywal:** ${next.opponent}`, valid(next.date) ? `- **Termin:** ${when(next.date)}` : '', has(next.venue) ? `- **Miejsce:** ${next.venue}` : '', has(f.entryInfo) ? `- **Wstęp:** ${f.entryInfo}` : ''].filter(has)
+    : [];
+  return {
+    scoreLine: scored(f) && has(opp) && f.scoreUs < 100 && f.scoreThem < 100 ? `${CLUB} ${score(f)} ${opp}` : '',
+    quarterRows,
+    strip,
+    teamRows,
+    playerRows,
+    opponentLine: r.opponentTop.length ? `Najwięcej punktów dla ${opp}: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '',
+    nextRows,
+  };
+}
+
+/** Website copy from the AI reporter's prose (report-prompt.js) and the data block built from facts. */
+export function assembleReport(parts, f) {
+  const d = reportData(f);
+  const data = [...d.quarterRows, ...d.teamRows];
+  const content = paragraphs(
+    parts.lead,
+    d.scoreLine,
+    `## Przebieg meczu\n\n${parts.story.join('\n\n')}`,
+    `## Bohaterowie meczu\n\n${parts.heroes.join('\n\n')}`,
+    d.strip.length >= 2 ? `BeKaPaKa w liczbach: ${d.strip.join(' · ')}` : '',
+    data.length >= 2 ? `## Mecz w danych\n\n${data.join('\n')}` : '',
+    d.playerRows.length >= 2 ? `### Nasi zawodnicy\n\n${d.playerRows.join('\n')}` : '',
+    d.opponentLine,
+    d.nextRows.length >= 2 ? `## Następny mecz\n\n${d.nextRows.join('\n')}` : '',
+  );
+  return copySchemas.website.parse({ title: parts.title, excerpt: parts.excerpt, content, tags: ['mecz', 'kalk'], coverAlt: parts.coverAlt || altText({ id: 'match-result', label: 'Wynik meczu' }, f).slice(0, 300) });
+}
+
 // Article for bekapaka.pl, using the conventions of the site's ArticleMarkdown
 // (standalone score line, „… w liczbach:” strip, „**Etykieta:** wartość” fact list).
 function article(id, f, c) {

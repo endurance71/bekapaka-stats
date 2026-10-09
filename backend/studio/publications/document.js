@@ -3,6 +3,7 @@
 import { channelIds, channels, factsSchema, PUBLICATION_VERSION } from './channels.js';
 import { playbooks, PLAYBOOK_VERSION } from './playbooks.js';
 import { brandVoice, channelInstructions, PROMPT_VERSION } from './prompts.js';
+import { REPORT_PROMPT_VERSION, reportSystem } from './report-prompt.js';
 import { schematicCopy, TEMPLATE_VERSION } from './templates.js';
 import { LINT_VERSION } from './brand-lint.js';
 
@@ -34,7 +35,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     '> Plik generowany z kodu Studio (`node scripts/studio/export-prompts.mjs`). Nie edytuj ręcznie — zmień `backend/studio/publications/*` i wygeneruj ponownie.',
     '',
-    `Wersje: publikacje ${PUBLICATION_VERSION} · schematy ${PLAYBOOK_VERSION} · szablony ${TEMPLATE_VERSION} · prompty ${PROMPT_VERSION} · kontrola marki ${LINT_VERSION}.`,
+    `Wersje: publikacje ${PUBLICATION_VERSION} · schematy ${PLAYBOOK_VERSION} · szablony ${TEMPLATE_VERSION} · prompty ${PROMPT_VERSION} · relacja ${REPORT_PROMPT_VERSION} · kontrola marki ${LINT_VERSION}.`,
     '',
     '## Jak powstaje publikacja',
     '',
@@ -67,6 +68,12 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '## Instrukcje kanałów',
     '',
     ...channelIds.flatMap((c) => [fence(channelInstructions[c]), '']),
+    '## Relacja meczowa na stronę (osobny prompt)',
+    '',
+    'Gdy publikacja meczu ma statystyki KALK, artykuł na stronę pisze osobne wywołanie: model dostaje oś meczu (fakty w kolejności zdarzeń) i zwraca tylko prozę — tytuł, zajawkę, lead, akapity przebiegu i bohaterów. Studio składa artykuł i dokłada blok danych (wynik, kwarty, porównanie zespołów, następny mecz) z faktów.',
+    '',
+    fence(reportSystem),
+    '',
     '## Kontrola marki',
     '',
     '- **Blokuje zatwierdzenie:** forma „Bekapaka”, „Be Ka Pa Ka”, „BKP”; słowo „bilet”; brak tekstu alternatywnego; pusty opis/treść/tytuł/zajawka.',
