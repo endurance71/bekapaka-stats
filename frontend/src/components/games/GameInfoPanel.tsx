@@ -3,6 +3,7 @@ import { Users, History, Activity, Target } from 'lucide-react';
 import { TrophyIcon as Trophy, VenueIcon as MapPin, MvpIcon as Crown } from '../../shared/ui/BrandIcon';
 import type { IconComponent } from '../../shared/ui/BrandIcon';
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { MainAside } from '../../shared/ui/PageLayout';
 import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 import {
@@ -193,7 +194,7 @@ function PointsSourcesCard({ info, left, right }: { info: GameInfoResponse; left
     return (
         <BkpkCard variant="glass">
             <SectionTitle icon={Target}>Skąd punkty</SectionTitle>
-            <div className="grid lg:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid @3xl:grid-cols-2 gap-x-6 gap-y-8">
                 {rows.length > 0 && <CompareBars leftLabel={leftName} rightLabel={rightName} rows={rows} />}
                 {benchRows.length > 0 && (
                     <div className="grid gap-3">
@@ -307,25 +308,26 @@ export default function GameInfoPanel({ info }: { info: GameInfoResponse }) {
     const left = leftSideOf(info.bekapakaSide);
     const right = otherSide(left);
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-            <div className="lg:col-span-8 space-y-6 min-w-0">
-                <FlowCard info={info} left={left} right={right} />
-                <PointsSourcesCard info={info} left={left} right={right} />
-                <RecordsCard info={info} left={left} right={right} />
-            </div>
-            <aside className="lg:col-span-4 space-y-6 min-w-0">
-                <MvpCard info={info} />
-                <FactsCard info={info} />
-                <H2hCard info={info} />
-                {!info.mvp && !info.referees.length && !info.flow5.length && (
-                    <BkpkCard variant="outline">
-                        <div className="flex items-center gap-3 text-sm text-bkpk-text-secondary">
-                            <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
-                            Szczegóły meczu (MVP, skład, przebieg) są dostępne od sezonu 2025/26.
-                        </div>
-                    </BkpkCard>
-                )}
-            </aside>
-        </div>
+        <MainAside
+            aside={
+                <>
+                    <MvpCard info={info} />
+                    <FactsCard info={info} />
+                    <H2hCard info={info} />
+                    {!info.mvp && !info.referees.length && !info.flow5.length && (
+                        <BkpkCard variant="outline">
+                            <div className="flex items-center gap-3 text-sm text-bkpk-text-secondary">
+                                <Users className="w-4 h-4 shrink-0" aria-hidden="true" />
+                                Szczegóły meczu (MVP, skład, przebieg) są dostępne od sezonu 2025/26.
+                            </div>
+                        </BkpkCard>
+                    )}
+                </>
+            }
+        >
+            <FlowCard info={info} left={left} right={right} />
+            <PointsSourcesCard info={info} left={left} right={right} />
+            <RecordsCard info={info} left={left} right={right} />
+        </MainAside>
     );
 }

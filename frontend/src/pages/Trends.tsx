@@ -9,6 +9,7 @@ import { PieChart, Target, Zap, Activity } from 'lucide-react';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import useIsMobile from '../hooks/useIsMobile';
+import { CardGrid, MAIN_ASIDE_GRID } from '../shared/ui/PageLayout';
 import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import PageLoader from '../shared/ui/PageLoader';
@@ -129,7 +130,7 @@ export default function Trends() {
         description="Wskaźniki drużyny na 100 akcji, trendy meczów, porównanie z ligą i duety."
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <CardGrid min={420}>
         <PPGCard ppg={teamStats?.ppg || 0} trend={teamStats?.trend ?? null} />
         <RatingCard
           offRating={teamStats?.offRating || 0}
@@ -137,12 +138,11 @@ export default function Trends() {
           league={teamStats?.league ?? null}
           tiers={teamStats?.tiers ?? null}
         />
-      </div>
+      </CardGrid>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-
-        {/* Main Trend Chart */}
-        <div className="lg:col-span-8 space-y-6 lg:space-y-8">
+      {/* Wykresy w treści, porównanie z ligą w kolumnie bocznej */}
+      <div className={MAIN_ASIDE_GRID}>
+        <div className="@container min-w-0 space-y-6">
           <BkpkCard variant="flat" className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -275,12 +275,11 @@ export default function Trends() {
           </BkpkCard>
         </div>
 
-        {/* Sidebar Stats & Radar */}
-        <div className="lg:col-span-4 space-y-6 lg:space-y-8">
+        <aside className="@container min-w-0 space-y-6">
           {/* Radar Chart Card */}
           <BkpkCard variant="flat" className="flex flex-col items-center">
             <div className="w-full mb-6 space-y-1">
-              <h3 className="text-[22px] text-bkpk-text-primary">Porównanie z Ligą</h3>
+              <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary">Porównanie z ligą</h3>
               <p className="label-caps text-[11px] text-bkpk-text-secondary">Względem średniej (100%)</p>
             </div>
             <div className="w-full" style={{ height: isMobile ? '220px' : '300px' }}>
@@ -322,7 +321,7 @@ export default function Trends() {
 
           {/* Efficiency Summary */}
           <BkpkCard variant="flat" className="space-y-5">
-            <h3 className="text-[22px] text-bkpk-text-primary border-b border-bkpk-border-subtle pb-4">Na tle ligi</h3>
+            <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary border-b border-bkpk-border-subtle pb-4">Na tle ligi</h3>
             <div className="divide-y divide-bkpk-border-subtle border-y border-bkpk-border-subtle">
               <div className="flex items-center justify-between gap-4 py-4">
                 <div className="space-y-1">
@@ -362,7 +361,7 @@ export default function Trends() {
           </BkpkCard>
 
           {/* KPI Overview */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             <BkpkCard variant="flat" className="text-center py-6">
               <div className="label-caps text-[11px] text-bkpk-text-secondary mb-2">Punkty / mecz</div>
               <div className="text-[36px] font-display leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(hasLeagueData ? comparison?.bekapaka.ppg : 0)}</div>
@@ -374,9 +373,9 @@ export default function Trends() {
               <div className="text-xs font-medium text-bkpk-text-muted mt-2 tabular-nums">średnia {formatStatFixed(hasLeagueData ? comparison?.league.oppg : 0)}</div>
             </BkpkCard>
           </div>
-        </div>
+        </aside>
       </div>
-      <section className="space-y-4" aria-labelledby="duety">
+      <section className="space-y-5" aria-labelledby="duety">
         <SectionHeading kicker="Kto gra razem najlepiej" title={<span id="duety">Duety</span>} />
         <SynergyMatrix data={synergy} />
       </section>

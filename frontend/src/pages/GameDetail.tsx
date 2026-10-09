@@ -7,12 +7,15 @@ import { fetchJSON, postJSON, ApiError, peekApiCache } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Zap, BarChart2, ListOrdered } from 'lucide-react';
+import { BarChart2, ListOrdered } from 'lucide-react';
 import { CalendarIcon as Calendar, VenueIcon as MapPin, TrophyIcon as Trophy, InfoIcon as Info } from '../shared/ui/BrandIcon';
 import type { IconComponent } from '../shared/ui/BrandIcon';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
 import PageContainer from '../shared/ui/PageContainer';
+import PageTabs from '../shared/ui/PageTabs';
+import SectionHeading from '../shared/ui/SectionHeading';
+import { MAIN_ASIDE_GRID_WIDE } from '../shared/ui/PageLayout';
 import PageLoader from '../shared/ui/PageLoader';
 import { bkpkActivePillClass } from '../shared/ui/BkpkButton';
 import BoxScoreModern, { hasPlusMinus } from '../features/games/BoxScoreModern';
@@ -227,7 +230,7 @@ export default function GameDetail() {
         <BackLink fallback="/games" label="Wróć" />
 
         {/* Scoreboard Header — jak MatchHero/ScoreBoard na bekapaka.pl: BeKaPaKa po lewej, przegrany konturem */}
-        <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 md:p-10 lg:p-12">
+        <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle border-t-2 border-t-bkpk-primary p-5 sm:p-8 lg:p-10">
           <h1 className="sr-only">Mecz: {bekapaka.name} – {opponentTeam.name}</h1>
           {(isWin || isLoss || isUpcoming) && (
             <div className="flex justify-center md:justify-start mb-6 md:mb-8">
@@ -365,30 +368,7 @@ export default function GameDetail() {
 
         {/* Zakładki meczu — jak `.tabs` na bekapaka.pl (League.tsx): wersaliki, 3 px czerwone podkreślenie */}
         {!isUpcoming && visibleTabs.length > 1 && (
-          <div className="flex overflow-x-auto no-scrollbar max-w-full gap-5 sm:gap-8 border-b border-bkpk-border-subtle" role="tablist" aria-label="Sekcje meczu">
-            {visibleTabs.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = mainTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setMainTab(tab.id)}
-                  className={cn(
-                    'relative inline-flex items-center gap-2 min-h-[48px] shrink-0 whitespace-nowrap label-caps text-[13px] sm:text-sm transition-colors duration-200',
-                    'after:absolute after:inset-x-0 after:-bottom-px after:h-[3px] after:bg-bkpk-primary after:origin-left after:transition-transform after:duration-200',
-                    isActive ? 'text-bkpk-text-primary after:scale-x-100' : 'text-bkpk-text-muted hover:text-bkpk-text-primary after:scale-x-0'
-                  )}
-                >
-                  {/* Na telefonie bez ikon — „Akcja po akcji” mieści się bez obcinania */}
-                  <Icon className="hidden sm:block w-4 h-4 shrink-0" aria-hidden="true" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
+          <PageTabs tabs={visibleTabs} active={mainTab} onChange={setMainTab} label="Sekcje meczu" />
         )}
 
         {mainTab === 'info' && (
@@ -409,20 +389,15 @@ export default function GameDetail() {
         )}
 
         {/* Content Layout */}
-        <div className={cn('grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12', (mainTab !== 'stats' || isUpcoming) && 'hidden')}>
-          {/* Main Content */}
-          <div className="lg:col-span-8 space-y-10 md:space-y-12">
+        {/* Statystyki: treść + kolumna boczna (zespołowe, porównanie) od 1280 px treści — box score się nie ściska */}
+        <div className={cn(MAIN_ASIDE_GRID_WIDE, (mainTab !== 'stats' || isUpcoming) && 'hidden')}>
+          <div className="@container min-w-0 space-y-8 lg:space-y-10">
 
             {/* Intelligent Insights */}
             <AnimatePresence>
               {game.insights && game.insights.length > 0 && (
-                <section className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
-                      <Zap className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
-                    </div>
-                    <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Inteligentne Wnioski</h3>
-                  </div>
+                <section className="space-y-5">
+                  <SectionHeading title="Wnioski z meczu" />
                   <div className="grid gap-2">
                     {game.insights.map((insight: any, idx: number) => (
                       <motion.div
@@ -467,15 +442,10 @@ export default function GameDetail() {
             />
 
             {/* Box Score Section */}
-            <section className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex items-center justify-center w-9 h-9 border border-bkpk-border-strong shrink-0">
-                    <BarChart2 className="w-5 h-5 text-bkpk-primary" aria-hidden="true" />
-                  </div>
-                  <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Statystyki zawodników</h3>
-                </div>
-
+            <section className="space-y-5">
+              <SectionHeading
+                title="Statystyki zawodników"
+                action={
                 <div className="flex shrink-0 border border-bkpk-border-strong">
                   <button
                     onClick={() => setActiveTab('bekapaka')}
@@ -498,7 +468,8 @@ export default function GameDetail() {
                     Rywal
                   </button>
                 </div>
-              </div>
+                }
+              />
 
               {isAdmin && <MatchPresentationEditor game={game} onSaved={() => void fetchGame()} />}
               <BoxScoreModern
@@ -532,9 +503,8 @@ export default function GameDetail() {
           </div>
 
           {/* Sidebar Area */}
-          <aside className="lg:col-span-4 space-y-8">
-            {/* Comparison Cards (Temporary wrappers for legacy sidebar components) */}
-            <div className="space-y-8">
+          <aside className="@container min-w-0 space-y-6">
+            <div className="space-y-6">
               <details className="group border border-bkpk-border-subtle">
                 <summary className="cursor-pointer list-none min-h-[48px] px-4 flex items-center justify-between label-caps text-xs text-bkpk-text-secondary hover:text-bkpk-text-primary">
                   Statystyki zespołowe (dla trenera)

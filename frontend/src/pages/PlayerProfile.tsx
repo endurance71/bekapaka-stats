@@ -13,6 +13,7 @@ import { ChevronLeft, TrendingUp, BarChart2, Target } from 'lucide-react';
 import { MvpIcon as Star, CalendarIcon as Calendar } from '../shared/ui/BrandIcon';
 import { cn } from '../shared/lib/utils';
 import BkpkCard from '../shared/ui/BkpkCard';
+import { CardGrid, MAIN_ASIDE_GRID_WIDE } from '../shared/ui/PageLayout';
 import PageContainer from '../shared/ui/PageContainer';
 import PageLoader from '../shared/ui/PageLoader';
 import JerseyStripes from '../shared/ui/JerseyStripes';
@@ -254,7 +255,7 @@ export default function PlayerProfile() {
                 </div>
 
                 {/* Profile Hero — jak profil zawodnika na bekapaka.pl: numer konturem, nazwisko Condensed, średnie pod linią */}
-                <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle p-5 sm:p-8 md:p-12 pb-10 sm:pb-12 md:pb-16">
+                <section className="relative overflow-hidden bg-bkpk-surface border border-bkpk-border-subtle p-5 sm:p-8 lg:p-10">
                     {/* Numer konturem w tle */}
                     <div
                         className="hidden sm:block absolute -top-4 right-4 md:right-10 font-display font-extrabold leading-none tabular-nums text-[160px] md:text-[240px] outline-text text-bkpk-primary opacity-60 pointer-events-none select-none"
@@ -299,7 +300,7 @@ export default function PlayerProfile() {
                             </div>
 
                             {/* Key Stats Bar */}
-                            <div className="grid grid-cols-2 lg:grid-cols-4 max-w-2xl w-full border-t-2 border-bkpk-text-primary">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 w-full border-t-2 border-bkpk-text-primary">
                                 {[
                                     { label: 'Pkt/m', value: formatStatFixed(averages.ppg, 1), color: 'text-bkpk-text-primary' },
                                     { label: 'Zb/m', value: formatStatFixed(averages.rpg, 1), color: 'text-bkpk-text-primary' },
@@ -325,6 +326,8 @@ export default function PlayerProfile() {
                     <JerseyStripes className="absolute inset-x-0 bottom-0" />
                 </section>
 
+                {/* Plan rozwoju i cele obok siebie na szerokim ekranie */}
+                <CardGrid min={480} max={2}>
                 {(isAdmin || user?.id === id) && (
                     <AiAnalysisBlock
                         title="Plan rozwoju (AI)"
@@ -350,10 +353,11 @@ export default function PlayerProfile() {
                         emptyText={user?.id === id ? undefined : 'Zawodnik nie ustawił jeszcze celów.'}
                     />
                 )}
+                </CardGrid>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Charts Area */}
-                    <div className="lg:col-span-8 space-y-8">
+                {/* Treść (trend, kariera, mecze) + skuteczność w kolumnie bocznej od 1280 px treści */}
+                <div className={MAIN_ASIDE_GRID_WIDE}>
+                    <div className="@container min-w-0 space-y-6">
                         <BkpkCard variant="glass" className="space-y-6">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -449,8 +453,7 @@ export default function PlayerProfile() {
                         </section>
                     </div>
 
-                    {/* Sidebar / Detailed Averages */}
-                    <div className="lg:col-span-4 space-y-8">
+                    <aside className="@container min-w-0 space-y-6">
                         <BkpkCard variant="glass" className="space-y-6">
                             <div className="flex items-center gap-2">
                                 <h3 className="text-[22px] sm:text-[24px] text-bkpk-text-primary">Skuteczność w sezonie</h3>
@@ -484,8 +487,7 @@ export default function PlayerProfile() {
                                 ))}
                             </div>
                         </BkpkCard>
-
-                    </div>
+                    </aside>
                 </div>
             </PageContainer>
         </div>

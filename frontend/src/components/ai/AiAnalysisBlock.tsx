@@ -10,7 +10,7 @@ import BkpkCard from '../../shared/ui/BkpkCard';
 import { cn } from '../../shared/lib/utils';
 
 const PROSE_CLASSES = cn(
-  'prose prose-invert max-w-none',
+  'prose prose-invert max-w-[75ch]',
   'prose-headings:text-bkpk-text-primary',
   'prose-p:text-bkpk-text-secondary prose-li:text-bkpk-text-secondary',
   'prose-strong:text-bkpk-text-primary',
@@ -248,7 +248,7 @@ export default function AiAnalysisBlock({
                 <Bot className="h-5 w-5 text-bkpk-primary" aria-hidden />
               </div>
               <div className="min-w-0">
-                <h3 className="text-[20px] leading-tight text-bkpk-text-primary sm:text-[24px]">
+                <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary">
                   {title}
                 </h3>
                 {metaLine ? (
