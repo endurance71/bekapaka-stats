@@ -34,7 +34,7 @@ Na produkcji CMS (`cms.bekapaka.pl`) nie ma `basicauth` w Caddy — dostęp prze
 - Contema Bobolice
 - CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak
 - Jarzyńscy Palety, PHU Mirosława Jarzyńska
-- Nadleśnictwo Bobolice, Lasy Państwowe
+- Nadleśnictwo Bobolice
 - ALAB laboratoria
 - Piotr Adamus
 - „Skup aut i Auto laweta” Remek Klimek
