@@ -81,6 +81,8 @@ export default function BkpkTooltip({ content, children, className, label = 'Wyj
                     'inline-flex items-center justify-center cursor-help bg-transparent border-0 p-0',
                     // obszar dotyku 44×44 wokół małej ikony, bez przesuwania układu
                     !children && 'relative before:absolute before:-inset-3.5 before:content-[""]',
+                    // skrót w nagłówku tabeli: wyższa strefa dotyku (~40 px), wąsko w poziomie — sąsiednie kolumny zostają osobno
+                    children && 'relative before:absolute before:-inset-y-3 before:-inset-x-1 before:content-[""]',
                     className
                 )}
                 onPointerDown={(e) => {

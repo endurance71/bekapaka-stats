@@ -3,7 +3,7 @@ import MatchDayCard from '../features/match/MatchDayCard';
 import { periodShortLabel } from '../components/games/pbpFormat';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { fetchJSON, postJSON, ApiError } from '../lib/api';
+import { fetchJSON, postJSON, ApiError, peekApiCache } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -41,7 +41,9 @@ export default function GameDetail() {
   const rosterLinks = useRosterLinks();
   // Zapowiedź meczu: bilans BeKaPaKa z rywalem (wszystkie sezony od 2023/24) i rywal w lidze
   const [opponentAllTime, setOpponentAllTime] = useState<{ wins: number; losses: number; games: number; h2h: { wins: number; losses: number } | null } | null>(null);
-  const [game, setGame] = useState<any | null>(null);
+  // Ścieżka meczu z pamięci danych: powrót do tego samego meczu bez loadera
+  const gamePath = id ? `/api/games/${encodeURIComponent(id)}${querySeasonId ? `?seasonId=${encodeURIComponent(querySeasonId)}` : ''}` : null;
+  const [game, setGame] = useState<any | null>(() => (gamePath ? peekApiCache<any>(gamePath)?.data ?? null : null));
   // Zakładka w adresie (?widok=info|akcje) — link do konkretnego widoku i powrót przyciskiem „wstecz”
   const mainTab: MainTab = searchParams.get('widok') === 'info' ? 'info' : searchParams.get('widok') === 'akcje' ? 'pbp' : 'stats';
   const setMainTab = useCallback((tab: MainTab) => {
@@ -56,7 +58,7 @@ export default function GameDetail() {
   const [infoState, setInfoState] = useState<'idle' | 'loading' | 'error'>('idle');
   const [pbp, setPbp] = useState<PlayByPlayResponse | null>(null);
   const [pbpState, setPbpState] = useState<'idle' | 'loading' | 'error'>('idle');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !game);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [activeTab, setActiveTab] = useState<'bekapaka' | 'opponent'>('bekapaka');
   const [aiLoading, setAiLoading] = useState(false);
@@ -65,13 +67,14 @@ export default function GameDetail() {
   const isAdmin = user?.role === 'ADMIN';
 
   const fetchGame = useCallback(async () => {
-    if (!id) return;
-    setLoading(true);
+    if (!gamePath) return;
+    // seasonId z linku (np. H2H) — to samo ID meczu może istnieć w kilku sezonach.
+    const cached = peekApiCache<any>(gamePath);
+    if (cached) setGame(cached.data);
+    setLoading(!cached);
     setLoadError(null);
     try {
-      // seasonId z linku (np. H2H) — to samo ID meczu może istnieć w kilku sezonach.
-      const q = querySeasonId ? `?seasonId=${encodeURIComponent(querySeasonId)}` : '';
-      const data = await fetchJSON<any>(`/api/games/${encodeURIComponent(id)}${q}`);
+      const data = await fetchJSON<any>(gamePath);
       setGame(data);
     } catch (error) {
       console.error('Błąd podczas pobierania meczu:', error);
@@ -80,7 +83,7 @@ export default function GameDetail() {
     } finally {
       setLoading(false);
     }
-  }, [id, querySeasonId]);
+  }, [gamePath]);
 
   useEffect(() => {
     fetchGame();
@@ -117,8 +120,11 @@ export default function GameDetail() {
   useEffect(() => {
     if (!isKalkGame || !kalkMatchId) return;
     let active = true;
-    setInfoState('loading');
-    fetchJSON<GameInfoResponse>(`/api/games/${encodeURIComponent(kalkMatchId)}/info${gameSeasonQuery}`)
+    const infoPath = `/api/games/${encodeURIComponent(kalkMatchId)}/info${gameSeasonQuery}`;
+    const cachedInfo = peekApiCache<GameInfoResponse>(infoPath);
+    if (cachedInfo) setInfo(cachedInfo.data);
+    setInfoState(cachedInfo ? 'idle' : 'loading');
+    fetchJSON<GameInfoResponse>(infoPath)
       .then((data) => {
         if (!active) return;
         setInfo(data);
@@ -126,7 +132,7 @@ export default function GameDetail() {
       })
       .catch((error) => {
         console.error('Błąd pobierania info meczu:', error);
-        if (active) setInfoState('error');
+        if (active && !cachedInfo) setInfoState('error');
       });
     return () => {
       active = false;
@@ -137,8 +143,15 @@ export default function GameDetail() {
   useEffect(() => {
     if (mainTab !== 'pbp' || pbp || !kalkMatchId) return;
     let active = true;
+    const pbpPath = `/api/games/${encodeURIComponent(kalkMatchId)}/play-by-play${gameSeasonQuery}`;
+    const cachedPbp = peekApiCache<PlayByPlayResponse>(pbpPath);
+    if (cachedPbp) {
+      setPbp(cachedPbp.data);
+      setPbpState('idle');
+      return;
+    }
     setPbpState('loading');
-    fetchJSON<PlayByPlayResponse>(`/api/games/${encodeURIComponent(kalkMatchId)}/play-by-play${gameSeasonQuery}`)
+    fetchJSON<PlayByPlayResponse>(pbpPath)
       .then((data) => {
         if (!active) return;
         setPbp(data);

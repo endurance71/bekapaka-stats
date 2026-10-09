@@ -7,7 +7,7 @@ const briefing = (o: Partial<PreGameData> = {}): PreGameData => ({
 
 describe('odprawa — logistyka', () => {
     it('bez danych nie zmyśla godzin ani stroju', () => {
-        expect(pregameLogistics(briefing())).toEqual({ date: '—', tipoff: '—', gathering: '—', kit: '—', venue: '—' });
+        expect(pregameLogistics(briefing())).toEqual({ date: '—', tipoff: '—', gathering: '—', kit: 'trener poda', venue: '—' });
     });
 
     it('terminarz i dzień meczowy mają pierwszeństwo przed zapisem odprawy', () => {
