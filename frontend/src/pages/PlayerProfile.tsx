@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { formatStatFixed } from '../shared/lib/formatStat';
 import { useParams, Link } from 'react-router-dom';
-import { fetchJSON, postJSON, ApiError } from '../lib/api';
+import { fetchJSON, postJSON, ApiError, peekApiCache } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -110,8 +110,18 @@ interface PlayerStats {
 
 export default function PlayerProfile() {
     const { id } = useParams<{ id: string }>();
-    const [data, setData] = useState<PlayerStats | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
+    // Profil już oglądany: od pierwszej klatki dane z pamięci, bez loadera (świeże dociąga fetchStats)
+    const [cachedAtMount] = useState(() => {
+        if (!id || !seasonId) return null;
+        const stats = peekApiCache<PlayerStats>(`/api/players/${id}/stats?${new URLSearchParams({ seasonId }).toString()}`);
+        const row = peekApiCache<any>(`/api/players/${id}`);
+        return stats && row ? stats.data : null;
+    });
+    const [data, setData] = useState<PlayerStats | null>(() =>
+        cachedAtMount ? { ...cachedAtMount, player: normalizePlayerIdentity(cachedAtMount.player) } : null
+    );
+    const [loading, setLoading] = useState(() => !cachedAtMount);
     const [loadError, setLoadError] = useState<unknown>(null);
     const [aiLoading, setAiLoading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
@@ -123,7 +133,6 @@ export default function PlayerProfile() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'ADMIN';
     const isMobile = useIsMobile();
-    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
 
     const fetchStats = useCallback(async () => {
         if (!id) return;
@@ -131,14 +140,9 @@ export default function PlayerProfile() {
             setLoading(false);
             return;
         }
-        setLoading(true);
-        setLoadError(null);
-        try {
-            const statsQ = new URLSearchParams({ t: String(Date.now()), seasonId });
-            const [stats, playerRow] = await Promise.all([
-                fetchJSON<PlayerStats>(`/api/players/${id}/stats?${statsQ.toString()}`),
-                fetchJSON<any>(`/api/players/${id}`)
-            ]);
+        const statsPath = `/api/players/${id}/stats?${new URLSearchParams({ seasonId }).toString()}`;
+        const rowPath = `/api/players/${id}`;
+        const apply = (stats: PlayerStats | null, playerRow: any) => {
             setData(stats ? { ...stats, player: normalizePlayerIdentity(stats.player) } : stats);
             setAiSummary(playerRow?.aiDevelopmentSummary || null);
             setGoals(playerRow?.goals ?? null);
@@ -146,9 +150,23 @@ export default function PlayerProfile() {
                 at: playerRow?.aiDevelopmentAt,
                 model: playerRow?.aiDevelopmentModel
             });
+        };
+        // Z pamięci danych od razu (powrót do profilu bez loadera), świeże dane dojdą w tle
+        const cachedStats = peekApiCache<PlayerStats>(statsPath);
+        const cachedRow = peekApiCache<any>(rowPath);
+        const fromCache = Boolean(cachedStats && cachedRow);
+        if (fromCache) apply(cachedStats!.data, cachedRow!.data);
+        setLoading(!fromCache);
+        setLoadError(null);
+        try {
+            const [stats, playerRow] = await Promise.all([
+                fetchJSON<PlayerStats>(statsPath),
+                fetchJSON<any>(rowPath)
+            ]);
+            apply(stats, playerRow);
         } catch (error) {
             console.error('Error fetching player stats:', error);
-            if (!(error instanceof ApiError && error.status === 404)) setLoadError(error);
+            if (!fromCache && !(error instanceof ApiError && error.status === 404)) setLoadError(error);
         } finally {
             setLoading(false);
         }
