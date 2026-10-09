@@ -50,7 +50,7 @@ export default function MatchCard({
             padding="none"
             hoverEffect
         >
-            <div className="flex items-stretch">
+            <div className="flex items-stretch h-full">
                 {/* Data */}
                 <div className="flex flex-col items-center justify-center w-16 sm:w-20 shrink-0 border-r border-bkpk-border-subtle py-4">
                     <span className="font-display text-[34px] sm:text-[40px] leading-none text-bkpk-text-primary tabular-nums">{day}</span>

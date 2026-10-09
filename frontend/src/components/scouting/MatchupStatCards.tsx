@@ -29,7 +29,7 @@ export function MatchupStatCards({ opponent, bekapaka, compact = false }: Matchu
   return (
     <div
       className={cn(
-        compact ? 'grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3' : 'space-y-2 sm:space-y-2.5'
+        compact ? 'grid grid-cols-1 gap-2 @md:grid-cols-2 @3xl:grid-cols-3' : 'space-y-2 sm:space-y-2.5'
       )}
     >
       {METRICS.map((metric) => {

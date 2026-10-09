@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
 import { useState, useMemo } from 'react';
 import { CalendarIcon as Calendar } from '../../shared/ui/BrandIcon';
 import MatchCard from '../../shared/ui/MatchCard';
 import { bkpkActivePillClass } from '../../shared/ui/BkpkButton';
 import { useNavigate } from 'react-router-dom';
+import { CardGrid } from '../../shared/ui/PageLayout';
 
 export interface Game {
     id: string;
@@ -40,11 +40,11 @@ export default function GamesList({ games, loading }: GamesListProps) {
 
     if (loading) {
         return (
-            <div className="grid gap-3">
+            <CardGrid min={640} mode="fill">
                 {[1, 2, 3].map(i => (
                     <div key={i} className="h-32 bg-bkpk-surface border border-bkpk-border-subtle animate-pulse" />
                 ))}
-            </div>
+            </CardGrid>
         );
     }
 
@@ -72,21 +72,18 @@ export default function GamesList({ games, loading }: GamesListProps) {
                 ))}
             </div>
 
-            {/* List */}
-            <div className="grid gap-3">
-                {filteredGames.map((game, idx) => (
-                    <motion.div
+            {/* Lista: na szerokim ekranie 2–3 kolumny kart o stałej szerokości */}
+            <CardGrid min={640} mode="fill">
+                {filteredGames.map((game) => (
+                    <MatchCard
                         key={game.id}
-                    >
-                        <MatchCard
-                            {...game}
-                            onClick={(id) => navigate(`/games/${id}`)}
-                        />
-                    </motion.div>
+                        {...game}
+                        onClick={(id) => navigate(`/games/${id}`)}
+                    />
                 ))}
 
                 {filteredGames.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-20 bg-bkpk-surface border border-bkpk-border-subtle text-center space-y-3 px-4">
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 bg-bkpk-surface border border-bkpk-border-subtle text-center space-y-3 px-4">
                         <Calendar className="w-12 h-12 text-bkpk-text-muted" aria-hidden="true" />
                         <div className="space-y-1">
                             <p className="font-display text-xl uppercase text-bkpk-text-primary">
@@ -98,7 +95,7 @@ export default function GamesList({ games, loading }: GamesListProps) {
                         </div>
                     </div>
                 )}
-            </div>
+            </CardGrid>
         </div>
     );
 }

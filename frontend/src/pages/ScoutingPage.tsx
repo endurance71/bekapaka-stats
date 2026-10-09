@@ -11,7 +11,7 @@ import BkpkCard from '../shared/ui/BkpkCard';
 import { Users, History } from 'lucide-react';
 import PreGameMatchCard, { type PreGameData } from '../components/tactics/PreGameMatchCard';
 import { cn } from '../shared/lib/utils';
-import { motion } from 'framer-motion';
+import { CardGrid, MainAside } from '../shared/ui/PageLayout';
 import { ScoutingMatchHeader } from '../components/scouting/ScoutingMatchHeader';
 import { MobileDataCard, MobileDataList } from '../shared/ui/MobileDataCard';
 import ScrollableTableShell from '../shared/ui/ScrollableTableShell';
@@ -126,7 +126,7 @@ export default function ScoutingPage() {
 
   if (!data) {
     return (
-      <PageContainer width="narrow">
+      <PageContainer>
         {loadError ? (
           <>
             <PageHeader kicker="Następny rywal" title="Raport o rywalu" />
@@ -217,30 +217,37 @@ export default function ScoutingPage() {
     advancedStats?.fallbackBasicOnly || advancedStats?.fallbackFromPreviousMatch;
 
   return (
-    <PageContainer
-      width="narrow"
-      className="text-bkpk-text-primary pb-[max(2rem,env(safe-area-inset-bottom,0px))] space-y-6 md:space-y-8"
-    >
-      <div className="space-y-6">
-        <PageHeader kicker="Następny rywal" title={opponent.name} description="Odprawa, porównanie drużyn i kluczowi gracze rywala." />
+    <PageContainer className="text-bkpk-text-primary pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
+      <PageHeader kicker="Następny rywal" title={opponent.name} description="Odprawa, porównanie drużyn i kluczowi gracze rywala." />
 
+      {/* Mecz i dzień meczowy obok siebie na szerokim ekranie */}
+      <CardGrid min={480} max={2}>
         <ScoutingMatchHeader bekapaka={bekapaka} opponent={opponent} />
-      </div>
+        {nextMatch && sameName(nextMatch.opponent, opponent.name) && (
+          <BkpkCard variant="glass" className="space-y-3">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <span className="kicker text-bkpk-text-primary">Dzień meczowy</span>
+              <span className="text-sm font-semibold tabular-nums text-bkpk-text-primary">
+                {formatMatchDate(nextMatch.date)}, {formatMatchTime(nextMatch.date)}
+                {nextMatch.venue && <span className="font-normal text-bkpk-text-muted"> · {nextMatch.venue}</span>}
+              </span>
+            </div>
+            <MatchDayCard variant="inline" matchId={nextMatch.id} seasonId={seasonId} matchDay={nextMatch.matchDay} />
+          </BkpkCard>
+        )}
+      </CardGrid>
 
-      {nextMatch && sameName(nextMatch.opponent, opponent.name) && (
-        <BkpkCard variant="glass" className="space-y-3">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="kicker text-bkpk-text-primary">Dzień meczowy</span>
-            <span className="text-sm font-semibold tabular-nums text-bkpk-text-primary">
-              {formatMatchDate(nextMatch.date)}, {formatMatchTime(nextMatch.date)}
-              {nextMatch.venue && <span className="font-normal text-bkpk-text-muted"> · {nextMatch.venue}</span>}
-            </span>
-          </div>
-          <MatchDayCard variant="inline" matchId={nextMatch.id} seasonId={seasonId} matchDay={nextMatch.matchDay} />
-        </BkpkCard>
-      )}
+      {showProtocolBanner ? (
+        <ScoutingProtocolBanner
+          fallbackBasicOnly={advancedStats?.fallbackBasicOnly}
+          fallbackFromPreviousMatch={advancedStats?.fallbackFromPreviousMatch}
+          sourceMatchLabel={advancedStats?.sourceMatchLabel}
+          sourceMatchDate={advancedStats?.sourceMatchDate}
+        />
+      ) : null}
 
-      <div className="space-y-5 md:space-y-6">
+      {/* Odprawa w treści, porównanie drużyn w kolumnie bocznej */}
+      <MainAside aside={<MatchupComparison opponent={radarOpponent} bekapaka={radarBeKaPaKa} />}>
         <PreGameMatchCard
           briefing={pregame.briefing}
           schedule={
@@ -253,191 +260,161 @@ export default function ScoutingPage() {
           onRefresh={loadPreGame}
           canGenerate={isAdmin}
         />
+      </MainAside>
 
-        {showProtocolBanner ? (
-          <ScoutingProtocolBanner
-            fallbackBasicOnly={advancedStats?.fallbackBasicOnly}
-            fallbackFromPreviousMatch={advancedStats?.fallbackFromPreviousMatch}
-            sourceMatchLabel={advancedStats?.sourceMatchLabel}
-            sourceMatchDate={advancedStats?.sourceMatchDate}
-          />
-        ) : null}
+      <CardGrid min={480} max={2}>
+        <AiAnalysisBlock
+          title="Plan meczowy (AI)"
+          errorMessage={aiError}
+          content={scoutingSummaryMd}
+          structuredContent={aiAnalysis?.summary ? aiAnalysis : null}
+          generatedAt={aiMeta?.generatedAt}
+          model={aiMeta?.model}
+          sourceLabel={planSourceLabel}
+          canGenerate={isAdmin}
+          loading={aiLoading}
+          compactActions
+          onGenerate={(force) => void handleGenerateScoutingAi(force)}
+          staleHint={
+            aiMeta?.stale
+              ? 'Raport może być nieaktualny (nowe dane KALK) — odśwież.'
+              : aiMeta?.needsRegeneration && aiMeta?.fromGemini
+                ? 'Raport AI jest niepełny — użyj „Wymuś ponowną generację” poniżej przycisków.'
+                : null
+          }
+          emptyHint="Brak planu meczowego — użyj „Generuj”."
+          playerEmptyHint="Plan meczowy pojawi się, gdy trener go przygotuje."
+        />
+        <AiAnalysisBlock
+          title="Analiza kadry (AI)"
+          content={personnelMd}
+          generatedAt={aiMeta?.generatedAt}
+          model={aiMeta?.model}
+          sourceLabel={personnelMd ? (aiMeta?.fromGemini ? 'Gemini' : 'Szablon danych') : null}
+          canGenerate={isAdmin}
+          loading={aiLoading}
+          compactActions
+          onGenerate={(force) => void handleGenerateScoutingAi(force)}
+          emptyHint="Analiza kadry powstaje razem z planem meczowym — wygeneruj plan powyżej."
+          playerEmptyHint="Analiza kadry rywala pojawi się razem z planem meczowym."
+        />
+      </CardGrid>
 
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <AiAnalysisBlock
-            title="Plan meczowy (AI)"
-            errorMessage={aiError}
-            content={scoutingSummaryMd}
-            structuredContent={aiAnalysis?.summary ? aiAnalysis : null}
-            generatedAt={aiMeta?.generatedAt}
-            model={aiMeta?.model}
-            sourceLabel={planSourceLabel}
-            canGenerate={isAdmin}
-            loading={aiLoading}
-            compactActions
-            onGenerate={(force) => void handleGenerateScoutingAi(force)}
-            staleHint={
-              aiMeta?.stale
-                ? 'Raport może być nieaktualny (nowe dane KALK) — odśwież.'
-                : aiMeta?.needsRegeneration && aiMeta?.fromGemini
-                  ? 'Raport AI jest niepełny — użyj „Wymuś ponowną generację” poniżej przycisków.'
-                  : null
-            }
-            emptyHint="Brak planu meczowego — użyj „Generuj”."
-            playerEmptyHint="Plan meczowy pojawi się, gdy trener go przygotuje."
-          />
-        </motion.div>
+      {hasProtocolDna ? <DNASection data={advancedStats as Parameters<typeof DNASection>[0]['data']} /> : null}
 
-        <motion.div
+      <CardGrid min={480} max={2}>
+        <BkpkCard
+          title="Kluczowi gracze rywala"
+          icon={<Users className="h-5 w-5 text-bkpk-primary" />}
+          variant="flat"
+          className="h-full"
+          overflowVisible
         >
-          <MatchupComparison opponent={radarOpponent} bekapaka={radarBeKaPaKa} />
-        </motion.div>
-
-        <motion.div
-        >
-          <AiAnalysisBlock
-            title="Analiza kadry (AI)"
-            content={personnelMd}
-            generatedAt={aiMeta?.generatedAt}
-            model={aiMeta?.model}
-            sourceLabel={personnelMd ? (aiMeta?.fromGemini ? 'Gemini' : 'Szablon danych') : null}
-            canGenerate={isAdmin}
-            loading={aiLoading}
-            compactActions
-            onGenerate={(force) => void handleGenerateScoutingAi(force)}
-            emptyHint="Analiza kadry powstaje razem z planem meczowym — wygeneruj plan powyżej."
-            playerEmptyHint="Analiza kadry rywala pojawi się razem z planem meczowym."
-          />
-        </motion.div>
-
-        {hasProtocolDna ? (
-          <motion.div
-          >
-            <DNASection data={advancedStats as Parameters<typeof DNASection>[0]['data']} />
-          </motion.div>
-        ) : null}
-
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
-          <motion.div
-          >
-            <BkpkCard
-              title="Kluczowi gracze rywala"
-              icon={<Users className="h-5 w-5 text-bkpk-primary" />}
-              variant="flat"
-              className="h-full"
-              overflowVisible
-            >
-              {keyPlayers.length === 0 ? (
-                <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie ma jeszcze statystyk zawodników w tym sezonie.</p>
-              ) : showPlayerCards ? (
-                <MobileDataList className="p-0 pb-3">
+          {keyPlayers.length === 0 ? (
+            <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie ma jeszcze statystyk zawodników w tym sezonie.</p>
+          ) : showPlayerCards ? (
+            <MobileDataList className="p-0 pb-3">
+              {keyPlayers.map((p, i) => (
+                <MobileDataCard
+                  key={`${p.name}-${i}`}
+                  rank={i + 1}
+                  title={p.name}
+                  highlight={
+                    <div className="text-right">
+                      <div className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
+                        {formatStatFixed(p.ppg)}
+                      </div>
+                      <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">pkt/m</div>
+                    </div>
+                  }
+                  stats={[
+                    { label: 'Mecze', value: p.matches },
+                    { label: 'Za 3', value: threesText(p.threePointStats) },
+                    { label: 'Pkt łącznie', value: p.totalPoints, emphasize: true }
+                  ]}
+                />
+              ))}
+            </MobileDataList>
+          ) : (
+            <ScrollableTableShell compact className="mx-0 border-0 bg-bkpk-bg">
+              <table className="bkpk-table min-w-[420px] text-left text-[14px]">
+                <thead>
+                  <tr>
+                    <th className="h-11 pl-3 text-left">Zawodnik</th>
+                    <th className="h-11 text-center">Mecze</th>
+                    <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">Pkt/m</th>
+                    <th className="h-11 text-center">Za 3</th>
+                    <th className="h-11 text-center">Pkt</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {keyPlayers.map((p, i) => (
-                    <MobileDataCard
-                      key={`${p.name}-${i}`}
-                      rank={i + 1}
-                      title={p.name}
-                      highlight={
-                        <div className="text-right">
-                          <div className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
-                            {formatStatFixed(p.ppg)}
-                          </div>
-                          <div className="label-caps text-[11px] text-bkpk-text-muted mt-1">pkt/m</div>
-                        </div>
-                      }
-                      stats={[
-                        { label: 'Mecze', value: p.matches },
-                        { label: 'Za 3', value: threesText(p.threePointStats) },
-                        { label: 'Pkt łącznie', value: p.totalPoints, emphasize: true }
-                      ]}
-                    />
+                    <tr key={i} className="transition-colors">
+                      <td className="h-11 pl-3 font-semibold text-bkpk-text-primary">
+                        <span className="mr-2 inline-flex h-6 w-6 items-center justify-center border border-bkpk-border-strong font-display text-[13px] tabular-nums text-bkpk-text-secondary">
+                          {i + 1}
+                        </span>
+                        {p.name}
+                      </td>
+                      <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">{p.matches}</td>
+                      <td className="h-11 text-center font-display text-[18px] leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(p.ppg)}</td>
+                      <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">
+                        {threesText(p.threePointStats)}
+                      </td>
+                      <td className="h-11 text-center font-semibold tabular-nums text-bkpk-text-secondary">{p.totalPoints}</td>
+                    </tr>
                   ))}
-                </MobileDataList>
-              ) : (
-                <ScrollableTableShell compact className="mx-0 border-0 bg-bkpk-bg">
-                  <table className="bkpk-table min-w-[480px] text-left text-[14px]">
-                    <thead>
-                      <tr>
-                        <th className="h-11 pl-3 text-left">Zawodnik</th>
-                        <th className="h-11 text-center">Mecze</th>
-                        <th className="h-11 text-center shadow-[inset_0_-3px_0_var(--c-red-500)]">Pkt/m</th>
-                        <th className="h-11 text-center">Za 3</th>
-                        <th className="h-11 text-center">Pkt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {keyPlayers.map((p, i) => (
-                        <tr key={i} className="transition-colors">
-                          <td className="h-11 pl-3 font-semibold text-bkpk-text-primary">
-                            <span className="mr-2 inline-flex h-6 w-6 items-center justify-center border border-bkpk-border-strong font-display text-[13px] tabular-nums text-bkpk-text-secondary">
-                              {i + 1}
-                            </span>
-                            {p.name}
-                          </td>
-                          <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">{p.matches}</td>
-                          <td className="h-11 text-center font-display text-[18px] leading-none tabular-nums text-bkpk-text-primary">{formatStatFixed(p.ppg)}</td>
-                          <td className="h-11 text-center tabular-nums text-bkpk-text-secondary">
-                            {threesText(p.threePointStats)}
-                          </td>
-                          <td className="h-11 text-center font-semibold tabular-nums text-bkpk-text-secondary">{p.totalPoints}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </ScrollableTableShell>
-              )}
-            </BkpkCard>
-          </motion.div>
-
-          <motion.div
-          >
-            <BkpkCard
-              title="Ostatnie mecze rywala"
-              icon={<History className="h-5 w-5 text-bkpk-primary" />}
-              variant="flat"
-              className="h-full"
-              overflowVisible
-            >
-              {form.length === 0 && <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie rozegrał jeszcze meczu w tym sezonie.</p>}
-              <div className={form.length ? 'border-y border-bkpk-border-subtle' : 'hidden'}>
-                {form.map((m, i) => (
+                </tbody>
+              </table>
+            </ScrollableTableShell>
+          )}
+        </BkpkCard>
+        <BkpkCard
+          title="Ostatnie mecze rywala"
+          icon={<History className="h-5 w-5 text-bkpk-primary" />}
+          variant="flat"
+          className="h-full"
+          overflowVisible
+        >
+          {form.length === 0 && <p className="py-6 text-sm text-bkpk-text-secondary">Rywal nie rozegrał jeszcze meczu w tym sezonie.</p>}
+          <div className={form.length ? 'border-y border-bkpk-border-subtle' : 'hidden'}>
+            {form.map((m, i) => (
+              <div
+                key={i}
+                className="group flex items-center justify-between gap-3 px-2 py-3 transition-colors even:bg-bkpk-bg hover:bg-bkpk-surface-elevated"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  {/* Forma: wygrana pełny kwadrat, porażka kontur — litera zawsze widoczna */}
                   <div
-                    key={i}
-                    className="group flex items-center justify-between gap-3 px-2 py-3 transition-colors even:bg-bkpk-bg hover:bg-bkpk-surface-elevated"
+                    className={cn(
+                      'flex h-10 w-10 shrink-0 items-center justify-center border-[1.5px] font-display text-lg',
+                      m.result === 'W'
+                        ? 'border-bkpk-text-primary bg-bkpk-text-primary text-bkpk-bg'
+                        : 'border-bkpk-text-secondary text-bkpk-text-primary'
+                    )}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      {/* Forma: wygrana pełny kwadrat, porażka kontur — litera zawsze widoczna */}
-                      <div
-                        className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center border-[1.5px] font-display text-lg',
-                          m.result === 'W'
-                            ? 'border-bkpk-text-primary bg-bkpk-text-primary text-bkpk-bg'
-                            : 'border-bkpk-text-secondary text-bkpk-text-primary'
-                        )}
-                      >
-                        {m.result === 'W' ? 'W' : 'P'}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="label-caps text-[11px] text-bkpk-text-muted">
-                          {m.result === 'W' ? 'Wygrana' : 'Porażka'}
-                        </span>
-                        <span className="font-semibold text-bkpk-text-primary truncate">
-                          vs {m.opponent}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end shrink-0">
-                      <span className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
-                        {String(m.score).replace('-', ':')}
-                      </span>
-                      <span className="text-xs font-medium text-bkpk-text-muted mt-1 tabular-nums">{m.date ? formatMatchDate(m.date) : ''}</span>
-                    </div>
+                    {m.result === 'W' ? 'W' : 'P'}
                   </div>
-                ))}
+                  <div className="flex flex-col min-w-0">
+                    <span className="label-caps text-[11px] text-bkpk-text-muted">
+                      {m.result === 'W' ? 'Wygrana' : 'Porażka'}
+                    </span>
+                    <span className="font-semibold text-bkpk-text-primary truncate">
+                      vs {m.opponent}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex flex-col items-end shrink-0">
+                  <span className="font-display text-xl leading-none tabular-nums text-bkpk-text-primary">
+                    {String(m.score).replace('-', ':')}
+                  </span>
+                  <span className="text-xs font-medium text-bkpk-text-muted mt-1 tabular-nums">{m.date ? formatMatchDate(m.date) : ''}</span>
+                </div>
               </div>
-            </BkpkCard>
-          </motion.div>
-        </div>
-      </div>
+            ))}
+          </div>
+        </BkpkCard>
+      </CardGrid>
     </PageContainer>
   );
 }

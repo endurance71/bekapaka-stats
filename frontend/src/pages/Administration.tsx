@@ -163,7 +163,7 @@ export default function Administration() {
 
     return (
         <div className="bg-bkpk-bg">
-            <PageContainer width="narrow">
+            <PageContainer>
                 <PageHeader
                     kicker="Panel Kontrolny"
                     title={<>Administracja <span className="text-bkpk-primary">Systemu</span></>}

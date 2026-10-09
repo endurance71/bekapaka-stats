@@ -8,7 +8,7 @@ export default function Glossary() {
     const entries = Object.entries(STAT) as [StatKey, (typeof STAT)[StatKey]][];
 
     return (
-        <PageContainer width="narrow">
+        <PageContainer>
             <PageHeader
                 kicker="Pomoc"
                 title="Słowniczek"

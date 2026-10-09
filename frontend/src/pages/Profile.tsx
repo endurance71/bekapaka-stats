@@ -182,7 +182,7 @@ export default function Profile() {
 
     return (
         <div className="bg-bkpk-bg">
-            <PageContainer width="narrow">
+            <PageContainer>
                 {/* Header */}
                 <PageHeader
                     kicker="Ja"

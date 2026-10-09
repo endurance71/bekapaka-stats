@@ -92,7 +92,7 @@ export default function PlaybookList({
   return (
     <div className="space-y-6">
       {/* Filtry i Wyszukiwarka */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="flex flex-col @2xl:flex-row items-stretch @2xl:items-center justify-between gap-4">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
           <button
             aria-pressed={selectedCategory === 'all'}
@@ -128,7 +128,7 @@ export default function PlaybookList({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Szukaj zagrywki…"
-          className="bg-bkpk-bg border border-bkpk-border-strong px-3 py-1.5 min-h-[44px] text-[14px] text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary w-full sm:w-64"
+          className="bg-bkpk-bg border border-bkpk-border-strong px-3 py-1.5 min-h-[44px] text-[14px] text-bkpk-text-primary placeholder:text-bkpk-text-muted/50 focus:border-bkpk-text-primary w-full @2xl:w-64"
         />
       </div>
 
@@ -144,7 +144,7 @@ export default function PlaybookList({
           </p>
         </BkpkCard>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 @2xl:grid-cols-2 @5xl:grid-cols-3 gap-4">
           <AnimatePresence>
             {filteredPlays.map((play) => {
               const catConfig = CATEGORY_LABELS[play.category] || CATEGORY_LABELS.half_court;
