@@ -58,11 +58,14 @@ export const sponsors: SponsorItem[] = [
     logoFit: 'contain'
   },
   {
-    id: 's-6',
-    name: 'PST Sped-Trans Bobolice',
-    slug: 'pst-sped-trans',
-    websiteUrl: '',
-    order: 6
+    id: 's-16',
+    name: 'Jarzyńscy Palety, PHU Mirosława Jarzyńska',
+    slug: 'jarzynscy-palety',
+    websiteUrl: 'https://jarzynscy.pl',
+    order: 6,
+    logoUrl: '/images/partners/jarzynscy-palety.webp',
+    logoBgColor: '#ffffff',
+    logoFit: 'contain'
   },
   {
     id: 's-7',
@@ -71,10 +74,11 @@ export const sponsors: SponsorItem[] = [
     facebookUrl: 'https://www.facebook.com/Nadlesnictwo.Bobolice',
     websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
     order: 7,
-    logoUrl: '/images/partners/lasy-vector.svg',
+    logoUrl: '/images/partners/nadlesnictwo-bobolice.svg',
     logoBgColor: '#ffffff',
     logoFit: 'contain',
-    logoCardScale: 1.25,
+    // Znak LP z dwiema liniami nazwy (~1,9 : 1) — ogranicza go wysokość kafla, nie szerokość.
+    logoCardScale: 1.5,
     logoCardPadding: '8px'
   },
   {
