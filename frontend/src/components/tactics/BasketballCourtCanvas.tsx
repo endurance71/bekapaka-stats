@@ -1010,7 +1010,7 @@ export default function BasketballCourtCanvas({
       </div>
 
       {/* Kontener Canvas 2D (Perfekcyjna Wektorowa Geometria FIBA) */}
-      <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-[850px] mx-auto border border-bkpk-border-strong overflow-hidden">
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/11] max-w-[min(100%,calc((100dvh-14rem)*16/11))] mx-auto border border-bkpk-border-strong overflow-hidden">
         <canvas
           ref={canvasRef}
           className="w-full h-full block cursor-pointer"

@@ -77,3 +77,9 @@ Doszły dwa pliki (każdy w dwóch identycznych kopiach): nowy układ poziomy �
 - pieczęć — kwadratowa, w polu 65 px napisy po okręgu mają ok. 4 px.
 
 Oba nowe pliki mają kremowe tło (253, 249, 246) bez przezroczystości — usunięte metodą color-to-alpha (jak w GIMP), z odcięciem alfa < 3%. Plik WWW zastąpiony: 1050 × 202 px, proporcje 5,2 : 1, bezstratny WebP z kanałem alfa, 103 KB; `logoCardScale: 1.25` bez zmian.
+
+## Aktualizacja 9.10.2026 — Nadleśnictwo Bobolice, Jarzyńscy Palety, PST Sped-Trans
+
+- **Nadleśnictwo Bobolice**: dotychczasowy plik (`lasy-vector.svg`) pokazywał tylko znak i napis „Lasy Państwowe”. Nowy `nadlesnictwo-bobolice.svg` (wymiary własne 295 × 156, żeby przeglądarka mogła go powiększyć; `logoCardScale: 1.5` → 147 × 78 px na komputerze, 125 × 66 px na telefonie) ma pod nim drugą linię „Nadleśnictwo Bobolice” — ten sam krój (Arial Bold ok. 8,98 pt, odstępy liter zgodne z oryginałem co do 0,02 pt), ten sam kolor LP `#004C40`, litery zamienione na krzywe (bez zależności od fontów). Obrys przycięty do treści, żeby dodatkowa linia nie zmniejszała logo w kaflu.
+- **Jarzyńscy Palety** (PHU Mirosława Jarzyńska, Chociwle, gm. Bobolice): logo poziome z oficjalnej strony firmy (`jarzynscy.pl/wp-content/uploads/2019/11/jarzynscy-poziom1.png`, przezroczyste tło), przycięte do treści, 900 × 259 px, bezstratny WebP, 40 KB.
+- **PST Sped-Trans Bobolice** — usunięty z listy partnerów (decyzja klubu).

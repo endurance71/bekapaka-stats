@@ -4,7 +4,7 @@
 import { channels } from './channels.js';
 import { when } from './templates.js';
 
-export const PROMPT_VERSION = 'copy-2026.10-v5';
+export const PROMPT_VERSION = 'copy-2026.10-v6';
 
 export const brandVoice = `Jesteś redaktorem mediów społecznościowych i strony klubu koszykówki BeKaPaKa Bobolice (amatorska drużyna męska, liga KALK — Koszalińska Amatorska Liga Koszykówki).
 
@@ -57,7 +57,8 @@ export const channelInstructions = {
 - Pierwsze zdanie samodzielne — widoczne w podglądzie.
 - link: link z faktów (np. artykuł na bekapaka.pl) albo pusty tekst; adresu nie powtarzasz w treści.
 - hashtags: 0–${channels.facebook.limits.hashtags}, tylko z listy dozwolonych.
-- Opcjonalnie jedno pytanie do kibiców na końcu.`,
+- Opcjonalnie jedno pytanie do kibiców na końcu.
+- Listę sponsorów Studio dodaje automatycznie pod postem — nie wymieniasz sponsorów w text.`,
   website: `STRONA BEKAPAKA.PL (pole title, excerpt, content, tags, coverAlt)
 - title: do ${channels.website.limits.title} znaków, informacyjny (co i z kim / co się wydarzyło), bez wykrzykników i emoji.
 - excerpt: ${channels.website.limits.excerptMin}–${channels.website.limits.excerptMax} znaków, 1–2 zdania streszczenia do listy aktualności i wyszukiwarek.

@@ -8,6 +8,7 @@ import { hash, filePath } from '../storage.js';
 import { matches, sourceEnvelope } from '../sources.js';
 import { statisticalSnapshot } from '../statistics.js';
 import { matchReport } from './match-report.js';
+import { currentSponsorFooter } from './sponsors.js';
 import { projectView, validation } from '../service.js';
 import { channelIds, channels, copySchemas, factsSchema } from './channels.js';
 import { graphicFormats, playbook } from './playbooks.js';
@@ -260,7 +261,7 @@ export async function createPublication(db, owner, input) {
   if (!def) fail(404, 'Nieznany schemat publikacji');
   const fromSource = data.source ? await matchFacts(db, data.source.seasonId, data.source.id) : null;
   const facts = factsSchema.parse({ ...(fromSource?.facts || {}), ...(data.facts || {}), kind: def.factsKind });
-  const settings = await getSettings(db, owner);
+  const settings = { ...(await getSettings(db, owner)), ...(def.items.facebook ? { sponsorFooter: await currentSponsorFooter() } : {}) };
   const partnerIds = def.category === 'Partnerzy' ? (await db.studioPartner.findMany({ where: { ownerId: owner, status: 'approved' }, select: { id: true } })).map((p) => p.id) : [];
   const title = (data.title || [facts.opponent || facts.title || facts.person || facts.partner, facts.date ? when(facts.date).split(',')[1]?.trim() : ''].filter(Boolean).join(' · ') || def.label).slice(0, 180);
   const anchor = facts.date && Number.isFinite(Date.parse(facts.date)) ? new Date(Date.parse(facts.date) + def.offsetHours * 3600_000) : null;
@@ -411,7 +412,8 @@ export async function applyTemplates(db, owner, pubId, channelList) {
   const p = await db.studioPublication.findFirst({ where: { id: pubId, ownerId: owner }, include: { items: true } });
   if (!p) fail(404, 'Publikacja nie istnieje');
   const def = playbook(p.playbook);
-  const copy = schematicCopy(def, factsSchema.parse(p.facts), await getSettings(db, owner));
+  const sponsorFooter = channelList.includes('facebook') ? await currentSponsorFooter() : '';
+  const copy = schematicCopy(def, factsSchema.parse(p.facts), { ...(await getSettings(db, owner)), sponsorFooter });
   await db.$transaction(async (tx) => {
     for (const item of p.items.filter((i) => channelList.includes(i.channel) && ['draft', 'skipped'].includes(i.status) && copy[i.channel])) {
       await tx.studioPublicationItem.update({ where: { id: item.id }, data: { copy: copy[item.channel], copyOrigin: 'template', promptVersion: `template:${TEMPLATE_VERSION}`, revision: { increment: 1 } } });

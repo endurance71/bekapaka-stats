@@ -184,7 +184,7 @@ export default function SynergyMatrix({ data, loading }: { data: SynergyResponse
 
       <BkpkCard variant="glass" className="p-5">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-5">
-          <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary">Wszystkie duety</h3>
+          <h3 className="text-[22px] sm:text-[24px] leading-tight text-bkpk-text-primary">Wszystkie duety</h3>
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-bkpk-text-muted" aria-hidden />
             <input

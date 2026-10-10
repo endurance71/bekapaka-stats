@@ -10,6 +10,7 @@ import { buildReportPrompt, reportPartsSchema, reportReady } from '../publicatio
 import { assembleReport } from '../publications/templates.js';
 import { channelIds, copySchemas } from '../publications/channels.js';
 import { factsConfirmed, getSettings, publicationView, updateItem } from '../publications/service.js';
+import { currentSponsorFooter } from '../publications/sponsors.js';
 
 const REPORT_PLAYBOOKS = ['match-result', 'match-report'];
 const promptHash = (p) => hash({ version: p.version, system: p.system, user: p.user, schema: p.schema });
@@ -78,6 +79,8 @@ export const studioAgentOperations = {
         if (!parsed.success) fail(422, `Tekst kanału ${channel} nie spełnia kontraktu: ${issues(parsed.error)}`);
         copies[channel] = parsed.data;
       }
+      // Like Studio's own AI copy: the Facebook sponsor footer comes from bekapaka.pl/sponsorzy, not from the model.
+      if (copies.facebook) copies.facebook = { ...copies.facebook, sponsors: await currentSponsorFooter() };
       const results = [];
       for (const channel of prep.channels) results.push(await saveDraft(db, owner, prep.view, channel, copies[channel], prep.version));
       return { publicationId: prep.view.id, channels: results };

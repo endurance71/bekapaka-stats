@@ -425,7 +425,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
   const categoryMeta = categorySlug ? getCategoryMeta(categorySlug) : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 lg:space-y-10">
       <div className="space-y-4">
         {categorySlug ? (
           <Link
@@ -502,7 +502,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
       ) : null}
 
       {!categorySlug ? (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,360px),1fr))] [&>*]:h-full">
           {AI_CATEGORIES.map((cat) => {
             const slug = cat.slug;
             const label = categoryLabelFromSlug(slug);

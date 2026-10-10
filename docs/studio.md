@@ -42,6 +42,10 @@ Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wyn
 - **Hashtagi** — Ustawienia. Domyślnie tylko `#BKPK` (jedyny hashtag z księgi marki); pozostałe to propozycje do decyzji klubu.
 - **Pulpit i kalendarz** — podpowiedzi brakujących zapowiedzi/wyników z terminarza KALK (aktywny sezon), wpisy z 7 dni, kalendarz miesięczny z przeciąganiem terminów (czas Europe/Warsaw).
 
+### Sponsorzy pod postami na Facebooku
+
+Każdy post na Facebooka ma stopkę „Dziękujemy naszym sponsorom: …” z listy bekapaka.pl/sponsorzy (jedno źródło: `site/lib/data/sponsors.ts`, udostępniane przez `GET /api/sponsors` strony). Studio pobiera listę (`backend/studio/publications/sponsors.js`, cache 10 min, przy chwilowej awarii strony ostatnia znana lista) i wstawia stopkę w tekstach ze schematu i z AI — model nie wymienia sponsorów. Stopka trafia do podglądu, „Kopiuj tekst” i `facebook/post.txt`; brak stopki blokuje akceptację (kontrola marki). W zakładce Facebook lista „Oznacz sponsorów” prowadzi do profili sponsorów (`facebookUrl` w liście strony): wklejony tekst nie tworzy oznaczeń, więc na Facebooku wpisuje się „@” i wybiera stronę sponsora.
+
 ### Teksty AI i agent (Studio 2, etap 2)
 
 - **Biblioteka promptów** — `backend/studio/publications/prompts.js` (`PROMPT_VERSION`): zasady marki (prompt systemowy) i instrukcje kanałów. Ten sam tekst trafia do Gemini, na stronę Studio „Schematy i prompty”, do agenta (`get_prompts`) i do [docs/studio-content-system.md](./studio-content-system.md), generowanego przez `node scripts/studio/export-prompts.mjs` (test pilnuje aktualności). Każda zmiana tekstu wymaga podbicia wersji.

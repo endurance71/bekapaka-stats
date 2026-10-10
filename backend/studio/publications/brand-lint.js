@@ -97,6 +97,7 @@ export function lintCopy(channel, copy, facts) {
     if (/https?:\/\//.test(copy.caption || '')) add('warning', 'caption', 'Linki w opisie Instagrama nie są klikalne — „link w bio”.');
   }
   if (channel === 'facebook' && !copy.text) add('error', 'text', 'Uzupełnij treść posta.');
+  if (channel === 'facebook' && !copy.sponsors) add('error', 'sponsors', 'Brak oznaczeń sponsorów pod postem — wstaw aktualną listę ze strony.');
   if (channel === 'website') {
     if (!copy.title) add('error', 'title', 'Uzupełnij tytuł artykułu.');
     if (!copy.content) add('error', 'content', 'Uzupełnij treść artykułu.');

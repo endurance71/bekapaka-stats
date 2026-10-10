@@ -92,7 +92,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
 
     if (loading) {
         return (
-            <div className="p-8 space-y-6">
+            <div className="space-y-6">
                 {[1, 2, 3].map(i => (
                     <div key={i} className="h-24 bg-bkpk-surface-tint-2 animate-pulse" />
                 ))}
@@ -106,7 +106,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
 
     if (matches.length === 0) {
         return (
-            <div className="p-8">
+            <div>
                 <KalkEmptyState
                     title="Terminarz jest pusty"
                     message="Terminarz pojawi się, gdy liga KALK opublikuje mecze sezonu."
@@ -118,7 +118,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
     let rowIndex = -1;
     return (
         <div className="grid grid-cols-1">
-            <div className="flex gap-2 p-3 sm:px-5" role="group" aria-label="Które mecze">
+            <div className="flex gap-2 pb-4" role="group" aria-label="Które mecze">
                 {[{ v: true, l: 'Tylko BeKaPaKa' }, { v: false, l: 'Cała liga' }].map((o) => (
                     <button
                         key={o.l}
@@ -139,7 +139,8 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                             <span className="label-caps font-text text-[11px] font-semibold tabular-nums opacity-85">{group.matches.length} {pluralPl(group.matches.length, 'mecz', 'mecze', 'meczów')}</span>
                         </h3>
                     )}
-                    <ol className="grid grid-cols-1" role="list">
+                    {/* Szeroki ekran: dwie kolumny meczów */}
+                    <ol className="grid grid-cols-1 @7xl:grid-cols-2 @7xl:gap-x-6" role="list">
                         {group.matches.map((match) => {
                             rowIndex += 1;
                             const idx = rowIndex;
@@ -193,7 +194,7 @@ export default function LeagueScheduleModern({ seasonId }: LeagueScheduleModernP
                                         isBkpkInvolved
                                             ? "bg-[var(--table-own-bg)] shadow-[inset_4px_0_0_var(--c-red-500)]"
                                             : idx % 2 === 1
-                                                ? "bg-ink-800 hover:bg-ink-700"
+                                                ? "bg-ink-800 hover:bg-ink-700 @7xl:bg-transparent @7xl:hover:bg-ink-800"
                                                 : "hover:bg-ink-800"
                                     )}
                                 >

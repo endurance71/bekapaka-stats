@@ -2,7 +2,7 @@
 
 > Plik generowany z kodu Studio (`node scripts/studio/export-prompts.mjs`). Nie edytuj ręcznie — zmień `backend/studio/publications/*` i wygeneruj ponownie.
 
-Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.3.0 · prompty copy-2026.10-v5 · relacja report-2026.10-v3 · kontrola marki 1.5.0.
+Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.3.0 · prompty copy-2026.10-v6 · relacja report-2026.10-v3 · kontrola marki 1.5.0.
 
 ## Jak powstaje publikacja
 
@@ -119,6 +119,7 @@ FACEBOOK (pole text, hashtags, link, altText)
 - link: link z faktów (np. artykuł na bekapaka.pl) albo pusty tekst; adresu nie powtarzasz w treści.
 - hashtags: 0–2, tylko z listy dozwolonych.
 - Opcjonalnie jedno pytanie do kibiców na końcu.
+- Listę sponsorów Studio dodaje automatycznie pod postem — nie wymieniasz sponsorów w text.
 ```
 
 ```
@@ -266,7 +267,8 @@ Fakty:
   "text": "Wygrana! BeKaPaKa Bobolice 78:64 Pantery.\n\n5. kolejka KALK, KOSiR Koszalin.\nNajlepsi: Jan Kowalski 24 pkt, Adam Nowak 11 zb.\nDziękujemy za doping!",
   "hashtags": [],
   "link": "",
-  "altText": "Wynik meczu. BeKaPaKa Bobolice 78:64 Pantery. 18.10, 17:00. KOSiR Koszalin"
+  "altText": "Wynik meczu. BeKaPaKa Bobolice 78:64 Pantery. 18.10, 17:00. KOSiR Koszalin",
+  "sponsors": ""
 }
 ```
 

@@ -94,3 +94,13 @@ describe('copy job with the AI reporter', () => {
     expect(out.chargedMicros).toBe(1000 * 2 + 100 * 10 + (2000 * 1.5 + 3000 * 9));
   });
 });
+
+describe('Facebook sponsors in AI copy', () => {
+  it('adds the sponsor footer from the job, never from the model', async () => {
+    process.env.STUDIO_ANTHROPIC_API_KEY = 'sk-ant-env-test';
+    reply = async () => ({ json: { facebook: { text: 'Wygraliśmy.', hashtags: [], link: '', altText: 'Grafika z wynikiem.' } }, usage: { inputTokens: 10, outputTokens: 10 } });
+    const job = { kind: 'ai-copy', ownerId: 'owner', payload: { model: claude, prompt, channels: ['facebook'], sponsorFooter: 'Dziękujemy naszym sponsorom: Gmina Bobolice', publicationId: 'p', factsHash: 'f' } };
+    const out = await generateAi(job, db);
+    expect(out.result.copy.facebook.sponsors).toBe('Dziękujemy naszym sponsorom: Gmina Bobolice');
+  });
+});

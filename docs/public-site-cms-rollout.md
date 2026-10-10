@@ -26,20 +26,23 @@ Na produkcji CMS (`cms.bekapaka.pl`) nie ma `basicauth` w Caddy — dostęp prze
 
 ## Aktualna lista sponsorów
 
+Źródło: `site/lib/data/sponsors.ts` (kolejność jak na stronie).
+
 - Gmina Bobolice
-- CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak
+- Majster Plus Koszalin
+- Fem-Tech Tychowo
 - Contema Bobolice
-- Emil Jaświg
-- PST Sped-Trans Bobolice
+- CERTE. Kancelaria Doradcy Podatkowego Inez Szczęśniak
+- Jarzyńscy Palety, PHU Mirosława Jarzyńska
 - Nadleśnictwo Bobolice, Lasy Państwowe
 - ALAB laboratoria
 - Piotr Adamus
 - „Skup aut i Auto laweta” Remek Klimek
 - CESIR Bobolice
-- Fem-Tech Tychowo
+- Emil Jaświg
 - Baumal e-hurtowniabudowlana.pl
-- Majster Plus Koszalin
 - Insight Data Consulting Izabela Kaszubowska
+- ShipApp
 
 ## Etapy i checklista go-live
 

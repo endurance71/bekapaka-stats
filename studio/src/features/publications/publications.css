@@ -1046,3 +1046,32 @@ a.primary.is-disabled {
 .report-summary small {
   color: var(--muted);
 }
+
+/* Facebook: sponsor footer and tagging checklist */
+.sponsor-footer-text {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+.sponsor-tags ul {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+  display: grid;
+  gap: 4px;
+}
+.sponsor-tags li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 13px;
+}
+.sponsor-tags a {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}

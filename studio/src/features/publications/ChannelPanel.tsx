@@ -83,7 +83,7 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
     item.channel === 'instagram_feed'
       ? `${(draft as Copy['instagram_feed']).caption}${(draft as Copy['instagram_feed']).hashtags.length ? '\n\n' + (draft as Copy['instagram_feed']).hashtags.join(' ') : ''}`
       : item.channel === 'facebook'
-        ? (draft as Copy['facebook']).text
+        ? [(draft as Copy['facebook']).text, (draft as Copy['facebook']).sponsors].filter(Boolean).join('\n\n')
         : '';
 
   return (
@@ -438,6 +438,7 @@ function FacebookFields({ draft, change, disabled, settings }: FieldProps<Copy['
         Link (np. do artykułu na bekapaka.pl)
         <input type="url" value={draft.link} disabled={disabled} onChange={(e) => change({ link: e.target.value })} />
       </label>
+      <SponsorFooter value={draft.sponsors} disabled={disabled} onChange={(sponsors) => change({ sponsors })} />
       <div className="field-block">
         <span className="field-label">Hashtagi (0–2)</span>
         <HashtagInput
@@ -544,5 +545,63 @@ function TagsField({
         }
       />
     </label>
+  );
+}
+
+type Sponsor = { name: string; order: number; websiteUrl: string; facebookUrl: string };
+
+// Sponsors of bekapaka.pl/sponsorzy: the footer is pasted with the post, the checklist helps to tag pages
+// on Facebook (type „@” and pick the page — pasted text cannot create tags).
+function SponsorFooter({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: string;
+  disabled: boolean;
+  onChange: (v: string) => void;
+}) {
+  const list = useQuery({
+    queryKey: ['sponsors'],
+    queryFn: () => api<{ sponsors: Sponsor[]; footer: string }>('/publications/sponsors'),
+    staleTime: 5 * 60_000,
+  });
+  const current = list.data?.footer || '';
+  const outdated = !!current && value !== current;
+  return (
+    <div className="field-block sponsor-footer">
+      <span className="field-label">Sponsorzy pod postem (lista z bekapaka.pl/sponsorzy)</span>
+      <p className={value ? 'sponsor-footer-text' : 'form-error'}>
+        {value || 'Brak stopki sponsorów — wstaw aktualną listę.'}
+      </p>
+      {(outdated || !value) && current && (
+        <button type="button" className="text-button" disabled={disabled} onClick={() => onChange(current)}>
+          {value ? 'Lista sponsorów zmieniła się — wstaw aktualną' : 'Wstaw sponsorów ze strony'}
+        </button>
+      )}
+      {list.error && <small className="form-error">{message(list.error)}</small>}
+      {!!list.data?.sponsors.length && (
+        <details className="sponsor-tags">
+          <summary>Oznacz sponsorów na Facebooku ({list.data.sponsors.length})</summary>
+          <p className="muted small">
+            Po wklejeniu posta wpisz „@” i nazwę sponsora, a potem wybierz jego stronę z listy Facebooka.
+          </p>
+          <ul>
+            {list.data.sponsors.map((s) => (
+              <li key={s.name}>
+                <span>{s.name}</span>
+                {s.facebookUrl ? (
+                  <a href={s.facebookUrl} target="_blank" rel="noreferrer">
+                    profil na Facebooku <ExternalLink size={12} />
+                  </a>
+                ) : (
+                  <small className="muted">brak profilu w danych strony</small>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </div>
   );
 }
