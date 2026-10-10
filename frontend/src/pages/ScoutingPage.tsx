@@ -178,8 +178,8 @@ export default function ScoutingPage() {
 
   const planSourceLabel = aiMeta?.fromGemini
     ? aiMeta.mergedWithTemplate
-      ? 'Gemini + uzupełnienie'
-      : 'Gemini'
+      ? 'AI + uzupełnienie'
+      : 'AI'
     : scoutingSummaryMd
       ? 'Szablon danych'
       : null;
@@ -300,7 +300,7 @@ export default function ScoutingPage() {
             content={personnelMd}
             generatedAt={aiMeta?.generatedAt}
             model={aiMeta?.model}
-            sourceLabel={personnelMd ? (aiMeta?.fromGemini ? 'Gemini' : 'Szablon danych') : null}
+            sourceLabel={personnelMd ? (aiMeta?.fromGemini ? 'AI' : 'Szablon danych') : null}
             canGenerate={isAdmin}
             loading={aiLoading}
             compactActions

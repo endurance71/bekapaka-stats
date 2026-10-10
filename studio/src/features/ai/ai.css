@@ -105,3 +105,53 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Settings → Dostawca AI (global text engine) */
+.ai-engine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.ai-engine-grid select {
+  width: 100%;
+}
+.ai-engine-state {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 12px 0;
+}
+.ai-engine-state p {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.ai-engine-state .ai-chip {
+  align-self: flex-start;
+}
+.ai-engine-test {
+  display: grid;
+  gap: 2px;
+  margin-top: 10px;
+  border-left: 3px solid var(--line);
+  padding: 8px 12px;
+  font-size: 14px;
+}
+.ai-engine-test.is-ok {
+  border-color: #3c9a4f;
+  background: #e7f5ea;
+}
+.ai-engine-test.is-bad {
+  border-color: var(--red);
+  background: #fde8eb;
+}
+.ai-engine-ops {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}

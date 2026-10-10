@@ -18,6 +18,7 @@ export default function AgentTokens() {
   const client = useQueryClient();
   const tokens = useQuery({ queryKey: ['agent-tokens'], queryFn: () => api<AgentToken[]>('/agent-tokens') });
   const [name, setName] = useState('');
+  const [panelAi, setPanelAi] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
   const [error, setError] = useState('');
   const mcpUrl = `${window.location.origin}/api/studio/v1/mcp`;
@@ -41,15 +42,24 @@ export default function AgentTokens() {
         Agent czyta schematy, fakty i zasady marki, tworzy robocze publikacje i proponuje teksty kanałów. Nie potwierdza
         faktów, nie zatwierdza i nie publikuje. Adres: <code>{mcpUrl}</code>
       </p>
+      <p className="muted">
+        Twój Claude Code (na Twojej subskrypcji) może też wykonywać zadania AI Studio: <code>list_ai_tasks</code> →{' '}
+        <code>prepare_ai_task</code> → <code>submit_ai_task_result</code>. Studio sprawdza wynik tak samo jak własne
+        generacje i zapisuje go jako szkic agenta.
+      </p>
       <form
         className="token-form"
         onSubmit={async (e) => {
           e.preventDefault();
           setError('');
           try {
-            const r = await send<{ token: string }>('/agent-tokens', { name });
+            const r = await send<{ token: string }>('/agent-tokens', {
+              name,
+              ...(panelAi ? { scopes: ['panel-ai'] } : {}),
+            });
             setCreated(r.token);
             setName('');
+            setPanelAi(false);
             await reload();
           } catch (err) {
             setError(message(err));
@@ -64,6 +74,13 @@ export default function AgentTokens() {
           onChange={(e) => setName(e.target.value)}
         />
         <button className="primary">Utwórz token</button>
+        <label className="token-scope">
+          <input type="checkbox" checked={panelAi} onChange={(e) => setPanelAi(e.target.checked)} />
+          <span>
+            Także analizy panelu (<code>panel-ai</code>): mecze, plany zawodników, scouting, briefing, taktyka. Agent
+            dostanie dane zawodników — zaznacz tylko dla własnego, zaufanego agenta.
+          </span>
+        </label>
       </form>
       {created && (
         <div className="token-once" role="status">
@@ -81,7 +98,8 @@ export default function AgentTokens() {
             <span>
               <b>{t.name}</b>
               <small>
-                {t.prefix}… · utworzony {new Date(t.createdAt).toLocaleDateString('pl-PL')} ·{' '}
+                {t.prefix}… · {t.scopes.includes('panel-ai') ? 'Studio + panel · ' : ''}utworzony{' '}
+                {new Date(t.createdAt).toLocaleDateString('pl-PL')} ·{' '}
                 {t.revokedAt
                   ? 'odwołany'
                   : t.lastUsedAt

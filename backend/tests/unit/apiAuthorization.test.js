@@ -100,6 +100,13 @@ describe('API authorization', () => {
     expect((await request('/api/games', 'POST', token('admin-1', 'ADMIN'))).status).toBe(201);
   });
 
+  it('AI engine settings and the connection test are admin-only', async () => {
+    for (const [path, method] of [['/api/ai/engine', 'GET'], ['/api/ai/engine', 'PUT'], ['/api/ai/engine/test', 'POST']]) {
+      expect((await request(path, method)).status).toBe(401);
+      expect((await request(path, method, token('player-1', 'PLAYER'))).status).toBe(403);
+    }
+  });
+
   it('requires admin authentication for presentation writes', async () => {
     const path='/api/admin/matches/kalk/season/match/presentation';
     expect((await request(path, 'PATCH')).status).toBe(401);

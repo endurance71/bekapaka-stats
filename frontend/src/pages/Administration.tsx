@@ -22,6 +22,7 @@ import {
     activityRecencyClass
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
+import AiEngineSettings from '../features/admin/AiEngineSettings';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
@@ -184,6 +185,14 @@ export default function Administration() {
                         Otwórz centrum analiz AI
                         <ChevronRight className="w-4 h-4" />
                     </Link>
+                </BkpkCard>
+
+                </section>
+
+                <section className="space-y-4">
+                <SectionHeading kicker="Ustawienia AI" title="Dostawca AI" />
+                <BkpkCard variant="flat">
+                    <AiEngineSettings />
                 </BkpkCard>
 
                 </section>

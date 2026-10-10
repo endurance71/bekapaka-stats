@@ -53,7 +53,7 @@ describe('content system document', () => {
 describe('agent access', () => {
   it('never exposes approval, publishing, facts confirmation or settings tools', () => {
     const names = tools.map((t) => t.name);
-    expect(names).toEqual(['list_playbooks', 'get_prompts', 'list_publications', 'get_publication', 'schematic_copy', 'create_publication', 'propose_copy']);
+    expect(names).toEqual(['list_playbooks', 'get_prompts', 'list_publications', 'get_publication', 'schematic_copy', 'create_publication', 'propose_copy', 'list_ai_tasks', 'prepare_ai_task', 'submit_ai_task_result']);
     expect(names.some((n) => /approve|publish|confirm|settings|package|token/.test(n))).toBe(false);
     expect(tools.every((t) => ['read', 'draft'].includes(t.scope))).toBe(true);
   });

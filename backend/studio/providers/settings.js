@@ -1,8 +1,10 @@
 // Owner's AI choices: a model per Studio task and custom text models with owner-entered prices.
 import { z } from 'zod';
 import { fail } from '../config.js';
-import { allModels, findModel, models, providerIds, reservationMicros, taskIds, tasks } from './catalog.js';
+import { allModels, findModel, models, providerIds, reservationFor, reservationMicros, SDK_ENGINE, taskIds, tasks } from './catalog.js';
 import { keyStatus } from './secrets.js';
+import { getEngineSetting } from '../../ai-engine/settings.js';
+import { isAgentSdkConfigured } from '../../ai-engine/agentSdk.js';
 
 const KEY = 'ai';
 const customModelSchema = z
@@ -63,6 +65,7 @@ export async function removeCustomModel(db, owner, id) {
 export async function aiOverview(db, owner) {
   const settings = await aiSettings(db, owner);
   const keys = await keyStatus(db, owner);
+  const engine = await getEngineSetting(db);
   const hasKey = (provider) => !!keys.find((k) => k.provider === provider)?.source;
   return {
     keys,
@@ -71,9 +74,16 @@ export async function aiOverview(db, owner) {
       available: hasKey(m.provider),
       maxCallMicros: Object.fromEntries(taskIds.filter((t) => tasks[t].kind === m.kind).map((t) => [t, reservationMicros(m, t)])),
     })),
+    // Text tasks follow the global engine switch; under the Claude Agent SDK they all use its model and server key.
+    engine: engine.engine,
     tasks: taskIds.map((id) => {
-      const model = modelFor(settings, id);
-      return { id, label: tasks[id].label, kind: tasks[id].kind, model: model.id, available: hasKey(model.provider), maxCallMicros: reservationMicros(model, id) };
+      // `apiModel` is the owner's per-task choice for the API engine (kept and editable while the SDK is active).
+      const apiModel = modelFor(settings, id);
+      if (engine.engine === SDK_ENGINE && tasks[id].kind === 'text') {
+        const model = { ...findModel(engine.agentSdkModel), engine: SDK_ENGINE };
+        return { id, label: tasks[id].label, kind: tasks[id].kind, model: model.id, apiModel: apiModel.id, engine: SDK_ENGINE, available: isAgentSdkConfigured(), maxCallMicros: reservationFor(model, id) };
+      }
+      return { id, label: tasks[id].label, kind: tasks[id].kind, model: apiModel.id, apiModel: apiModel.id, engine: 'api', available: hasKey(apiModel.provider), maxCallMicros: reservationMicros(apiModel, id) };
     }),
     customModels: settings.customModels,
   };

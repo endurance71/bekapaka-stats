@@ -4,15 +4,17 @@ import { fail, ownerId } from '../config.js';
 import { hash } from '../storage.js';
 
 export const AGENT_SCOPES = ['read', 'draft'];
+// Opt-in only: panel analyses (matches, players, scouting, briefing, tactics) include personal player data.
+export const OPTIONAL_SCOPES = ['panel-ai'];
 const PREFIX = 'bkpk_agent_';
 const tokenPattern = /^bkpk_agent_[A-Za-z0-9_-]{43}$/;
 
 /** Creates a token; the plain value is returned once and only its SHA-256 is stored. */
 export async function createAgentToken(db, owner, input) {
-  const { name } = z.object({ name: z.string().trim().min(1).max(80) }).strict().parse(input);
+  const { name, scopes = [] } = z.object({ name: z.string().trim().min(1).max(80), scopes: z.array(z.enum(OPTIONAL_SCOPES)).max(OPTIONAL_SCOPES.length).optional() }).strict().parse(input);
   if ((await db.studioAgentToken.count({ where: { ownerId: owner, revokedAt: null } })) >= 5) fail(422, 'Najwyżej 5 aktywnych tokenów agenta. Odwołaj nieużywany.');
   const token = PREFIX + crypto.randomBytes(32).toString('base64url');
-  const row = await db.studioAgentToken.create({ data: { id: hash(token), ownerId: owner, name, prefix: token.slice(0, PREFIX.length + 6), scopes: AGENT_SCOPES } });
+  const row = await db.studioAgentToken.create({ data: { id: hash(token), ownerId: owner, name, prefix: token.slice(0, PREFIX.length + 6), scopes: [...AGENT_SCOPES, ...new Set(scopes)] } });
   return { token, ...publicToken(row) };
 }
 export const publicToken = ({ id, ...row }) => ({ ...row, id: id.slice(0, 16) });

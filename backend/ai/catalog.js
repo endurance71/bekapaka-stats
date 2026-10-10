@@ -11,7 +11,8 @@ import { getTeamBriefingCached } from './generate.js';
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
 import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
-import { TEMPLATE_MODEL_NAME, getGeminiModelName, isGeminiConfigured } from './geminiClient.js';
+import { TEMPLATE_MODEL_NAME } from './geminiClient.js';
+import { activeModel, isAiConfigured } from './textEngine.js';
 import { normalizeOpponentKey } from './normalizeOpponent.js';
 import { legacyReportMatchesSeason, parseScoutingReportKey } from './scoutingData.js';
 
@@ -130,8 +131,9 @@ export function scoutingReportsForSeason(reports, season) {
  * @param {string} [querySeasonId]
  */
 export async function getAiAnalysesCatalog(querySeasonId = undefined) {
-  const configured = isGeminiConfigured();
-  const defaultModel = getGeminiModelName();
+  // Aktywny silnik tekstowy (API albo Claude Agent SDK) z ustawienia „Dostawca AI”.
+  const configured = await isAiConfigured(prisma);
+  const defaultModel = await activeModel(prisma);
   const targetSeasonId = await resolveSeasonId(querySeasonId);
   const season = targetSeasonId
     ? await Promise.resolve()

@@ -62,21 +62,28 @@ export default function AiProviders() {
       </div>
 
       <h3>Model dla zadania</h3>
+      {data.engine === 'claude-agent-sdk' && (
+        <p className="muted small">
+          Teksty pisze teraz Claude Agent SDK (Dostawca AI). Poniższe modele obowiązują po powrocie do silnika API; tła
+          AI zawsze korzystają z modelu obrazowego.
+        </p>
+      )}
       <div className="ai-tasks">
         {data.tasks.map((t) => (
           <label key={t.id} className="ai-task">
             <span>
               <b>{t.label}</b>
               <small>
-                maks. {usd(t.maxCallMicros)} za wywołanie
-                {!t.available && ' · brak klucza tego dostawcy'}
+                {t.engine === 'claude-agent-sdk'
+                  ? `teraz: Claude Agent SDK · maks. ${usd(t.maxCallMicros)} za wywołanie`
+                  : `maks. ${usd(t.maxCallMicros)} za wywołanie${t.available ? '' : ' · brak klucza tego dostawcy'}`}
               </small>
             </span>
             <ModelSelect
               models={data.models}
               task={t.id}
               kind={t.kind}
-              value={t.model}
+              value={t.apiModel ?? t.model}
               label={`Model: ${t.label}`}
               allowUnavailable
               onChange={(model) =>

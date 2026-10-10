@@ -286,7 +286,7 @@ function AiCatalogItemRow({
             ) : null}
             {item.isTemplate && item.hasContent ? (
               <p className="mt-1.5 text-xs font-semibold text-bkpk-text-danger">
-                Plan z szablonu (bez Gemini) — wygeneruj ponownie.
+                Plan z szablonu (bez modelu AI) — wygeneruj ponownie.
               </p>
             ) : null}
             {!item.canGenerate && isAdmin && item.type === 'match' ? (
@@ -473,7 +473,7 @@ export default function AiCatalogHub({ categorySlug }: AiCatalogHubProps) {
               </p>
               <p className="mt-1 text-xs text-bkpk-text-muted">
                 Model: {catalog?.model ?? '—'}
-                {catalog?.configured === false ? ' · Gemini nie skonfigurowane' : ''}
+                {catalog?.configured === false ? ' · AI nie skonfigurowane' : ''}
                 {stats.upcomingExcluded > 0
                   ? ` · pominięto ${stats.upcomingExcluded} ${pluralPl(stats.upcomingExcluded, 'nadchodzący mecz', 'nadchodzące mecze', 'nadchodzących meczów')}`
                   : ''}

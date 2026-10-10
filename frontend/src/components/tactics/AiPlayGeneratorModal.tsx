@@ -78,7 +78,7 @@ export default function AiPlayGeneratorModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Generator Zagrywek AI (Gemini)">
+    <Modal isOpen={isOpen} onClose={onClose} title="Generator Zagrywek AI">
       <div className="space-y-6">
         <div className="flex items-center gap-3 p-3 bg-bkpk-surface-tint-1 border border-bkpk-border-subtle border-l-[3px] border-l-bkpk-primary">
           <Bot className="w-5 h-5 text-bkpk-primary shrink-0" />

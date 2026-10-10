@@ -944,3 +944,50 @@ model StudioSession {
   createdAt DateTime @default(now())
   @@index([expiresAt])
 }
+
+// Text-generation engine shared by the panel and Studio: 'api' (existing providers) or 'claude-agent-sdk'.
+// One row ('global'). Image generation never reads it — images always use the configured image API.
+model AiEngineSetting {
+  id String @id @default("global")
+  engine String @default("api")
+  agentSdkModel String?
+  fallbackToApi Boolean @default(false)
+  updatedBy String?
+  updatedFrom String?
+  updatedAt DateTime @updatedAt
+}
+
+// Who changed the AI engine setting, from which app, and what it was before.
+model AiSettingAudit {
+  id String @id @default(uuid())
+  actorId String
+  from String
+  before Json
+  after Json
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+
+// One row per AI text call (and engine test): engine, model, timing, tokens and estimated cost.
+// Never stores prompts, answers or personal data; `error` is sanitized.
+model AiGenerationLog {
+  id String @id @default(uuid())
+  requestId String
+  operation String
+  source String
+  requestedEngine String
+  actualEngine String
+  model String?
+  status String
+  errorCode String?
+  error String?
+  startedAt DateTime
+  finishedAt DateTime
+  durationMs Int
+  inputTokens Int?
+  outputTokens Int?
+  costMicros Int?
+  costKind String @default("none")
+  @@index([actualEngine, startedAt])
+  @@index([operation, startedAt])
+}

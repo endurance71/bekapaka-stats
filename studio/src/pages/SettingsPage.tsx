@@ -7,6 +7,7 @@ import type { Settings } from '../lib/publications';
 import { HashtagInput } from '../features/publications/bits';
 import AgentTokens from '../features/publications/AgentTokens';
 import AiProviders from '../features/ai/AiProviders';
+import AiEngine from '../features/ai/AiEngine';
 import '../features/publications/publications.css';
 
 // Proposals only: the brand defines #BKPK; anything else needs the owner's decision.
@@ -66,6 +67,7 @@ export default function SettingsPage() {
           </p>
         )}
       </section>
+      <AiEngine />
       <AiProviders />
       <AgentTokens />
     </>
