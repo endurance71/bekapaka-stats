@@ -9,6 +9,7 @@ Przed pracą na VPS lub deployem produkcyjnym **przeczytaj**:
 5. **[docs/ai-match-analysis-plan.md](docs/ai-match-analysis-plan.md)** — plan analizy meczów (Gemini, tekst, cache w DB)
 6. **[VPS-dane/README.md](VPS-dane/README.md)** — skrót dostępu i mapa folderów na serwerze
 7. **[docs/docker-deploy.md](docs/docker-deploy.md)** — CI/CD i obrazy Docker
+8. **[docs/ai-engine.md](docs/ai-engine.md)** — silnik AI (API ↔ Claude Agent SDK), MCP dla Claude Code, zasady uwierzytelniania
 
 Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 
@@ -21,4 +22,5 @@ Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 - Scraping wyłącznie przez **Scrapling** (`backend/scripts/kalk_sync.py` + pakiet `backend/scripts/kalk/`, tylko Dywizja II)
 - Audyt danych KALK: `node backend/scripts/kalk-data-audit.js` — szczegóły w [docs/scraping.md](docs/scraping.md#audyt-danych-kalk)
 - Strapi MCP: `https://cms.bekapaka.pl/mcp` (wbudowany, `mcp.enabled` w `cms-app/config/server.js`). Auth: **Admin token** z panelu Strapi — nie `SITE_CMS_TOKEN`. Konfiguracja Cursora tylko lokalnie w `~/.cursor/mcp.json` (token nie w Git). Rotacja: [docs/security-rotation.md](docs/security-rotation.md)
+- Silnik AI: jedno globalne ustawienie (`AiEngineSetting`) dla panelu i Studio. Serwerowe Agent SDK używa **wyłącznie** `AGENT_SDK_ANTHROPIC_API_KEY` (klucz Console) — nigdy `CLAUDE_CODE_OAUTH_TOKEN`. Obrazy zawsze przez API obrazów. Szczegóły: [docs/ai-engine.md](docs/ai-engine.md)
 - Podgląd CMS: Preview w `cms-app/config/admin.js` → `https://bekapaka.pl/api/preview` (`PREVIEW_SECRET` na VPS). Szkice aktualności tylko w draft mode, nie na stronie publicznej.

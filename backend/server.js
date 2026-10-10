@@ -71,7 +71,10 @@ import {
 import { getAiAnalysesCatalog } from './ai/catalog.js';
 import { runAiAudit, summarizeAiAudit } from './ai/audit.js';
 import { getMatchAiStaleness } from './ai/buildMatchContext.js';
-import { AiTimeoutError, isGeminiConfigured } from './ai/geminiClient.js';
+import { AiTimeoutError, generateTextWithMeta, getGeminiModelName, isGeminiConfigured } from './ai/geminiClient.js';
+import { activeModel, isAiConfigured } from './ai/textEngine.js';
+import { getEngineSetting, setEngineSetting } from './ai-engine/settings.js';
+import { engineStatus, testEngine } from './ai-engine/status.js';
 import { AiConfigError, AiValidationError, AiBusyError } from './ai/errors.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -652,7 +655,7 @@ app.get(['/api/scouting/detailed', '/scouting/detailed'], authenticateToken, asy
   }
 });
 
-// --- AI (Gemini) ---
+// --- AI (silnik tekstowy wg „Dostawca AI”: Gemini API albo Claude Agent SDK) ---
 const handleAiRouteError = (err, res) => {
   if (err instanceof AiConfigError) {
     return res.status(503).json({ error: err.message });
@@ -670,11 +673,66 @@ const handleAiRouteError = (err, res) => {
   return res.status(500).json({ error: err.message || 'Błąd generacji AI' });
 };
 
-app.get(['/api/ai/status', '/ai/status'], authenticateToken, (req, res) => {
-  res.json({
-    configured: isGeminiConfigured(),
-    model: process.env.GEMINI_MODEL || 'gemini-3.5-flash'
-  });
+app.get(['/api/ai/status', '/ai/status'], authenticateToken, async (req, res) => {
+  try {
+    const setting = await getEngineSetting(prisma);
+    res.json({
+      configured: await isAiConfigured(prisma),
+      model: await activeModel(prisma),
+      engine: setting.engine
+    });
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+// --- Dostawca AI: silnik tekstowy (API ↔ Claude Agent SDK), wspólny z Studio. Obrazy zawsze przez API. ---
+const panelApiSummary = () => ({
+  label: 'Gemini (klucz GEMINI_API_KEY na serwerze)',
+  model: getGeminiModelName(),
+  configured: isGeminiConfigured(),
+  billing: 'Płatne API Google Gemini (klucz serwera).'
+});
+
+app.get(['/api/ai/engine', '/ai/engine'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    res.json(await engineStatus(prisma, { apiSummary: panelApiSummary() }));
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
+});
+
+app.put(['/api/ai/engine', '/ai/engine'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    await setEngineSetting(prisma, req.body || {}, { actorId: req.user.id, from: 'panel' });
+    res.json(await engineStatus(prisma, { apiSummary: panelApiSummary() }));
+  } catch (err) {
+    if (err?.name === 'ZodError') return res.status(400).json({ error: 'Nieprawidłowe ustawienie silnika AI' });
+    handleAiRouteError(err, res);
+  }
+});
+
+// Mały, prawdziwy request do wybranego silnika (API: krótka odpowiedź Gemini; SDK: krótka odpowiedź Claude).
+app.post(['/api/ai/engine/test', '/ai/engine/test'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const engine = ['api', 'claude-agent-sdk'].includes(req.body?.engine) ? req.body.engine : undefined;
+    const result = await testEngine(prisma, {
+      engine,
+      source: 'panel',
+      apiTest: async () => {
+        const out = await generateTextWithMeta({
+          system: 'To test połączenia aplikacji BeKaPaKa.',
+          user: 'Odpowiedz jednym słowem: BeKaPaKa',
+          maxOutputTokens: 16,
+          timeoutMs: 20000
+        });
+        return { model: out.model, usage: out.usage, billing: 'Płatne API Google Gemini (klucz serwera).' };
+      }
+    });
+    res.json({ ...result, status: await engineStatus(prisma, { apiSummary: panelApiSummary() }) });
+  } catch (err) {
+    handleAiRouteError(err, res);
+  }
 });
 
 app.get(['/api/ai/catalog', '/ai/catalog'], authenticateToken, async (req, res) => {

@@ -23,6 +23,7 @@ import {
     activityRecencyClass
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
+import AiEngineSettings from '../features/admin/AiEngineSettings';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
@@ -290,6 +291,14 @@ export default function Administration() {
 
                 </section>
                 </CardGrid>
+
+                <section className="space-y-5">
+                <SectionHeading kicker="Ustawienia AI" title="Dostawca AI" />
+                <BkpkCard variant="flat">
+                    <AiEngineSettings />
+                </BkpkCard>
+
+                </section>
 
                 <section className="space-y-5">
                 <SectionHeading kicker="Sezony" title="Sezony i Rozgrywki" />

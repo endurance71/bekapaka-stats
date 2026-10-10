@@ -53,6 +53,14 @@ export function reservationMicros(model, taskId) {
   return Math.ceil(model.kind === 'image' ? text + perImageMicros(model) * 1.5 : text);
 }
 
+// The Claude Agent SDK may make more than one model call per task (structured-output retries, prompt-cache writes),
+// so its worst case is reserved twice over; the actual charge comes from the SDK's own cost estimate.
+export const SDK_ENGINE = 'claude-agent-sdk';
+export const SDK_RESERVE_FACTOR = 2;
+export function reservationFor(model, taskId) {
+  return reservationMicros(model, taskId) * (model.engine === SDK_ENGINE ? SDK_RESERVE_FACTOR : 1);
+}
+
 /** Actual cost from provider usage; unknown usage keeps the full reservation. */
 export function costMicros(model, usage, reserved) {
   if (!usage || !Number.isFinite(usage.inputTokens) || !Number.isFinite(usage.outputTokens)) return reserved;

@@ -8,6 +8,8 @@ ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build
 RUN npx prisma generate && npm prune --omit=dev
 COPY lib/prisma.js ./lib/prisma.js
 COPY studio ./studio
+# Shared text-engine core (API ↔ Claude Agent SDK); the SDK's native binary comes with npm ci (linux-x64 glibc).
+COPY ai-engine ./ai-engine
 RUN python3 -m venv /opt/studio-python && /opt/studio-python/bin/pip install --no-cache-dir -r studio/renderer/requirements.txt
 ENV NODE_ENV=production STUDIO_PYTHON=/opt/studio-python/bin/python STUDIO_STORAGE_DIR=/data/studio
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s CMD node studio/health.js

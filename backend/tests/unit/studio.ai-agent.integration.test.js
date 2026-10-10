@@ -186,6 +186,29 @@ describe.skipIf(!enabled)('Studio AI copy and MCP agent on isolated PostgreSQL',
     }
   });
 
+  it('lets the owner’s agent run a Studio AI task: prepare → write → submit, validated and saved as an agent draft', async () => {
+    const tasks = toolResult(await mcp('tools/call', { name: 'list_ai_tasks', arguments: {} }));
+    expect(tasks.panelAccess).toBe(false);
+    expect(tasks.tasks.map((t) => t.operation)).toEqual(['studio.copy', 'studio.report']);
+    const prepared = toolResult(await mcp('tools/call', { name: 'prepare_ai_task', arguments: { operation: 'studio.copy', args: { publicationId: publication.id, channels: ['instagram_feed'] } } }));
+    expect(prepared.system).toContain('BeKaPaKa');
+    expect(prepared.user).toContain('Nowe stroje dla drużyny');
+    expect(Object.keys(prepared.outputSchema.properties)).toEqual(['instagram_feed']);
+    const copy = { caption: 'Nowe stroje dla drużyny!\n\nPrezentacja po meczu.', hashtags: ['#BKPK'], firstComment: '', altText: 'Nowe stroje BeKaPaKa' };
+    const invalid = await mcp('tools/call', { name: 'submit_ai_task_result', arguments: { operation: 'studio.copy', args: { publicationId: publication.id, channels: ['instagram_feed'] }, inputHash: prepared.inputHash, output: { instagram_feed: { caption: 42 } } } });
+    expect(invalid.body.result.isError).toBe(true);
+    const done = toolResult(await mcp('tools/call', { name: 'submit_ai_task_result', arguments: { operation: 'studio.copy', args: { publicationId: publication.id, channels: ['instagram_feed'] }, inputHash: prepared.inputHash, output: { instagram_feed: copy } } }));
+    expect(done.channels).toMatchObject([{ channel: 'instagram_feed', saved: true }]);
+    const item = await db.studioPublicationItem.findFirst({ where: { publicationId: publication.id, channel: 'instagram_feed' } });
+    expect(item).toMatchObject({ copyOrigin: 'agent', status: 'draft' });
+    expect(item.promptVersion).toMatch(/^agent:copy-/);
+    // Panel analyses need the opt-in scope.
+    const panel = await mcp('tools/call', { name: 'prepare_ai_task', arguments: { operation: 'panel.briefing', args: {} } });
+    expect(panel.body.result.isError).toBe(true);
+    expect(toolResult(panel).error).toMatch(/panel-ai/);
+    await db.aiGenerationLog.deleteMany({ where: { source: 'mcp', operation: 'studio.copy', startedAt: { gte: new Date(Date.now() - 600_000) } } });
+  });
+
   it('stops a revoked token immediately', async () => {
     const [row] = (await request('/agent-tokens')).value;
     expect((await request(`/agent-tokens/${row.id}/revoke`, {}, 'POST')).res.status).toBe(200);

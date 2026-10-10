@@ -43,6 +43,10 @@ services:
       STUDIO_OPENAI_API_KEY: ${STUDIO_OPENAI_API_KEY:-}
       STUDIO_SECRETS_KEY: ${STUDIO_SECRETS_KEY:-}
       STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
+      # Silnik „Claude Agent SDK” (Ustawienia → Dostawca AI): klucz API z Claude Console, np. z organizacji podpiętej
+      # do planu Max (kredyty API). Nigdy token logowania subskrypcji. Pusty = silnik SDK niedostępny, API działa dalej.
+      AGENT_SDK_ANTHROPIC_API_KEY: ${AGENT_SDK_ANTHROPIC_API_KEY:-}
+      AGENT_SDK_PANEL_MAX_USD: ${AGENT_SDK_PANEL_MAX_USD:-0.5}
       KALK_CRON_SECRET: ${KALK_CRON_SECRET}
       KALK_DATA_DIR: /data/kalk
       # Zapis prezentacji meczu w panelu odświeża stronę przez sieć Docker (backend/matchPresentation.js).
@@ -150,10 +154,12 @@ services:
       STUDIO_AI_TEXT_MODEL: ${STUDIO_AI_TEXT_MODEL:-gemini-3.5-flash}
       STUDIO_AI_IMAGE_MODEL: ${STUDIO_AI_IMAGE_MODEL:-gemini-3.1-flash-image}
       STUDIO_AI_BUDGET_USD: ${STUDIO_AI_BUDGET_USD:-10}
+      AGENT_SDK_ANTHROPIC_API_KEY: ${AGENT_SDK_ANTHROPIC_API_KEY:-}
       TZ: Europe/Warsaw
     volumes: ["./data/studio:/data/studio"]
     depends_on: [bkpk-db]
-    mem_limit: 1g
+    # Render (Python) i lane AI działają równolegle; SDK uruchamia osobny proces Claude Code na każde wywołanie.
+    mem_limit: 1536m
     cpus: 1.0
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]

@@ -79,8 +79,58 @@ export type AiTask = {
   label: string;
   kind: 'text' | 'image';
   model: string;
+  /** The owner's model for this task under the API engine (differs from `model` while the SDK engine is active). */
+  apiModel?: string;
+  /** Text tasks follow the global engine switch; images always use the image API. */
+  engine?: AiEngineId;
   available: boolean;
   maxCallMicros: number;
+};
+export type AiEngineId = 'api' | 'claude-agent-sdk';
+export type AiSdkState =
+  'ready' | 'untested' | 'not_configured' | 'auth_required' | 'unavailable' | 'connection_error' | 'limit_reached';
+type AiCall = {
+  at: string;
+  ok: boolean;
+  operation: string;
+  model: string | null;
+  durationMs: number;
+  errorCode: string | null;
+  error: string | null;
+};
+/** Global text engine shared with the panel (GET/PUT /ai/engine). */
+export type AiEngine = {
+  engine: AiEngineId;
+  agentSdkModel: string;
+  fallbackToApi: boolean;
+  updatedAt: string | null;
+  updatedFrom: 'panel' | 'studio' | null;
+  updatedByName: string | null;
+  activeModel: string | null;
+  sdk: {
+    status: AiSdkState;
+    detail?: string | null;
+    keyConfigured: boolean;
+    lastCall?: AiCall | null;
+    lastTest?: AiCall | null;
+    billing: string;
+  };
+  api: { label: string; model: string; provider?: AiProviderId; billing: string } | null;
+  sdkModels: { id: string; label: string; default: boolean }[];
+  operations: { id: string; surface: 'panel' | 'studio'; label: string; routing: 'engine' | 'api-only' }[];
+  imageNotice: string;
+};
+export type AiEngineTest = {
+  ok: boolean;
+  engine: AiEngineId;
+  model?: string;
+  apiKeySource?: string;
+  billing?: string;
+  durationMs?: number;
+  costUsd?: number;
+  error?: string | null;
+  detail?: string | null;
+  status?: AiEngine | string;
 };
 export type AiKey = {
   provider: AiProviderId;
@@ -95,6 +145,7 @@ export type AiKey = {
 };
 export type CustomModel = { id: string; provider: AiProviderId; label: string; input: number; output: number };
 export type AiOverview = {
+  engine?: AiEngineId;
   keys: AiKey[];
   models: AiModel[];
   tasks: AiTask[];

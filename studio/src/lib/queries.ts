@@ -1,6 +1,17 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
-import type { AiOverview, Asset, Budget, ExportEntry, Partner, PostType, SourceItem, Template, View } from './types';
+import type {
+  AiEngine,
+  AiOverview,
+  Asset,
+  Budget,
+  ExportEntry,
+  Partner,
+  PostType,
+  SourceItem,
+  Template,
+  View,
+} from './types';
 import type { Season } from './seasons';
 import type { PublicationSummary, Settings, Suggestion } from './publications';
 
@@ -22,6 +33,7 @@ export const keys = {
   suggestions: ['suggestions'],
   settings: ['settings'],
   aiOverview: ['ai-overview'],
+  aiEngine: ['ai-engine'],
 } as const;
 
 type CatalogResponse = { brandVersion: string; templates: Template[]; postTypes: PostType[] };
@@ -45,6 +57,7 @@ export const usePartners = () => useQuery({ queryKey: keys.partners, queryFn: ()
 export const useBudget = () => useQuery({ queryKey: keys.budget, queryFn: () => api<Budget>('/ai/budget') });
 export const useAiOverview = () =>
   useQuery({ queryKey: keys.aiOverview, queryFn: () => api<AiOverview>('/ai/overview') });
+export const useAiEngine = () => useQuery({ queryKey: keys.aiEngine, queryFn: () => api<AiEngine>('/ai/engine') });
 export const useExports = () => useQuery({ queryKey: keys.exports, queryFn: () => api<ExportEntry[]>('/exports') });
 export const useSeasons = () =>
   useQuery({ queryKey: keys.seasons, queryFn: () => api<Season[]>('/sources/seasons'), staleTime: 5 * 60_000 });

@@ -1,21 +1,9 @@
 import express from 'express';
 import { prisma } from '../lib/prisma.js';
-import { generateText, getGeminiModelName } from '../ai/geminiClient.js';
-import {
-  buildTacticalPlaySystemInstruction,
-  buildTacticalPlayUserPrompt
-} from '../ai/prompts/tacticalPlayGenerator.pl.js';
-import {
-  DEFAULT_PREGAME_VENUE,
-  buildPreGameCardSystemInstruction,
-  buildPreGameCardUserPrompt
-} from '../ai/prompts/pregameBriefingCard.pl.js';
-import { PREGAME_CARD_SCHEMA, TACTICAL_PLAY_SCHEMA, validatePlayDiagram } from '../ai/responseSchemas.js';
-import { findScoutingReport } from '../ai/scoutingData.js';
-import { resolveSeasonId, getActiveSeason, getSeasonById } from '../seasonService.js';
-import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
+import { generatePlay, generatePregame } from '../ai/tacticsOps.js';
+import { resolveSeasonId, getSeasonById } from '../seasonService.js';
+import { getNextOpponentScouting } from '../dataStore.js';
 import { DEFAULT_PLAYBOOK_PRESETS } from '../lib/playbookPresets.js';
-import { matchLogistics } from '../lib/matchDay.js';
 import { upgradePresetPlays } from '../lib/playbookUpgrade.js';
 
 // Raz na proces: zagrywki z presetów pod starymi nazwami → polska wersja
@@ -151,56 +139,15 @@ tacticsRouter.delete('/plays/:id', async (req, res) => {
   }
 });
 
-// POST /api/tactics/plays/generate (AI)
+// POST /api/tactics/plays/generate (AI) — silnik tekstowy wg ustawienia „Dostawca AI”
 tacticsRouter.post('/plays/generate', async (req, res) => {
   try {
     const { category, targetDefense, goal, additionalNotes, seasonId } = req.body;
-    const roster = await getRoster(seasonId);
-
-    const system = buildTacticalPlaySystemInstruction();
-    const user = buildTacticalPlayUserPrompt({
-      category,
-      targetDefense,
-      goal,
-      additionalNotes,
-      roster
-    });
-
-    const rawJson = await generateText({
-      system,
-      user,
-      jsonMode: true,
-      responseJsonSchema: TACTICAL_PLAY_SCHEMA
-    });
-
-    const parsed = JSON.parse(rawJson);
-    if (!parsed || !parsed.name) {
-      throw new Error('Nieprawidłowa odpowiedź AI');
-    }
-    const diagramIssues = validatePlayDiagram(parsed.diagramData);
-    if (diagramIssues.length) {
-      throw new Error(`Nieprawidłowy diagram zagrywki AI: ${diagramIssues.slice(0, 3).join('; ')} — spróbuj ponownie`);
-    }
-
-    const saved = await prisma.play.create({
-      data: {
-        name: parsed.name,
-        category: parsed.category || category || 'half_court',
-        description: parsed.description || null,
-        targetDefense: parsed.targetDefense || targetDefense || null,
-        diagramData: parsed.diagramData || null,
-        tags: [targetDefense, category, 'AI-Generated'].filter(Boolean),
-        isAiGenerated: true
-      }
-    });
-
-    res.status(201).json({
-      play: saved,
-      model: getGeminiModelName()
-    });
+    const { play, model } = await generatePlay({ category, targetDefense, goal, additionalNotes, seasonId });
+    res.status(201).json({ play, model });
   } catch (err) {
     console.error('Error generating play with AI:', err);
-    res.status(500).json({ error: err.message || 'Błąd generacji zagrywki AI' });
+    res.status(err.statusCode || 500).json({ error: err.message || 'Błąd generacji zagrywki AI' });
   }
 });
 
@@ -270,155 +217,14 @@ tacticsRouter.get('/pregame/print-link', async (req, res) => {
   }
 });
 
-// POST /api/tactics/pregame/generate
+// POST /api/tactics/pregame/generate — silnik tekstowy wg ustawienia „Dostawca AI”
 tacticsRouter.post('/pregame/generate', async (req, res) => {
   try {
-    const { seasonId: qSeasonId, opponent: requestedOpponent, force } = req.body;
-    const targetSeasonId = await resolveSeasonId(qSeasonId);
-
-    let opponent = requestedOpponent;
-    let nextMatch = null;
-
-    const nextScouting = await getNextOpponentScouting(targetSeasonId);
-    if (!opponent && nextScouting?.opponent) {
-      opponent = nextScouting.opponent;
-    }
-
-    if (targetSeasonId) {
-      nextMatch = await prisma.leagueMatch.findFirst({
-        where: {
-          seasonId: targetSeasonId,
-          isFinished: false,
-          OR: [
-            { homeTeam: { contains: 'bekapaka', mode: 'insensitive' } },
-            { guestTeam: { contains: 'bekapaka', mode: 'insensitive' } }
-          ]
-        },
-        orderBy: { date: 'asc' }
-      });
-    }
-
-    if (!opponent) {
-      return res.status(400).json({ error: 'Brak zdefiniowanego rywala do odprawy' });
-    }
-
-    // Sprawdź czy już istnieje
-    if (!force) {
-      const existing = await prisma.preGameBriefing.findFirst({
-        where: {
-          seasonId: targetSeasonId,
-          opponentName: { equals: String(opponent), mode: 'insensitive' }
-        }
-      });
-      if (existing) {
-        return res.json({ briefing: existing, cached: true });
-      }
-    }
-
-    const [roster, scoutingLookup, scoutingData] = await Promise.all([
-      getRoster(targetSeasonId),
-      // Raport scoutingu tego sezonu (klucz sezonowy, fallback: stary klucz bez sezonu)
-      findScoutingReport(String(opponent), targetSeasonId).catch(() => ({ report: null })),
-      getDetailedScouting(String(opponent), targetSeasonId, { includeAiPayload: true }).catch(() => null)
-    ]);
-    const scoutingReport = scoutingLookup?.report || null;
-
-    // Statystyki rywala z tych samych danych co scouting (bez tekstu Gemini) — źródło liczb dla odprawy.
-    const ai = scoutingData?.aiPayload || null;
-    const opponentStats = ai
-      ? {
-          teamInfo: ai.teamInfo,
-          keyPlayers: ai.keyPlayers,
-          form: ai.form,
-          formNote: ai.formNote,
-          teamSeasonAverages: ai.teamSeasonAverages,
-          headToHead: ai.headToHead,
-          playByPlayTendencies: ai.playByPlayTendencies
-        }
-      : null;
-
-    const system = buildPreGameCardSystemInstruction();
-    const user = buildPreGameCardUserPrompt({
-      opponentName: opponent,
-      scoutingReport,
-      opponentStats,
-      roster,
-      nextMatch
-    });
-
-    const rawJson = await generateText({
-      system,
-      user,
-      jsonMode: true,
-      responseJsonSchema: PREGAME_CARD_SCHEMA
-    });
-
-    const parsed = JSON.parse(rawJson);
-    // Anty-halucynacja: w piątce tylko zawodnicy z kadry (dopasowanie po playerId lub imieniu i nazwisku).
-    const rosterById = new Map((roster || []).map((p) => [String(p.id), p]));
-    const rosterByName = new Map(
-      (roster || []).map((p) => [`${p.firstName} ${p.lastName}`.trim().toLowerCase(), p])
-    );
-    parsed.startingFive = (Array.isArray(parsed.startingFive) ? parsed.startingFive : [])
-      .map((slot) => {
-        const match =
-          rosterById.get(String(slot?.playerId)) ||
-          rosterByName.get(String(slot?.name || '').trim().toLowerCase());
-        if (!match) return null;
-        return {
-          ...slot,
-          playerId: match.id,
-          name: `${match.firstName} ${match.lastName}`.trim(),
-          number: match.number ?? null
-        };
-      })
-      .filter(Boolean);
-
-    // Godziny i strój tylko z terminarza i dnia meczowego (czas polski) — bez zgadywania
-    const { matchDate, tipoffTime: tipoff, gatheringTime: gathering, kit } = matchLogistics(nextMatch);
-    const jerseyColor = kit || '';
-
-    const saved = await prisma.preGameBriefing.upsert({
-      where: {
-        seasonId_opponentName: {
-          seasonId: targetSeasonId,
-          opponentName: String(opponent)
-        }
-      },
-      create: {
-        seasonId: targetSeasonId,
-        opponentName: String(opponent),
-        matchDate,
-        gatheringTime: gathering,
-        tipoffTime: tipoff,
-        jerseyColor,
-        venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
-        tacticalKeys: parsed.tacticalKeys || [],
-        startingFive: parsed.startingFive || [],
-        benchKeys: parsed.benchKeys || null,
-        generatedByAi: true,
-        model: getGeminiModelName()
-      },
-      update: {
-        matchDate,
-        venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
-        gatheringTime: gathering,
-        tipoffTime: tipoff,
-        jerseyColor,
-        tacticalKeys: parsed.tacticalKeys || [],
-        startingFive: parsed.startingFive || [],
-        benchKeys: parsed.benchKeys || null,
-        generatedByAi: true,
-        model: getGeminiModelName()
-      }
-    });
-
-    res.json({
-      briefing: saved,
-      model: getGeminiModelName()
-    });
+    const { seasonId, opponent, force } = req.body;
+    const result = await generatePregame({ seasonId, opponent }, { force: Boolean(force) });
+    res.json(result);
   } catch (err) {
     console.error('Error generating pregame briefing card:', err);
-    res.status(500).json({ error: err.message || 'Błąd generowania karty odprawy' });
+    res.status(err.statusCode || 500).json({ error: err.message || 'Błąd generowania karty odprawy' });
   }
 });

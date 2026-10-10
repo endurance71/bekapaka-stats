@@ -256,7 +256,12 @@ export default function ExportPanel(props: Props) {
             Brak kluczy API (Ustawienia → Klucze API i modele). Możesz tworzyć i eksportować materiały bez AI.
           </p>
         )}
-        {b && (
+        {b && text.task?.engine === 'claude-agent-sdk' && (
+          <small>
+            Opis: Claude Agent SDK · {b.models.find((m) => m.id === text.task!.model)?.label ?? text.task.model}
+          </small>
+        )}
+        {b && text.task?.engine !== 'claude-agent-sdk' && (
           <ModelSelect
             models={b.models}
             task="text"

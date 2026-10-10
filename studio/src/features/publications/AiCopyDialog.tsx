@@ -159,7 +159,13 @@ export default function AiCopyDialog({
               onChange={(e) => setBrief(e.target.value)}
             />
           </label>
-          {b && (
+          {b && task?.engine === 'claude-agent-sdk' && (
+            <p className="muted small">
+              Silnik: <b>Claude Agent SDK</b> · {b.models.find((m) => m.id === task.model)?.label ?? task.model}{' '}
+              (Ustawienia → Dostawca AI).
+            </p>
+          )}
+          {b && task?.engine !== 'claude-agent-sdk' && (
             <label className="ai-model">
               Model
               <ModelSelect
@@ -178,7 +184,9 @@ export default function AiCopyDialog({
               : 'Budżet AI niedostępny.'}
             {b &&
               !ready &&
-              ' Brak klucza API dostawcy tego modelu — dodaj go w Ustawieniach albo użyj „Wypełnij ze schematu”.'}
+              (task?.engine === 'claude-agent-sdk'
+                ? ' Silnik Claude Agent SDK nie jest skonfigurowany na serwerze — zmień silnik w Ustawieniach → Dostawca AI albo użyj „Wypełnij ze schematu”.'
+                : ' Brak klucza API dostawcy tego modelu — dodaj go w Ustawieniach albo użyj „Wypełnij ze schematu”.')}
           </p>
           {running && (
             <p className="ai-progress">

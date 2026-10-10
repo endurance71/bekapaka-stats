@@ -64,7 +64,16 @@ function getFinishReason(response) {
  * }} params
  * @returns {Promise<string>}
  */
-export async function generateText({
+export async function generateText(params) {
+  return (await generateTextWithMeta(params)).text;
+}
+
+/**
+ * Jak generateText, ale zwraca też zużycie tokenów (do logu generacji i szacunku kosztu).
+ * @param {Parameters<typeof generateText>[0]} params
+ * @returns {Promise<{ text: string, model: string, usage: { inputTokens?: number, outputTokens?: number } }>}
+ */
+export async function generateTextWithMeta({
   system,
   user,
   jsonMode = false,
@@ -124,7 +133,12 @@ export async function generateText({
       );
     }
 
-    return text;
+    const u = response?.usageMetadata || {};
+    return {
+      text,
+      model: DEFAULT_MODEL,
+      usage: { inputTokens: u.promptTokenCount, outputTokens: (u.candidatesTokenCount || 0) + (u.thoughtsTokenCount || 0) }
+    };
   } catch (err) {
     if (err instanceof AiTimeoutError) throw err;
     if (controller.signal.aborted || err?.name === 'AbortError') {

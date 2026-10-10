@@ -3,7 +3,9 @@ import { buildBriefingContext } from './buildBriefingContext.js';
 import { buildMatchContext } from './buildMatchContext.js';
 import { buildPlayerContext } from './buildPlayerContext.js';
 import { buildScoutingContext } from './buildScoutingContext.js';
-import { TEMPLATE_MODEL_NAME, generateText, getGeminiModelName } from './geminiClient.js';
+import { TEMPLATE_MODEL_NAME } from './geminiClient.js';
+import { aiText } from './textEngine.js';
+import { getPromptVersion } from './promptVersions.js';
 import { PLAYER_DEVELOPMENT_SCHEMA, SCOUTING_SCHEMA } from './responseSchemas.js';
 import { withAiLock } from './locks.js';
 import { resolveKalkMatchById } from '../kalk/v2/resolveMatch.js';
@@ -23,7 +25,7 @@ import {
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
 import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
 import { hasCompleteMatchAnalysisMarkdown } from './matchAnalysisMarkdown.js';
-import { getActiveSeason, resolveSeasonId } from '../seasonService.js';
+import { resolveSeasonId } from '../seasonService.js';
 
 
 const aiSummarySelect = {
@@ -170,63 +172,131 @@ export function resolvePlayerDevelopmentText(raw, payload) {
   return { text: buildFallbackPlayerPlan(payload), isTemplate: true };
 }
 
+// Każda operacja: prepare (kontekst, prompt, hash wejścia) → silnik tekstowy (aiText) → save (walidacja + zapis).
+// Te same prepare/save obsługują wynik z MCP (Claude Code właściciela), więc logika nie jest powielana.
+
+/**
+ * @param {string} gameId
+ * @param {{ seasonId?: string | null }} options
+ */
+export async function prepareGameAnalysis(gameId, options = {}) {
+  const ctx = await buildMatchContext(gameId, { seasonId: options.seasonId });
+  const target = await findMatchAiTarget(ctx.kalkMatchId || gameId, ctx.seasonId ?? options.seasonId);
+  return {
+    operation: 'panel.match',
+    lockKey: `game:${options.seasonId || 'any'}:${gameId}`,
+    inputHash: ctx.hash,
+    version: getPromptVersion('match'),
+    gameId,
+    target,
+    prompt: {
+      system: MATCH_ANALYSIS_SYSTEM,
+      user: buildMatchAnalysisUser(ctx.payload, ctx.ruleInsights),
+      maxOutputTokens: 8192
+    }
+  };
+}
+
+function cachedGameAnalysis(prep) {
+  const existing = prep.target?.existing;
+  if (existing?.aiSummary && existing.aiSummaryHash === prep.inputHash && hasCompleteMatchAnalysisMarkdown(existing.aiSummary)) {
+    return { cached: true, aiSummary: existing.aiSummary, aiSummaryAt: existing.aiSummaryAt, model: existing.aiSummaryModel };
+  }
+  return null;
+}
+
+export async function saveGameAnalysis(prep, text, model) {
+  if (!hasCompleteMatchAnalysisMarkdown(text)) {
+    throw new Error('Wygenerowana analiza meczu jest niekompletna — spróbuj ponownie');
+  }
+  const now = new Date();
+  const aiData = { aiSummary: text, aiSummaryAt: now, aiSummaryModel: model, aiSummaryHash: prep.inputHash };
+  if (prep.target?.kind === 'kalk') {
+    await prisma.kalkMatch.update({
+      where: { seasonId_id: { seasonId: prep.target.seasonId, id: prep.target.id } },
+      data: aiData
+    });
+  } else {
+    await prisma.game.update({ where: { id: prep.gameId }, data: aiData });
+  }
+  return { cached: false, aiSummary: text, aiSummaryAt: now, model };
+}
+
 /**
  * @param {string} gameId
  * @param {{ force?: boolean, seasonId?: string | null }} options
  */
 export async function generateGameAnalysis(gameId, options = {}) {
   return withAiLock(`game:${options.seasonId || 'any'}:${gameId}`, async () => {
-    const ctx = await buildMatchContext(gameId, { seasonId: options.seasonId });
-    const target = await findMatchAiTarget(ctx.kalkMatchId || gameId, ctx.seasonId ?? options.seasonId);
-    const existing = target?.existing;
-
-    if (
-      !options.force &&
-      existing?.aiSummary &&
-      existing.aiSummaryHash === ctx.hash &&
-      hasCompleteMatchAnalysisMarkdown(existing.aiSummary)
-    ) {
-      return {
-        cached: true,
-        aiSummary: existing.aiSummary,
-        aiSummaryAt: existing.aiSummaryAt,
-        model: existing.aiSummaryModel
-      };
-    }
-
-    const text = await generateText({
-      system: MATCH_ANALYSIS_SYSTEM,
-      user: buildMatchAnalysisUser(ctx.payload, ctx.ruleInsights),
-      maxOutputTokens: 8192
-    });
-
-    if (!hasCompleteMatchAnalysisMarkdown(text)) {
-      throw new Error('Wygenerowana analiza meczu jest niekompletna — spróbuj ponownie');
-    }
-
-    const model = getGeminiModelName();
-    const now = new Date();
-    const aiData = {
-      aiSummary: text,
-      aiSummaryAt: now,
-      aiSummaryModel: model,
-      aiSummaryHash: ctx.hash
-    };
-
-    if (target?.kind === 'kalk') {
-      await prisma.kalkMatch.update({
-        where: { seasonId_id: { seasonId: target.seasonId, id: target.id } },
-        data: aiData
-      });
-    } else {
-      await prisma.game.update({
-        where: { id: gameId },
-        data: aiData
-      });
-    }
-
-    return { cached: false, aiSummary: text, aiSummaryAt: now, model };
+    const prep = await prepareGameAnalysis(gameId, options);
+    const cached = !options.force && cachedGameAnalysis(prep);
+    if (cached) return cached;
+    const out = await aiText({ operation: prep.operation, ...prep.prompt });
+    return saveGameAnalysis(prep, out.text, out.model);
   });
+}
+
+/**
+ * @param {string} playerId
+ * @param {{ seasonId?: string | null }} options
+ */
+export async function preparePlayerDevelopment(playerId, options = {}) {
+  const ctx = await buildPlayerContext(playerId, { seasonId: options.seasonId });
+  const existing = await prisma.rosterPlayer.findUnique({
+    where: { id: playerId },
+    select: { aiDevelopmentSummary: true, aiDevelopmentHash: true, aiDevelopmentAt: true, aiDevelopmentModel: true }
+  });
+  return {
+    operation: 'panel.player',
+    lockKey: `player:${playerId}`,
+    inputHash: ctx.hash,
+    version: getPromptVersion('player'),
+    playerId,
+    payload: ctx.payload,
+    existing,
+    prompt: {
+      system: PLAYER_DEVELOPMENT_SYSTEM,
+      user: buildPlayerDevelopmentUser(ctx.payload),
+      jsonMode: true,
+      responseJsonSchema: PLAYER_DEVELOPMENT_SCHEMA,
+      maxOutputTokens: 4096
+    }
+  };
+}
+
+function cachedPlayerDevelopment(prep) {
+  const existing = prep.existing;
+  if (
+    existing?.aiDevelopmentSummary &&
+    existing.aiDevelopmentHash === prep.inputHash &&
+    existing.aiDevelopmentModel !== TEMPLATE_MODEL_NAME &&
+    hasDetailedPlayerPlanMarkdown(existing.aiDevelopmentSummary)
+  ) {
+    return {
+      cached: true,
+      aiDevelopmentSummary: existing.aiDevelopmentSummary,
+      aiDevelopmentAt: existing.aiDevelopmentAt,
+      model: existing.aiDevelopmentModel,
+      isTemplate: false
+    };
+  }
+  return null;
+}
+
+/**
+ * @param {{ strict?: boolean }} [options] — strict (wynik agenta MCP): niepełny plan jest odrzucany zamiast zastąpienia szablonem.
+ */
+export async function savePlayerDevelopment(prep, raw, model, { strict = false } = {}) {
+  const { text: finalText, isTemplate } = resolvePlayerDevelopmentText(raw, prep.payload);
+  if (strict && isTemplate) throw new Error('Plan rozwoju nie spełnia wymaganej struktury (brakujące lub zbyt krótkie sekcje)');
+  // Szablon (fallback) zapisywany z modelem „template” — odróżnialny od odpowiedzi modelu w audycie i katalogu.
+  const savedModel = isTemplate ? TEMPLATE_MODEL_NAME : model;
+  const now = new Date();
+  await prisma.rosterPlayer.update({
+    where: { id: prep.playerId },
+    data: { aiDevelopmentSummary: finalText, aiDevelopmentAt: now, aiDevelopmentModel: savedModel, aiDevelopmentHash: prep.inputHash }
+  });
+  return { cached: false, aiDevelopmentSummary: finalText, aiDevelopmentAt: now, model: savedModel, isTemplate };
 }
 
 /**
@@ -235,63 +305,80 @@ export async function generateGameAnalysis(gameId, options = {}) {
  */
 export async function generatePlayerDevelopment(playerId, options = {}) {
   return withAiLock(`player:${playerId}`, async () => {
-    const ctx = await buildPlayerContext(playerId, { seasonId: options.seasonId });
-    const existing = await prisma.rosterPlayer.findUnique({
-      where: { id: playerId },
-      select: {
-        aiDevelopmentSummary: true,
-        aiDevelopmentHash: true,
-        aiDevelopmentAt: true,
-        aiDevelopmentModel: true
-      }
-    });
-
-    if (
-      !options.force &&
-      existing?.aiDevelopmentSummary &&
-      existing.aiDevelopmentHash === ctx.hash &&
-      existing.aiDevelopmentModel !== TEMPLATE_MODEL_NAME &&
-      hasDetailedPlayerPlanMarkdown(existing.aiDevelopmentSummary)
-    ) {
-      return {
-        cached: true,
-        aiDevelopmentSummary: existing.aiDevelopmentSummary,
-        aiDevelopmentAt: existing.aiDevelopmentAt,
-        model: existing.aiDevelopmentModel,
-        isTemplate: false
-      };
-    }
-
-    const raw = await generateText({
-      system: PLAYER_DEVELOPMENT_SYSTEM,
-      user: buildPlayerDevelopmentUser(ctx.payload),
-      jsonMode: true,
-      responseJsonSchema: PLAYER_DEVELOPMENT_SCHEMA,
-      maxOutputTokens: 4096
-    });
-    const { text: finalText, isTemplate } = resolvePlayerDevelopmentText(raw, ctx.payload);
-
-    // Szablon (fallback) zapisywany z modelem „template” — odróżnialny od odpowiedzi Gemini w audycie i katalogu.
-    const model = isTemplate ? TEMPLATE_MODEL_NAME : getGeminiModelName();
-    const now = new Date();
-    await prisma.rosterPlayer.update({
-      where: { id: playerId },
-      data: {
-        aiDevelopmentSummary: finalText,
-        aiDevelopmentAt: now,
-        aiDevelopmentModel: model,
-        aiDevelopmentHash: ctx.hash
-      }
-    });
-
-    return {
-      cached: false,
-      aiDevelopmentSummary: finalText,
-      aiDevelopmentAt: now,
-      model,
-      isTemplate
-    };
+    const prep = await preparePlayerDevelopment(playerId, options);
+    const cached = !options.force && cachedPlayerDevelopment(prep);
+    if (cached) return cached;
+    const out = await aiText({ operation: prep.operation, ...prep.prompt });
+    return savePlayerDevelopment(prep, out.text, out.model);
   });
+}
+
+/**
+ * @param {string | undefined} opponentQuery
+ * @param {{ seasonId?: string | null }} options
+ */
+export async function prepareScoutingReport(opponentQuery, options = {}) {
+  const targetSeasonId = await resolveSeasonId(options.seasonId || undefined);
+  const ctx = await buildScoutingContext(opponentQuery, targetSeasonId);
+  return {
+    operation: 'panel.scouting',
+    // Klucz sezonowy `{seasonId}::{rywal}` — raporty z różnych sezonów się nie nadpisują.
+    lockKey: `scouting:${ctx.opponentKey}`,
+    inputHash: ctx.hash,
+    version: getPromptVersion('scouting'),
+    ctx,
+    prompt: {
+      system: SCOUTING_SYSTEM,
+      user: buildScoutingUser(ctx.payload),
+      jsonMode: true,
+      responseJsonSchema: SCOUTING_SCHEMA,
+      maxOutputTokens: 4096
+    }
+  };
+}
+
+async function cachedScoutingReport(prep) {
+  const { ctx } = prep;
+  const existing = await prisma.scoutingAiReport.findUnique({ where: { opponentKey: ctx.opponentKey } });
+  if (existing?.sourceHash === ctx.hash && existing.summaryMd) {
+    return {
+      cached: true,
+      opponentKey: ctx.opponentKey,
+      opponentName: ctx.opponentName,
+      seasonId: ctx.seasonId,
+      aiAnalysis: existing.analysisJson,
+      summaryMd: existing.summaryMd,
+      personnelMd: buildPersonnelMdFromAnalysis(existing.analysisJson),
+      generatedAt: existing.generatedAt,
+      model: existing.model
+    };
+  }
+  return null;
+}
+
+export async function saveScoutingReport(prep, raw, model) {
+  const { ctx } = prep;
+  const analysisJson = parseScoutingJson(raw);
+  const personnelMd = buildPersonnelMdFromAnalysis(analysisJson);
+  const summaryMd = buildScoutingSummaryMd(analysisJson) || analysisJson.summary;
+  const now = new Date();
+  const data = { opponentName: ctx.opponentName, summaryMd, analysisJson, model, sourceHash: ctx.hash, generatedAt: now };
+  await prisma.scoutingAiReport.upsert({
+    where: { opponentKey: ctx.opponentKey },
+    create: { opponentKey: ctx.opponentKey, ...data },
+    update: data
+  });
+  return {
+    cached: false,
+    opponentKey: ctx.opponentKey,
+    opponentName: ctx.opponentName,
+    seasonId: ctx.seasonId,
+    aiAnalysis: analysisJson,
+    summaryMd,
+    personnelMd,
+    generatedAt: now,
+    model
+  };
 }
 
 /**
@@ -299,75 +386,56 @@ export async function generatePlayerDevelopment(playerId, options = {}) {
  * @param {{ force?: boolean, seasonId?: string | null }} options
  */
 export async function generateScoutingReport(opponentQuery, options = {}) {
-  const targetSeasonId = await resolveSeasonId(options.seasonId || undefined);
-  const ctx = await buildScoutingContext(opponentQuery, targetSeasonId);
-  return withAiLock(`scouting:${ctx.opponentKey}`, async () => {
-    // Klucz sezonowy `{seasonId}::{rywal}` — raporty z różnych sezonów się nie nadpisują.
-    const existing = await prisma.scoutingAiReport.findUnique({
-      where: { opponentKey: ctx.opponentKey }
-    });
-
-    if (!options.force && existing?.sourceHash === ctx.hash && existing.summaryMd) {
-      return {
-        cached: true,
-        opponentKey: ctx.opponentKey,
-        opponentName: ctx.opponentName,
-        seasonId: ctx.seasonId,
-        aiAnalysis: existing.analysisJson,
-        summaryMd: existing.summaryMd,
-        personnelMd: buildPersonnelMdFromAnalysis(existing.analysisJson),
-        generatedAt: existing.generatedAt,
-        model: existing.model
-      };
-    }
-
-    const raw = await generateText({
-      system: SCOUTING_SYSTEM,
-      user: buildScoutingUser(ctx.payload),
-      jsonMode: true,
-      responseJsonSchema: SCOUTING_SCHEMA,
-      maxOutputTokens: 4096
-    });
-
-    const analysisJson = parseScoutingJson(raw);
-    const personnelMd = buildPersonnelMdFromAnalysis(analysisJson);
-    const summaryMd = buildScoutingSummaryMd(analysisJson) || analysisJson.summary;
-
-    const model = getGeminiModelName();
-    const now = new Date();
-    await prisma.scoutingAiReport.upsert({
-      where: { opponentKey: ctx.opponentKey },
-      create: {
-        opponentKey: ctx.opponentKey,
-        opponentName: ctx.opponentName,
-        summaryMd,
-        analysisJson,
-        model,
-        sourceHash: ctx.hash,
-        generatedAt: now
-      },
-      update: {
-        opponentName: ctx.opponentName,
-        summaryMd,
-        analysisJson,
-        model,
-        sourceHash: ctx.hash,
-        generatedAt: now
-      }
-    });
-
-    return {
-      cached: false,
-      opponentKey: ctx.opponentKey,
-      opponentName: ctx.opponentName,
-      seasonId: ctx.seasonId,
-      aiAnalysis: analysisJson,
-      summaryMd,
-      personnelMd,
-      generatedAt: now,
-      model
-    };
+  const prep = await prepareScoutingReport(opponentQuery, options);
+  return withAiLock(prep.lockKey, async () => {
+    const cached = !options.force && (await cachedScoutingReport(prep));
+    if (cached) return cached;
+    const out = await aiText({ operation: prep.operation, ...prep.prompt });
+    return saveScoutingReport(prep, out.text, out.model);
   });
+}
+
+/**
+ * @param {{ seasonId?: string }} options
+ */
+export async function prepareTeamBriefing(options = {}) {
+  const targetSeasonId = await resolveSeasonId(options.seasonId);
+  const ctx = await buildBriefingContext(targetSeasonId);
+  return {
+    operation: 'panel.briefing',
+    lockKey: `briefing:${targetSeasonId || 'default'}`,
+    inputHash: ctx.hash,
+    version: getPromptVersion('briefing'),
+    briefingId: targetSeasonId || 'default',
+    requireUpcomingOpponent: Boolean(ctx.payload.hasUpcomingMatch),
+    prompt: { system: BRIEFING_SYSTEM, user: buildBriefingUser(ctx.payload), maxOutputTokens: 4096 }
+  };
+}
+
+async function cachedTeamBriefing(prep) {
+  const existing = await prisma.teamBriefing.findUnique({ where: { id: prep.briefingId } });
+  if (
+    existing?.sourceHash === prep.inputHash &&
+    existing.contentMd &&
+    hasCompleteBriefingMarkdown(existing.contentMd, { requireUpcomingOpponent: prep.requireUpcomingOpponent })
+  ) {
+    return { cached: true, contentMd: existing.contentMd, generatedAt: existing.generatedAt, model: existing.model };
+  }
+  return null;
+}
+
+export async function saveTeamBriefing(prep, text, model) {
+  if (!hasCompleteBriefingMarkdown(text, { requireUpcomingOpponent: prep.requireUpcomingOpponent })) {
+    throw new Error('Wygenerowany briefing jest niekompletny — spróbuj ponownie');
+  }
+  const now = new Date();
+  const data = { contentMd: text, model, sourceHash: prep.inputHash, generatedAt: now };
+  await prisma.teamBriefing.upsert({
+    where: { id: prep.briefingId },
+    create: { id: prep.briefingId, ...data },
+    update: data
+  });
+  return { cached: false, contentMd: text, generatedAt: now, model };
 }
 
 /**
@@ -375,59 +443,12 @@ export async function generateScoutingReport(opponentQuery, options = {}) {
  */
 export async function generateTeamBriefing(options = {}) {
   const targetSeasonId = await resolveSeasonId(options.seasonId);
-  const lockKey = `briefing:${targetSeasonId || 'default'}`;
-
-  return withAiLock(lockKey, async () => {
-    const ctx = await buildBriefingContext(targetSeasonId);
-    const existing = await prisma.teamBriefing.findUnique({ where: { id: targetSeasonId || 'default' } });
-
-    const requireUpcomingOpponent = Boolean(ctx.payload.hasUpcomingMatch);
-
-    if (
-      !options.force &&
-      existing?.sourceHash === ctx.hash &&
-      existing.contentMd &&
-      hasCompleteBriefingMarkdown(existing.contentMd, { requireUpcomingOpponent })
-    ) {
-      return {
-        cached: true,
-        contentMd: existing.contentMd,
-        generatedAt: existing.generatedAt,
-        model: existing.model
-      };
-    }
-
-    const text = await generateText({
-      system: BRIEFING_SYSTEM,
-      user: buildBriefingUser(ctx.payload),
-      maxOutputTokens: 4096
-    });
-
-    if (!hasCompleteBriefingMarkdown(text, { requireUpcomingOpponent })) {
-      throw new Error('Wygenerowany briefing jest niekompletny — spróbuj ponownie');
-    }
-
-    const model = getGeminiModelName();
-    const now = new Date();
-    const briefingId = targetSeasonId || 'default';
-    await prisma.teamBriefing.upsert({
-      where: { id: briefingId },
-      create: {
-        id: briefingId,
-        contentMd: text,
-        model,
-        sourceHash: ctx.hash,
-        generatedAt: now
-      },
-      update: {
-        contentMd: text,
-        model,
-        sourceHash: ctx.hash,
-        generatedAt: now
-      }
-    });
-
-    return { cached: false, contentMd: text, generatedAt: now, model };
+  return withAiLock(`briefing:${targetSeasonId || 'default'}`, async () => {
+    const prep = await prepareTeamBriefing({ seasonId: targetSeasonId });
+    const cached = !options.force && (await cachedTeamBriefing(prep));
+    if (cached) return cached;
+    const out = await aiText({ operation: prep.operation, ...prep.prompt });
+    return saveTeamBriefing(prep, out.text, out.model);
   });
 }
 

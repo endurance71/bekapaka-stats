@@ -948,10 +948,22 @@ a.primary.is-disabled {
 }
 .token-form {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 .token-form input {
   flex: 1;
+}
+.token-form .token-scope {
+  flex-basis: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 14px;
+}
+.token-form .token-scope input {
+  flex: none;
+  margin-top: 3px;
 }
 .token-once {
   background: #fff6dc;
