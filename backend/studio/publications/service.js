@@ -248,12 +248,29 @@ const createInput = z
   .object({
     playbook: z.string().min(1).max(60),
     title: z.string().trim().max(180).optional(),
-    plannedAt: z.string().datetime().nullable().optional(),
+    plannedAt: z.string().datetime({ offset: true }).nullable().optional(),
     source: z.object({ kind: z.literal('match'), id: z.string().min(1).max(128), seasonId: z.string().min(1).max(128) }).strict().optional(),
     facts: z.record(z.string(), z.unknown()).optional(),
     channels: z.array(z.enum(channelIds)).min(1).optional(),
   })
   .strict();
+
+const ZONE = 'Europe/Warsaw';
+const wallClock = (ms) =>
+  new Intl.DateTimeFormat('sv-SE', { timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' })
+    .format(new Date(ms))
+    .replace(' ', 'T');
+
+/** Default publication time: the playbook's day offset from the event, at its Warsaw hour (a preview 60 h before a 14:40 match goes out on Friday at 18:00, not at 02:40). */
+export function scheduleAt(def, date) {
+  if (!date || !Number.isFinite(Date.parse(date))) return null;
+  const shifted = Date.parse(date) + def.offsetHours * 3600_000;
+  if (!def.at) return new Date(shifted);
+  const wall = Date.parse(`${wallClock(shifted).slice(0, 10)}T${def.at}:00Z`);
+  let real = wall;
+  for (let i = 0; i < 3; i++) real += wall - Date.parse(`${wallClock(real)}Z`);
+  return new Date(real);
+}
 
 export async function createPublication(db, owner, input) {
   const data = createInput.parse(input);
@@ -264,7 +281,7 @@ export async function createPublication(db, owner, input) {
   const settings = { ...(await getSettings(db, owner)), ...(def.items.facebook ? { sponsorFooter: await currentSponsorFooter() } : {}) };
   const partnerIds = def.category === 'Partnerzy' ? (await db.studioPartner.findMany({ where: { ownerId: owner, status: 'approved' }, select: { id: true } })).map((p) => p.id) : [];
   const title = (data.title || [facts.opponent || facts.title || facts.person || facts.partner, facts.date ? when(facts.date).split(',')[1]?.trim() : ''].filter(Boolean).join(' · ') || def.label).slice(0, 180);
-  const anchor = facts.date && Number.isFinite(Date.parse(facts.date)) ? new Date(Date.parse(facts.date) + def.offsetHours * 3600_000) : null;
+  const anchor = scheduleAt(def, facts.date);
   const plannedAt = data.plannedAt ? new Date(data.plannedAt) : anchor;
   const copy = schematicCopy(def, facts, settings);
   const wanted = Object.keys(def.items).filter((c) => !data.channels || data.channels.includes(c));
@@ -297,7 +314,7 @@ export async function createPublication(db, owner, input) {
             copy: copy[channel],
             copyOrigin: 'template',
             promptVersion: `template:${TEMPLATE_VERSION}`,
-            plannedAt: channel === 'instagram_story' && anchor && def.id === 'match-preview' ? new Date(Date.parse(facts.date) - 6 * 3600_000) : plannedAt,
+            plannedAt,
           })),
         },
       },
@@ -325,13 +342,21 @@ export async function updatePublication(db, owner, id, input) {
   const current = await db.studioPublication.findFirst({ where: { id, ownerId: owner } });
   if (!current) fail(404, 'Publikacja nie istnieje');
   const facts = data.facts ? factsSchema.parse({ ...current.facts, ...data.facts, kind: current.facts.kind }) : null;
-  await db.$transaction((tx) =>
-    bump(tx, owner, id, data.expectedRevision, {
+  const target = data.plannedAt ? new Date(data.plannedAt) : null;
+  await db.$transaction(async (tx) => {
+    await bump(tx, owner, id, data.expectedRevision, {
       ...(data.title ? { title: data.title } : {}),
-      ...(data.plannedAt !== undefined ? { plannedAt: data.plannedAt ? new Date(data.plannedAt) : null } : {}),
+      ...(data.plannedAt !== undefined ? { plannedAt: target } : {}),
       ...(facts ? { facts, factsHash: hash(facts) } : {}),
-    }),
-  );
+    });
+    // The calendar shows channels, so the publication date is the date of every channel not yet published.
+    // A single channel can still be moved on its own afterwards.
+    if (target)
+      await tx.studioPublicationItem.updateMany({
+        where: { publicationId: id, status: { notIn: ['published', 'skipped'] } },
+        data: { plannedAt: target, revision: { increment: 1 } },
+      });
+  });
   return publicationView(db, owner, id);
 }
 

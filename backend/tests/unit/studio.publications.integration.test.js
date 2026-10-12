@@ -54,6 +54,23 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     await db.$disconnect();
   });
 
+  it('plans a preview at 18:00 two days ahead and sets its channels to the publication date', async () => {
+    const created = await request('/publications', { playbook: 'match-preview', facts: { opponent: 'GMVT TEAM', date: '2026-10-18T12:40:00.000Z', venue: 'KOSiR Koszalin' } }, 'POST');
+    expect(created.res.status).toBe(201);
+    const id = created.value.id;
+    const first = await request(`/publications/${id}`);
+    expect(first.value.plannedAt).toBe('2026-10-16T16:00:00.000Z');
+    expect(first.value.items.map((i) => i.plannedAt)).toEqual(Array(3).fill('2026-10-16T16:00:00.000Z'));
+    const story = first.value.items.find((i) => i.channel === 'instagram_story');
+    const own = await request(`/publications/${id}/items/${story.id}`, { expectedRevision: story.revision, plannedAt: '2026-10-16T18:00:00.000Z' }, 'PUT');
+    expect(own.res.status).toBe(200);
+    // A new publication date is the date of every unpublished channel, including one moved on its own before.
+    const moved = await request(`/publications/${id}`, { expectedRevision: own.value.revision, plannedAt: '2026-10-12T16:00:00.000Z' }, 'PUT');
+    expect(moved.res.status).toBe(200);
+    expect(moved.value.items.map((i) => i.plannedAt)).toEqual(Array(3).fill('2026-10-12T16:00:00.000Z'));    // Later tests count every publication of this owner.
+    await db.studioPublication.delete({ where: { id } });
+  });
+
   it('creates a publication with channel variants, schematic copy and a prefilled graphic', async () => {
     const created = await request(
       '/publications',

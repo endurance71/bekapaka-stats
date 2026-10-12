@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Facebook, Globe, Instagram, Smartphone, X } from 'lucide-react';
 import { channels, itemStatuses, type ChannelId, type Issue } from '../../lib/publications';
+import { message } from '../../lib/api';
+import { warsawInput, warsawIso } from '../../lib/dates';
 
 export const channelIcons = {
   instagram_feed: Instagram,
@@ -148,3 +150,44 @@ export const formatDateTime = (iso: string | null) =>
         minute: '2-digit',
       }).format(new Date(iso))
     : 'bez terminu';
+
+// datetime-local reports every typed segment as a change; saving each one raced the revision and stored half-typed
+// hours. The value stays local and is saved once — on blur or Enter.
+export function PlannedAtInput({
+  value,
+  disabled,
+  onSave,
+  onError,
+}: {
+  value: string | null;
+  disabled?: boolean;
+  onSave: (iso: string | null) => void;
+  onError: (msg: string) => void;
+}) {
+  const saved = warsawInput(value || '');
+  const [draft, setDraft] = useState(saved);
+  const [shown, setShown] = useState(saved);
+  if (saved !== shown) {
+    setShown(saved);
+    setDraft(saved);
+  }
+  const commit = () => {
+    if (draft === saved) return;
+    try {
+      onSave(draft ? warsawIso(draft) : null);
+    } catch (err) {
+      onError(message(err));
+      setDraft(saved);
+    }
+  };
+  return (
+    <input
+      type="datetime-local"
+      value={draft}
+      disabled={disabled}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && commit()}
+    />
+  );
+}
