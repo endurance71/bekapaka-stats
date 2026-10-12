@@ -69,7 +69,7 @@ export const sponsors: SponsorItem[] = [
   },
   {
     id: 's-7',
-    name: 'Nadleśnictwo Bobolice, Lasy Państwowe',
+    name: 'Nadleśnictwo Bobolice',
     slug: 'nadlesnictwo-bobolice',
     facebookUrl: 'https://www.facebook.com/Nadlesnictwo.Bobolice',
     websiteUrl: 'https://bobolice.szczecinek.lasy.gov.pl',
@@ -77,8 +77,8 @@ export const sponsors: SponsorItem[] = [
     logoUrl: '/images/partners/nadlesnictwo-bobolice.svg',
     logoBgColor: '#ffffff',
     logoFit: 'contain',
-    // Znak LP z dwiema liniami nazwy (~1,9 : 1) — ogranicza go wysokość kafla, nie szerokość.
-    logoCardScale: 1.5,
+    // Znak LP z nazwą nadleśnictwa (~2,4 : 1).
+    logoCardScale: 1.25,
     logoCardPadding: '8px'
   },
   {
