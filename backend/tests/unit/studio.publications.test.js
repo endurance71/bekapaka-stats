@@ -4,7 +4,7 @@ import { channels, copySchemas, factsSchema } from '../../studio/publications/ch
 import { graphicFormats, playbook, playbooks } from '../../studio/publications/playbooks.js';
 import { altText, schematicCopy, when } from '../../studio/publications/templates.js';
 import { hasErrors, lintCopy } from '../../studio/publications/brand-lint.js';
-import { readiness, romanToInt, settingsSchema } from '../../studio/publications/service.js';
+import { readiness, romanToInt, scheduleAt, settingsSchema } from '../../studio/publications/service.js';
 
 const match = factsSchema.parse({
   kind: 'match',
@@ -126,6 +126,21 @@ describe('brand lint', () => {
   it('checks the website excerpt length and required alt texts', () => {
     expect(lintCopy('website', { title: 'T', excerpt: 'krótko', content: 'x', tags: [], coverAlt: '' }, match)[0]).toMatchObject({ level: 'warning', field: 'excerpt' });
     expect(hasErrors(lintCopy('facebook', { text: 'Tekst', hashtags: [], link: '', altText: '' }, match))).toBe(true);
+  });
+});
+
+describe('default publication time', () => {
+  const kickoff = '2026-10-18T12:40:00.000Z'; // Sunday 14:40 in Koszalin (CEST)
+  it('puts the day from the offset and the hour from the playbook, in Warsaw time', () => {
+    expect(scheduleAt(playbook('match-preview'), kickoff).toISOString()).toBe('2026-10-16T16:00:00.000Z');
+    expect(scheduleAt(playbook('matchday'), kickoff).toISOString()).toBe('2026-10-18T07:00:00.000Z');
+    expect(scheduleAt(playbook('match-report'), kickoff).toISOString()).toBe('2026-10-19T08:00:00.000Z');
+  });
+  it('follows the clock change and keeps exact offsets for live and result', () => {
+    // 25 October: CET from 03:00, so 09:00 is 08:00 UTC.
+    expect(scheduleAt(playbook('matchday'), '2026-10-25T15:20:00.000Z').toISOString()).toBe('2026-10-25T08:00:00.000Z');
+    expect(scheduleAt(playbook('match-result'), kickoff).toISOString()).toBe('2026-10-18T15:40:00.000Z');
+    expect(scheduleAt(playbook('match-preview'), '')).toBeNull();
   });
 });
 

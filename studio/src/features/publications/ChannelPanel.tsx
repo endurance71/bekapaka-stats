@@ -4,7 +4,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Check, ClipboardCopy, ExternalLink, FileText, RotateCcw, SkipForward, Sparkles, Undo2 } from 'lucide-react';
 import { api, fileUrl, message, query, send } from '../../lib/api';
 import { formatSpec } from '../../lib/contracts';
-import { warsawInput, warsawIso } from '../../lib/dates';
 import {
   channels,
   lintCopy,
@@ -19,7 +18,7 @@ import {
 import type { Job } from '../../lib/types';
 import ExportFile from '../exports/ExportFile';
 import SocialPreview from '../graphic-editor/SocialPreview';
-import { Counter, HashtagInput, Issues, StatusPill } from './bits';
+import { Counter, HashtagInput, Issues, PlannedAtInput, StatusPill } from './bits';
 import { useItemDraft } from './usePublication';
 import WebsiteActions, { useWebsiteConfig } from './WebsiteActions';
 
@@ -104,17 +103,11 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
         <div className="channel-meta">
           <label>
             Termin publikacji
-            <input
-              type="datetime-local"
-              value={warsawInput(item.plannedAt || '')}
+            <PlannedAtInput
+              value={item.plannedAt}
               disabled={locked || busy}
-              onChange={(e) => {
-                try {
-                  void put({ plannedAt: e.target.value ? warsawIso(e.target.value) : null });
-                } catch (err) {
-                  onError(message(err));
-                }
-              }}
+              onSave={(plannedAt) => void put({ plannedAt })}
+              onError={onError}
             />
           </label>
           {formats.length > 1 && (

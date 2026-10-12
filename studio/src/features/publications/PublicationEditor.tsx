@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Archive, ArrowLeft, Check, Download, Image as ImageIcon, LayoutGrid, Sparkles } from 'lucide-react';
 import { API, message, send } from '../../lib/api';
 import { formatSpec } from '../../lib/contracts';
-import { warsawInput, warsawIso } from '../../lib/dates';
 import { keys, useSettings } from '../../lib/queries';
 import {
   channels,
@@ -17,7 +16,7 @@ import {
 import ChannelPanel from './ChannelPanel';
 import AiCopyDialog from './AiCopyDialog';
 import FactsPanel from './FactsPanel';
-import { ChannelBadge, formatDateTime, StatusPill } from './bits';
+import { ChannelBadge, formatDateTime, PlannedAtInput, StatusPill } from './bits';
 import './publications.css';
 
 const tabSlugs: Record<ChannelId, string> = {
@@ -154,16 +153,10 @@ export default function PublicationEditor({
         <div className="editor-tools">
           <label className="planned-at">
             <span>Termin</span>
-            <input
-              type="datetime-local"
-              value={warsawInput(publication.plannedAt || '')}
-              onChange={(e) => {
-                try {
-                  void update({ plannedAt: e.target.value ? warsawIso(e.target.value) : null });
-                } catch (err) {
-                  setError(message(err));
-                }
-              }}
+            <PlannedAtInput
+              value={publication.plannedAt}
+              onSave={(plannedAt) => void update({ plannedAt })}
+              onError={setError}
             />
           </label>
           <button className="secondary" onClick={() => setAiFor(publication.items.map((i) => i.channel))}>

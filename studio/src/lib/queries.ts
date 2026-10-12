@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { api } from './api';
+import { api, query } from './api';
 import type {
   AiEngine,
   AiOverview,
@@ -31,6 +31,7 @@ export const keys = {
   publications: ['publications'],
   publication: (id: string) => ['publication', id],
   suggestions: ['suggestions'],
+  seasonMatches: (seasonId: string) => ['season-matches', seasonId],
   settings: ['settings'],
   aiOverview: ['ai-overview'],
   aiEngine: ['ai-engine'],
@@ -85,6 +86,14 @@ export const usePublications = (status: 'draft' | 'archived' = 'draft') =>
   useQuery({
     queryKey: [...keys.publications, status],
     queryFn: () => api<PublicationSummary[]>(`/publications?status=${status}`),
+  });
+// BeKaPaKa matches of one season (played and scheduled), as the Studio source list returns them.
+export const useSeasonMatches = (seasonId: string) =>
+  useQuery({
+    queryKey: keys.seasonMatches(seasonId),
+    queryFn: () => api<Suggestion['match'][]>(`/sources/matches?${query({ seasonId })}`),
+    enabled: Boolean(seasonId),
+    staleTime: 5 * 60_000,
   });
 export const useSuggestions = () =>
   useQuery({ queryKey: keys.suggestions, queryFn: () => api<Suggestion[]>('/publications/suggestions') });

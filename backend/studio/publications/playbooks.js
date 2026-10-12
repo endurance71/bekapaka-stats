@@ -11,6 +11,8 @@ const WWW = (graphic = 'main', format = 'landscape') => ({ graphic, format });
 const portraitWWW = (graphic = 'main') => WWW(graphic, 'feed');
 
 // `hint` is the editorial schema of the playbook: what every variant must say. Prompts reuse it.
+// `offsetHours` picks the day relative to the event; `at` (Warsaw wall clock) the hour on that day. Without `at`
+// the offset is exact — live score and result follow the match itself.
 export const playbooks = [
   {
     id: 'match-preview',
@@ -18,6 +20,7 @@ export const playbooks = [
     label: 'Zapowiedź meczu',
     timing: '2–3 dni przed meczem',
     offsetHours: -60,
+    at: '18:00',
     factsKind: 'match',
     required: ['opponent', 'date', 'venue'],
     graphics: { main: { postType: 'preview', formats: ['feed', 'story', 'landscape'] } },
@@ -30,6 +33,7 @@ export const playbooks = [
     label: 'Dzień meczu',
     timing: 'rano w dniu meczu',
     offsetHours: -8,
+    at: '09:00',
     factsKind: 'match',
     required: ['opponent', 'date', 'venue'],
     graphics: { main: { postType: 'matchday', formats: ['story', 'feed'] } },
@@ -66,6 +70,7 @@ export const playbooks = [
     label: 'Relacja z meczu',
     timing: 'dzień po meczu',
     offsetHours: 20,
+    at: '10:00',
     factsKind: 'match',
     required: ['opponent', 'scoreUs', 'scoreThem'],
     graphics: {
@@ -81,6 +86,7 @@ export const playbooks = [
     label: 'MVP meczu',
     timing: '1–2 dni po meczu',
     offsetHours: 30,
+    at: '18:00',
     factsKind: 'player',
     required: ['person'],
     graphics: { main: { postType: 'mvp', formats: ['feed', 'story'] } },
@@ -93,6 +99,7 @@ export const playbooks = [
     label: 'Liderzy meczu',
     timing: '1–2 dni po meczu',
     offsetHours: 30,
+    at: '19:00',
     factsKind: 'statistics',
     required: ['opponent'],
     graphics: { main: { postType: 'leaders', formats: ['feed', 'story'] } },
@@ -105,6 +112,7 @@ export const playbooks = [
     label: 'Kolejka i tabela',
     timing: 'po zakończeniu kolejki',
     offsetHours: 48,
+    at: '18:00',
     factsKind: 'statistics',
     required: ['round'],
     graphics: { main: { postType: 'standings', formats: ['feed', 'story'] } },
@@ -153,6 +161,7 @@ export const playbooks = [
     label: 'Zapowiedź turnieju',
     timing: '2 tygodnie przed',
     offsetHours: -336,
+    at: '18:00',
     factsKind: 'tournament',
     required: ['title', 'date', 'venue'],
     graphics: { main: { postType: 'tournament-preview', formats: ['feed', 'story', 'landscape'] } },
@@ -165,6 +174,7 @@ export const playbooks = [
     label: 'Program turnieju',
     timing: '2–3 dni przed',
     offsetHours: -60,
+    at: '18:00',
     factsKind: 'tournament',
     required: ['title', 'date'],
     graphics: { main: { postType: 'tournament-program', formats: ['feed', 'story', 'landscape'] } },
@@ -177,6 +187,7 @@ export const playbooks = [
     label: 'Podsumowanie turnieju',
     timing: 'dzień po',
     offsetHours: 20,
+    at: '10:00',
     factsKind: 'tournament',
     required: ['title'],
     graphics: { main: { postType: 'tournament-summary', formats: ['feed', 'story', 'landscape'] } },
@@ -309,6 +320,7 @@ export const playbooks = [
     label: 'Zaproszenie dla kibiców',
     timing: 'tydzień przed',
     offsetHours: -168,
+    at: '18:00',
     factsKind: 'club',
     required: ['title', 'date', 'venue'],
     graphics: { main: { postType: 'fan-invitation', formats: ['feed', 'story'] } },
@@ -345,6 +357,7 @@ export const playbooks = [
     label: 'Podsumowanie sezonu',
     timing: 'po ostatnim meczu sezonu',
     offsetHours: 72,
+    at: '18:00',
     factsKind: 'statistics',
     required: ['seasonLabel'],
     graphics: { main: { postType: 'season-summary', formats: ['feed', 'story'] } },

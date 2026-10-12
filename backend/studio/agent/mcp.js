@@ -9,7 +9,7 @@ import { channelIds, channels } from '../publications/channels.js';
 import { playbook, playbooks } from '../publications/playbooks.js';
 import { brandVoice, channelInstructions, PROMPT_VERSION } from '../publications/prompts.js';
 import { schematicCopy } from '../publications/templates.js';
-import { createPublication, getSettings, listPublications, publicationView, updateItem } from '../publications/service.js';
+import { createPublication, getSettings, listPublications, publicationView, updateItem, updatePublication } from '../publications/service.js';
 import { allowRequest, authenticateAgent } from './tokens.js';
 import { studioAgentOperations } from './operations.js';
 import { fail } from '../config.js';
@@ -128,6 +128,8 @@ export const tools = [
       type: 'object',
       properties: {
         playbook: { type: 'string', description: 'id schematu z list_playbooks' },
+        title: { type: 'string', description: 'Nazwa w Studio (opcjonalnie), np. „GMVT · 3 dni do meczu”' },
+        plannedAt: { type: 'string', description: 'Termin wszystkich kanałów, ISO 8601 z przesunięciem strefy, np. 2026-10-15T18:00:00+02:00 (opcjonalnie; domyślnie wg schematu)' },
         source: { type: 'object', properties: { kind: { const: 'match' }, id: { type: 'string' }, seasonId: { type: 'string' } } },
         facts: { type: 'object', description: 'Fakty publiczne (title, opponent, date ISO, venue, person, partner, notes…)' },
         channels: { type: 'array', items: channelEnum },
@@ -162,6 +164,37 @@ export const tools = [
       const view = await updateItem(db, owner, p.id, item.id, { expectedRevision: item.revision, copy: args.copy, copyOrigin: 'agent', promptVersion: `agent:${PROMPT_VERSION}` }, 'agent');
       const saved = view.items.find((i) => i.id === item.id);
       return json({ saved: true, channel: saved.channel, lint: saved.issues, blockers: saved.ready });
+    },
+  },
+  {
+    name: 'schedule_publication',
+    description:
+      'Ustawia termin publikacji (ISO 8601 z przesunięciem strefy, np. 2026-10-15T18:00:00+02:00). Bez channel ustawia termin całej publikacji i wszystkich nieopublikowanych kanałów; z channel zmienia termin jednego roboczego kanału. Opcjonalnie zmienia nazwę.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        publicationId: { type: 'string' },
+        plannedAt: { type: 'string' },
+        channel: channelEnum,
+        title: { type: 'string' },
+      },
+      required: ['publicationId'],
+    },
+    scope: 'draft',
+    run: async (db, owner, args) => {
+      const id = uuid.parse(args.publicationId);
+      const plannedAt = args.plannedAt === undefined ? undefined : new Date(z.string().datetime({ offset: true }).parse(args.plannedAt)).toISOString();
+      let p = await publicationView(db, owner, id);
+      if (args.channel) {
+        const item = p.items.find((i) => i.channel === args.channel);
+        if (!item) return { isError: true, ...json({ error: 'Ta publikacja nie ma takiego kanału' }) };
+        if (item.status !== 'draft') return { isError: true, ...json({ error: `Kanał ma status „${item.status}” — agent może przestawiać tylko robocze kanały` }) };
+        if (plannedAt) p = await updateItem(db, owner, id, item.id, { expectedRevision: item.revision, plannedAt }, 'agent');
+      } else if (plannedAt) {
+        p = await updatePublication(db, owner, id, { expectedRevision: p.revision, plannedAt });
+      }
+      if (args.title) p = await updatePublication(db, owner, id, { expectedRevision: p.revision, title: String(args.title) });
+      return json({ id: p.id, title: p.title, plannedAt: p.plannedAt, channels: p.items.map((i) => ({ channel: i.channel, status: i.status, plannedAt: i.plannedAt })) });
     },
   },
   {
