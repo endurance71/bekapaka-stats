@@ -87,3 +87,12 @@ Oba nowe pliki mają kremowe tło (253, 249, 246) bez przezroczystości — usun
 ### Poprawka 9.10.2026 — tylko „Nadleśnictwo Bobolice”
 
 Na prośbę klubu z `nadlesnictwo-bobolice.svg` usunięto linię „Lasy Państwowe” (napis na obwodzie znaku zostaje — jest częścią znaku). „Nadleśnictwo Bobolice” stoi na jej miejscu (ta sama linia bazowa i odstęp od znaku), nieużywane definicje glifów usunięte. Proporcje ~2,4 : 1, wymiary własne 295 × 122, `logoCardScale: 1.25`; nazwa partnera i tekst alternatywny: „Nadleśnictwo Bobolice”.
+
+## Aktualizacja 12.10.2026 — Contema i CERTE jako wektory
+
+Oryginałów nadal brak, więc oba znaki odtworzono z rastrów (pliki robocze i porównania: `output/baner-hala-4x2m/logo-src/`).
+
+- **Contema** → `site/public/images/partners/contema.svg` (zatwierdzone przez klub). Napisy „ontema” i „Sp. z o.o.” złożone krojem Arial Black pochylonym o 15° / 13° i zamienione na krzywe — dopasowanie kształtu 96 % / 92 %, jednakowa skala wszystkich liter potwierdza ten krój. Duże „C” obrysowane (potrace) z prostymi końcami belek z pomiaru; ramka odtworzona geometrycznie (dwie linie + współśrodkowe łuki). Kolor #013ae1 odczytany z rastra.
+- **CERTE** → `site/public/images/partners/certe.svg`. Krój nieznany: sprawdzono kroje systemowe, URW (Nimbus Roman, C059, P052, Bookman) i darmowe Garamondy/Caslony — najlepsze dopasowanie Times / Nimbus Roman tylko 77 % (inne R, E i szeryfy T). Dlatego obrys z rastra 517×100 w 16× rozdzielczości; oba „E” uśrednione do jednego kształtu. Kolor #9d0a31.
+- Studio i repo marki: `logo-raster/logo-00.png` (1855×490) i `logo-09.png` (1711×378, sam znak bez nieaktualnego podpisu „Ireneusz Szczepaniak”) wyrenderowane z wektorów; SVG w `BeKaPaKa - brand/02_system/partnerzy/logo-vector/`.
+- To rekonstrukcje — oryginalne pliki od firm nadal mile widziane.
