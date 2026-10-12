@@ -5,8 +5,9 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import PageHeader from '../components/PageHeader';
 import { message, send } from '../lib/api';
 import { warsawIso } from '../lib/dates';
-import { keys, usePublications } from '../lib/queries';
-import { channels, type ChannelId, type PublicationSummary } from '../lib/publications';
+import { keys, usePublications, useSeasonMatches, useSeasons } from '../lib/queries';
+import { initialSeason } from '../lib/seasons';
+import { channels, type ChannelId, type PublicationSummary, type Suggestion } from '../lib/publications';
 import { useShell } from '../app/shell-context';
 import { ChannelBadge } from '../features/publications/bits';
 import '../features/publications/publications.css';
@@ -36,11 +37,15 @@ function monthCells(year: number, month: number) {
 }
 
 type Entry = { p: PublicationSummary; item: PublicationSummary['items'][number] };
+type Match = Suggestion['match'];
 
 export default function CalendarPage() {
   const client = useQueryClient();
-  const { setError } = useShell();
+  const { setError, openNewPublication } = useShell();
   const publications = usePublications();
+  const seasons = useSeasons();
+  const seasonId = initialSeason(seasons.data || []);
+  const seasonMatches = useSeasonMatches(seasonId);
   const today = dayKey(new Date().toISOString());
   const [cursor, setCursor] = useState(() => ({
     year: Number(today.slice(0, 4)),
@@ -61,6 +66,25 @@ export default function CalendarPage() {
       }
     return map;
   }, [publications.data]);
+  // Matches sit in the grid next to the publications, so a match without a preview is visible at a glance.
+  const matchesByDay = useMemo(() => {
+    const map = new Map<string, Match[]>();
+    for (const m of seasonMatches.data || []) {
+      if (!Number.isFinite(Date.parse(m.date))) continue;
+      const key = dayKey(m.date);
+      map.set(key, [...(map.get(key) || []), m]);
+    }
+    return map;
+  }, [seasonMatches.data]);
+  const previewed = useMemo(
+    () =>
+      new Set(
+        (publications.data || [])
+          .filter((p) => p.playbook === 'match-preview' && p.sourceRef)
+          .map((p) => p.sourceRef!.id),
+      ),
+    [publications.data],
+  );
   const label = new Intl.DateTimeFormat('pl-PL', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
     new Date(Date.UTC(cursor.year, cursor.month, 1)),
   );
@@ -123,6 +147,29 @@ export default function CalendarPage() {
             }}
           >
             <span className="calendar-date">{c.day}</span>
+            {(matchesByDay.get(c.key) || []).map((m) => {
+              const played = m.scoreUs !== null && m.scoreThem !== null;
+              const needsPreview = !played && Date.parse(m.date) > Date.now() && !previewed.has(m.id);
+              return (
+                <div
+                  key={m.id}
+                  className={`calendar-match ${played ? 'is-played' : ''}`}
+                  title={`Mecz KALK${m.round ? ` · ${m.round}` : ''} · BeKaPaKa – ${m.opponent}`}
+                >
+                  <span>
+                    {played ? `${m.scoreUs}:${m.scoreThem}` : timeOf(m.date)} BeKaPaKa – {m.opponent}
+                  </span>
+                  {needsPreview && (
+                    <button
+                      className="calendar-match-action"
+                      onClick={() => openNewPublication({ playbook: 'match-preview', source: { id: m.id, seasonId } })}
+                    >
+                      Zapowiedź
+                    </button>
+                  )}
+                </div>
+              );
+            })}
             {(byDay.get(c.key) || []).map((entry) => (
               <Link
                 key={entry.item.id}
