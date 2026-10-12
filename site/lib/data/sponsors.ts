@@ -43,7 +43,7 @@ export const sponsors: SponsorItem[] = [
     slug: 'contema-bobolice',
     websiteUrl: 'http://www.contema.eu/',
     order: 4,
-    logoUrl: '/images/partners/contema.png',
+    logoUrl: '/images/partners/contema.svg',
     logoBgColor: '#ffffff',
     logoFit: 'contain'
   },
@@ -53,7 +53,7 @@ export const sponsors: SponsorItem[] = [
     slug: 'certe-inez-szczesniak',
     websiteUrl: 'https://certe.com.pl/',
     order: 5,
-    logoUrl: '/images/partners/certe-wordmark.png',
+    logoUrl: '/images/partners/certe.svg',
     logoBgColor: '#ffffff',
     logoFit: 'contain'
   },
