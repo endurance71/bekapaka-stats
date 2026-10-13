@@ -23,7 +23,15 @@ function mcpConfig(target: ConfigTarget, mcpUrl: string, token: string) {
       ? {
           bekapaka: {
             command: 'npx',
-            args: ['-y', `mcp-remote@${MCP_REMOTE_VERSION}`, mcpUrl, '--transport', 'http-only', '--header', 'Authorization:${BKPK_AUTH}'],
+            args: [
+              '-y',
+              `mcp-remote@${MCP_REMOTE_VERSION}`,
+              mcpUrl,
+              '--transport',
+              'http-only',
+              '--header',
+              'Authorization:${BKPK_AUTH}',
+            ],
             env: { BKPK_AUTH: `Bearer ${token}` },
           },
         }
@@ -59,8 +67,8 @@ export default function AgentTokens() {
         generacje i zapisuje go jako szkic agenta.
       </p>
       <p className="muted">
-        W Claude Desktop token z <code>panel-ai</code> daje gotowe polecenia (menu „+”), m.in. <code>odswiez-analizy</code>{' '}
-        — wszystkie brakujące i nieaktualne analizy panelu po kolei. Konfigurację wklej do{' '}
+        W Claude Desktop token z <code>panel-ai</code> daje gotowe polecenia (menu „+”), m.in.{' '}
+        <code>odswiez-analizy</code> — wszystkie brakujące i nieaktualne analizy panelu po kolei. Konfigurację wklej do{' '}
         <code>claude_desktop_config.json</code> i uruchom Desktop ponownie.
       </p>
       <form
