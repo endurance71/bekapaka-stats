@@ -13,6 +13,24 @@ type AgentToken = {
   createdAt: string;
 };
 
+// Claude Desktop runs only local stdio servers: mcp-remote bridges to the HTTP endpoint (same pin as the backend doc).
+const MCP_REMOTE_VERSION = '0.14.3';
+type ConfigTarget = 'code' | 'desktop';
+
+function mcpConfig(target: ConfigTarget, mcpUrl: string, token: string) {
+  const server =
+    target === 'desktop'
+      ? {
+          bekapaka: {
+            command: 'npx',
+            args: ['-y', `mcp-remote@${MCP_REMOTE_VERSION}`, mcpUrl, '--transport', 'http-only', '--header', 'Authorization:${BKPK_AUTH}'],
+            env: { BKPK_AUTH: `Bearer ${token}` },
+          },
+        }
+      : { 'bekapaka-studio': { type: 'http', url: mcpUrl, headers: { Authorization: `Bearer ${token}` } } };
+  return JSON.stringify({ mcpServers: server }, null, 2);
+}
+
 // External agents (Claude, Cursor…) draft copy through MCP. The plain token is shown once.
 export default function AgentTokens() {
   const client = useQueryClient();
@@ -21,16 +39,9 @@ export default function AgentTokens() {
   const [panelAi, setPanelAi] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [target, setTarget] = useState<ConfigTarget>('code');
   const mcpUrl = `${window.location.origin}/api/studio/v1/mcp`;
-  const config = JSON.stringify(
-    {
-      mcpServers: {
-        'bekapaka-studio': { type: 'http', url: mcpUrl, headers: { Authorization: `Bearer ${created || '<token>'}` } },
-      },
-    },
-    null,
-    2,
-  );
+  const config = mcpConfig(target, mcpUrl, created || '<token>');
   const reload = () => client.invalidateQueries({ queryKey: ['agent-tokens'] });
 
   return (
@@ -46,6 +57,11 @@ export default function AgentTokens() {
         Twój Claude Code (na Twojej subskrypcji) może też wykonywać zadania AI Studio: <code>list_ai_tasks</code> →{' '}
         <code>prepare_ai_task</code> → <code>submit_ai_task_result</code>. Studio sprawdza wynik tak samo jak własne
         generacje i zapisuje go jako szkic agenta.
+      </p>
+      <p className="muted">
+        W Claude Desktop token z <code>panel-ai</code> daje gotowe polecenia (menu „+”), m.in. <code>odswiez-analizy</code>{' '}
+        — wszystkie brakujące i nieaktualne analizy panelu po kolei. Konfigurację wklej do{' '}
+        <code>claude_desktop_config.json</code> i uruchom Desktop ponownie.
       </p>
       <form
         className="token-form"
@@ -86,6 +102,14 @@ export default function AgentTokens() {
         <div className="token-once" role="status">
           <b>Skopiuj token teraz — nie pokażemy go ponownie.</b>
           <code>{created}</code>
+          <div className="segmented" role="group" aria-label="Klient MCP">
+            <button type="button" aria-pressed={target === 'code'} onClick={() => setTarget('code')}>
+              Claude Code / Cursor
+            </button>
+            <button type="button" aria-pressed={target === 'desktop'} onClick={() => setTarget('desktop')}>
+              Claude Desktop
+            </button>
+          </div>
           <pre>{config}</pre>
           <button className="text-button" onClick={() => void navigator.clipboard?.writeText(config)}>
             <ClipboardCopy size={14} /> Kopiuj konfigurację MCP

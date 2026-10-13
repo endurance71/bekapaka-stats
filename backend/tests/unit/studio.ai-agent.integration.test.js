@@ -85,8 +85,17 @@ describe.skipIf(!enabled)('Studio AI copy and MCP agent on isolated PostgreSQL',
     const init = await mcp('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } });
     expect(init.status).toBe(200);
     expect(init.body.result.serverInfo.name).toBe('bekapaka-studio');
+    expect(init.body.result.instructions).toContain('prepare_ai_task');
+    expect(init.body.result.capabilities.prompts).toBeDefined();
     const list = await mcp('tools/list', {});
     expect(list.body.result.tools.map((t) => t.name)).toContain('propose_copy');
+    // Panel discovery and panel prompts stay hidden without panel-ai.
+    expect(list.body.result.tools.map((t) => t.name)).not.toContain('list_panel_analyses');
+    const prompts = await mcp('prompts/list', {});
+    expect(prompts.body.result.prompts.map((p) => p.name)).toEqual(['teksty-publikacji']);
+    const prompt = await mcp('prompts/get', { name: 'teksty-publikacji', arguments: { publicationId: publication.id } });
+    expect(prompt.body.result.messages[0].content.text).toContain(publication.id);
+    expect((await mcp('prompts/get', { name: 'odswiez-analizy', arguments: {} })).body.error).toBeDefined();
     const view = toolResult(await mcp('tools/call', { name: 'get_publication', arguments: { id: publication.id } }));
     expect(view.facts.title).toBe('Nowe stroje dla drużyny');
     expect(view.factsConfirmed).toBe(false);

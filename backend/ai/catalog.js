@@ -285,6 +285,8 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       staleReason,
       isTemplate: false,
       canGenerate: canGenerate && configured,
+      // Dane meczu pozwalają na analizę niezależnie od silnika (agent MCP pisze sam).
+      dataReady: canGenerate,
       viewPath: `/games/${gameId}`,
       generateKind: 'match',
       generateTarget: gameId,

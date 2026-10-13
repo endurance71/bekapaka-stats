@@ -50,6 +50,8 @@ Obrazy (zadanie 'image') → zawsze generateImage (Gemini), poza routingiem
   - `textCall` wybiera między SDK a dotychczasowym `generateJson`.
   - Rezerwacja dla SDK wynosi ×2, a rozliczenie liczy się z `total_cost_usd`.
 - **MCP:** narzędzia `list_ai_tasks`, `prepare_ai_task`, `submit_ai_task_result` oraz opcjonalny zakres tokenu `panel-ai`.
+  - Z `panel-ai` dochodzi odkrywanie i odczyt: `list_seasons`, `list_panel_analyses` (stan missing/stale/fresh jak w katalogu panelu, z gotowymi `task.operation`/`task.args`) i `get_panel_analysis` (`ai/agentCatalog.js`).
+  - Serwer wysyła instrukcje pracy (`instructions`) i gotowe polecenia (MCP prompts, `studio/agent/agentPrompts.js`), np. `odswiez-analizy`.
 
 ## C. Wprowadzone zmiany
 
@@ -77,7 +79,7 @@ Obrazy (zadanie 'image') → zawsze generateImage (Gemini), poza routingiem
 
 ## D. Mapa obsługi AI
 
-| Funkcja | Plik / trasa | API | Claude Agent SDK | MCP (Claude Code) | Routing |
+| Funkcja | Plik / trasa | API | Claude Agent SDK | MCP (Claude Code / Desktop) | Routing |
 |---|---|---|---|---|---|
 | Analiza meczu | `ai/generate.js` · `POST /api/games/:id/analyze` | Tak (Gemini) | Tak (Markdown) | Tak, zakres `panel-ai` | Przełącznik |
 | Plan rozwoju zawodnika | `generate.js` · `POST /api/players/:id/analyze` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
@@ -194,7 +196,21 @@ Kolejność (zgodnie z `docs/vps-runbook.md` i `docs/vps-optimization.md`):
 
 1. Studio → Ustawienia → Agent (MCP) → utwórz token. Opcja „Także analizy panelu (panel-ai)” jest dla Twojego własnego agenta.
 2. Skopiuj konfigurację MCP do Claude Code.
-3. Workflow: `list_ai_tasks` → `prepare_ai_task` → napisz wynik → `submit_ai_task_result`.
+3. Workflow: `list_panel_analyses` (albo `list_ai_tasks`) → `prepare_ai_task` → napisz wynik → `submit_ai_task_result`.
+
+**MCP dla Claude Desktop:**
+
+1. Token jak wyżej, z `panel-ai`, jeśli mają powstawać analizy panelu.
+2. Po utworzeniu tokenu przełącz podgląd na „Claude Desktop” i skopiuj wpis do `~/Library/Application Support/Claude/claude_desktop_config.json` (sekcja `mcpServers`).
+   - Desktop uruchamia tylko lokalne serwery stdio, więc wpis startuje mostek `mcp-remote` (przypięta wersja, `--transport http-only`, bo serwer jest bezstanowy i przyjmuje tylko POST).
+   - Token siedzi w `env.BKPK_AUTH`, bo Desktop psuje spacje w argumentach.
+   - Gdy `npx` nie jest w PATH aplikacji, podaj pełną ścieżkę (`which npx`) albo dodaj `PATH` w `env`.
+3. Uruchom Claude Desktop ponownie. Polecenia są w menu „+” → bekapaka:
+   - `odswiez-analizy` generuje po kolei wszystkie brakujące i nieaktualne analizy (opcjonalnie tylko jeden rodzaj albo sezon);
+   - `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa` i `zagrywka` dotyczą pojedynczych analiz;
+   - `teksty-publikacji` tworzy szkice Studio do zatwierdzenia.
+4. Generacja idzie na limitach Twojej subskrypcji (jak w Claude Code). Serwer loguje `source: mcp`, `costKind: none`.
+5. Karta przedmeczowa nie zapisuje hasha danych, więc `list_panel_analyses` pokazuje ją jako brakującą albo aktualną, bez stanu „nieaktualna”.
 
 ## H. Regresje
 

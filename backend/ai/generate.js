@@ -40,7 +40,7 @@ const aiSummarySelect = {
  * @param {string} gameId
  * @param {string | null | undefined} [seasonId]
  */
-async function findMatchAiTarget(gameId, seasonId = undefined) {
+export async function findMatchAiTarget(gameId, seasonId = undefined) {
   const game = await prisma.game.findUnique({
     where: { id: gameId },
     select: aiSummarySelect
