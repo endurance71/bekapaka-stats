@@ -2,7 +2,7 @@
 // Agents never confirm facts, approve, publish, download packages or change settings — the owner does, in Studio.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, GetPromptRequestSchema, ListPromptsRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { z, ZodError } from 'zod';
 import { ownerId } from '../config.js';
 import { channelIds, channels } from '../publications/channels.js';
@@ -12,6 +12,7 @@ import { schematicCopy } from '../publications/templates.js';
 import { createPublication, getSettings, listPublications, publicationView, updateItem, updatePublication } from '../publications/service.js';
 import { allowRequest, authenticateAgent } from './tokens.js';
 import { studioAgentOperations } from './operations.js';
+import { promptsFor, SERVER_INSTRUCTIONS } from './agentPrompts.js';
 import { fail } from '../config.js';
 import { logGeneration } from '../../ai-engine/log.js';
 
@@ -24,13 +25,21 @@ const PANEL_OPERATIONS = ['panel.match', 'panel.player', 'panel.scouting', 'pane
 const OPERATION_IDS = [...Object.keys(studioAgentOperations), ...PANEL_OPERATIONS];
 const AGENT_MODEL = 'agent-mcp';
 
-/** Operation definition the token may use. Panel operations need the opt-in `panel-ai` scope and an ADMIN owner. */
-async function operationFor(db, agent, operation) {
-  if (studioAgentOperations[operation]) return { surface: 'studio', def: studioAgentOperations[operation] };
-  if (!PANEL_OPERATIONS.includes(operation)) fail(404, 'Nieznane zadanie AI — sprawdź list_ai_tasks');
+/** Panel data and analyses need the opt-in `panel-ai` scope and an ADMIN owner. */
+async function assertPanelAccess(db, agent) {
   if (!agent.scopes.includes('panel-ai')) fail(403, 'Token nie ma uprawnienia panel-ai (analizy panelu). Utwórz token z tym uprawnieniem w Ustawieniach Studio.');
   const owner = await db.rosterPlayer.findUnique({ where: { id: agent.ownerId }, select: { role: true } });
   if (owner?.role !== 'ADMIN') fail(403, 'Analizy panelu może zapisywać tylko administrator panelu');
+}
+
+// Panel code is loaded lazily, only when a panel tool runs.
+const panelCatalog = () => import('../../ai/agentCatalog.js');
+
+/** Operation definition the token may use. */
+async function operationFor(db, agent, operation) {
+  if (studioAgentOperations[operation]) return { surface: 'studio', def: studioAgentOperations[operation] };
+  if (!PANEL_OPERATIONS.includes(operation)) fail(404, 'Nieznane zadanie AI — sprawdź list_ai_tasks');
+  await assertPanelAccess(db, agent);
   const { panelAgentOperations, withAiLock } = await import('../../ai/agentOperations.js');
   return { surface: 'panel', def: panelAgentOperations[operation], withAiLock };
 }
@@ -198,9 +207,68 @@ export const tools = [
     },
   },
   {
+    name: 'list_seasons',
+    description: 'Sezony w danych panelu (id, etykieta, aktywny) i sezon domyślny analiz.',
+    inputSchema: { type: 'object', properties: {} },
+    scope: 'read',
+    panel: true,
+    run: async (db, _owner, _args, agent) => {
+      await assertPanelAccess(db, agent);
+      return json(await (await panelCatalog()).listSeasonsForAgent());
+    },
+  },
+  {
+    name: 'list_panel_analyses',
+    description:
+      'Analizy AI panelu (mecze, zawodnicy, scouting rywali, briefing, karta przedmeczowa) ze stanem missing / stale / fresh liczonym jak w panelu. Każda pozycja ma task.operation i task.args gotowe do prepare_ai_task. Domyślnie tylko brakujące i nieaktualne.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        seasonId: { type: 'string', description: 'Sezon (domyślnie aktywny) — patrz list_seasons' },
+        kind: { type: 'string', enum: ['match', 'player', 'scouting', 'briefing', 'pregame'] },
+        status: { type: 'array', items: { type: 'string', enum: ['missing', 'stale', 'fresh'] }, description: 'Domyślnie ["missing","stale"]' },
+      },
+    },
+    scope: 'read',
+    panel: true,
+    run: async (db, _owner, rawArgs, agent) => {
+      await assertPanelAccess(db, agent);
+      const { ANALYSIS_KINDS, ANALYSIS_STATUSES, panelCatalogForAgent } = await panelCatalog();
+      const args = z
+        .object({ seasonId: z.string().trim().max(80).optional(), kind: z.enum(ANALYSIS_KINDS).optional(), status: z.array(z.enum(ANALYSIS_STATUSES)).min(1).optional() })
+        .strict()
+        .parse(rawArgs);
+      return json(await panelCatalogForAgent(args));
+    },
+  },
+  {
+    name: 'get_panel_analysis',
+    description: 'Zapisana analiza panelu (treść, model, data) i jej stan względem bieżących danych. target: gameId (match), playerId (player), nazwa rywala (scouting, pregame — domyślnie najbliższy); briefing bez target.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        kind: { type: 'string', enum: ['match', 'player', 'scouting', 'briefing', 'pregame'] },
+        target: { type: 'string' },
+        seasonId: { type: 'string' },
+      },
+      required: ['kind'],
+    },
+    scope: 'read',
+    panel: true,
+    run: async (db, _owner, rawArgs, agent) => {
+      await assertPanelAccess(db, agent);
+      const { ANALYSIS_KINDS, readPanelAnalysis } = await panelCatalog();
+      const args = z
+        .object({ kind: z.enum(ANALYSIS_KINDS), target: z.string().trim().min(1).max(120).optional(), seasonId: z.string().trim().max(80).optional() })
+        .strict()
+        .parse(rawArgs);
+      return json(await readPanelAnalysis(args));
+    },
+  },
+  {
     name: 'list_ai_tasks',
     description:
-      'Zadania tekstowe AI BeKaPaKa, które możesz wykonać (Studio; z uprawnieniem panel-ai także analizy panelu). Praca: prepare_ai_task → napisz wynik dokładnie wg schematu → submit_ai_task_result. Obrazy generuje wyłącznie Studio przez API obrazów.',
+      'Zadania tekstowe AI BeKaPaKa, które możesz wykonać (Studio; z uprawnieniem panel-ai także analizy panelu). Argumenty analiz panelu bierz z list_panel_analyses (task.args). Praca: prepare_ai_task → napisz wynik dokładnie wg schematu → submit_ai_task_result. Obrazy generuje wyłącznie Studio przez API obrazów.',
     inputSchema: { type: 'object', properties: {} },
     scope: 'read',
     run: async (_db, _owner, _args, agent) => {
@@ -286,8 +354,20 @@ export const tools = [
 ];
 
 function buildServer(db, agent) {
-  const server = new Server({ name: 'bekapaka-studio', version: PROMPT_VERSION }, { capabilities: { tools: {} } });
-  const allowed = tools.filter((t) => agent.scopes.includes(t.scope));
+  const server = new Server({ name: 'bekapaka-studio', version: PROMPT_VERSION }, { capabilities: { tools: {}, prompts: {} }, instructions: SERVER_INSTRUCTIONS });
+  const allowed = tools.filter((t) => agent.scopes.includes(t.scope) && (!t.panel || agent.scopes.includes('panel-ai')));
+  const prompts = promptsFor(agent.scopes);
+  server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+    prompts: prompts.map(({ name, title, description, arguments: args }) => ({ name, title, description, arguments: args })),
+  }));
+  server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+    const prompt = prompts.find((p) => p.name === request.params.name);
+    if (!prompt) throw new Error('Nieznane polecenie albo brak uprawnień tokenu');
+    const args = request.params.arguments || {};
+    const missing = prompt.arguments.filter((a) => a.required && !String(args[a.name] || '').trim()).map((a) => a.name);
+    if (missing.length) throw new Error(`Brak argumentów: ${missing.join(', ')}`);
+    return { description: prompt.description, messages: [{ role: 'user', content: { type: 'text', text: prompt.text(args) } }] };
+  });
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
     tools: allowed.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
   }));

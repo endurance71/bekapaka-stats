@@ -31,8 +31,17 @@ vi.mock('../../ai/agentOperations.js', () => ({
   },
   withAiLock: async (_key, fn) => fn(),
 }));
+const catalogCalls = [];
+vi.mock('../../ai/agentCatalog.js', () => ({
+  ANALYSIS_KINDS: ['match', 'player', 'scouting', 'briefing', 'pregame'],
+  ANALYSIS_STATUSES: ['missing', 'stale', 'fresh'],
+  listSeasonsForAgent: async () => ({ defaultSeasonId: 's1', seasons: [] }),
+  panelCatalogForAgent: async (args) => (catalogCalls.push(args), { items: [{ kind: 'match', task: { operation: 'panel.match', args: { gameId: 'g1' } } }] }),
+  readPanelAnalysis: async (args) => ({ ...args, status: 'fresh', content: '## A' }),
+}));
 
 const { tools } = await import('../../studio/agent/mcp.js');
+const { promptsFor } = await import('../../studio/agent/agentPrompts.js');
 const tool = (name) => tools.find((t) => t.name === name);
 const logs = [];
 const db = { aiGenerationLog: { create: async ({ data }) => logs.push(data) }, rosterPlayer: { findUnique: async () => ({ role: 'ADMIN' }) } };
@@ -85,6 +94,40 @@ describe('MCP AI tasks for the owner’s own agent', () => {
     await tool('submit_ai_task_result').run(db, 'owner', { operation: 'panel.match', args: {}, inputHash: 'match-hash-000000000000', output: '## Analiza' }, a);
     expect(panelSaves).toEqual(['## Analiza']);
     await expect(tool('submit_ai_task_result').run(db, 'owner', { operation: 'panel.match', args: {}, inputHash: 'match-hash-000000000000', output: { text: 'x' } }, a)).rejects.toMatchObject({ status: 422 });
+  });
+});
+
+describe('panel discovery for Claude Desktop', () => {
+  const panel = agent(['read', 'draft', 'panel-ai']);
+
+  it('lists panel work with ready task arguments, only for panel-ai ADMIN tokens', async () => {
+    const out = parse(await tool('list_panel_analyses').run(db, 'owner', { kind: 'match', status: ['missing'] }, panel));
+    expect(out.items[0].task).toEqual({ operation: 'panel.match', args: { gameId: 'g1' } });
+    expect(catalogCalls.at(-1)).toEqual({ kind: 'match', status: ['missing'] });
+    await expect(tool('list_panel_analyses').run(db, 'owner', {}, agent())).rejects.toMatchObject({ status: 403 });
+    const notAdmin = { ...db, rosterPlayer: { findUnique: async () => ({ role: 'USER' }) } };
+    await expect(tool('get_panel_analysis').run(notAdmin, 'owner', { kind: 'briefing' }, panel)).rejects.toMatchObject({ status: 403 });
+    await expect(tool('list_panel_analyses').run(db, 'owner', { kind: 'campaign' }, panel)).rejects.toThrow();
+  });
+
+  it('reads a saved analysis and the seasons', async () => {
+    expect(parse(await tool('get_panel_analysis').run(db, 'owner', { kind: 'player', target: 'p1' }, panel))).toMatchObject({ kind: 'player', target: 'p1', content: '## A' });
+    expect(parse(await tool('list_seasons').run(db, 'owner', {}, panel))).toEqual({ defaultSeasonId: 's1', seasons: [] });
+  });
+
+  it('marks panel tools so tokens without panel-ai never see them', () => {
+    expect(tools.filter((t) => t.panel).map((t) => t.name)).toEqual(['list_seasons', 'list_panel_analyses', 'get_panel_analysis']);
+  });
+
+  it('offers panel prompts only with panel-ai and fills their arguments', () => {
+    expect(promptsFor(['read', 'draft']).map((p) => p.name)).toEqual(['teksty-publikacji']);
+    const all = promptsFor(['read', 'draft', 'panel-ai']);
+    expect(all.map((p) => p.name)).toContain('odswiez-analizy');
+    const refresh = all.find((p) => p.name === 'odswiez-analizy').text({ kind: 'player' });
+    expect(refresh).toContain('list_panel_analyses');
+    expect(refresh).toContain('tylko rodzaj player');
+    const play = all.find((p) => p.name === 'zagrywka').text({ goal: 'rzut za 3' });
+    expect(play).toContain('{"goal":"rzut za 3"}');
   });
 });
 

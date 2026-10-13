@@ -27,7 +27,15 @@ const exampleFacts = factsSchema.parse({
 const fence = (text, lang = '') => '```' + lang + '\n' + text + '\n```';
 const cell = (s) => String(s).replace(/\|/g, '\\|');
 
-/** @param {{ mcpUrl?: string, tools?: {name:string, description:string, scope:string}[] }} options */
+/** Wpis Claude Desktop: lokalny mostek stdio → Streamable HTTP (serwer jest bezstanowy, tylko POST). */
+export const MCP_REMOTE_VERSION = '0.14.3';
+export const desktopMcpServer = (mcpUrl, authorization) => ({
+  command: 'npx',
+  args: ['-y', `mcp-remote@${MCP_REMOTE_VERSION}`, mcpUrl, '--transport', 'http-only', '--header', 'Authorization:${BKPK_AUTH}'],
+  env: { BKPK_AUTH: authorization },
+});
+
+/** @param {{ mcpUrl?: string, tools?: {name:string, description:string, scope:string, panel?:boolean}[] }} options */
 export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api/studio/v1/mcp', tools = [] } = {}) {
   const example = schematicCopy(playbooks.find((p) => p.id === 'match-result'), exampleFacts, { hashtags: { instagram: ['#BKPK'], facebook: [] } });
   return [
@@ -94,10 +102,16 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje i proponować teksty kanałów w stanie roboczym. **Nie może** potwierdzać faktów, zatwierdzać, publikować, pobierać paczek ani zmieniać ustawień.',
     '- Limit: 120 żądań na minutę na token.',
     '',
-    ...(tools.length ? ['| Narzędzie | Uprawnienie | Opis |', '|---|---|---|', ...tools.map((t) => `| \`${t.name}\` | ${t.scope} | ${cell(t.description)} |`), ''] : []),
-    'Przykładowa konfiguracja klienta MCP:',
+    ...(tools.length ? ['| Narzędzie | Uprawnienie | Opis |', '|---|---|---|', ...tools.map((t) => `| \`${t.name}\` | ${t.scope}${t.panel ? ' + panel-ai' : ''} | ${cell(t.description)} |`), ''] : []),
+    'Przykładowa konfiguracja klienta MCP (Claude Code, Cursor):',
     '',
     fence(JSON.stringify({ mcpServers: { 'bekapaka-studio': { type: 'http', url: mcpUrl, headers: { Authorization: 'Bearer ${BKPK_AGENT_TOKEN}' } } } }, null, 2), 'json'),
+    '',
+    'Claude Desktop (`claude_desktop_config.json`) uruchamia tylko serwery lokalne — łączy się przez mostek `mcp-remote`. Token w zmiennej środowiskowej, bo Desktop psuje spacje w argumentach:',
+    '',
+    fence(JSON.stringify({ mcpServers: { bekapaka: desktopMcpServer(mcpUrl, 'Bearer bkpk_agent_…') } }, null, 2), 'json'),
+    '',
+    'Serwer udostępnia też gotowe polecenia (MCP prompts, w Desktop menu „+”): `odswiez-analizy`, `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa`, `zagrywka` (z panel-ai) oraz `teksty-publikacji`.',
     '',
     'Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → informacja dla właściciela, że teksty czekają na zatwierdzenie.',
     '',

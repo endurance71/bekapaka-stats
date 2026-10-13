@@ -107,7 +107,7 @@ Studio używa własnych niejawnych sesji w `StudioSession`, a nie JWT panelu. Zm
 Tokeny `bkpk_agent_…` dają zewnętrznemu agentowi (Claude, Cursor) dostęp do `https://studio.bekapaka.pl/api/studio/v1/mcp`: odczyt schematów, faktów i publikacji, tworzenie roboczych publikacji i propozycje tekstów kanałów roboczych. Nie pozwalają potwierdzać faktów, zatwierdzać, publikować ani zmieniać ustawień.
 
 - Baza przechowuje wyłącznie SHA-256 tokenu; wartość widać jeden raz przy tworzeniu (Studio → Ustawienia → Agent).
-- Po wycieku: Studio → Ustawienia → Agent → **Odwołaj** (działa od następnego żądania), utwórz nowy token i podmień go w konfiguracji klienta MCP (`~/.cursor/mcp.json`, konfiguracja Claude). Tokenu nie zapisuj w repozytorium.
+- Po wycieku: Studio → Ustawienia → Agent → **Odwołaj** (działa od następnego żądania), utwórz nowy token i podmień go w konfiguracji klienta MCP (`~/.cursor/mcp.json`, `~/.claude.json` dla Claude Code, `env.BKPK_AUTH` w `~/Library/Application Support/Claude/claude_desktop_config.json` dla Claude Desktop). Tokenu nie zapisuj w repozytorium.
 - Zmiana `STUDIO_OWNER_ID` unieważnia wszystkie tokeny poprzedniego właściciela.
 - Limit: 5 aktywnych tokenów, 120 żądań na minutę na token.
 
