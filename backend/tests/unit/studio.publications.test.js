@@ -39,6 +39,11 @@ describe('publication playbooks', () => {
     }
   });
   it('has unique ids', () => expect(new Set(playbooks.map((p) => p.id)).size).toBe(playbooks.length));
+  it('sends a match preview to the website with its own landscape match graphic', () => {
+    const p = playbook('match-preview');
+    expect(p.items.website).toEqual({ graphic: 'main', format: 'landscape' });
+    expect(p.graphics.main.postType).toBe('preview');
+  });
 });
 
 describe('schematic copy', () => {

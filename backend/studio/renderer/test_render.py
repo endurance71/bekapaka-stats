@@ -77,6 +77,16 @@ class RendererTests(unittest.TestCase):
             p['variant']='postponed';p['content']['originalDate']='2026-10-04T12:00:00+02:00'
             updated=render({'project':p},'story',tmp,'preview',{},[])['checks'][0]
             self.assertFalse(updated['errors'])
+    def test_news_website_cover_breaks_before_dash_and_blocks_overflow(self):
+        from render_v3 import title_lines
+        self.assertEqual(title_lines('BeKaPaKa Bobolice – GMVT Team',128,980),['BEKAPAKA BOBOLICE','– GMVT TEAM'])
+        import subprocess
+        p=json.loads(subprocess.check_output(['node','--input-type=module','-e',"import {newPostProject} from './contracts.js'; console.log(JSON.stringify(newPostProject('news')))"],cwd=ROOT,text=True))
+        p['content'].update(date='2026-10-18T14:40:00+02:00',title='BeKaPaKa Bobolice – GMVT Team',body='6. kolejka KALK · Dywizja II',venue='KOSiR Koszalin',entryInfo='Wstęp wolny')
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertFalse(render({'project':p},'landscape',tmp,'preview',{},[])['checks'][0]['errors'])
+            p['content']['body']='Bardzo długi opis aktualności. '*12
+            with self.assertRaises(LayoutError):render({'project':p},'landscape',tmp,'preview',{},[])
     def test_long_text_is_blocked_instead_of_tiny_type(self):
         p=self.project(self.templates[0]);p['content']['opponent']='BARDZODŁUGANAZWADRUŻYNY'*8;p['layout']='type'
         with tempfile.TemporaryDirectory() as tmp,self.assertRaises(LayoutError):render({'project':p},'feed',tmp,'preview',{},[])

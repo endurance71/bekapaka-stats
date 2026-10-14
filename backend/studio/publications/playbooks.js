@@ -24,7 +24,7 @@ export const playbooks = [
     factsKind: 'match',
     required: ['opponent', 'date', 'venue'],
     graphics: { main: { postType: 'preview', formats: ['feed', 'story', 'landscape'] } },
-    items: { instagram_feed: IG(), instagram_story: STORY(), facebook: FB() },
+    items: { instagram_feed: IG(), instagram_story: STORY(), facebook: FB(), website: WWW() },
     hint: 'Kiedy, gdzie i z kim gramy. Kolejka KALK. „Wstęp wolny”, jeśli potwierdzony. Zaproszenie bez patosu.',
   },
   {
