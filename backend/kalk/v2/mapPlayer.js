@@ -85,6 +85,11 @@ export function seasonStatFromPage(row, { seasonId, playerSlug, logTotals = null
   const twoPa = exact(twoPm, 'twoP') ?? attemptsFromPct(twoPm, row.twoPct);
   const threePa = exact(threePm, 'threeP') ?? attemptsFromPct(threePm, row.threePct);
   const fta = exact(ftm, 'ft') ?? attemptsFromPct(ftm, row.ftPct);
+  // KALK podaje 0, gdy nie liczy pola; Σ logów niesie wtedy korekty z protokołów (protocolCorrections.json).
+  const fromLogs = (pageValue, key) => {
+    const page = toInt(pageValue) ?? 0;
+    return page === 0 && logTotals?.[key] ? logTotals[key] : page;
+  };
   return {
     seasonId,
     playerSlug,
@@ -112,9 +117,9 @@ export function seasonStatFromPage(row, { seasonId, playerSlug, logTotals = null
     tov: toInt(row.tov) ?? 0,
     blk: toInt(row.blk) ?? 0,
     pf: toInt(row.pf) ?? 0,
-    pfDrawn: toInt(row.pfDrawn) ?? 0,
+    pfDrawn: fromLogs(row.pfDrawn, 'pfDrawn'),
     eval: toInt(row.eval) ?? 0,
-    plusMinus: toInt(row.plusMinus) ?? 0,
+    plusMinus: fromLogs(row.plusMinus, 'plusMinus'),
     source: 'kalk-page'
   };
 }
@@ -182,7 +187,8 @@ export function logTotalsForAttempts(totals) {
   return {
     twoPm: totals.twoPm, twoPa: totals.twoPa,
     threePm: totals.threePm, threePa: totals.threePa,
-    ftm: totals.ftm, fta: totals.fta
+    ftm: totals.ftm, fta: totals.fta,
+    pfDrawn: totals.pfDrawn, plusMinus: totals.plusMinus
   };
 }
 

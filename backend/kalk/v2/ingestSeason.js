@@ -42,6 +42,7 @@ import {
   toInt
 } from './util.js';
 import { validateKalkV2Bundle } from './validateBundle.js';
+import { applyProtocolCorrections } from './protocolCorrections.js';
 
 export const V2_DIVISION_PATH = 'liga/dywizja-ii';
 const TX_OPTIONS = { maxWait: 10_000, timeout: 60_000 };
@@ -241,6 +242,9 @@ export async function ingestKalkV2Bundle(bundle, opts = {}) {
   const schedule = Array.isArray(bundle.schedule) ? bundle.schedule : [];
   const scheduleById = new Map(schedule.map((s) => [String(s.kalkMatchId), s]));
   const matches = Array.isArray(bundle.matches) ? bundle.matches : [];
+  // +/- i faule wymuszone z oficjalnych protokołów (KALK podaje 0) — przed box score, logami i hashem meczu.
+  const corrected = applyProtocolCorrections(seasonId, matches);
+  for (const msg of corrected.warnings) warn(`korekta protokołu: ${msg}`);
   const boxById = new Map();
   for (const match of matches) {
     const id = String(match.kalkMatchId);

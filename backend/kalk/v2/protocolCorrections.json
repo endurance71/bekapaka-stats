@@ -1,0 +1,42 @@
+[
+  {
+    "seasonId": "season_2026-2027",
+    "kalkMatchId": "4124",
+    "match": "BeKaPaKa Bobolice – Kosz-All-In 86:20 (2026-10-04)",
+    "source": "Oficjalny protokół meczowy — Google Drive: BeKaPaKa_vs_KOSZ-ALL-IN_2026-10-04.xlsx (arkusz przeliczony z PHOTO-2026-10-04-13-02-18.jpg). KALK publikuje +/- i faule wymuszone jako 0.",
+    "checks": "Σ +/- BeKaPaKa = +330 = 5 × 66, rywal −330; Σ fauli wymuszonych 17 / 12 = faule popełnione rywala / nasze.",
+    "teams": [
+      {
+        "bekapaka": true,
+        "players": {
+          "1": { "name": "Dawid Olearczyk", "plusMinus": 58, "pfDrawn": 4 },
+          "2": { "name": "Jędrzej Bortnik", "plusMinus": 11, "pfDrawn": 2 },
+          "10": { "name": "Piotr Sosiński", "plusMinus": 50, "pfDrawn": 0 },
+          "12": { "name": "Tomasz Kaszubowski", "plusMinus": 42, "pfDrawn": 1 },
+          "13": { "name": "Łukasz Mras", "plusMinus": 9, "pfDrawn": 2 },
+          "15": { "name": "Jakub Gołębiowski", "plusMinus": 12, "pfDrawn": 1 },
+          "16": { "name": "Przemysław Klimek", "plusMinus": 6, "pfDrawn": 0 },
+          "24": { "name": "Damian Motyliński", "plusMinus": 42, "pfDrawn": 1 },
+          "27": { "name": "Alan Niwiński", "plusMinus": 33, "pfDrawn": 1 },
+          "29": { "name": "Maciej Tymiński", "plusMinus": 14, "pfDrawn": 4 },
+          "69": { "name": "Filip Karpiński", "plusMinus": 53, "pfDrawn": 1 }
+        }
+      },
+      {
+        "bekapaka": false,
+        "players": {
+          "2": { "name": "Konrad Niedbała", "plusMinus": -19, "pfDrawn": 0 },
+          "4": { "name": "Jakub Wójcik", "plusMinus": -25, "pfDrawn": 0 },
+          "8": { "name": "Michał Niedbała", "plusMinus": -25, "pfDrawn": 0 },
+          "10": { "name": "Jacek Szumowski", "plusMinus": -11, "pfDrawn": 0 },
+          "11": { "name": "Filip Filipczak", "plusMinus": -54, "pfDrawn": 0 },
+          "12": { "name": "Jakub Redlarski", "plusMinus": -44, "pfDrawn": 1 },
+          "13": { "name": "Igor Fenkanin", "plusMinus": -29, "pfDrawn": 1 },
+          "14": { "name": "Kornel Pawlak", "plusMinus": -49, "pfDrawn": 3 },
+          "15": { "name": "Michał Stachowski", "plusMinus": -57, "pfDrawn": 7 },
+          "23": { "name": "Adrianna Bernacka", "plusMinus": -17, "pfDrawn": 0 }
+        }
+      }
+    ]
+  }
+]

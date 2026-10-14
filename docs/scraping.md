@@ -61,6 +61,21 @@ Kody wyjścia: 0 = zapisano (możliwe pominięcia w `manifest.failures` / `trunc
 - Niespójności źródła, które nie blokują meczu, idą do `manifest.warnings`: „dogrywka bez remisu” (np. mecz 3205), walkower bez box score (np. 3438, 20:0).
 - Wyjście atomowe (`.tmp` + rename); jeden sync naraz (Postgres advisory lock); każdy przebieg ma wpis `KalkSyncRun` (running / success / partial / error, licznik zapytań, manifest).
 
+## Korekty z oficjalnych protokołów
+
+KALK nie liczy dla części meczów **+/-** ani **fauli wymuszonych** (publikuje 0). Wartości z oficjalnego protokołu meczowego (arkusz na Google Drive) trafiają do `backend/kalk/v2/protocolCorrections.json`: mecz (`seasonId` + `kalkMatchId`), drużyna (`bekapaka: true/false`), zawodnik po **numerze** (nazwiska w KALK i protokole bywają różne, np. Stachowski / Stanowski), źródło i kontrole sum (Σ +/- drużyny = 5 × różnica punktów; Σ fauli wymuszonych = faule popełnione rywala).
+
+- **Ingest** nakłada korekty na paczkę skrapera przed budową box score, logów i hasha meczu — kolejne synchronizacje nie przywracają zer.
+- **Sumy sezonu** (`KalkPlayerSeasonStat`): gdy strona zawodnika KALK podaje 0, wartość pochodzi z Σ logów (z korektami).
+- **Mecze już w bazie** (synchronizacja przyrostowa pomija niezmienione strony) — jednorazowo:
+
+```bash
+node backend/scripts/kalk-apply-protocol-corrections.js [--match <kalkMatchId>]            # podgląd
+docker exec -w /app bkpk-backend-prod node scripts/kalk-apply-protocol-corrections.js --apply   # zapis (po backupie bazy)
+```
+
+Po zapisie analizy AI meczu i zawodników z tego meczu stają się nieaktualne (zmienia się hash danych) — wygeneruj je ponownie.
+
 ## Audyt danych KALK
 
 ```bash
