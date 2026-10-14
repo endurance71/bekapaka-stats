@@ -7,6 +7,7 @@ import { buildBriefingContext } from './buildBriefingContext.js';
 import { getMatchAiStaleness } from './buildMatchContext.js';
 import { buildPlayerContext } from './buildPlayerContext.js';
 import { buildScoutingContext } from './buildScoutingContext.js';
+import { AiValidationError } from './errors.js';
 import { getTeamBriefingCached } from './generate.js';
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
@@ -75,8 +76,23 @@ export async function getPlayerPlanStaleness(p, seasonId) {
     if (!p.aiDevelopmentHash) return { stale: true, reason: 'no-hash', currentHash: ctx.hash };
     const changed = ctx.hash !== p.aiDevelopmentHash;
     return { stale: changed, reason: changed ? 'hash-changed' : null, currentHash: ctx.hash };
-  } catch {
-    return { stale: false, reason: 'unavailable', currentHash: null };
+  } catch (err) {
+    // `no-data`: za mało meczów zawodnika w sezonie — planu nie da się teraz ani ocenić, ani wygenerować.
+    return { stale: false, reason: err instanceof AiValidationError ? 'no-data' : 'unavailable', currentHash: null };
+  }
+}
+
+/**
+ * Czy dane zawodnika w sezonie pozwalają wygenerować plan (min. 3 mecze — ta sama walidacja co prepare).
+ * @param {string} playerId
+ * @param {string | null | undefined} seasonId
+ */
+async function playerPlanDataReady(playerId, seasonId) {
+  try {
+    await buildPlayerContext(playerId, { seasonId });
+    return true;
+  } catch (err) {
+    return !(err instanceof AiValidationError);
   }
 }
 
@@ -317,6 +333,7 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
     const name = `${p.firstName} ${p.lastName}`.trim();
     const hasContent = hasDetailedPlayerPlanMarkdown(p.aiDevelopmentSummary);
     const st = await getPlayerPlanStaleness(p, targetSeasonId);
+    const dataReady = hasContent ? st.reason !== 'no-data' : await playerPlanDataReady(p.id, targetSeasonId);
     const isTemplate = p.aiDevelopmentModel === TEMPLATE_MODEL_NAME;
     return {
       id: `player:${p.id}`,
@@ -331,6 +348,8 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       staleReason: st.reason,
       isTemplate,
       canGenerate: configured,
+      // Dane sezonu pozwalają na plan niezależnie od silnika (agent MCP pisze sam).
+      dataReady,
       viewPath: `/players/${p.id}`,
       generateKind: 'player',
       generateTarget: p.id,

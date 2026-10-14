@@ -83,6 +83,32 @@ describe('getAiAnalysesCatalog — staleness', () => {
     expect(cat.summary.stale).toBeGreaterThanOrEqual(3);
     expect(cat.summary.templates).toBe(1);
   });
+
+  it('marks player plans without enough games as not data-ready instead of fresh', async () => {
+    const { AiValidationError } = await import('../../ai/errors.js');
+    vi.doMock('../../ai/buildPlayerContext.js', () => ({
+      buildPlayerContext: vi.fn(async (id) => {
+        if (id !== 'p-ready') throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK)');
+        return { hash: 'player-new', payload: {} };
+      })
+    }));
+    prismaMock.kalkSeason.findUnique.mockResolvedValue({ id: SEASON, isActive: true });
+    prismaMock.kalkMatch.findMany.mockResolvedValue([]);
+    prismaMock.rosterPlayer.findMany.mockResolvedValue([
+      { id: 'p-ready', firstName: 'A', lastName: 'Gotowy', aiDevelopmentSummary: null },
+      { id: 'p-old-season', firstName: 'B', lastName: 'Plan', aiDevelopmentSummary: LONG_PLAN, aiDevelopmentHash: 'h', aiDevelopmentModel: 'agent-mcp', aiDevelopmentAt: new Date() },
+      { id: 'p-new', firstName: 'C', lastName: 'Nowy', aiDevelopmentSummary: null }
+    ]);
+    prismaMock.leagueTeam.findMany.mockResolvedValue([]);
+    prismaMock.scoutingAiReport.findMany.mockResolvedValue([]);
+
+    const { getAiAnalysesCatalog } = await import('../../ai/catalog.js');
+    const byId = new Map((await getAiAnalysesCatalog(SEASON)).items.map((i) => [i.id, i]));
+
+    expect(byId.get('player:p-ready')).toMatchObject({ dataReady: true, hasContent: false });
+    expect(byId.get('player:p-old-season')).toMatchObject({ dataReady: false, stale: false, staleReason: 'no-data' });
+    expect(byId.get('player:p-new')).toMatchObject({ dataReady: false });
+  });
 });
 
 describe('scoutingReportsForSeason / legacyReportMatchesSeason', () => {
