@@ -31,6 +31,7 @@ import LoadError from '../shared/ui/LoadError';
 import { useScrollRestoration } from '../hooks/useScrollRestoration';
 import { prefetchPages, prefetchPagesWhenIdle } from '../routes/pageImports';
 import { usePWAUpdate } from '../lib/pwa';
+import { usePageViewTracking } from '../hooks/usePageViewTracking';
 
 const SIDEBAR_COLLAPSED_KEY = 'sidebar_collapsed';
 
@@ -126,6 +127,7 @@ export default function Shell({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   const pwaUpdate = usePWAUpdate();
+  usePageViewTracking();
   const mainRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLElement>(null);
 

@@ -150,6 +150,8 @@ model RosterPlayer {
   lastActivityIp String?
 
   seasonPreference PlayerSeasonPreference?
+  activityDays     PanelActivityDay[]
+  pageViewDays     PanelPageViewDay[]
 }
 
 model PlayerSeasonPreference {
@@ -990,4 +992,27 @@ model AiGenerationLog {
   costKind String @default("none")
   @@index([actualEngine, startedAt])
   @@index([operation, startedAt])
+}
+
+// Analityka panelu: użytkownik × dzień (Europe/Warsaw) — liczba zapytań API z sesją, pierwsze i ostatnie.
+model PanelActivityDay {
+  userId   String
+  day      DateTime     @db.Date
+  requests Int          @default(0)
+  firstAt  DateTime
+  lastAt   DateTime
+  user     RosterPlayer @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, day])
+  @@index([day])
+}
+
+// Odsłony stron panelu: użytkownik × dzień × strona (np. "druzyna:zagrywki").
+model PanelPageViewDay {
+  userId String
+  day    DateTime     @db.Date
+  page   String
+  views  Int          @default(0)
+  user   RosterPlayer @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@id([userId, day, page])
+  @@index([day])
 }

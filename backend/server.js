@@ -83,6 +83,7 @@ import { getJwtSecret, getEnvMinLength } from './lib/requireEnv.js';
 import { tacticsRouter } from './routes/tactics.js';
 import { toPlayerProfileResponse, toPublicRosterPlayer } from './lib/apiResponses.js';
 import { createLoginThrottle } from './lib/loginThrottle.js';
+import { createActivityRecorder, getPanelAnalytics, pageKeyFromPath } from './lib/panelAnalytics.js';
 import { getGameInfo, getGamePlayByPlay, getPlayerCareer, getTeamsAllTime } from './kalk/v2/readModels.js';
 import { getPlayerHome } from './kalk/v2/home.js';
 import { matchLogistics, resolveMatchDay, validateMatchDay } from './lib/matchDay.js';
@@ -94,7 +95,11 @@ const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
+// Ruch idzie przez Caddy → nginx (panel) albo Caddy → backend: ufamy X-Forwarded-For tylko od adresów
+// lokalnych/prywatnych (proxy na tym samym serwerze), więc req.ip to adres użytkownika, a nie kontenera nginx.
+app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 const loginThrottle = createLoginThrottle();
+const activityRecorder = createActivityRecorder({ db: prisma });
 const allowedOrigins = new Set([
   'https://panel.bekapaka.pl',
   'https://bekapaka.pl',
@@ -164,6 +169,7 @@ const authenticateToken = (req, res, next) => {
     const skipActivityPaths = ['/api/scrape/kalk/div2/status', '/scrape/kalk/div2/status'];
     if (!skipActivityPaths.some((p) => req.path === p || req.url.startsWith(p))) {
       void touchUserActivity(payload.id, req.ip);
+      activityRecorder.recordRequest(payload.id);
     }
 
     next();
@@ -252,6 +258,28 @@ app.get(['/api/admin/logs', '/admin/logs'], authenticateToken, requireAdmin, asy
   const { page, limit, username, success } = req.query;
   const result = await getLoginLogs({ page, limit, username, success });
   res.json(result);
+});
+
+// Odsłona strony panelu (wysyła ją frontend przy zmianie adresu). Nieznane ścieżki są pomijane.
+app.post(['/api/activity/view', '/activity/view'], authenticateToken, (req, res) => {
+  const page = pageKeyFromPath(req.body?.path);
+  if (page) activityRecorder.recordPageView(req.user.id, page);
+  res.sendStatus(204);
+});
+
+app.get(['/api/admin/analytics', '/admin/analytics'], authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    // Najpierw zapis bufora, żeby zestawienie obejmowało też ostatnią minutę.
+    await activityRecorder.flush();
+    const result = await getPanelAnalytics(prisma, {
+      days: Number(req.query.days) || 30,
+      excludeAdmins: req.query.excludeAdmins === 'true'
+    });
+    res.json(result);
+  } catch (e) {
+    console.error('Failed to build panel analytics:', e);
+    res.status(500).json({ error: 'Nie udało się pobrać analityki' });
+  }
 });
 
 const isBekapaka = (name) => {
@@ -1379,4 +1407,13 @@ if (process.env.NODE_ENV !== 'test') {
 
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, '0.0.0.0', () => console.log(`API running on ${PORT}`));
+
+  activityRecorder.start();
+  for (const signal of ['SIGTERM', 'SIGINT']) {
+    process.once(signal, () => {
+      // Zapis liczników z ostatniej minuty przed zatrzymaniem kontenera (deploy).
+      setTimeout(() => process.exit(0), 5000).unref();
+      activityRecorder.stop().finally(() => process.exit(0));
+    });
+  }
 }

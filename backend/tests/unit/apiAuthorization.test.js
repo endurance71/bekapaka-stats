@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 const mocks = vi.hoisted(() => ({
   touchUserActivity: vi.fn(),
+  loginUser: vi.fn(async () => null),
   // Rola z „bazy”: konta admin-* to trenerzy; wersja tokenu 0, chyba że test ją zmieni
   getSessionUser: vi.fn(async (id) => (id === 'gone' ? null : {
     id, role: String(id).startsWith('admin') ? 'ADMIN' : 'USER', username: `u-${id}`, tokenVersion: id === 'pw-changed' ? 1 : 0
@@ -146,5 +147,22 @@ describe('API authorization', () => {
 
   it('protects the legacy playbook endpoint too', async () => {
     expect((await request('/api/plays')).status).toBe(401);
+  });
+
+  it('panel analytics is admin-only; page views need a session', async () => {
+    expect((await request('/api/admin/analytics')).status).toBe(401);
+    expect((await request('/api/admin/analytics', 'GET', token('player-1', 'ADMIN'))).status).toBe(403);
+    expect((await request('/api/activity/view', 'POST')).status).toBe(401);
+    expect((await request('/api/activity/view', 'POST', token('player-1', 'USER'))).status).toBe(204);
+  });
+
+  it('takes the client IP from X-Forwarded-For set by the local proxy', async () => {
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Forwarded-For': '203.0.113.7, 172.18.0.1' },
+      body: JSON.stringify({ username: 'jan', password: 'x' })
+    });
+    expect(response.status).toBe(401);
+    expect(mocks.loginUser).toHaveBeenLastCalledWith('jan', 'x', '203.0.113.7');
   });
 });
