@@ -239,6 +239,45 @@ describe('AI context builders (mocked Prisma, bez sieci)', () => {
     expect(ctx2.hash).toBe(ctx.hash);
   });
 
+  it('buildPlayerContext: 1–2 games give a plan with limitedSample, 0 games are rejected', async () => {
+    const game = (i) => ({
+      gameId: String(200 + i), date: `2026-10-0${i + 1}`, opponent: 'Rywal', pts: 9, reb: 4, ast: 2, stl: 1, blk: 0, tov: 2, pf: 3,
+      min: '20:00', fgm: 4, fga: 9, three_pm: 1, three_pa: 3, ftm: 0, fta: 0, efg: 0.5, ts: 0.5, plusMinus: -2
+    });
+    const statsWith = (n) => ({
+      season: { id: SEASON, label: '2026/2027' },
+      player: { id: 'p2', firstName: 'Jan', lastName: 'Nowy', number: 8, position: 'PG', kalkPlayer: null },
+      leagueKalk: null,
+      averages: { ppg: 9, rpg: 4, apg: 2, efg: 0.5, ts: 0.5, plusMinusAvg: -2, gamesPlayed: n, minutesPlayed: 20 * n },
+      gameLog: Array.from({ length: n }, (_, i) => game(i))
+    });
+    const getPlayerStats = vi.fn(async () => statsWith(1));
+    vi.doMock('../../dataStore.js', () => ({
+      getPlayerStats,
+      getTrainingPriorities: vi.fn(async () => ({ team: {}, league: {} }))
+    }));
+    prismaMock.kalkSeason.findUnique.mockResolvedValue({ id: SEASON });
+    prismaMock.rosterPlayer.findUnique.mockResolvedValue({ goals: null, kalkSlug: null, heightCm: null, position: 'PG' });
+    prismaMock.kalkPlayerGameLog.findMany.mockResolvedValue([]);
+    prismaMock.kalkMatch.findMany.mockResolvedValue([]);
+    prismaMock.kalkSeason.findMany.mockResolvedValue([]);
+
+    const { buildPlayerContext } = await import('../../ai/buildPlayerContext.js');
+    const one = await buildPlayerContext('p2');
+    expectCleanPayload(one.payload);
+    expect(one.payload.limitedSample).toEqual({ games: 1, minGamesForFull: 3 });
+
+    getPlayerStats.mockResolvedValueOnce(statsWith(2));
+    expect((await buildPlayerContext('p2')).payload.limitedSample).toEqual({ games: 2, minGamesForFull: 3 });
+
+    // Od 3 meczów pola nie ma — hash pełnych planów pozostaje jak przed zmianą
+    getPlayerStats.mockResolvedValueOnce(statsWith(3));
+    expect((await buildPlayerContext('p2')).payload).not.toHaveProperty('limitedSample');
+
+    getPlayerStats.mockResolvedValueOnce(statsWith(0));
+    await expect(buildPlayerContext('p2')).rejects.toThrow(/Brak meczów zawodnika/);
+  });
+
   it('scoring_leader does not fire without team reference (was: fires for everyone)', async () => {
     const { computePlayerSignals } = await import('../../ai/playerSignals.js');
     const signals = computePlayerSignals({

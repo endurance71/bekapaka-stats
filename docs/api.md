@@ -155,7 +155,7 @@ Wymaga `GEMINI_API_KEY` na backendzie. Generacja: **ADMIN** + Bearer token.
 | `GET /api/ai/briefing` | Ostatni briefing (Markdown) |
 | `POST /api/ai/briefing/generate` | Briefing tygodniowy (Dashboard) |
 | `POST /api/games/:id/analyze` | Analiza meczu → `Game.aiSummary` |
-| `POST /api/players/:id/analyze` | Plan rozwoju zawodnika (min. 3 mecze) |
+| `POST /api/players/:id/analyze` | Plan rozwoju zawodnika (od 1 meczu; przy 1–2 meczach z informacją o ograniczonej analizie) |
 | `POST /api/scouting/analyze?opponent=` | Raport scoutingu rywala |
 
 Body (opcjonalnie): `{ "force": true }` — wymusza ponowne wywołanie API (pomija cache).

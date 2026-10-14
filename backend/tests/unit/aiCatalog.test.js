@@ -88,7 +88,7 @@ describe('getAiAnalysesCatalog — staleness', () => {
     const { AiValidationError } = await import('../../ai/errors.js');
     vi.doMock('../../ai/buildPlayerContext.js', () => ({
       buildPlayerContext: vi.fn(async (id) => {
-        if (id !== 'p-ready') throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK)');
+        if (id !== 'p-ready') throw new AiValidationError('Brak meczów zawodnika w sezonie — plan pojawi się po pierwszym meczu (synchronizacja KALK)');
         return { hash: 'player-new', payload: {} };
       })
     }));

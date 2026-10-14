@@ -118,3 +118,26 @@ export function hasDetailedPlayerPlanMarkdown(text) {
   const endsCleanly = /[.!?)\]]\s*$/.test(text.trim());
   return sectionCount === sections.length && text.length >= 1600 && endsCleanly;
 }
+
+/**
+ * Informacja na początku planu, gdy zawodnik ma mniej meczów niż potrzeba do pełnej analizy.
+ * Dodawana w kodzie (nie przez model), więc jest zawsze — także w szablonie i w wyniku z MCP.
+ * @param {{ games: number, minGamesForFull: number } | null | undefined} limitedSample
+ * @returns {string}
+ */
+export function buildLimitedSampleNotice(limitedSample) {
+  if (!limitedSample) return '';
+  const { games, minGamesForFull } = limitedSample;
+  const played = games === 1 ? '1 mecz' : `${games} mecze`;
+  return `> **Ograniczona analiza — dopiero ${played} w sezonie.** Pełny plan rozwoju przygotujemy po ${minGamesForFull} meczach. Do tego czasu wnioski są wstępne, a trendu formy jeszcze nie oceniamy.`;
+}
+
+/**
+ * @param {string} markdown
+ * @param {{ games: number, minGamesForFull: number } | null | undefined} limitedSample
+ * @returns {string}
+ */
+export function withLimitedSampleNotice(markdown, limitedSample) {
+  const notice = buildLimitedSampleNotice(limitedSample);
+  return notice ? `${notice}\n\n${markdown}` : markdown;
+}

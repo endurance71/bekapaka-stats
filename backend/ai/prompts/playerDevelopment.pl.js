@@ -133,12 +133,19 @@ export function buildPlayerDevelopmentUser(payload) {
     .filter(Boolean)
     .join(', ') || 'brak';
 
+  const sample = payload?.limitedSample;
+  const sampleRule = sample
+    ? `
+OGRANICZONA PRÓBKA: zawodnik ma dopiero ${sample.games} ${sample.games === 1 ? 'mecz' : 'mecze'} w sezonie (pełna analiza od ${sample.minGamesForFull}). Panel sam dodaje o tym informację na początku planu — nie powtarzaj jej. Nie formułuj trendów ani porównań „ostatnie 3 vs poprzednie 3”; w sekcji trend napisz wprost, że trend ocenimy po ${sample.minGamesForFull}. meczu, i opisz tylko to, co widać w rozegranych meczach. Wnioski o mocnych stronach i brakach podawaj ostrożnie („na razie”, „w pierwszym meczu”), cele sezonu traktuj jako wstępne.
+`
+    : '';
+
   return `Przygotuj spersonalizowany raport rozwojowy dla ${name}.
 Pisz jako Trener AI: **ja** (trener) + **ty** (zawodnik). Bez opisu w trzeciej osobie.
 
 Priorytet interpretacji: signals (severity) → derived → averages → gameLog → goals.
 Pozycja: ${position}. Sygnały aktywne: ${signalCodes}.
-
+${sampleRule}
 ## DANE ZAWODNIKA
 ${playerJson}`;
 }

@@ -317,7 +317,7 @@ export default function Profile() {
                         generatedAt={aiMeta.at}
                         model={aiMeta.model}
                         loading={aiLoading}
-                        playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach w sezonie)."
+                        playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje."
                     />
                 </MainAside>
             </PageContainer>

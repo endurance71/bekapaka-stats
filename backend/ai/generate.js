@@ -13,7 +13,8 @@ import { MATCH_ANALYSIS_SYSTEM, buildMatchAnalysisUser } from './prompts/matchAn
 import {
   buildPlayerDevelopmentMarkdown,
   hasDetailedPlayerPlanMarkdown,
-  parsePlayerDevelopmentJson
+  parsePlayerDevelopmentJson,
+  withLimitedSampleNotice
 } from './playerDevelopmentMarkdown.js';
 import { PLAYER_DEVELOPMENT_SYSTEM, buildPlayerDevelopmentUser } from './prompts/playerDevelopment.pl.js';
 import { SCOUTING_SYSTEM, buildScoutingUser } from './prompts/scoutingOpponent.pl.js';
@@ -62,6 +63,11 @@ function formatStat(value) {
   return value.toFixed(1);
 }
 
+/** „w / przy N meczach” — miejscownik: 1 meczu, pozostałe meczach. */
+function gamesLocative(count) {
+  return count === 1 ? 'meczu' : 'meczach';
+}
+
 /**
  * @param {object} payload
  * @returns {string}
@@ -85,7 +91,7 @@ function buildFallbackPlayerPlan(payload) {
   const tsPct = derived.tsPct ?? (averages.ts || 0) * 100;
 
   const strengths = [
-    `- Sezon: **${formatStat(averages.ppg)} PPG**, **${formatStat(averages.rpg)} RPG**, **${formatStat(averages.apg)} APG** przy **${Math.round(averages.gamesPlayed || 0)}** meczach i **${Math.round(averages.minutesPlayed || 0)}** min łącznie (~${formatStat(mpg)} min/mecz).`,
+    `- Sezon: **${formatStat(averages.ppg)} PPG**, **${formatStat(averages.rpg)} RPG**, **${formatStat(averages.apg)} APG** przy **${Math.round(averages.gamesPlayed || 0)}** ${gamesLocative(Math.round(averages.gamesPlayed || 0))} i **${Math.round(averages.minutesPlayed || 0)}** min łącznie (~${formatStat(mpg)} min/mecz).`,
     `- eFG **${formatStat(efgPct)}%** i TS **${formatStat(tsPct)}%** opisują aktualną selekcję rzutów.`,
     per36
       ? `- W skali per 36 min: **${formatStat(per36.ppg)}** pkt, **${formatStat(per36.rpg)}** zb, **${formatStat(per36.apg)}** as — punkt odniesienia do pełnego czasu gry.`
@@ -135,7 +141,7 @@ function buildFallbackPlayerPlan(payload) {
   : [`- Utrzymuj straty na poziomie ≤ **${formatStat(derived.tovPerGame ?? 2)}** na mecz i popraw pierwszą decyzję po odbiorze piłki.`];
 
   const sections = {
-    profile: `${firstName}, jestem Twoim Trenerem AI BeKaPaKa. W tym sezonie masz **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** meczach (~**${formatStat(mpg)}** min/mecz) — bazuję na statystykach KALK (liga + log meczów) i układam plan pod Twój najbliższy trening.`,
+    profile: `${firstName}, jestem Twoim Trenerem AI BeKaPaKa. W tym sezonie masz **${formatStat(averages.ppg)} PPG** w **${Math.round(averages.gamesPlayed || 0)}** ${gamesLocative(Math.round(averages.gamesPlayed || 0))} (~**${formatStat(mpg)}** min/mecz) — bazuję na statystykach KALK (liga + log meczów) i układam plan pod Twój najbliższy trening.`,
     positionPriorities: `Grasz jako **${player.position || 'N/D'}** (${positionProfile.roleName || 'rola ogólna'}).\n\n${positionalPrioritiesTu.join('\n')}\n\nBędę monitorował u Ciebie: **${keyMetrics}**.`,
     strengths: strengths
       .map((line) =>
@@ -162,14 +168,15 @@ function buildFallbackPlayerPlan(payload) {
  * @returns {{ text: string, isTemplate: boolean }}
  */
 export function resolvePlayerDevelopmentText(raw, payload) {
+  const limitedSample = payload?.limitedSample;
   try {
     const sections = parsePlayerDevelopmentJson(raw);
     const markdown = buildPlayerDevelopmentMarkdown(sections);
-    if (hasDetailedPlayerPlanMarkdown(markdown)) return { text: markdown, isTemplate: false };
+    if (hasDetailedPlayerPlanMarkdown(markdown)) return { text: withLimitedSampleNotice(markdown, limitedSample), isTemplate: false };
   } catch {
     // fallback poniżej
   }
-  return { text: buildFallbackPlayerPlan(payload), isTemplate: true };
+  return { text: withLimitedSampleNotice(buildFallbackPlayerPlan(payload), limitedSample), isTemplate: true };
 }
 
 // Każda operacja: prepare (kontekst, prompt, hash wejścia) → silnik tekstowy (aiText) → save (walidacja + zapis).

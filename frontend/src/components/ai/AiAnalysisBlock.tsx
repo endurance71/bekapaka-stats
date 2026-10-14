@@ -15,7 +15,11 @@ const PROSE_CLASSES = cn(
   'prose-p:text-bkpk-text-secondary prose-li:text-bkpk-text-secondary',
   'prose-strong:text-bkpk-text-primary',
   'prose-table:text-bkpk-text-secondary prose-th:text-bkpk-text-primary',
-  'prose-headings:mt-5 prose-headings:mb-3 prose-p:leading-relaxed prose-li:my-1'
+  'prose-headings:mt-5 prose-headings:mb-3 prose-p:leading-relaxed prose-li:my-1',
+  // Cytat = informacja od panelu (np. ograniczona analiza przy 1–2 meczach), nie cytat z cudzysłowem
+  'prose-blockquote:not-italic prose-blockquote:font-normal prose-blockquote:border-l-4 prose-blockquote:border-l-bkpk-warning',
+  'prose-blockquote:bg-bkpk-bg prose-blockquote:py-1 prose-blockquote:px-4 prose-blockquote:my-4',
+  '[&_blockquote_p]:before:content-none [&_blockquote_p]:after:content-none'
 );
 
 export interface ScoutingPersonnelContent {
