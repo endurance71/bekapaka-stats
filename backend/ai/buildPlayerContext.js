@@ -201,6 +201,9 @@ function gameLogForPrompt(g, match) {
   };
 }
 
+/** Od tylu meczów plan rozwoju jest pełny; przy mniejszej liczbie (1–2) powstaje z adnotacją o ograniczeniu. */
+export const MIN_GAMES_FOR_FULL_PLAYER_PLAN = 3;
+
 /**
  * @param {string} playerId
  * @param {{ seasonId?: string | null }} [options]
@@ -211,9 +214,11 @@ export async function buildPlayerContext(playerId, options = {}) {
   if (!stats) {
     throw new AiValidationError('Zawodnik nie znaleziony');
   }
-  if (!stats.gameLog || stats.gameLog.length < 3) {
-    throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK)');
+  if (!stats.gameLog?.length) {
+    throw new AiValidationError('Brak meczów zawodnika w sezonie — plan pojawi się po pierwszym meczu (synchronizacja KALK)');
   }
+  const gamesInLog = stats.gameLog.length;
+  const limited = gamesInLog < MIN_GAMES_FOR_FULL_PLAYER_PLAN;
 
   const roster = await prisma.rosterPlayer.findUnique({
     where: { id: playerId },
@@ -348,6 +353,8 @@ export async function buildPlayerContext(playerId, options = {}) {
       losses: [...matchById.values()].filter((m) => m.result === 'L').length
     },
     signals,
+    // Tylko przy 1–2 meczach: pole poza tym nie istnieje, więc hash pełnych planów się nie zmienia.
+    ...(limited ? { limitedSample: { games: gamesInLog, minGamesForFull: MIN_GAMES_FOR_FULL_PLAYER_PLAN } } : {}),
     leagueKalk: stats.leagueKalk
       ? Object.fromEntries(
           Object.entries(stats.leagueKalk).map(([k, v]) => [k, typeof v === 'number' ? roundOrNull(v, 1) : v ?? null])

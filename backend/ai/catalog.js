@@ -77,13 +77,13 @@ export async function getPlayerPlanStaleness(p, seasonId) {
     const changed = ctx.hash !== p.aiDevelopmentHash;
     return { stale: changed, reason: changed ? 'hash-changed' : null, currentHash: ctx.hash };
   } catch (err) {
-    // `no-data`: za mało meczów zawodnika w sezonie — planu nie da się teraz ani ocenić, ani wygenerować.
+    // `no-data`: brak meczów zawodnika w sezonie — planu nie da się teraz ani ocenić, ani wygenerować.
     return { stale: false, reason: err instanceof AiValidationError ? 'no-data' : 'unavailable', currentHash: null };
   }
 }
 
 /**
- * Czy dane zawodnika w sezonie pozwalają wygenerować plan (min. 3 mecze — ta sama walidacja co prepare).
+ * Czy dane zawodnika w sezonie pozwalają wygenerować plan (min. 1 mecz; przy 1–2 plan z adnotacją — ta sama walidacja co prepare).
  * @param {string} playerId
  * @param {string | null | undefined} seasonId
  */
