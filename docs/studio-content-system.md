@@ -26,7 +26,7 @@ Wersje: publikacje 1.0.0 · schematy 1.0.0 · szablony 1.3.0 · prompty copy-202
 
 | Schemat | Kategoria | Kiedy | Kanały | Wymagane fakty | Co musi paść |
 |---|---|---|---|---|---|
-| **Zapowiedź meczu** (`match-preview`) | Mecz | 2–3 dni przed meczem | IG post, IG relacja, Facebook | opponent, date, venue | Kiedy, gdzie i z kim gramy. Kolejka KALK. „Wstęp wolny”, jeśli potwierdzony. Zaproszenie bez patosu. |
+| **Zapowiedź meczu** (`match-preview`) | Mecz | 2–3 dni przed meczem | IG post, IG relacja, Facebook, WWW | opponent, date, venue | Kiedy, gdzie i z kim gramy. Kolejka KALK. „Wstęp wolny”, jeśli potwierdzony. Zaproszenie bez patosu. |
 | **Dzień meczu** (`matchday`) | Mecz | rano w dniu meczu | IG relacja, Facebook | opponent, date, venue | Krótko: dziś gramy, godzina, hala. Jedno zdanie zachęty. |
 | **Wynik na żywo / przerwa** (`match-live`) | Mecz | w trakcie meczu | IG relacja | opponent, scoreUs, scoreThem | Aktualny wynik i faza meczu wpisane ręcznie. Bez ocen i przewidywań. |
 | **Wynik meczu** (`match-result`) | Mecz | wieczorem po meczu | IG post, IG relacja, Facebook, WWW | opponent, scoreUs, scoreThem | Wynik (BeKaPaKa pierwsza), kolejka, 1–2 liderów z danych KALK, następny mecz jeśli znany. Porażka rzeczowo, bez dramatyzmu. |

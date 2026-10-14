@@ -2,7 +2,7 @@
 Native Story/square/landscape coordinates are explicit adaptations requiring review.
 References and their hashes live in references/; version 2 stays immutable.
 """
-import math
+import math, re
 from PIL import Image, ImageChops
 from poster import C, el, width
 import motyw as M, material as MAT, sym, kit
@@ -14,7 +14,7 @@ def grid(p):
     return {'feed':(74,204,400,270,880,950,1030,1176,1270),
             'story':(270,400,790,270,1350,1420,1500,1746,1840),
             'square':(74,180,330,220,670,730,805,905,990),
-            'landscape':(74,190,350,270,725,790,860,924,990)}[p.format_name]
+            'landscape':(74,190,350,270,725,790,860,896,990)}[p.format_name]
 
 def ribbon(p,label,y,size=40,grey=False):
     M.ribbon(p,p.w/2,y,label,size,fill='#5C5852' if grey else p.accent if p.kit=='B' or p.variant=='live' else M.GOLD,
@@ -29,6 +29,9 @@ def foundation(p):
     p.layer('10-material')
     if p.data.get('backgroundAssetId'):
         photo(p,p.data['backgroundAssetId'],0,0,p.w,p.h)
+    elif p.paper and p.w>p.h:
+        # The paper sheet is portrait: overscan it so its torn edges and black surround stay off a landscape canvas.
+        bleed=110;p.image(MAT.MAT/'lineup-paper.png',-bleed,-bleed,p.w+2*bleed,p.h+2*bleed)
     else: MAT.plate(p,'lineup-paper.png' if p.paper else 'plyta-granat.png' if p.kit=='B' else 'plyta-czysta.png')
     if not p.paper:
         tone=NAVY_D if p.kit=='B' else C['black']
@@ -46,7 +49,7 @@ def foot(p,note=None):
     p.layer('90-stopka'); *_,sy,fy=grid(p)
     if p.family not in ('report','player') or p.variant=='mvp':
         M.stripes(p,p.m,sy,p.w-2*p.m,color=M.GOLD if p.family=='player' and p.variant=='mvp' else p.accent)
-    sym.place(p,'wordmark-kolor' if p.paper else 'wordmark-negatyw',p.m,fy-40,h=50)
+    sym.place(p,'wordmark-kolor' if p.paper else 'wordmark-negatyw',p.m,fy-(44 if p.w>p.h else 40),h=60 if p.w>p.h else 50)
     note=note or ('PODGLĄD ROBOCZY' if p.mode=='preview' else 'ILUSTRACJA AI' if p.ai_scene else 'BEKAPAKA BOBOLICE')
     text(p,note,p.w-p.m,fy,20,'body',C['black'] if p.paper else MUT_B if p.kit=='B' else C['muted'],'end',p.w-2*p.m-260)
 
@@ -261,8 +264,59 @@ def tournament_compact(p):
             display(p,str(value) if value is not None else '—',x,825,140,maxw=200);text(p,label,x,865,26,'label')
     text(p,d.get('venue',''),p.w-p.m,875,28,'label',anchor='end',maxw=p.w-2*p.m-450)
 
+def title_lines(s,size,maxw):
+    # A spaced dash opens the next line (Polish typesetting), never hangs at the end of one.
+    words=re.sub(r'\s+([–—-])\s+',lambda m:' '+m.group(1)+'\u00a0',s.upper()).split(' ');lines=[];line=''
+    for word in words:
+        candidate=(line+' '+word).strip()
+        if line and lettering_width(candidate,size)>maxw:lines.append(line);line=word
+        else:line=candidate
+    return [l.replace('\u00a0',' ') for l in lines+([line] if line else [])]
+
+def lettering_width(s,size):
+    g,_=M.Z.lettering(s,size);return g.bounds[2]-g.bounds[0]
+
+def news_cover(p):
+    # Website cover (16:9): tag and date, title, body and facts on the left; the full crest on court seams on the right.
+    d=p.data;m=p.m;col=980;day,time=date_parts(d['date']) if d.get('date') else ('','')
+    tw=width('AKTUALNOŚĆ',30,'label',3)+114
+    M.blade_panel(p,m,118,tw,62,p.accent,left=False)
+    p.text('AKTUALNOŚĆ',m+26,160,30,'label',spacing=3,fill=C['white'])
+    if day:text(p,day,m+tw+28,160,28,'label',C['black'],maxw=col-tw-28)
+    body_lines=0
+    if d.get('body'):
+        line='';body_lines=1
+        for word in d['body'].split():
+            candidate=(line+' '+word).strip()
+            if line and width(candidate,34,'body')>col:body_lines+=1;line=word
+            else:line=candidate
+    has_time=bool(time) and time!='00:00'
+    rows=[r for r in (('hala',d.get('venue')),('info',d.get('entryInfo'))) if r[1]]
+    facts_h=96 if has_time else 38+50*(len(rows)-1) if rows else 0
+    # Largest title size whose lines, body and facts all end above the footer stripes.
+    for size in (128,116,104,92,84,76):
+        lines=title_lines(d.get('title',''),size,col)
+        end=250+size+len(lines)*size*1.12+(10+body_lines*51 if body_lines else 0)+50
+        if len(lines)<=3 and body_lines<=3 and end<=850-facts_h and all(lettering_width(l,size)<=col for l in lines):break
+    else:raise LayoutError('title: Tytuł z opisem nie mieszczą się na okładce strony. Skróć je.')
+    y=250+size
+    for i,l in enumerate(lines):
+        M.solid(p,l,m,y,size,p.accent if len(lines)>1 and i==len(lines)-1 else C['black'],fx=p.fx);y+=size*1.12
+    if d.get('body'):y=wrap(p,d['body'],m,y+10,col,34,'body',maxlines=3,color='#3A3835')
+    top=max(y+50,620);tx=m
+    if has_time:
+        M.solid(p,time,m,top+96,128,p.accent,fx=p.fx);tx=m+lettering_width(time,128)+56
+        p.rect(tx-28,top+8,4,96,C['black'],opacity=.25)
+    for i,row in enumerate(rows):
+        sym.icon_row(p,[row],tx,top+(44 if has_time else 38)+i*(52 if has_time else 50),size=36,text_size=34,color=C['black'])
+    cx,cy=1470,500
+    M.seams(p,cx,cy,340,t=4,color=p.accent,opacity=.32)
+    b=M.mark_c(p,'herb2',cx,cy,490,pal='kolor');space=(b[2]-b[0])/8
+    p.protected.append([b[0]-space,b[1]-space,b[2]+space,b[3]+space])
+
 def extension(p,part):
     # Explicit draft extensions: numerical tables, quote, photo story, information.
+    if p.variant=='news' and p.w>p.h:return news_cover(p)
     from render_v2 import LABELS
     mini_header(p,LABELS[p.post_type]);y=p.top+260;w=p.w-2*p.m
     if p.family=='statistics':
