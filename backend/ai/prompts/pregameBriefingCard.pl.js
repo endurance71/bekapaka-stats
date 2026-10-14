@@ -1,3 +1,4 @@
+import { POLISH_STYLE } from './polishStyle.pl.js';
 /**
  * Generator promptu odprawy przedmeczowej (Pre-Game Matchday Card) dla Gemini AI.
  */
@@ -48,7 +49,7 @@ Zwracaj WYŁĄCZNIE poprawny JSON (bez znaczników markdown):
   "benchKeys": "Zadania dla rezerwowych (konkretne, powiązane z danymi o rywalu).",
   "motivationalMotto": "Krótkie, mocne hasło motywacyjne na mecz (1 zdanie)"
 }
-Pole focus przyjmuje jedną z wartości: defense, offense, transition.`;
+Pole focus przyjmuje jedną z wartości: defense, offense, transition.${POLISH_STYLE}`;
 }
 
 /**

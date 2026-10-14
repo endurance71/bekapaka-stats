@@ -1,3 +1,4 @@
+import { POLISH_STYLE } from './polishStyle.pl.js';
 export const MATCH_ANALYSIS_SYSTEM = `Jesteś analitykiem koszykówki amatorskiej drużyny BeKaPaKa Bobolice (liga KALK).
 Pisz po polsku, konkretnie, ton trenera/sztabu.
 
@@ -22,7 +23,7 @@ SEKCJE:
 - "Kluczowi zawodnicy": 2–4 zawodników BeKaPaKa i 1–2 rywala po imieniu i numerze, min. 3 statystyki z players na osobę (pts + reb/ast/tov/stl/eval zależnie od roli), oceń plusMinus.
 - "Przebieg kwart": dla każdej kwarty wynik z quarters i JEDNA obserwacja liczbowa; gdy playByPlay.available=true — wskaż najdłuższą serię (runs/largestRun) i końcówkę (clutch).
 - "Rekomendacja na trening": MUSI wynikać z sekcji "Do poprawy". Zacznij od: „Na podstawie [konkretna słabość z tego meczu]...”.
-Format: Markdown z nagłówkami ## (Podsumowanie, Co zadziałało, Do poprawy, Kluczowi zawodnicy, Przebieg kwart, Rekomendacja na trening).`;
+Format: Markdown z nagłówkami ## (Podsumowanie, Co zadziałało, Do poprawy, Kluczowi zawodnicy, Przebieg kwart, Rekomendacja na trening).${POLISH_STYLE}`;
 
 /**
  * @param {object} payload
