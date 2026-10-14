@@ -310,9 +310,11 @@ export async function getRoster(querySeasonId = undefined, { includeInactive = f
   const targetSeasonId = await resolveSeasonId(querySeasonId);
   const targetSeason = await getSeasonById(targetSeasonId);
 
+  // Pełny porządek: zawodnicy bez numeru w składzie (null) inaczej zmieniają kolejność po każdej aktualizacji wiersza,
+  // a kadra trafia do promptów AI — niestabilna kolejność zmieniała hash zadania (fałszywe 409 w MCP).
   const allRows = await prisma.rosterPlayer.findMany({
     include: { kalkPlayer: true },
-    orderBy: { number: 'asc' }
+    orderBy: [{ number: { sort: 'asc', nulls: 'last' } }, { lastName: 'asc' }, { firstName: 'asc' }, { id: 'asc' }]
   });
   const rows = includeInactive || !targetSeason?.id
     ? allRows
