@@ -23,7 +23,7 @@ Zwracaj WYŁĄCZNIE czysty obiekt JSON (bez znaczników markdown ani dodatkowego
 {
   "name": "Polska nazwa zagrywki (np. Rogi z zasłoną odchodzącą (Horns Flare))",
   "category": "half_court | blob | slob | ato | fastbreak | defense",
-  "targetDefense": "Obrona rywala po polsku (np. Strefa 2-3, Obrona każdy swego (cofnięcie / zmiana krycia))",
+  "targetDefense": "Obrona rywala po polsku (np. Strefa 2-3, Obrona 1 na 1 (man-to-man) z cofnięciem / przejęciem krycia)",
   "description": "Krótkie streszczenie idei zagrywki prostym językiem (2-3 zdania)",
   "diagramData": {
     "duration": 5.5,
@@ -194,7 +194,7 @@ export function buildTacticalPlayUserPrompt({ category, targetDefense, goal, add
 
   return `Opracuj animowaną zagrywkę koszykarską (oś czasu 0.0s – 5.5s) dla BeKaPaKa Bobolice:
 - Kategoria: ${category || 'half_court'}
-- Przeciwko obronie rywala: ${targetDefense || 'Strefa 2-3 lub każdy swego'}
+- Przeciwko obronie rywala: ${targetDefense || 'Strefa 2-3 lub obrona 1 na 1 (man-to-man)'}
 - Główny cel akcji: ${goal || 'Czysty rzut lub ścięcie pod kosz'}
 ${additionalNotes ? `- Dodatkowe wytyczne trenera: ${additionalNotes}` : ''}
 ${rosterStr}

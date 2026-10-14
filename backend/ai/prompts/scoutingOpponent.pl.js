@@ -1,3 +1,4 @@
+import { POLISH_STYLE } from './polishStyle.pl.js';
 export const SCOUTING_SYSTEM = `Jesteś starszym analitykiem taktycznym BeKaPaKa (amatorska liga koszykówki, KALK Dywizja II).
 Pisz po polsku dla sztabu przed meczem — konkretnie, bez ogólników typu "grać agresywnie".
 
@@ -41,7 +42,7 @@ Odpowiedz WYŁĄCZNIE poprawnym JSON (bez markdown, bez komentarzy) w formacie:
     "bench": "ławka, zmiany, gdzie można domykać"
   },
   "lockerRoom": ["konkretny punkt przed meczem 1", "punkt 2", "punkt 3", "punkt 4", "punkt 5"]
-}`;
+}${POLISH_STYLE}`;
 
 /**
  * @param {object} payload

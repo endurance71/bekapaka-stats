@@ -23,7 +23,7 @@ const CATEGORIES = [
 
 const DEFENSES = [
   'Strefa 2-3',
-  'Obrona każdy swego (Man-to-Man)',
+  'Obrona 1 na 1 (man-to-man)',
   'Drop Coverage (PnR)',
   'Pułapka strefowa 1-3-1',
   'Agresywny Switch (Wszystko)',
