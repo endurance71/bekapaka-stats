@@ -7,7 +7,7 @@ export const AI_PROMPT_VERSIONS = Object.freeze({
   match: 'match-2026.10-v3',
   player: 'player-2026.10-v4',
   scouting: 'scouting-2026.10-v3',
-  briefing: 'briefing-2026.10-v3',
+  briefing: 'briefing-2026.10-v4',
   pregame: 'pregame-2026.10-v3',
   play: 'play-2026.10-v3'
 });

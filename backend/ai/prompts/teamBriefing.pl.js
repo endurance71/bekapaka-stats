@@ -15,6 +15,7 @@ ZASADY:
 - Gdy hasUpcomingMatch=false lub nextOpponent=null: POMIŃ sekcję "Nadchodzący rywal" całkowicie. Nie pisz o rywalu „z nadchodzącego meczu”, „z którym zmierzymy się” ani podobnie.
 - Sekcja "Na co uważać": MUSI zawierać co najmniej jedną konkretną radę taktyczną z liczbą (nie "grać dobrą obronę" — tylko "X% rzutów z dystansu — wypychamy ich za linię" lub podobnie, oparte o recentTrends; gdy brak nadchodzącego meczu — opieraj się na recentTrends i trainingPriorities).
 - Ostatnie zdanie briefingu: zawsze podsumowanie formy w jednym zdaniu z seasonRecord (np. "Z bilansem X–Y jesteśmy na dobrej drodze / potrzebujemy reakcji...").
+- Bilans: tabela ligi (rank, record rywali) liczy tylko sezon zasadniczy. Gdy seasonRecord.includesOtherPhases=true, zawsze nazwij, o który bilans chodzi — „w sezonie zasadniczym X–Y” (seasonRecord.regularSeason) albo „w całym sezonie, z play-off/play-out, X–Y” (seasonRecord) — i nie mieszaj ich w jednym porównaniu.
 - Sekcje ## w Markdown: Ostatni mecz, Forma i trendy, Priorytety treningowe, [Nadchodzący rywal — tylko gdy hasUpcomingMatch], Na co uważać.${POLISH_STYLE}`;
 
 /**
@@ -32,7 +33,9 @@ export function buildBriefingUser(payload) {
       ? `Ostatni mecz: ${lastGame.result} ${lastGame.score} vs ${lastGame.opponent} (${lastGame.date})`
       : 'Ostatni mecz: brak danych',
     season
-      ? `Bilans sezonu: ${season.wins}–${season.losses} (${season.played} meczów)`
+      ? season.includesOtherPhases && season.regularSeason
+        ? `Bilans sezonu: ${season.wins}–${season.losses} (${season.played} meczów, z play-off/play-out); sezon zasadniczy: ${season.regularSeason.wins}–${season.regularSeason.losses}`
+        : `Bilans sezonu: ${season.wins}–${season.losses} (${season.played} meczów)`
       : null,
     hasUpcoming
       ? `Nadchodzący rywal (z terminarza): ${next.opponent} (${next.record}, ${next.ppg} PPG, data: ${next.matchDate || 'brak daty'})`

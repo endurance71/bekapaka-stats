@@ -9,7 +9,7 @@ ZASADY ANTY-HALUCYNACYJNE:
 - Wszystkie mecze ligi rozgrywane są w hali KOSiR Koszalin (bez „u siebie” / „na wyjeździe”).
 
 DANE (opis pól):
-- teamInfo: pozycja w tabeli (rank), bilans (record), ppg / oppg (punkty zdobyte / stracone na mecz).
+- teamInfo: pozycja w tabeli (rank), bilans (record), ppg / oppg (punkty zdobyte / stracone na mecz) — tabela liczy tylko sezon zasadniczy; gdy porównujesz z formą (form, także mecze play-off/play-out), napisz, która liczba czego dotyczy.
 - keyPlayers: kluczowi zawodnicy rywala — games, mpg, ppg, rpg, orbPg, apg, spg, bpg, tovPg, pfPg, threePmPg, threePct, twoPct, ftPct (w %), evalPg, plusMinus (null = brak).
 - form: ostatnie mecze rywala (score i result z perspektywy rywala — pierwsza liczba to punkty rywala).
 - teamSeasonAverages: średnie drużyny z box score (zbiórki, asysty, straty, trójki, FT%, punkty ławki, z kontry, po stratach, drugiej szansy, spod kosza) i quarterScoring (średnie punkty zdobyte/stracone w kwartach). null = brak.

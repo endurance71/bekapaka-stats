@@ -2,6 +2,13 @@ import { getNextOpponentScouting, getTeamTrends, getTrainingPriorities, listGame
 import { buildMatchContext } from './buildMatchContext.js';
 import { hashAiPayload } from './hash.js';
 import { roundOrNull, sanitizeAiPayload } from './payloadUtils.js';
+import { isRegularSeasonPhase } from '../kalk/v2/audit.js';
+
+const record = (games) => ({
+  played: games.length,
+  wins: games.filter((g) => g.result === 'W').length,
+  losses: games.filter((g) => g.result === 'L').length
+});
 
 /**
  * @param {number | null | undefined} value
@@ -147,10 +154,11 @@ export async function buildBriefingContext(seasonIdParam = undefined) {
     },
     nextOpponent,
     hasUpcomingMatch: Boolean(nextOpponent),
+    // Cały sezon (z play-off / play-out) i osobno sezon zasadniczy — tabela ligi liczy tylko sezon zasadniczy.
     seasonRecord: {
-      played: played.length,
-      wins: played.filter((g) => g.result === 'W').length,
-      losses: played.filter((g) => g.result === 'L').length
+      ...record(played),
+      regularSeason: record(played.filter((g) => isRegularSeasonPhase(g.stageLabel))),
+      includesOtherPhases: played.some((g) => !isRegularSeasonPhase(g.stageLabel))
     }
   });
 
