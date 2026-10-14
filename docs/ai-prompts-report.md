@@ -72,8 +72,7 @@ Komponent: `frontend/src/components/ai/AiAnalysisBlock.tsx`
 |--------|--------------|----------------|
 | `GameDetail` | Analiza meczu (AI) | `game.aiSummary` |
 | `PlayerProfile` / `Profile` | Plan rozwoju (AI) | `aiDevelopmentSummary` |
-| `ScoutingPage` | Plan meczowy (AI) | `scoutingSummaryMd` + `structuredContent` |
-| `ScoutingPage` | Analiza kadry (AI) | `personnelMd` |
+| `ScoutingPage` | Raport scoutingowy (AI) — plan meczowy i analiza kadry w jednej karcie | `scoutingSummaryMd` + `personnelMd` (+ `structuredContent`) |
 | `Dashboard` | Briefing tygodniowy (AI) | `briefing.contentMd` |
 
 ---

@@ -30,6 +30,6 @@
 Technicznie: scraping przez [Scrapling](https://github.com/D4Vinci/Scrapling) — opis w [scraping.md](./scraping.md).
 
 ## Scouting — plan meczowy (AI)
-- Na stronie **Scouting** blok „Plan meczowy (AI)” korzysta z raportu Gemini zapisanego w bazie (lub ze szablonu z tabeli ligi, gdy raportu jeszcze nie ma).
+- Na stronie **Scouting** karta „Raport scoutingowy (AI)” pokazuje w jednym oknie plan meczowy i analizę kadry rywala — z raportu AI zapisanego w bazie (lub ze szablonu z tabeli ligi, gdy raportu jeszcze nie ma).
 - Jeśli raport jest krótki, puste sekcje lub widać surowy JSON — **administrator** powinien kliknąć **Odśwież** (pierwsza generacja) lub ikonę **wymuszenia** (ponowna generacja po zmianie danych ligi).
 - Pełna jakość wymaga aktualnego importu KALK (statystyki zawodników, forma) przed generacją.
