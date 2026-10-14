@@ -216,6 +216,17 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
     ? { OR: [{ teamKalkId }, { teamName: { contains: simple, mode: 'insensitive' } }] }
     : { teamName: { contains: simple, mode: 'insensitive' } };
 
+  // Raport dla starszego sezonu nie może znać sezonów późniejszych ani meczów rozegranych po jego końcu.
+  const seasons = await safe(() => prisma.kalkSeason.findMany({ select: { id: true, startsAt: true, endsAt: true } }), []);
+  const target = seasons.find((s) => s.id === seasonId) || null;
+  const isEarlierSeason = (sid) => {
+    const s = seasons.find((x) => x.id === sid);
+    if (!seasonId) return true;
+    if (target?.startsAt && s?.startsAt) return s.startsAt < target.startsAt;
+    return sid < seasonId;
+  };
+  const seasonEnd = target?.endsAt && target.endsAt < new Date() ? target.endsAt : null;
+
   const [seasonStats, legacyPlayers, matches, prevSeasonRows, headToHead] = await Promise.all([
     seasonId
       ? safe(
@@ -283,7 +294,7 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
         }),
       []
     ),
-    loadHeadToHead({ opponentName, opponentKalkId: teamKalkId, before: null, take: 6 })
+    loadHeadToHead({ opponentName, opponentKalkId: teamKalkId, before: seasonEnd, take: 6 })
   ]);
 
   const slugs = seasonStats.map((r) => r.playerSlug).filter(Boolean);
@@ -377,6 +388,7 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
   /** @type {Map<string, { games: number, wins: number, pts: number, against: number }>} */
   const bySeason = new Map();
   for (const r of prevSeasonRows) {
+    if (!isEarlierSeason(r.seasonId)) continue;
     const cur = bySeason.get(r.seasonId) || { games: 0, wins: 0, pts: 0, against: 0 };
     cur.games += 1;
     cur.wins += r.isWin ? 1 : 0;

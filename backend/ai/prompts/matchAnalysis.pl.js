@@ -15,7 +15,7 @@ DANE (opis pól):
 - teams.bekapaka / teams.opponent: totals (sumy z box score; fgPct/threePct/ftPct w %), fourFactors (efgPct, tsPct, tovPct, ftRate, orbPct w %; possessions, offRtg), startersPts / benchPts (punkty pierwszej piątki / ławki), pointsSources (fastBreakPts = szybki atak, ptsOffTurnovers = po stratach, secondChancePts = druga szansa, ptsInPaint = spod kosza; null = brak danych), players (pełny box score: min, pts, fg/twoPt/threePt/ft „trafione/oddane”, orb/drb/reb, ast, stl, tov, pf, pfDrawn = faule wymuszone, blk, blkAgainst = bloki otrzymane, eval, plusMinus, starter).
 - quarters: wyniki kwart; flow5: wynik co 5 minut (null = brak).
 - playByPlay: gdy available=true — runs (serie ≥8:0), largestRun, leadChanges (zmiany prowadzenia), ties (remisy), largestLead, clutch (końcówka: ostatnie 5 min 4. kwarty + dogrywki), foulsPerPeriod, foulTrouble. Gdy available=false — NIE opisuj serii punktowych, zmian prowadzenia ani końcówki.
-- headToHead: wcześniejsze mecze z tym rywalem; leagueContext: aktualna tabela (pozycja, bilans) — zaznacz, że to stan aktualny.
+- headToHead: wcześniejsze mecze z tym rywalem; leagueContext: aktualna tabela sezonu zasadniczego (pozycja, bilans) — zaznacz, że to stan aktualny i że nie obejmuje play-off/play-out.
 
 SEKCJE:
 - "Co zadziałało": każdy punkt MUSI zawierać liczbę z danych (np. „Y% z gry”, „Z zbiórek ofensywnych”). Punkty po szybkim ataku / po stratach / drugiej szansy / ławki podawaj TYLKO gdy odpowiednie pole w pointsSources lub benchPts nie jest null. Każdy wniosek regułowy type=success MUSI się tu znaleźć z liczbą.

@@ -43,6 +43,7 @@ import {
 } from './util.js';
 import { validateKalkV2Bundle } from './validateBundle.js';
 import { applyProtocolCorrections } from './protocolCorrections.js';
+import { reconcileStandings } from './standings.js';
 
 export const V2_DIVISION_PATH = 'liga/dywizja-ii';
 const TX_OPTIONS = { maxWait: 10_000, timeout: 60_000 };
@@ -343,6 +344,32 @@ export async function ingestKalkV2Bundle(bundle, opts = {}) {
         counts.leagueMatches.pruned = res?.count ?? staleRows.length;
       } else if (staleRows.length) {
         warn(`terminarz: ${staleRows.length} wierszy LeagueMatch spoza źródła (użyj pruneSchedule, aby usunąć)`);
+      }
+    }
+  }
+
+  // ── 5b. Tabela zgodna z wynikami (KALK bywa nie wlicza zakończonych meczów) ─
+  {
+    const phase = 'regular';
+    const [teams, leagueMatches] = await Promise.all([
+      prisma.leagueTeam.findMany({ where: { seasonId, phase } }),
+      prisma.leagueMatch.findMany({
+        where: { seasonId },
+        select: { homeTeam: true, guestTeam: true, scoreHome: true, scoreAway: true, isFinished: true, phaseLabel: true, date: true }
+      })
+    ]);
+    const { rows, corrected } = reconcileStandings(teams, leagueMatches);
+    if (corrected.length) {
+      warn(`tabela KALK niezgodna z wynikami — przeliczono: ${corrected.join(', ')}`);
+      const byName = new Map(teams.map((t) => [t.name, t]));
+      for (const row of rows) {
+        const { id: _id, updatedAt: _updatedAt, ...data } = row;
+        const outcome = await writeIfChanged(prisma.leagueTeam, {
+          where: { seasonId_name_phase: { seasonId, name: row.name, phase } },
+          existing: byName.get(row.name),
+          data
+        });
+        bump(counts.leagueTeams, outcome);
       }
     }
   }

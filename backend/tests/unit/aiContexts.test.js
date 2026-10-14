@@ -277,6 +277,45 @@ describe('AI context builders (mocked Prisma, bez sieci)', () => {
     expect(ctx.payload.trainingPriorities.team.turnovers).toBe(11);
   });
 
+  it('buildBriefingContext: whole-season record and regular-season record are told apart', async () => {
+    vi.doMock('../../dataStore.js', () => ({
+      listGames: vi.fn(async () => [
+        { id: 'p1', seasonId: SEASON, date: '2027-04-01T10:00:00.000Z', opponent: 'A', result: 'W', scoreUs: 60, scoreThem: 50, stageLabel: 'Play out' },
+        { id: 'r2', seasonId: SEASON, date: '2027-02-01T10:00:00.000Z', opponent: 'B', result: 'L', scoreUs: 50, scoreThem: 60, stageLabel: 'Sezon zasadniczy' },
+        { id: 'r1', seasonId: SEASON, date: '2026-10-04T10:00:00.000Z', opponent: 'C', result: 'W', scoreUs: 86, scoreThem: 20, stageLabel: 'Sezon zasadniczy' }
+      ]),
+      getTeamTrends: vi.fn(async () => []),
+      getTrainingPriorities: vi.fn(async () => ({ team: {}, league: {} })),
+      getNextOpponentScouting: vi.fn(async () => null)
+    }));
+    vi.doMock('../../ai/buildMatchContext.js', () => ({ buildMatchContext: vi.fn(async () => { throw new Error('bez danych'); }) }));
+    const { buildBriefingContext } = await import('../../ai/buildBriefingContext.js');
+    const { buildBriefingUser } = await import('../../ai/prompts/teamBriefing.pl.js');
+    const ctx = await buildBriefingContext(SEASON);
+    expect(ctx.payload.seasonRecord).toEqual({ played: 3, wins: 2, losses: 1, regularSeason: { played: 2, wins: 1, losses: 1 }, includesOtherPhases: true });
+    expect(buildBriefingUser(ctx.payload)).toContain('Bilans sezonu: 2–1 (3 meczów, z play-off/play-out); sezon zasadniczy: 1–1');
+  });
+
+  it('scouting: previous seasons are only the ones before the analysed season', async () => {
+    vi.doMock('../../dataStore.js', () => ({ getGameById: vi.fn() }));
+    prismaMock.kalkSeason.findMany.mockResolvedValue([
+      { id: 'season_2024-2025', startsAt: new Date('2024-09-01'), endsAt: new Date('2025-08-31') },
+      { id: 'season_2025-2026', startsAt: new Date('2025-09-01'), endsAt: new Date('2026-08-31') },
+      { id: SEASON, startsAt: new Date('2026-09-01'), endsAt: new Date('2027-08-31') }
+    ]);
+    prismaMock.kalkTeamGameStat.findMany.mockImplementation(async ({ where }) =>
+      where?.NOT
+        ? [
+            { seasonId: 'season_2024-2025', pts: 60, ptsAgainst: 50, isWin: true },
+            { seasonId: SEASON, pts: 70, ptsAgainst: 80, isWin: false }
+          ]
+        : []
+    );
+    const { loadScoutingExtras } = await import('../../ai/scoutingData.js');
+    const extras = await loadScoutingExtras({ opponentName: 'GMVT TEAM', seasonId: 'season_2025-2026' });
+    expect(extras.previousSeasons.map((s) => s.seasonId)).toEqual(['season_2024-2025']);
+  });
+
   it('scouting: payload degrades gracefully without KALK v2 data and builds clean payload', async () => {
     vi.doMock('../../dataStore.js', () => ({ getGameById: vi.fn() }));
     const { buildScoutingAiPayload, loadScoutingExtras, scoutingReportKey, parseScoutingReportKey } = await import('../../ai/scoutingData.js');

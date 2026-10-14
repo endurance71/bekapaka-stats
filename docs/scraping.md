@@ -61,6 +61,10 @@ Kody wyjścia: 0 = zapisano (możliwe pominięcia w `manifest.failures` / `trunc
 - Niespójności źródła, które nie blokują meczu, idą do `manifest.warnings`: „dogrywka bez remisu” (np. mecz 3205), walkower bez box score (np. 3438, 20:0).
 - Wyjście atomowe (`.tmp` + rename); jeden sync naraz (Postgres advisory lock); każdy przebieg ma wpis `KalkSyncRun` (running / success / partial / error, licznik zapytań, manifest).
 
+## Tabela a wyniki
+
+Tabela (`LeagueTeam`, faza zasadnicza) pochodzi ze strony KALK `/liga/dywizja-ii/tabela`. KALK potrafi nie wliczyć zakończonych meczów (2026/27: oba mecze 1. kolejki, bez przypisanej hali), więc ingest po zapisaniu terminarza przelicza tabelę z wyników sezonu zasadniczego (`kalk/v2/standings.js`, 2 pkt za zwycięstwo, 1 za porażkę). Wiersze zgodne z wynikami zostają jak w KALK; niezgodne dostają liczby, formę i serię z wyników, a tabela jest sortowana od nowa (punkty → bilans punktów → kolejność KALK). Każda taka korekta trafia do ostrzeżeń synchronizacji („tabela KALK niezgodna z wynikami — przeliczono: …”). Tabela obejmuje tylko sezon zasadniczy — bilanse z play-off/play-out są w analizach podpisywane osobno.
+
 ## Korekty z oficjalnych protokołów
 
 KALK nie liczy dla części meczów **+/-** ani **fauli wymuszonych** (publikuje 0). Wartości z oficjalnego protokołu meczowego (arkusz na Google Drive) trafiają do `backend/kalk/v2/protocolCorrections.json`: mecz (`seasonId` + `kalkMatchId`), drużyna (`bekapaka: true/false`), zawodnik po **numerze** (nazwiska w KALK i protokole bywają różne, np. Stachowski / Stanowski), źródło i kontrole sum (Σ +/- drużyny = 5 × różnica punktów; Σ fauli wymuszonych = faule popełnione rywala).

@@ -105,6 +105,7 @@ export function kalkMatchToListItem(km) {
     isFromKalkMatch: true,
     roundCode: km.roundCode,
     roundLabel: km.roundLabel ?? null,
+    stageLabel: km.stageLabel ?? null,
     venue: km.venue ?? null,
     startsAt: (km.startsAtUtc ?? km.date)?.toISOString?.() ?? null,
     isFinished: km.isFinished, seasonId: km.seasonId,
