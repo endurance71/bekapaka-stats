@@ -24,6 +24,7 @@ import {
 } from '../lib/formatLastActivity';
 import SeasonManagement from '../features/admin/SeasonManagement';
 import AiEngineSettings from '../features/admin/AiEngineSettings';
+import PanelAnalytics from '../features/admin/PanelAnalytics';
 import PlayerAvatar from '../shared/ui/PlayerAvatar';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 
@@ -304,6 +305,14 @@ export default function Administration() {
                 <SectionHeading kicker="Sezony" title="Sezony i Rozgrywki" />
                 <BkpkCard variant="flat" className="space-y-6">
                     <SeasonManagement onSeasonChanged={refreshStatus} />
+                </BkpkCard>
+
+                </section>
+
+                <section className="space-y-5">
+                <SectionHeading kicker="Analityka" title="Korzystanie z panelu" />
+                <BkpkCard variant="flat">
+                    <PanelAnalytics />
                 </BkpkCard>
 
                 </section>
