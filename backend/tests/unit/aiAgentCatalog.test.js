@@ -7,8 +7,7 @@ const catalogItems = [
   { type: 'match', generateKind: 'match', generateTarget: 'lm-1', title: 'Mecz bez box score', hasContent: false, dataReady: false, seasonId: SEASON },
   { type: 'player', generateKind: 'player', generateTarget: 'p1', title: 'Plan — Jan', hasContent: true, stale: false, isTemplate: true, seasonId: SEASON },
   { type: 'player', generateKind: 'player', generateTarget: 'p2', title: 'Plan — Ola', hasContent: true, stale: false, seasonId: SEASON },
-  { type: 'scouting_plan', generateKind: 'scouting', generateTarget: 'Kosz-All-In', title: 'Plan — Kosz', hasContent: false, seasonId: SEASON },
-  { type: 'scouting_personnel', generateKind: 'scouting', generateTarget: 'Kosz-All-In', title: 'Kadra — Kosz', hasContent: false, seasonId: SEASON },
+  { type: 'scouting', generateKind: 'scouting', generateTarget: 'Kosz-All-In', title: 'Raport scoutingowy — Kosz', hasContent: false, seasonId: SEASON },
 ];
 
 vi.mock('../../lib/prisma.js', () => ({
@@ -41,7 +40,7 @@ vi.mock('../../ai/tacticsOps.js', () => ({
 const { agentItems, panelCatalogForAgent, readPanelAnalysis, listSeasonsForAgent } = await import('../../ai/agentCatalog.js');
 
 describe('panel analyses for the MCP agent', () => {
-  it('turns catalog items into tasks, merges scouting and skips matches without data', () => {
+  it('turns catalog items into tasks and skips matches without data', () => {
     const { items, notReady } = agentItems(catalogItems);
     expect(notReady).toBe(1);
     expect(items.map((i) => [i.kind, i.status])).toEqual([

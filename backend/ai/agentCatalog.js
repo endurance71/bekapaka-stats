@@ -38,15 +38,14 @@ export async function listSeasonsForAgent() {
 }
 
 /**
- * Pozycje katalogu panelu w postaci dla agenta. Raport scoutingu ma w panelu dwie pozycje (plan i kadra) z jednego zadania
- * — agent dostaje jedną. Pozycje bez danych (np. mecz bez box score) nie trafiają na listę, są tylko liczone.
+ * Pozycje katalogu panelu w postaci dla agenta. Pozycje bez danych (np. mecz bez box score, zawodnik z < 3 meczami)
+ * nie trafiają na listę, są tylko liczone.
  * @param {Array<Record<string, any>>} items pozycje z getAiAnalysesCatalog
  */
 export function agentItems(items) {
   const out = [];
   let notReady = 0;
   for (const item of items) {
-    if (item.type === 'scouting_personnel') continue;
     if (item.dataReady === false) {
       notReady += 1;
       continue;

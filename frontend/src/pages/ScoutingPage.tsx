@@ -184,6 +184,11 @@ export default function ScoutingPage() {
       ? 'Szablon danych'
       : null;
 
+  // Plan meczowy + analiza kadry w jednym tekście. Surowy JSON planu rozwija AiAnalysisBlock (z kadrą), więc wtedy bez doklejania.
+  const planIsJson = Boolean(scoutingSummaryMd?.trim().startsWith('{'));
+  const scoutingReportMd =
+    [scoutingSummaryMd, planIsJson ? null : personnelMd].filter((part) => part?.trim()).join('\n\n') || null;
+
   const { opponent, bekapaka } = teamInfo;
   const hasProtocolDna = Boolean(advancedStats && !advancedStats.fallbackBasicOnly);
 
@@ -262,11 +267,12 @@ export default function ScoutingPage() {
         />
       </MainAside>
 
-      <CardGrid min={480} max={2}>
+      {/* Plan meczowy i analiza kadry to jeden raport (jedna generacja) — jedna karta, jedno okno. */}
+      <CardGrid min={480} max={1}>
         <AiAnalysisBlock
-          title="Plan meczowy (AI)"
+          title="Raport scoutingowy (AI)"
           errorMessage={aiError}
-          content={scoutingSummaryMd}
+          content={scoutingReportMd}
           structuredContent={aiAnalysis?.summary ? aiAnalysis : null}
           generatedAt={aiMeta?.generatedAt}
           model={aiMeta?.model}
@@ -282,21 +288,8 @@ export default function ScoutingPage() {
                 ? 'Raport AI jest niepełny — użyj „Wymuś ponowną generację” poniżej przycisków.'
                 : null
           }
-          emptyHint="Brak planu meczowego — użyj „Generuj”."
-          playerEmptyHint="Plan meczowy pojawi się, gdy trener go przygotuje."
-        />
-        <AiAnalysisBlock
-          title="Analiza kadry (AI)"
-          content={personnelMd}
-          generatedAt={aiMeta?.generatedAt}
-          model={aiMeta?.model}
-          sourceLabel={personnelMd ? (aiMeta?.fromGemini ? 'AI' : 'Szablon danych') : null}
-          canGenerate={isAdmin}
-          loading={aiLoading}
-          compactActions
-          onGenerate={(force) => void handleGenerateScoutingAi(force)}
-          emptyHint="Analiza kadry powstaje razem z planem meczowym — wygeneruj plan powyżej."
-          playerEmptyHint="Analiza kadry rywala pojawi się razem z planem meczowym."
+          emptyHint="Brak raportu scoutingowego — użyj „Generuj”."
+          playerEmptyHint="Raport scoutingowy (plan meczowy i analiza kadry) pojawi się, gdy trener go przygotuje."
         />
       </CardGrid>
 

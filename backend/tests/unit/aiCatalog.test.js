@@ -76,8 +76,9 @@ describe('getAiAnalysesCatalog — staleness', () => {
     expect(byId.get('player:p-old').isTemplate).toBe(true);
     expect(byId.get('player:p-none').stale).toBe(false);
     expect(byId.get('match:4124').stale).toBe(true);
-    expect(byId.get('scouting-plan:kosz').stale).toBe(true);
-    expect(byId.has('scouting-plan:inny')).toBe(false);
+    expect(byId.get('scouting:kosz')).toMatchObject({ stale: true, type: 'scouting', title: 'Raport scoutingowy (AI) — Kosz-All-In' });
+    expect(byId.has('scouting:inny')).toBe(false);
+    expect([...byId.keys()].filter((id) => id.startsWith('scouting'))).toEqual(['scouting:kosz']);
     expect(byId.has('match:lm-future')).toBe(false);
     expect(cat.summary.upcomingExcluded).toBe(1);
     expect(cat.summary.stale).toBeGreaterThanOrEqual(3);

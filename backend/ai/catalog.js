@@ -9,7 +9,6 @@ import { buildPlayerContext } from './buildPlayerContext.js';
 import { buildScoutingContext } from './buildScoutingContext.js';
 import { AiValidationError } from './errors.js';
 import { getTeamBriefingCached } from './generate.js';
-import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import { hasDetailedPlayerPlanMarkdown } from './playerDevelopmentMarkdown.js';
 import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
 import { TEMPLATE_MODEL_NAME } from './geminiClient.js';
@@ -387,15 +386,19 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
     const st = report ? await getScoutingStaleness(report, opponentName, targetSeasonId) : { stale: false, reason: null };
     const generatedAt = report?.generatedAt?.toISOString() ?? null;
     const model = report?.model ?? null;
-    const planHasContent = Boolean(report?.summaryMd?.trim());
-    const personnelMd = report?.analysisJson
-      ? buildPersonnelMdFromAnalysis(report.analysisJson)
-      : null;
-    const personnelHasContent = Boolean(personnelMd?.trim());
     const viewPath = `/rywal?opponent=${encodeURIComponent(opponentName)}`;
-    const common = {
+    // Plan meczowy i analiza kadry to jeden raport z jednej generacji — jedna pozycja katalogu.
+    return {
+      id: `scouting:${opponentKey}`,
+      type: 'scouting',
+      category: 'Scouting',
+      title: `Raport scoutingowy (AI) — ${opponentName}`,
+      subtitle: report?.legacy
+        ? 'Plan meczowy i analiza kadry (stary klucz bez sezonu)'
+        : 'Plan meczowy i analiza kadry przed meczem ligowym',
       generatedAt,
       model,
+      hasContent: Boolean(report?.summaryMd?.trim()),
       stale: st.stale,
       staleReason: st.reason,
       isTemplate: false,
@@ -405,28 +408,8 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       generateTarget: opponentName,
       seasonId: targetSeasonId ?? null
     };
-    return [
-      {
-        id: `scouting-plan:${opponentKey}`,
-        type: 'scouting_plan',
-        category: 'Scouting',
-        title: `Plan meczowy (AI) — ${opponentName}`,
-        subtitle: report?.legacy ? 'Raport przed meczem ligowym (stary klucz bez sezonu)' : 'Raport przed meczem ligowym',
-        hasContent: planHasContent,
-        ...common
-      },
-      {
-        id: `scouting-personnel:${opponentKey}`,
-        type: 'scouting_personnel',
-        category: 'Scouting',
-        title: `Analiza kadry (AI) — ${opponentName}`,
-        subtitle: 'Sekcja kadry w raporcie scoutingu',
-        hasContent: personnelHasContent,
-        ...common
-      }
-    ];
   });
-  for (const pair of scoutingItems) items.push(...pair);
+  items.push(...scoutingItems);
 
   const actionable = items.filter((i) => i.hasContent || i.canGenerate);
 
