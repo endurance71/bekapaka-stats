@@ -4,7 +4,7 @@ References and their hashes live in references/; version 2 stays immutable.
 """
 import math, re
 from PIL import Image, ImageChops
-from poster import C, el, width
+from poster import C, el, width, FONTS
 import motyw as M, material as MAT, sym, kit
 from render import text, wrap, display, mark, photo, date_parts, LayoutError
 NAVY_D='#0B1E55'; NAVY_P='#0E2770'; MUT_B='#AFC0EE'
@@ -113,11 +113,12 @@ def announcement(p):
     if p.visual_style=='editorial':
         # 01B is typographic, not a paper recolour of 01A.
         mark(p,p.w/2,445 if p.story else 260,290)
+        # Square and landscape are short: a slimmer band keeps the time/venue line below it.
         date=day.split(' · ')[-1][:5];M.outline(p,date,p.w/2,960 if p.story else 730 if p.h==1350 else 650,260 if p.h<=1080 else 330,p.accent,t=7,anchor='middle')
         text(p,day.split(' · ')[0],p.w/2,1040 if p.story else 800 if p.h==1350 else 710,60,'label',anchor='middle',maxw=p.w-2*p.m,minimum=40)
-        by=1130 if p.story else 860 if p.h==1350 else 760
-        M.blade_panel(p,p.m,by,p.w-2*p.m,130,p.accent)
-        wrap(p,'BEKAPAKA — '+d.get('opponent','').upper(),p.w/2,by+50,p.w-2*p.m-220,36,'label',maxlines=2,anchor='middle')
+        by,bh=(1130,130) if p.story else (860,130) if p.h==1350 else (730,100)
+        M.blade_panel(p,p.m,by,p.w-2*p.m,bh,p.accent)
+        band_label(p,'BEKAPAKA — '+d.get('opponent','').upper(),by,bh,p.w-2*p.m-220,size=min(56,bh*.45))
         metadata(p,time+' · '+d.get('venue',''),1400 if p.story else 1120 if p.h==1350 else 870)
         return
     p.layer('20-wstega');ribbon(p,label,ry,grey=p.variant=='cancelled')
@@ -147,6 +148,14 @@ def announcement(p):
     if p.variant=='postponed':vy+=70 if p.h<=1080 else 25
     sym.icon_row_c(p,[('hala',d.get('venue',''))],p.w/2,vy,size=30,text_size=28,shadow=True)
     if d.get('entryInfo'):text(p,d['entryInfo'],p.w/2,vy+40,24,'label',anchor='middle',maxw=p.w-2*p.m)
+
+def band_label(p,s,y,h,maxw,size=56,minimum=34):
+    """Team line optically centred in the blade band: one line as large as fits, else two lines."""
+    f=FONTS['label'];cap=getattr(f['OS/2'],'sCapHeight',0)/f['head'].unitsPerEm or .7
+    size=min(size,size*maxw/width(s,size,'label'))
+    if size>=minimum:
+        text(p,s,p.w/2,y+h/2+cap*size/2,size,'label',anchor='middle',maxw=maxw,minimum=minimum);return
+    wrap(p,s,p.w/2,y+h/2-.75*minimum+cap*minimum/2,maxw,minimum,'label',maxlines=2,anchor='middle')
 
 def jersey(p,x,y,w,person):
     k=w/200;number_size=230 if w>=500 else 170 if w>=400 else 110;name_size=44 if w>=500 else 32 if w>=400 else 23;kit.jersey(p,x,y,w,person.get('number',''),person.get('lastName',''),back_ink='#173EA5' if p.kit=='B' else C['black'],acc=p.accent)
