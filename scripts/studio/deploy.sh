@@ -19,9 +19,14 @@ export BKPK_STUDIO_IMAGE_TAG="$studio_sha"
 docker compose -f docker-compose.prod.yml --profile studio config --quiet
 docker compose -f docker-compose.prod.yml --profile studio pull bkpk-studio bkpk-studio-worker
 docker compose -f docker-compose.prod.yml --profile studio up -d --no-deps bkpk-studio bkpk-studio-worker
-curl --fail --retry 15 --retry-delay 2 --retry-connrefused http://127.0.0.1:8083/healthz
+# Right after the recreate nginx may reset the connection; --retry-connrefused does not cover that, so retry every error.
+curl --fail --silent --show-error --retry 15 --retry-delay 2 --retry-all-errors http://127.0.0.1:8083/healthz
 for studio_attempt in $(seq 1 30); do
- if [ "$(docker inspect --format '{{.State.Health.Status}}' bkpk-studio-worker-prod)" = healthy ]; then exit 0; fi
+ if [ "$(docker inspect --format '{{.State.Health.Status}}' bkpk-studio-worker-prod)" = healthy ]; then
+  # Persist the release only once it is healthy, so a later plain `docker compose up` keeps it.
+  if grep -q '^BKPK_STUDIO_IMAGE_TAG=' .env; then sed -i "s/^BKPK_STUDIO_IMAGE_TAG=.*/BKPK_STUDIO_IMAGE_TAG=$studio_sha/" .env; else echo "BKPK_STUDIO_IMAGE_TAG=$studio_sha" >> .env; fi
+  exit 0
+ fi
  sleep 2
 done
 echo 'Worker nie przeszedł kontroli zdrowia. Sprawdź docker logs bkpk-studio-worker-prod.' >&2
