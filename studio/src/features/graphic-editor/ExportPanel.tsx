@@ -219,7 +219,7 @@ export default function ExportPanel(props: Props) {
         Generuj paczkę ZIP
       </button>
       <p className="export-hint">
-        PNG sRGB, opisy, oznaczenie AI i manifest.
+        PNG sRGB, opisy, teksty alternatywne i manifest.
         <br />
         Wszystkie wybrane formaty.
       </p>
