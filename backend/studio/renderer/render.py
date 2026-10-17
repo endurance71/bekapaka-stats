@@ -91,7 +91,7 @@ def footer(p):
     p.layer('90-stopka'); y=p.bottom
     M.stripes(p,p.m,y-80,p.w-2*p.m,color=p.accent)
     text(p,'bekapaka.pl',p.m,y,24,'label')
-    note='PODGLĄD ROBOCZY' if p.mode=='preview' else ('ILUSTRACJA AI' if p.ai_scene else 'BEKAPAKA BOBOLICE')
+    note='PODGLĄD ROBOCZY' if p.mode=='preview' else 'BEKAPAKA BOBOLICE'
     text(p,note,p.w-p.m,y,20,'body',anchor='end',maxw=p.w-2*p.m-220)
 
 def venue_label(p, value, anchor='middle', x=None, y=None, maxw=None):
@@ -350,7 +350,7 @@ def render(payload,format_name,output,mode,assets,partners_list):
     for index,part in enumerate(pages):
         key=f'{format_name}-{index+1:02d}'; p=Poster(output,key,project['name'],'BeKaPaKa Studio',w=w,h=h)
         p.paper=(family in ('lineup','report','partners','schedule','statistics','club') and project.get('visualStyle')!='photo') if v3 else (project.get('visualStyle')=='editorial') if v2 else family in ('lineup','report','schedule','partners'); p.ink=C['black'] if p.paper else C['white']; p.accent=C['red'] if d['kit']=='A' else '#FF7A18'
-        p.mode=mode; p.data=d; p.variant=variant; p.layout=project['layout']; p.kit=d['kit']; p.assets=assets; p.assets_used=[]; p.ai_scene=any(a.get('provenance') for a in assets.values())
+        p.mode=mode; p.data=d; p.variant=variant; p.layout=project['layout']; p.kit=d['kit']; p.assets=assets; p.assets_used=[]
         p.story=format_name=='story'; p.family=family
         p.m=72 if w==1080 else 128; p.top=270 if format_name=='story' else 84; p.bottom=(h-80 if v3 else 1560) if format_name=='story' else h-80
         p.safe=(260,h-72 if v3 else 1600) if format_name=='story' else (72,h-72)

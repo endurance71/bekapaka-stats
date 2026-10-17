@@ -23,7 +23,7 @@ Wymagane Node 22, PostgreSQL, Python 3.11+ i środowisko backendu z poprawnym `D
 4. Wybierz układ i osobno kolorystykę stroju. Granat/pomarańcz wymaga potwierdzenia kontekstu stroju B. Format zmienia kompozycję w natywnych wymiarach. Kadr zachowuje proporcje zdjęcia.
 5. Oceń podgląd również przy 360 px. Nowe kompozycje 3.0.0 są początkowo `draft`; zatwierdzenie dotyczy konkretnego typu, kompozycji, formatu, stroju, materiału i odcisku implementacji po obejrzeniu aktualnego podglądu. Każdy wybrany format wymaga oceny. W „Marka i partnerzy” można wycofać konkretną kompozycję/format. Dotychczasowe rewizje zachowują renderer historyczny. Przeniesienie projektu tworzy nową rewizję i wymaga ponownej oceny. Stare zatwierdzenia nie odblokowują eksportu nowej kompozycji.
 6. Potwierdź dane i wygląd bieżącej rewizji. Potwierdzenie obejmuje również odcisk wybranych materiałów i partnerów; zmiana znaku, praw do zdjęcia lub danych partnera wymaga odświeżenia podglądu i ponownej oceny. Każda edycja unieważnia potwierdzenie. „Sprawdź eksport” wskazuje konkretne pola do poprawy.
-7. Generuj paczkę. ZIP zawiera PNG sRGB, opis, globalny tekst alternatywny, mapę tekstów dla slajdów, oznaczenie AI i manifest. Możesz pobrać pojedyncze pliki. Na telefonie przycisk udostępnienia ZIP korzysta z systemowego share sheet, jeżeli przeglądarka go obsługuje.
+7. Generuj paczkę. ZIP zawiera PNG sRGB, opis, globalny tekst alternatywny, mapę tekstów dla slajdów i manifest. Bez oznaczeń AI — patrz [Zakaz oznaczeń AI](#zakaz-oznaczeń-ai). Możesz pobrać pojedyncze pliki. Na telefonie przycisk udostępnienia ZIP korzysta z systemowego share sheet, jeżeli przeglądarka go obsługuje.
 
 Przy konflikcie dwóch urządzeń Studio nie nadpisuje projektu; pokazuje błąd i pozwala wczytać aktualną rewizję. Niezapisane zmiany pozostają w formularzu. Cofanie dotyczy sesji edycji, a przywrócenie historii tworzy nową rewizję. Archiwum nie usuwa projektu. Zduplikuj projekt, aby ponownie edytować materiał z archiwum.
 
@@ -134,3 +134,15 @@ Przełącznik **Strefy bezpieczne** pokazuje dla relacji obszar informacji z pak
 - Studio: `npm --prefix studio test` i `npm --prefix studio run build`.
 
 Przed produkcyjnym odbiorem pozostaje rzeczywisty pilotaż: co najmniej dziewięć materiałów ocenionych przez właściciela, ocena wspólnego feedu, fizyczny Safari iOS / Chrome Android (HEIC i share sheet), rzeczywiste wywołanie osobno rozliczanego Gemini, pomiar RAM workera oraz test odtworzenia na VPS. Testy automatyczne i podgląd przeglądarkowy nie zastępują tych decyzji.
+
+## Zakaz oznaczeń AI
+
+Decyzja właściciela: publikowane materiały **nigdy** nie zawierają napisów ani dopisków o AI.
+
+- Grafiki: stopka to zawsze „BEKAPAKA BOBOLICE” (w podglądzie „PODGLĄD ROBOCZY”), także gdy tło pochodzi z generatora AI.
+- Teksty: opisy Instagram/Facebook, relacje, teksty alternatywne, artykuły na bekapaka.pl i paczka ZIP — bez zdań typu „Ilustracja tła wygenerowana przy użyciu AI” i bez pliku `oznaczenie-ai.txt`.
+- Prompty (`prompts.js`, `report-prompt.js`): model nie wspomina o AI ani o tym, jak powstały grafika lub tekst.
+- Wewnętrzne dane (`provenance`, `origin`, etykieta „Ilustracja AI · wymaga oceny” w bibliotece) zostają tylko w panelu i manifeście — nie trafiają do publikacji.
+- Strażnik: `backend/tests/unit/studio.no-ai-labels.test.js`; reguła agentów: `.cursor/rules/no-ai-labels.mdc` i [AGENTS.md](../AGENTS.md).
+
+Zmiana wyłącznie na wyraźną prośbę właściciela.

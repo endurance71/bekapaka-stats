@@ -166,7 +166,6 @@ async function graphicState(db, owner, item, cache) {
         const view = await projectView(db, owner, item.projectId);
         const report = await validation(db, owner, view);
         const job = await latestExport(db, owner, view.id, view.currentRevision);
-        const exportRow = job ? await db.studioExport.findUnique({ where: { jobId: job.id } }) : null;
         return {
           projectId: view.id,
           name: view.name,
@@ -179,7 +178,6 @@ async function graphicState(db, owner, item, cache) {
           errors: report.errors,
           exportJobId: job?.id || null,
           exportFiles: job && new Date(job.result?.expiresAt || 0) > new Date() ? job.result.files.filter((f) => f.mime === 'image/png').map(({ storageKey, ...f }) => f) : [],
-          aiAssets: !!exportRow?.manifest?.assets?.some((a) => a.provenance),
         };
       })(),
     );

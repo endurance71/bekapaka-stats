@@ -37,7 +37,6 @@ export type Graphic = {
   errors: { field: string; message: string }[];
   exportJobId: string | null;
   exportFiles: Output[];
-  aiAssets: boolean;
   format: string;
   hasFormat: boolean;
 };

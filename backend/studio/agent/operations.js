@@ -66,7 +66,6 @@ export const studioAgentOperations = {
         channelList: channels,
         hashtags: (await getSettings(db, owner)).hashtags,
         brief: args.brief,
-        aiArtwork: view.items.some((i) => i.graphic?.aiAssets),
       });
       return { inputHash: promptHash(prompt), version: prompt.version, prompt: { system: prompt.system, user: prompt.user, schema: prompt.schema }, view, channels };
     },
