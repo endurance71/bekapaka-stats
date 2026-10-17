@@ -3,12 +3,12 @@ import fs from 'node:fs';
 import { channelTexts } from '../../studio/publications/texts.js';
 
 // The owner never agreed to AI disclosures: nothing published by Studio may carry an AI label.
+// renderer/references/ are frozen brand-book copies used only by comparison tests, never for publication.
 const published = [
   'studio/render.js',
   'studio/renderer/render.py',
   'studio/renderer/render_v2.py',
   'studio/renderer/render_v3.py',
-  'studio/renderer/references/core.py',
   'studio/publications/texts.js',
   'studio/publications/website.js',
 ];
