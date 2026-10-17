@@ -145,13 +145,12 @@ export function responseSchema(channelList) {
  * Builds the prompt for copy of the requested channels of one publication.
  * `brief` is an optional owner note (angle, tone accent) — guidance, never a fact.
  */
-export function buildCopyPrompt({ playbookDef, facts, channelList, hashtags, brief = '', aiArtwork = false }) {
+export function buildCopyPrompt({ playbookDef, facts, channelList, hashtags, brief = '' }) {
   const system = [brandVoice, ...channelList.map((c) => channelInstructions[c])].join('\n\n');
   const context = {
     schemat: { id: playbookDef.id, nazwa: playbookDef.label, kiedy: playbookDef.timing, coMusiPasc: playbookDef.hint },
     kanaly: channelList,
     dozwoloneHashtagi: { instagram: hashtags?.instagram ?? ['#BKPK'], facebook: hashtags?.facebook ?? [] },
-    tloGrafikiToIlustracjaAI: aiArtwork,
     TERMINY: Object.fromEntries(
       [
         ['wydarzenie', when(facts.date)],

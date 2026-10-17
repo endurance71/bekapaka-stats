@@ -124,7 +124,7 @@ export const copyCacheKey = (model, prompt) => hash({ model, version: prompt.ver
  * The website article of a match with KALK statistics is a separate call: the reporter prompt (report-prompt.js)
  * writes prose and Studio assembles the article. Social channels share one copy call. Both run in one job.
  */
-export async function queueCopy(db, owner, publication, channelList, { brief = '', hashtags, aiArtwork = false, model: modelId } = {}) {
+export async function queueCopy(db, owner, publication, channelList, { brief = '', hashtags, model: modelId } = {}) {
   const def = playbook(publication.playbook);
   if (!def) fail(422, 'Nieznany schemat publikacji');
   const facts = publication.facts;
@@ -133,7 +133,7 @@ export async function queueCopy(db, owner, publication, channelList, { brief = '
   const model = social.length ? await resolveModel(db, owner, 'copy', modelId) : null;
   const reportModel = withReport ? await resolveModel(db, owner, 'report', modelId) : null;
   if (!publication.factsConfirmedHash || publication.factsConfirmedHash !== publication.factsHash) fail(422, 'Potwierdź fakty publikacji przed wysłaniem ich do AI');
-  const prompt = social.length ? buildCopyPrompt({ playbookDef: def, facts, channelList: social, hashtags, brief, aiArtwork }) : null;
+  const prompt = social.length ? buildCopyPrompt({ playbookDef: def, facts, channelList: social, hashtags, brief }) : null;
   const reportPrompt = withReport ? buildReportPrompt(facts, brief) : null;
   const bytes = (p) => Buffer.byteLength(p.system + p.user + JSON.stringify(p.schema));
   if (prompt && bytes(prompt) > tasks.copy.maxInputBytes) fail(422, 'Dane do AI przekraczają limit bezpiecznej rezerwacji. Skróć notatki w faktach.');

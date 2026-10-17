@@ -50,7 +50,7 @@ def foot(p,note=None):
     if p.family not in ('report','player') or p.variant=='mvp':
         M.stripes(p,p.m,sy,p.w-2*p.m,color=M.GOLD if p.family=='player' and p.variant=='mvp' else p.accent)
     sym.place(p,'wordmark-kolor' if p.paper else 'wordmark-negatyw',p.m,fy-(44 if p.w>p.h else 40),h=60 if p.w>p.h else 50)
-    note=note or ('PODGLĄD ROBOCZY' if p.mode=='preview' else 'ILUSTRACJA AI' if p.ai_scene else 'BEKAPAKA BOBOLICE')
+    note=note or ('PODGLĄD ROBOCZY' if p.mode=='preview' else 'BEKAPAKA BOBOLICE')
     text(p,note,p.w-p.m,fy,20,'body',C['black'] if p.paper else MUT_B if p.kit=='B' else C['muted'],'end',p.w-2*p.m-260)
 
 def mini_header(p,label):

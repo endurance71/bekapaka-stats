@@ -23,4 +23,5 @@ Reguła Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`
 - Audyt danych KALK: `node backend/scripts/kalk-data-audit.js` — szczegóły w [docs/scraping.md](docs/scraping.md#audyt-danych-kalk)
 - Strapi MCP: `https://cms.bekapaka.pl/mcp` (wbudowany, `mcp.enabled` w `cms-app/config/server.js`). Auth: **Admin token** z panelu Strapi — nie `SITE_CMS_TOKEN`. Konfiguracja Cursora tylko lokalnie w `~/.cursor/mcp.json` (token nie w Git). Rotacja: [docs/security-rotation.md](docs/security-rotation.md)
 - Silnik AI: jedno globalne ustawienie (`AiEngineSetting`) dla panelu i Studio. Serwerowe Agent SDK używa **wyłącznie** `AGENT_SDK_ANTHROPIC_API_KEY` (klucz Console) — nigdy `CLAUDE_CODE_OAUTH_TOKEN`. Obrazy zawsze przez API obrazów. Szczegóły: [docs/ai-engine.md](docs/ai-engine.md)
+- **Zakaz oznaczeń AI**: Studio nie umieszcza napisów typu „Ilustracja AI” ani dopisków o AI na grafikach, w opisach, alt-tekstach, artykułach ani w paczce ZIP. Nie dodawać ich bez wyraźnej zgody właściciela.
 - Podgląd CMS: Preview w `cms-app/config/admin.js` → `https://bekapaka.pl/api/preview` (`PREVIEW_SECRET` na VPS). Szkice aktualności tylko w draft mode, nie na stronie publicznej.

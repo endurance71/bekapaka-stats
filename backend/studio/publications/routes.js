@@ -92,7 +92,6 @@ export function publicationRoutes(router, db) {
     const queued = await queueCopy(db, req.studioOwner, view, wanted, {
       brief: input.brief,
       hashtags: (await getSettings(db, req.studioOwner)).hashtags,
-      aiArtwork: view.items.some((i) => i.graphic?.aiAssets),
       model: input.model,
     });
     if (queued.cached) return res.json({ cached: true, result: queued.result });

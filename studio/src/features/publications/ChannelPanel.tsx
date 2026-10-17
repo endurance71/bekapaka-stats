@@ -217,7 +217,6 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
               <Link to={`/grafiki/${item.graphic.projectId}?publikacja=${publication.id}`}>otwórz grafikę</Link>
             </p>
           )}
-          {item.graphic?.aiAssets && <p className="muted small">Tło AI — do tekstu dopisywane jest oznaczenie AI.</p>}
           {image.exported.length > 0 && item.graphic?.exportJobId && (
             <div className="channel-files">
               {image.exported.map((f) => (

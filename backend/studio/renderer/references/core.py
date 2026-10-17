@@ -165,7 +165,7 @@ def turniej():
     M.solid(p, T['days'], 262, 1010, 150, C['white'], fx=ink); p.text('DZIEŃ', 266, 1050, 26, 'label', spacing=3, shadow=True)
     sym.icon_row(p, [('data', T['date']), ('hala', VENUE)], 72, 1130, size=30, text_size=26, shadow=True)
     M.stripes(p, 72, 1180, 600)
-    foot(p, 'PUCHAR: ILUSTRACJA AI · ' + NOTE); p.save()
+    foot(p, NOTE); p.save()
 
 def relacja():
     R = D['report']; p = new('06-relacja', 'relacja', bg=C['paper']); ink = mat.ink(p, shadow=False); paper(p)

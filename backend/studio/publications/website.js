@@ -111,7 +111,7 @@ function newsData(view, item, slug, coverId) {
     title: c.title,
     slug,
     excerpt: c.excerpt,
-    content: item.graphic?.aiAssets ? `${c.content}\n\n_Ilustracja tła wygenerowana przy użyciu AI._` : c.content,
+    content: c.content,
     tags: c.tags,
     coverImage: coverId,
     // Studio graphics carry text up to their margins (score, wordmark, footer): always shown whole, never cropped.
