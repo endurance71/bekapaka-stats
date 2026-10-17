@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { channels } from './channels.js';
 import { when } from './templates.js';
 
-export const REPORT_PROMPT_VERSION = 'report-2026.10-v3';
+export const REPORT_PROMPT_VERSION = 'report-2026.10-v4';
 
 const CLUB = 'BeKaPaKa Bobolice';
 const has = (v) => v !== null && v !== undefined && String(v).trim() !== '';
@@ -87,6 +87,7 @@ JAK PISZESZ
 PRAWDA
 - Jedynym źródłem jest OŚ MECZU. Każda liczba, minuta, wynik i nazwisko muszą z niej pochodzić — przepisujesz je dokładnie, niczego nie liczysz sam.
 - Nie wymyślasz: akcji (wsady, trójki równo z syreną), pozycji zawodników, cytatów, emocji, kibiców, atmosfery, kontuzji, decyzji trenera. Nie oceniasz obrony ani gry rywala — opisujesz fakty (straty, skuteczność, przestój od minuty do minuty).
+- Nie wspominasz o AI ani o tym, jak powstały grafika lub tekst — żadnych dopisków typu „ilustracja AI”.
 - Serię opisujesz w kwarcie i minutach z osi. Daty i godziny tylko z osi. Bez „dziś”, „wczoraj”, „w ten weekend”.
 
 NAZEWNICTWO

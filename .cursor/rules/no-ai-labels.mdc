@@ -1,0 +1,17 @@
+---
+description: Zakaz oznaczeń i napisów o AI w grafikach i tekstach BeKaPaKa
+alwaysApply: true
+---
+
+# Zakaz oznaczeń AI
+
+Właściciel klubu **nie zgodził się** na żadne oznaczenia AI w publikowanych materiałach.
+
+- Studio nie umieszcza na grafikach napisów typu „ILUSTRACJA AI”, „wygenerowano przez AI” itp. — stopka to zawsze „BEKAPAKA BOBOLICE” (lub „PODGLĄD ROBOCZY” w podglądzie).
+- Opisy postów (Instagram, Facebook, relacje), teksty alternatywne, artykuły na bekapaka.pl i paczka ZIP nie zawierają dopisków o AI ani pliku z oznaczeniem AI.
+- Prompty AI (`backend/studio/publications/prompts.js`, `report-prompt.js`) zakazują modelowi wspominania o AI.
+- Test `backend/tests/unit/studio.no-ai-labels.test.js` pilnuje tej reguły — nie usuwać go i nie omijać.
+
+Wewnętrzne pola i etykiety administracyjne (`provenance`, `origin`, etykieta w bibliotece materiałów) mogą zostać — nie trafiają do publikacji.
+
+Zmiana tej reguły wyłącznie na **wyraźną prośbę właściciela**.
