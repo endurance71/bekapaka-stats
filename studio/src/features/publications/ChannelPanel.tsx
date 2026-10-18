@@ -21,6 +21,7 @@ import SocialPreview from '../graphic-editor/SocialPreview';
 import { Counter, HashtagInput, Issues, PlannedAtInput, StatusPill } from './bits';
 import { useItemDraft } from './usePublication';
 import WebsiteActions, { useWebsiteConfig } from './WebsiteActions';
+import ExternalPublication from './ExternalPublication';
 
 function useGraphicImage(graphic: Graphic | null) {
   const exported = graphic?.exportJobId
@@ -281,10 +282,14 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             )}
           </>
         )}
+        {(item.status === 'draft' || item.status === 'approved') && publication.status !== 'archived' && (
+          <ExternalPublication publication={publication} item={item} busy={busy || saving || dirty} run={run} />
+        )}
         {item.status === 'published' && (
           <p className="published-note">
             <Check size={15} /> Opublikowano{' '}
             {item.publishedAt ? new Date(item.publishedAt).toLocaleString('pl-PL') : ''}
+            {item.events?.find((e) => e.action === 'published')?.payload?.external === true && ' · poza Studio'}
             {item.externalUrl && (
               <a href={item.externalUrl} target="_blank" rel="noopener noreferrer">
                 Zobacz <ExternalLink size={13} />

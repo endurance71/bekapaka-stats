@@ -121,6 +121,58 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     expect(applied.value.items.find((i) => i.id === item.id).copyOrigin).toBe('template');
   });
 
+  it('records a post published outside Studio without approval, with its images', async () => {
+    const created = await request('/publications', { playbook: 'news', facts: { title: 'Wynik meczu poza Studio', date: '2026-10-18T12:40:00.000Z' } }, 'POST');
+    const id = created.value.id;
+    const fb = created.value.items.find((i) => i.channel === 'facebook');
+    expect(fb.status).toBe('draft');
+    expect(fb.ready.length).toBeGreaterThan(0);
+
+    const future = await request(`/publications/${id}/items/${fb.id}/external-published`, { expectedRevision: fb.revision, publishedAt: new Date(Date.now() + 3600_000).toISOString() }, 'POST');
+    expect(future.res.status).toBe(422);
+
+    // 1×1 PNG: what actually went out goes with the record.
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    const form = new FormData();
+    form.append('payload', JSON.stringify({ expectedRevision: fb.revision, url: 'https://www.facebook.com/post/1', publishedAt: '2026-10-04T15:00:00.000Z', note: 'Business Suite' }));
+    form.append('images', new Blob([png], { type: 'image/png' }), 'plakat.png');
+    const recorded = await fetch(`${base}/publications/${id}/items/${fb.id}/external-published`, {
+      method: 'POST',
+      headers: { Origin: 'http://localhost:5174', 'X-Studio-Request': '1', Cookie: cookie },
+      body: form,
+    });
+    expect(recorded.status).toBe(200);
+    const after = (await recorded.json()).items.find((i) => i.id === fb.id);
+    expect(after).toMatchObject({ status: 'published', externalUrl: 'https://www.facebook.com/post/1', approvedHash: null, publishedAt: '2026-10-04T15:00:00.000Z' });
+    expect(after.events[0]).toMatchObject({ action: 'published', payload: { external: true, unapproved: true, note: 'Business Suite' } });
+    expect(after.events[0].payload.images).toHaveLength(1);
+    const image = await request(`/publications/${id}/items/${fb.id}/external-images/0`);
+    expect(image.res.status).toBe(200);
+    expect(image.res.headers.get('content-type')).toContain('image/png');
+
+    const again = await request(`/publications/${id}/items/${fb.id}/external-published`, { expectedRevision: after.revision, publishedAt: '2026-10-04T15:00:00.000Z' }, 'POST');
+    expect(again.res.status).toBe(409);
+
+    // Linking an article made by hand in the CMS never calls the CMS (STUDIO_CMS_URL is not set here).
+    const web = after && (await request(`/publications/${id}`)).value.items.find((i) => i.channel === 'website');
+    const linked = await request(
+      `/publications/${id}/items/${web.id}/website/link`,
+      { expectedRevision: web.revision, documentId: 'doc123', slug: 'wynik-meczu-poza-studio', coverFileId: 41, publishedAt: '2026-10-04T14:30:00.000Z' },
+      'POST',
+    );
+    expect(linked.res.status).toBe(200);
+    const site = linked.value.items.find((i) => i.id === web.id);
+    expect(site).toMatchObject({ status: 'published', externalId: 'doc123', externalUrl: 'https://bekapaka.pl/aktualnosci/wynik-meczu-poza-studio' });
+    expect(site.cms).toMatchObject({ slug: 'wynik-meczu-poza-studio', documentId: 'doc123', upToDate: true });
+    expect((await request(`/publications/${id}/items/${web.id}/website/link`, { expectedRevision: site.revision, documentId: 'x', slug: 'x' }, 'POST')).res.status).toBe(409);
+
+    const ig = linked.value.items.find((i) => i.channel === 'instagram_feed');
+    await request(`/publications/${id}/items/${ig.id}`, { expectedRevision: ig.revision, status: 'skipped' }, 'PUT');
+    const skipped = (await request(`/publications/${id}`)).value.items.find((i) => i.id === ig.id);
+    expect((await request(`/publications/${id}/items/${ig.id}/external-published`, { expectedRevision: skipped.revision, publishedAt: '2026-10-04T15:00:00.000Z' }, 'POST')).res.status).toBe(409);
+    await db.studioPublication.delete({ where: { id } });
+  });
+
   it('stores owner hashtag sets and isolates other owners', async () => {
     expect((await request('/settings')).value).toEqual({ hashtags: { instagram: ['#BKPK'], facebook: [] } });
     expect((await request('/settings', { hashtags: { instagram: ['#BKPK', '#KALK'], facebook: ['#BKPK'] } }, 'PUT')).res.status).toBe(200);

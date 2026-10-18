@@ -472,6 +472,41 @@ export async function markPublished(db, owner, pubId, itemId, input) {
   return publicationView(db, owner, pubId);
 }
 
+// A post published outside Studio (Business Suite, CMS, phone) still belongs in its history and in the grid.
+// It skips readiness on purpose and stays marked as unapproved; the images are what actually went out.
+const externalInput = z
+  .object({
+    expectedRevision: z.number().int().min(1),
+    url: z.string().trim().url().max(500).or(z.literal('')).default(''),
+    publishedAt: z.string().datetime({ offset: true }),
+    note: z.string().trim().max(500).default(''),
+  })
+  .strict();
+export async function recordExternalPublication(db, owner, pubId, itemId, input, images = []) {
+  const data = externalInput.parse(input);
+  const item = await findItem(db, owner, pubId, itemId);
+  if (item.status === 'published') fail(409, 'Wariant jest już opublikowany');
+  if (item.status === 'skipped') fail(409, 'Kanał jest pominięty');
+  const publishedAt = new Date(data.publishedAt);
+  // Scheduled posts are recorded once they are live, so the grid never shows a post that has not happened.
+  if (publishedAt.getTime() > Date.now() + 5 * 60 * 1000) fail(422, 'Zapisz publikację, gdy już się ukaże');
+  await db.$transaction(async (tx) => {
+    await bumpItem(tx, item, data.expectedRevision, { status: 'published', publishedAt, externalUrl: data.url || null, approvedHash: null });
+    await event(tx, item.id, 'published', 'owner', { url: data.url || null, manual: true, external: true, unapproved: true, note: data.note || null, images });
+  });
+  return publicationView(db, owner, pubId);
+}
+
+/** Images recorded with an external publication (newest published event first). */
+export async function externalImage(db, owner, pubId, itemId, index) {
+  const item = await db.studioPublicationItem.findFirst({ where: { id: itemId, publicationId: pubId, publication: { ownerId: owner } } });
+  if (!item) fail(404, 'Wariant publikacji nie istnieje');
+  const published = await db.studioPublishEvent.findFirst({ where: { itemId: item.id, action: 'published' }, orderBy: { createdAt: 'desc' } });
+  const image = published?.payload?.images?.[index];
+  if (!image) fail(404, 'Brak grafiki tej publikacji');
+  return image;
+}
+
 // ---------- package ----------
 /** ZIP of approved variants: per-channel folders with PNGs from the current export and ready-to-paste texts. */
 export async function publicationPackage(db, owner, pubId) {
