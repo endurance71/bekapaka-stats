@@ -183,7 +183,7 @@ Ręczny trigger (admin): `POST /api/scrape/kalk/div2/run`.
 
 ### Harmonogram KALK (host → bkpk-backend, bez MOYA)
 
-Na VPS nie ma zainstalowanego demona `cron`. Źródłem harmonogramu jest więc **timer systemd** `bekapaka-kalk-sync.timer`: poniedziałek 07:30 i wtorek 18:00 czasu hosta (`Europe/Warsaw`), pełny sync przez `127.0.0.1:4001`. Nie używać portu MOYA `3000`.
+Na VPS nie ma zainstalowanego demona `cron`. Źródłem harmonogramu jest więc **timer systemd** `bekapaka-kalk-sync.timer`: codziennie 07:30 oraz w sobotę i niedzielę 21:00 (`Europe/Warsaw`), pełny sync przez `127.0.0.1:4001`. Nie używać portu MOYA `3000`.
 
 Po ustawieniu `KALK_CRON_SECRET` w `/opt/bekapaka-stats/.env` i ponownym uruchomieniu `bkpk-backend` zainstaluj pliki z repo:
 
