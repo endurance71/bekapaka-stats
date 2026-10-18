@@ -75,6 +75,30 @@ export function StatisticsTable() {
             <option value="season">Sezon</option>
           </select>
         </label>
+        <TextField k="kicker" label="Nadtytuł · np. „6. kolejka KALK”" maxLength={60} />
+        <TextField k="subtitle" label="Podtytuł · np. „BeKaPaKa 56:54 GMVT TEAM · 18.10.2026”" maxLength={120} />
+        <div className="field-row">
+          {[0, 1].map((c) => (
+            <label key={c}>
+              {c === 0 ? 'Kolumna BeKaPaKa' : 'Kolumna rywala'}
+              <input
+                maxLength={12}
+                placeholder={c === 0 ? 'BKPK' : 'GMVT'}
+                value={d.columns[c] || ''}
+                disabled={readonly}
+                onChange={(e) => {
+                  const next = [d.columns[0] || '', d.columns[1] || ''];
+                  next[c] = e.target.value;
+                  field('columns', next.some((v) => v.trim()) ? next : []);
+                }}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="muted small">
+          Z kolumnami karta porównuje drużyny (wartość BeKaPaKa i rywala). Bez kolumn pokazuje liderów: liczba z
+          jednostką i numer zawodnika.
+        </p>
         {rows.map((row, i) => (
           <div className="data-table-row" key={i}>
             <input
@@ -101,6 +125,33 @@ export function StatisticsTable() {
               disabled={readonly}
               onChange={(e) => set(replaceAt(rows, i, { detail: e.target.value }))}
             />
+            <div className="field-row three">
+              <input
+                aria-label={`Wartość rywala ${i + 1}`}
+                placeholder="Rywal"
+                maxLength={40}
+                value={row.value2 || ''}
+                disabled={readonly}
+                onChange={(e) => set(replaceAt(rows, i, { value2: e.target.value }))}
+              />
+              <input
+                aria-label={`Jednostka ${i + 1}`}
+                placeholder="Jednostka · PKT"
+                maxLength={12}
+                value={row.unit || ''}
+                disabled={readonly}
+                onChange={(e) => set(replaceAt(rows, i, { unit: e.target.value }))}
+              />
+              <input
+                aria-label={`Numer zawodnika ${i + 1}`}
+                placeholder="NR"
+                maxLength={3}
+                inputMode="numeric"
+                value={row.number || ''}
+                disabled={readonly}
+                onChange={(e) => set(replaceAt(rows, i, { number: e.target.value.replace(/\D/g, '') }))}
+              />
+            </div>
             <button className="text-button" disabled={readonly} onClick={() => set(rows.filter((_, j) => i !== j))}>
               Usuń wiersz
             </button>
@@ -109,7 +160,7 @@ export function StatisticsTable() {
         <button
           className="text-button"
           disabled={readonly || rows.length >= 60}
-          onClick={() => set([...rows, { label: '', value: '', detail: '' }])}
+          onClick={() => set([...rows, { label: '', value: '', detail: '', value2: '', unit: '', number: '' }])}
         >
           + Dodaj wiersz
         </button>
@@ -534,6 +585,101 @@ export function CaptionPanel() {
         <AreaField k="caption" label="Opis posta" maxLength={4000} />
         <AreaField k="altText" label="Tekst alternatywny" />
         <TextField k="link" label="Link" maxLength={500} />
+      </div>
+    </details>
+  );
+}
+
+// Poster (reference 18.10.2026): two hero numbers and the quarters. Only confirmed numbers; empty rows are dropped.
+export function PosterNumbers() {
+  const { d, field, readonly } = useEditor();
+  const hero = [0, 1].map((i) => d.heroStats[i] || { value: '', label: '' });
+  const setHero = (i: number, patch: Partial<(typeof hero)[number]>) =>
+    field(
+      'heroStats',
+      replaceAt(hero, i, patch).filter((h) => h.value.trim() && h.label.trim()),
+    );
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const setQuarter = (i: number, side: 'us' | 'them', raw: string) => {
+    setDrafts((x) => ({ ...x, [`${i}${side}`]: raw }));
+    const n = Number(raw);
+    if (raw.trim() !== '' && Number.isInteger(n) && n >= 0 && n <= 999)
+      field('quarters', replaceAt(d.quarters, i, { [side]: n }));
+  };
+  return (
+    <details open>
+      <summary>Liczby plakatu</summary>
+      <div className="form-group">
+        <TextField k="kicker" label="Nadtytuł · np. „6. kolejka KALK”" maxLength={60} />
+        {hero.map((h, i) => (
+          <div className="field-row" key={i}>
+            <input
+              aria-label={`Liczba ${i + 1}`}
+              placeholder={i === 0 ? '12:0' : '22'}
+              maxLength={12}
+              value={h.value}
+              disabled={readonly}
+              onChange={(e) => setHero(i, { value: e.target.value })}
+            />
+            <input
+              aria-label={`Podpis liczby ${i + 1}`}
+              placeholder={i === 0 ? 'seria po przerwie' : 'zbiórki w ataku'}
+              maxLength={40}
+              value={h.label}
+              disabled={readonly}
+              onChange={(e) => setHero(i, { label: e.target.value })}
+            />
+          </div>
+        ))}
+        <p className="muted small">Kwarty pokazuje relacja (story). Wpisz je z protokołu.</p>
+        {d.quarters.map((q, i) => (
+          <div className="list-editor" key={i}>
+            <input
+              aria-label={`Nazwa kwarty ${i + 1}`}
+              maxLength={20}
+              value={q.label}
+              disabled={readonly}
+              onChange={(e) => field('quarters', replaceAt(d.quarters, i, { label: e.target.value }))}
+            />
+            <input
+              aria-label={`Punkty BeKaPaKa w kwarcie ${i + 1}`}
+              inputMode="numeric"
+              value={drafts[`${i}us`] ?? String(q.us)}
+              disabled={readonly}
+              onChange={(e) => setQuarter(i, 'us', e.target.value)}
+            />
+            <input
+              aria-label={`Punkty rywala w kwarcie ${i + 1}`}
+              inputMode="numeric"
+              value={drafts[`${i}them`] ?? String(q.them)}
+              disabled={readonly}
+              onChange={(e) => setQuarter(i, 'them', e.target.value)}
+            />
+            <button
+              className="icon-button"
+              aria-label={`Usuń kwartę ${i + 1}`}
+              disabled={readonly}
+              onClick={() => {
+                setDrafts({});
+                field(
+                  'quarters',
+                  d.quarters.filter((_, j) => j !== i),
+                );
+              }}
+            >
+              <X size={15} />
+            </button>
+          </div>
+        ))}
+        <button
+          className="text-button"
+          disabled={readonly || d.quarters.length >= 5}
+          onClick={() =>
+            field('quarters', [...d.quarters, { label: `${d.quarters.length + 1}. kwarta`, us: 0, them: 0 }])
+          }
+        >
+          + Dodaj kwartę
+        </button>
       </div>
     </details>
   );
