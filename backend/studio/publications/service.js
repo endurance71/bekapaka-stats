@@ -15,6 +15,7 @@ import { graphicFormats, playbook } from './playbooks.js';
 import { altText, schematicCopy, TEMPLATE_VERSION, when } from './templates.js';
 import { hasErrors, lintCopy } from './brand-lint.js';
 import { channelTexts, folders } from './texts.js';
+import { GRID_CHANNELS, GRID_SIZE, compositionName, signatureOf, varietyWarnings } from './variety.js';
 
 export const settingsSchema = z
   .object({
@@ -173,6 +174,7 @@ async function graphicState(db, owner, item, cache) {
           formats: view.payload.formats,
           revision: view.currentRevision,
           contentHash: view.revision.contentHash,
+          signature: signatureOf(view.payload),
           status: view.status,
           valid: report.valid,
           errors: report.errors,
@@ -205,7 +207,72 @@ export async function publicationView(db, owner, id) {
     const cms = synced ? { slug: synced.slug, documentId: synced.documentId, syncedAt: item.events.find((e) => e.action === 'cms-draft').createdAt, upToDate: synced.copyHash === hash(item.copy) } : null;
     items.push({ ...itemView(item), graphic, issues, stale, cms, ready: readiness(p, item, graphic, issues) });
   }
+  // Feed variety: compare each grid channel's graphic with the channel's other posts (published and scheduled).
+  for (const item of items) {
+    if (!GRID_CHANNELS.includes(item.channel) || !item.graphic || item.status === 'skipped') continue;
+    const history = await gridHistory(db, owner, item.channel, { exclude: item.id, cache });
+    const warnings = item.status === 'draft' ? varietyWarnings({ signature: item.graphic.signature, plannedAt: item.plannedAt }, history) : [];
+    item.variety = { warnings, composition: compositionName(item.graphic.signature), history: history.slice(0, GRID_SIZE - 1) };
+  }
   return { ...p, items, factsConfirmed: factsConfirmed(p), playbookDef: playbook(p.playbook) || null };
+}
+
+// Last posts of a grid channel (published and approved for later), newest first, with what their graphic looked like.
+async function signatureFor(db, owner, projectId, cache) {
+  const key = `signature:${projectId}`;
+  if (!cache.has(key)) cache.set(key, projectView(db, owner, projectId).then((v) => signatureOf(v.payload)).catch(() => null));
+  return cache.get(key);
+}
+async function thumbnailFor(db, owner, item, published) {
+  if (published?.payload?.images?.length) return `/publications/${item.publicationId}/items/${item.id}/external-images/0`;
+  if (!item.projectId) return null;
+  const job = await db.studioJob.findFirst({
+    where: { ownerId: owner, projectId: item.projectId, kind: { in: ['export', 'preview'] }, status: 'completed' },
+    orderBy: { createdAt: 'desc' },
+  });
+  const file = filesFor(job, item.format)[0] || (job?.result?.files || []).find((f) => f.mime === 'image/png');
+  return job && file && new Date(job.result?.expiresAt || 0) > new Date() ? `/jobs/${job.id}/files/${file.key}` : null;
+}
+export async function gridHistory(db, owner, channel, { exclude = null, cache = new Map(), limit = GRID_SIZE } = {}) {
+  const rows = await db.studioPublicationItem.findMany({
+    where: { channel, status: { in: ['published', 'approved'] }, publication: { ownerId: owner }, ...(exclude ? { id: { not: exclude } } : {}) },
+    include: {
+      publication: { select: { title: true } },
+      events: { where: { action: { in: ['approved', 'published'] } }, orderBy: { createdAt: 'desc' }, take: 3 },
+    },
+    orderBy: { updatedAt: 'desc' },
+    take: 60,
+  });
+  const dated = rows
+    .map((r) => ({ r, at: r.publishedAt || r.plannedAt }))
+    .filter((x) => x.at)
+    .sort((a, b) => new Date(b.at) - new Date(a.at))
+    .slice(0, limit);
+  const out = [];
+  for (const { r } of dated) {
+    const published = r.events.find((e) => e.action === 'published');
+    const stored = r.events.find((e) => e.payload?.signature)?.payload.signature;
+    const signature = stored || (r.projectId ? await signatureFor(db, owner, r.projectId, cache) : null);
+    out.push({
+      itemId: r.id,
+      publicationId: r.publicationId,
+      title: r.publication.title,
+      status: r.status,
+      publishedAt: r.publishedAt,
+      plannedAt: r.plannedAt,
+      signature,
+      composition: compositionName(signature),
+      thumbnail: await thumbnailFor(db, owner, r, published),
+    });
+  }
+  return out;
+}
+
+/** Grid preview of one channel (Instagram profile or Facebook timeline) with repetition marks. */
+export async function gridPreview(db, owner, channel) {
+  if (!GRID_CHANNELS.includes(channel)) fail(400, 'Podgląd siatki jest dla posta Instagrama i Facebooka');
+  const history = await gridHistory(db, owner, channel);
+  return history.map((entry, i) => ({ ...entry, warnings: varietyWarnings(entry, history.slice(i + 1)) }));
 }
 
 // What still blocks approval of a channel variant; empty = ready.
@@ -446,15 +513,22 @@ export async function applyTemplates(db, owner, pubId, channelList) {
   return publicationView(db, owner, pubId);
 }
 
-export async function approveItem(db, owner, pubId, itemId, expectedRevision) {
+export async function approveItem(db, owner, pubId, itemId, expectedRevision, acceptRepetition = false) {
   const view = await publicationView(db, owner, pubId);
   const item = view.items.find((i) => i.id === itemId);
   if (!item) fail(404, 'Wariant publikacji nie istnieje');
   if (item.status !== 'draft') fail(409, 'Zatwierdzić można tylko roboczy wariant');
   if (item.ready.length) fail(422, 'Wariant nie jest gotowy', item.ready.map((message) => ({ field: item.channel, message })));
+  const repetition = item.variety?.warnings || [];
+  if (repetition.length && !acceptRepetition)
+    fail(422, 'Siatka się powtarza. Zmień grafikę albo zaznacz „Akceptuję powtórzenie”.', repetition.map((w) => ({ field: 'variety', message: w.message })));
   await db.$transaction(async (tx) => {
     await bumpItem(tx, item, expectedRevision, { status: 'approved', approvedHash: approvalHash(item, item.graphic) });
-    await event(tx, item.id, 'approved', 'owner', { graphicRevision: item.graphic?.revision ?? null });
+    await event(tx, item.id, 'approved', 'owner', {
+      graphicRevision: item.graphic?.revision ?? null,
+      signature: item.graphic?.signature ?? null,
+      ...(repetition.length ? { acceptedRepetition: repetition.map((w) => w.message) } : {}),
+    });
   });
   return publicationView(db, owner, pubId);
 }
@@ -467,7 +541,7 @@ export async function markPublished(db, owner, pubId, itemId, input) {
   if (item.status !== 'approved' || item.stale) fail(422, 'Opublikować można tylko aktualnie zatwierdzony wariant');
   await db.$transaction(async (tx) => {
     await bumpItem(tx, item, data.expectedRevision, { status: 'published', publishedAt: new Date(), externalUrl: data.url || null });
-    await event(tx, item.id, 'published', 'owner', { url: data.url || null, manual: true });
+    await event(tx, item.id, 'published', 'owner', { url: data.url || null, manual: true, signature: item.graphic?.signature ?? null });
   });
   return publicationView(db, owner, pubId);
 }
@@ -492,7 +566,7 @@ export async function recordExternalPublication(db, owner, pubId, itemId, input,
   if (publishedAt.getTime() > Date.now() + 5 * 60 * 1000) fail(422, 'Zapisz publikację, gdy już się ukaże');
   await db.$transaction(async (tx) => {
     await bumpItem(tx, item, data.expectedRevision, { status: 'published', publishedAt, externalUrl: data.url || null, approvedHash: null });
-    await event(tx, item.id, 'published', 'owner', { url: data.url || null, manual: true, external: true, unapproved: true, note: data.note || null, images });
+    await event(tx, item.id, 'published', 'owner', { url: data.url || null, manual: true, external: true, unapproved: true, note: data.note || null, images, signature: { composition: 'external' } });
   });
   return publicationView(db, owner, pubId);
 }
