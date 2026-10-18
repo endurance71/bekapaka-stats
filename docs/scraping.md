@@ -34,7 +34,7 @@ Numery sezonów (`?sezon=`): 47 = 2023/24, 48 = 2024/25, 49 = 2025/26, 50 = 2026
 | Kiedy | Jak |
 |---|---|
 | Panel → Administracja → „Uruchom pełny import danych” | `POST /api/scrape/kalk/div2/run` — sync **przyrostowy** aktywnego sezonu |
-| Timer systemd na VPS (pon 07:30, wt 18:00) | `POST /api/internal/kalk/sync` (`X-Cron-Secret`) — przyrostowo; `?mode=resync` = pełny sezon |
+| Timer systemd na VPS (codziennie 07:30, sob/niedz 21:00) | `POST /api/internal/kalk/sync` (`X-Cron-Secret`) — przyrostowo; `?mode=resync` = pełny sezon |
 | Brakujące mecze | `POST /api/scrape/kalk/gaps` (`matchIds[]` lub automatycznie z audytu) → `kalk_sync.py --matches` |
 | Backfill / ręcznie | `docker exec -w /app bkpk-backend-prod node scripts/kalk-sync-v2.js --season history` |
 | Import gotowego pliku | `node scripts/kalk-import-v2.js <plik.json> [--dry-run]` |

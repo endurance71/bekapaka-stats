@@ -26,6 +26,7 @@ export function resolvePresentation<
     venue: string
     updatedAt: string | null
   }
+export function isAwaitingResult<T extends { date: string }>(game: T, now?: number): boolean
 export function selectHeroGame<T extends { date: string }>(
   games: T[],
   now?: number

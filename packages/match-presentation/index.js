@@ -71,6 +71,12 @@ export function resolvePresentation(game) {
     scoreThem: Object.hasOwn(manual, 'scoreThem') ? manual.scoreThem : (game.scoreThem ?? null)
   }
 }
+/** Mecz po godzinie rozpoczęcia, bez wyniku z ligi (nadal SCHEDULED) — pokazujemy go jako zakończony. */
+export function isAwaitingResult(game, now = Date.now()) {
+  const resolved = resolvePresentation(game)
+  const start = Date.parse(resolved.date)
+  return resolved.status === 'SCHEDULED' && Number.isFinite(start) && start < now
+}
 export function selectHeroGame(games, now = Date.now()) {
   const resolved = games.map(resolvePresentation)
   return (
@@ -78,8 +84,9 @@ export function selectHeroGame(games, now = Date.now()) {
     resolved
       .filter((game) => game.status === 'SCHEDULED' && Date.parse(game.date) >= now)
       .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))[0] ||
+    // Bez nadchodzącego meczu: ostatni rozegrany, także gdy liga nie podała jeszcze wyniku.
     resolved
-      .filter((game) => game.status === 'FINAL')
+      .filter((game) => game.status === 'FINAL' || isAwaitingResult(game, now))
       .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))[0] ||
     null
   )

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import type { DataState, GameSummary, NearestHighlight, NewsPost, RosterPlayer, SponsorItem, TeamStanding } from '../../../lib/data'
 import { FSMM_SUPPORT } from '../../../lib/fsmm-support'
-import { resolvePresentation, selectHeroGame } from '../../../../packages/match-presentation'
+import { isAwaitingResult, resolvePresentation, selectHeroGame } from '../../../../packages/match-presentation'
 import { NearestEventCalendarActions } from '../home/NearestEventCalendarActions'
 import { EventHero } from '../match/EventHero'
 import { ScoreBoard } from '../match/ScoreBoard'
@@ -48,14 +48,18 @@ export function HomeTemplate({
   tableState?: DataState<TeamStanding[]>
 }) {
   const hero = selectHeroGame(allGames)
-  const lastResult = recentGames.find((game) => resolvePresentation(game).status === 'FINAL')
-  const showResult = lastResult && lastResult.id !== hero?.id
+  const heroAwaiting = hero ? isAwaitingResult(hero) : false
+  const finals = recentGames.filter((game) => resolvePresentation(game).status === 'FINAL')
+  // Wynik, który hero już pokazuje, nie powtarza się w paśmie „Jak poszło?”.
+  const lastResult = finals.find((game) => game.id !== hero?.id)
+  const playedAny = finals.length > 0 || heroAwaiting
   const own = table.find((row) => isBekapakaRow(row.name))
   const pinned = news.findIndex((item) => item.isPinned)
   const leadIndex = pinned >= 0 ? pinned : 0
   const lead = news[leadIndex]
   const rest = news.filter((_, index) => index !== leadIndex)
   const hasLeaders = selectLeaders(roster).length > 0
+  const tableKicker = `Tabela KALK${tableState?.meta?.season?.label ? ` · ${tableState.meta.season.label}` : ''}`
 
   return (
     <div className="home">
@@ -65,11 +69,12 @@ export function HomeTemplate({
       {hero ? (
         <LiveMatchCard
           game={{ ...hero, opponentLogoUrl: hero.opponentLogoUrl || logoFor(table, hero.opponent) }}
-          kicker={hero.status === 'FINAL' ? 'Ostatni mecz' : undefined}
+          kicker={hero.status === 'FINAL' || heroAwaiting ? 'Ostatni mecz' : undefined}
+          awaitingResult={heroAwaiting}
           priority
           actions={
             <>
-              {hero.status === 'SCHEDULED' && (
+              {hero.status === 'SCHEDULED' && !heroAwaiting && (
                 <NearestEventCalendarActions primary highlight={{ source: 'kalk', at: hero.date, game: hero }} />
               )}
               <Link className="btn btn--secondary" href={`/mecze/kalk-${encodeURIComponent(hero.id)}`}>
@@ -89,10 +94,10 @@ export function HomeTemplate({
       )}
 
       {/* 2 · Jak poszło? */}
-      {(showResult || own) && (
+      {(lastResult || own) && (
         <Band labelledBy="h-wynik" className="home-result">
           <div className="split split--7-5">
-            {showResult && lastResult ? (
+            {lastResult ? (
               <div className="home-result__score">
                 <BandHead
                   kicker="Jak poszło?"
@@ -104,12 +109,21 @@ export function HomeTemplate({
                 <ArrowLink href={`/mecze/kalk-${encodeURIComponent(lastResult.id)}`}>Statystyki i przebieg meczu</ArrowLink>
               </div>
             ) : (
-              <BandHead kicker="Jak poszło?" title="Sezon KALK" titleId="h-wynik">
-                Wyniki pojawią się po pierwszym meczu sezonu.
-              </BandHead>
+              <div className="home-result__score">
+                <BandHead
+                  kicker="Jak poszło?"
+                  title="Sezon KALK"
+                  titleId="h-wynik"
+                  action={playedAny ? <ArrowLink href="/mecze?widok=wyniki">Wszystkie wyniki</ArrowLink> : undefined}
+                >
+                  {playedAny ? null : 'Wyniki pojawią się po pierwszym meczu sezonu.'}
+                </BandHead>
+                {/* Ostatni mecz jest w hero — tu zostaje pozycja w tabeli zamiast pustej kolumny. */}
+                {playedAny && <PositionSummary table={table} kicker={tableKicker} />}
+              </div>
             )}
             <div className="home-result__table">
-              <PositionSummary table={table} kicker={`Tabela KALK${tableState?.meta?.season?.label ? ` · ${tableState.meta.season.label}` : ''}`} />
+              {(lastResult || !playedAny) && <PositionSummary table={table} kicker={tableKicker} />}
               {tableState && <DataStateNotice {...tableState} />}
               {table.length > 0 && <StandingsBoard table={table} compact />}
               <ArrowLink href="/tabela">Pełna tabela</ArrowLink>
