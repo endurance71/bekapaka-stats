@@ -78,7 +78,15 @@ Wzorcem jest zaakceptowana przez właściciela publikacja BeKaPaKa – GMVT TEAM
   - limit emoji zależy od kanału (IG post 15, FB 20, relacja 2, strona 0);
   - procenty z jednym miejscem po przecinku wyliczone z par „celne/oddane” w faktach są dozwolone, podobnie jak stała „6,75 m”;
   - dzień tygodnia następnego meczu nie jest błędem.
-- **Grafiki i siatka:** komplet 3 grafik (plakat, liderzy, liczby) i kontrola monotonności siatki opisuje plan w krokach 2–4.
+- **Grafiki (komplet):** „Wynik meczu” tworzy trzy grafiki.
+  - Okładka: `final` w kompozycji „Plakat” (feed, story, landscape) z nadtytułem kolejki, dwiema liczbami meczu (najdłuższa seria i największa przewaga w statystykach) i kwartami w story.
+  - Liderzy: `leaders` na papierze, czyli trzech najlepszych strzelców i najlepszy zbierający spoza nich, z jednostką, szczegółem i numerem.
+  - „Klucz do wygranej” (po porażce „Mecz w liczbach”): `team-stats` na papierze, cztery porównania z największą przewagą BeKaPaKa, kolumny BKPK i skrót rywala.
+  - Post IG i FB niosą cały komplet (`extra` w playbooku, `extraProjectIds` w kanale; karuzela lub album, w paczce ZIP pliki `01-…`, `02-…`, `03-…`). Relacja i strona używają okładki.
+  - Treść wypełnia `publications/match-graphics.js` z potwierdzonych faktów (`facts.report`). Grafika, której fakty nie wypełnią (brak statystyk z KALK), nie powstaje.
+  - Zatwierdzenie kanału wymaga zatwierdzenia i eksportu każdej grafiki kompletu.
+- **Siatka:** kontrola monotonności (sekcja „Siatka”, ostrzeżenia i „Akceptuję powtórzenie” przy zatwierdzaniu).
+- Przecięcie liter tylko w krótkich nagłówkach; wynik i liczby nigdy nie są przecinane.
 
 ## Marka i renderer
 

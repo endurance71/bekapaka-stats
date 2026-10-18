@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import express from 'express';
 import crypto from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createStudioRouter } from '../../studio/routes.js';
@@ -171,6 +172,32 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     const skipped = (await request(`/publications/${id}`)).value.items.find((i) => i.id === ig.id);
     expect((await request(`/publications/${id}/items/${ig.id}/external-published`, { expectedRevision: skipped.revision, publishedAt: '2026-10-04T15:00:00.000Z' }, 'POST')).res.status).toBe(409);
     await db.studioPublication.delete({ where: { id } });
+  });
+
+  it('creates the post-match reference set from the match report and requires every graphic of a set', async () => {
+    const facts = JSON.parse(readFileSync(new URL('../fixtures/studio-reference/gmvt-2026-10-18.facts.json', import.meta.url), 'utf8'));
+    const created = await request('/publications', { playbook: 'match-result', facts }, 'POST');
+    expect(created.res.status).toBe(201);
+    const p = created.value;
+    const fb = p.items.find((i) => i.channel === 'facebook');
+    const ig = p.items.find((i) => i.channel === 'instagram_feed');
+    const story = p.items.find((i) => i.channel === 'instagram_story');
+    expect(fb.extraProjectIds).toHaveLength(2);
+    expect(ig.extraProjectIds).toEqual(fb.extraProjectIds);
+    expect(story.extraProjectIds).toEqual([]);
+    expect(fb.extraGraphics.map((g) => g.postType)).toEqual(['leaders', 'team-stats']);
+    const cover = await db.studioRevision.findFirst({ where: { projectId: fb.projectId } });
+    expect(cover.payload).toMatchObject({ postType: 'final', visualStyle: 'poster', formats: ['feed', 'story', 'landscape'] });
+    expect(cover.payload.content.heroStats[0]).toEqual({ value: '12:0', label: 'seria po przerwie' });
+    const [leaders, stats] = await Promise.all(fb.extraProjectIds.map((projectId) => db.studioRevision.findFirst({ where: { projectId } })));
+    expect(leaders.payload.content.tableRows[0]).toMatchObject({ label: 'Filip Karpiński', value: '20', unit: 'PKT', number: '69' });
+    expect(stats.payload.content).toMatchObject({ title: 'Klucz do wygranej', columns: ['BKPK', 'GMVT'] });
+    expect(stats.payload.content.altText).toContain('zbiórki w ataku 22:9');
+    // Readiness names each graphic of the set.
+    expect(fb.ready).toEqual(expect.arrayContaining([expect.stringMatching(/^Zatwierdź grafikę 2\/3 \(„Liderzy/)]));
+    expect(story.ready.some((m) => m.includes('/3'))).toBe(false);
+    await db.studioPublication.delete({ where: { id: p.id } });
+    await db.studioProject.deleteMany({ where: { id: { in: [fb.projectId, ...fb.extraProjectIds] } } });
   });
 
   it('warns about feed repetition and shows the channel grid', async () => {

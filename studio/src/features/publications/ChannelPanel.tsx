@@ -44,6 +44,46 @@ function useGraphicImage(graphic: Graphic | null) {
   };
 }
 
+// Further graphic of a post-match set (carousel on Instagram, album on Facebook), shown after the cover.
+function SetGraphic({
+  graphic,
+  index,
+  total,
+  publicationId,
+  onError,
+}: {
+  graphic: Graphic | null;
+  index: number;
+  total: number;
+  publicationId: string;
+  onError: (m: string) => void;
+}) {
+  const image = useGraphicImage(graphic);
+  return (
+    <figure className="set-graphic">
+      {image.src ? <img src={image.src} alt="" /> : <div className="set-graphic-empty">Brak podglądu</div>}
+      <figcaption className="muted small">
+        {index}/{total} ·{' '}
+        {graphic ? (
+          <>
+            {graphic.name} · {image.fromExport ? 'plik z eksportu' : 'podgląd roboczy'} ·{' '}
+            <Link to={`/grafiki/${graphic.projectId}?publikacja=${publicationId}`}>otwórz grafikę</Link>
+          </>
+        ) : (
+          <b className="form-error">grafika niedostępna</b>
+        )}
+      </figcaption>
+      {graphic?.exportJobId && image.exported.length > 0 && (
+        <div className="channel-files">
+          {image.exported.map((f) => (
+            <ExportFile key={f.key} jobId={graphic.exportJobId!} output={f} onError={onError} />
+          ))}
+        </div>
+      )}
+    </figure>
+  );
+}
+
 type Props = {
   onAi: () => void;
   publication: Publication;
@@ -217,6 +257,7 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
           )}
           {item.graphic && (
             <p className="muted small">
+              {item.extraGraphics.length > 0 && `1/${item.extraGraphics.length + 1} · `}
               {image.fromExport ? 'Plik z eksportu' : 'Podgląd roboczy'} · {item.graphic.name} ·{' '}
               <Link to={`/grafiki/${item.graphic.projectId}?publikacja=${publication.id}`}>otwórz grafikę</Link>
             </p>
@@ -225,6 +266,20 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             <div className="channel-files">
               {image.exported.map((f) => (
                 <ExportFile key={f.key} jobId={item.graphic!.exportJobId!} output={f} onError={onError} />
+              ))}
+            </div>
+          )}
+          {item.extraGraphics.length > 0 && (
+            <div className="set-graphics">
+              {item.extraGraphics.map((g, i) => (
+                <SetGraphic
+                  key={g?.projectId ?? i}
+                  graphic={g}
+                  index={i + 2}
+                  total={item.extraGraphics.length + 1}
+                  publicationId={publication.id}
+                  onError={onError}
+                />
               ))}
             </div>
           )}

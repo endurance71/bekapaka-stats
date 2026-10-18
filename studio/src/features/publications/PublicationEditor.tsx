@@ -30,10 +30,12 @@ const slugToChannel = Object.fromEntries(Object.entries(tabSlugs).map(([k, v]) =
 function GraphicsOverview({ publication }: { publication: Publication }) {
   const graphics = new Map<string, { graphic: NonNullable<Item['graphic']>; uses: Item[] }>();
   for (const item of publication.items) {
-    if (!item.graphic) continue;
-    const entry = graphics.get(item.graphic.projectId) || { graphic: item.graphic, uses: [] };
-    entry.uses.push(item);
-    graphics.set(item.graphic.projectId, entry);
+    for (const graphic of [item.graphic, ...(item.extraGraphics || [])]) {
+      if (!graphic) continue;
+      const entry = graphics.get(graphic.projectId) || { graphic, uses: [] };
+      entry.uses.push(item);
+      graphics.set(graphic.projectId, entry);
+    }
   }
   return (
     <div className="graphics-overview">
@@ -52,7 +54,7 @@ function GraphicsOverview({ publication }: { publication: Publication }) {
               {uses.map((u) => (
                 <span key={u.id} className="graphic-use">
                   <ChannelBadge channel={u.channel} /> {formatSpec(u.format).label}
-                  {!u.graphic?.hasFormat && <b className="form-error"> · brak formatu</b>}
+                  {!(u.format && graphic.formats.includes(u.format)) && <b className="form-error"> · brak formatu</b>}
                 </span>
               ))}
             </p>

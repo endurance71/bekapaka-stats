@@ -11,7 +11,8 @@ import { matchReport } from './match-report.js';
 import { currentSponsorFooter } from './sponsors.js';
 import { projectView, validation } from '../service.js';
 import { channelIds, channels, copySchemas, factsSchema } from './channels.js';
-import { graphicFormats, playbook } from './playbooks.js';
+import { graphicFormats, itemGraphicKeys, playbook } from './playbooks.js';
+import { setContent } from './match-graphics.js';
 import { altText, schematicCopy, TEMPLATE_VERSION, when } from './templates.js';
 import { hasErrors, lintCopy } from './brand-lint.js';
 import { channelTexts, folders } from './texts.js';
@@ -114,8 +115,10 @@ export function opponentShort(name) {
 function projectFromFacts(definition, facts, source, title, partnerIds, alt = '') {
   const type = postType(definition.postType);
   if (!type) fail(500, `Playbook wskazuje nieznany typ grafiki: ${definition.postType}`);
-  const base = newPostProject(type.id);
+  const base = newPostProject(type.id, type.styles.includes(definition.visualStyle) ? definition.visualStyle : undefined);
   const formats = graphicFormats(definition).filter((f) => designFormats(type, base.visualStyle).includes(f));
+  // Post-match set (reference 18.10.2026): poster numbers, leaders and comparison rows from the confirmed report.
+  const set = definition.role ? setContent(definition.role, facts) : {};
   const [firstName, ...rest] = facts.person.split(' ');
   const content = {
     ...base.content,
@@ -138,7 +141,9 @@ function projectFromFacts(definition, facts, source, title, partnerIds, alt = ''
       : {}),
     ...(source ? { source, references: [source] } : {}),
     altText: alt.slice(0, 1500),
+    ...set,
   };
+  content.altText = content.altText.slice(0, 1500);
   return projectSchema.parse({ ...base, name: `${type.label} · ${title}`.slice(0, 180), formats: formats.length ? formats : base.formats, content });
 }
 
@@ -158,13 +163,13 @@ async function latestExport(db, owner, projectId, revision) {
 const filesFor = (job, format) =>
   (job?.result?.files || []).filter((f) => f.mime === 'image/png' && (f.key === format || f.key.startsWith(`${format}-`)));
 
-async function graphicState(db, owner, item, cache) {
-  if (!item.projectId) return null;
-  if (!cache.has(item.projectId)) {
+async function graphicState(db, owner, item, cache, projectId = item.projectId) {
+  if (!projectId) return null;
+  if (!cache.has(projectId)) {
     cache.set(
-      item.projectId,
+      projectId,
       (async () => {
-        const view = await projectView(db, owner, item.projectId);
+        const view = await projectView(db, owner, projectId);
         const report = await validation(db, owner, view);
         const job = await latestExport(db, owner, view.id, view.currentRevision);
         return {
@@ -175,6 +180,7 @@ async function graphicState(db, owner, item, cache) {
           revision: view.currentRevision,
           contentHash: view.revision.contentHash,
           signature: signatureOf(view.payload),
+          altText: view.payload.content.altText || '',
           status: view.status,
           valid: report.valid,
           errors: report.errors,
@@ -184,11 +190,16 @@ async function graphicState(db, owner, item, cache) {
       })(),
     );
   }
-  const g = await cache.get(item.projectId);
+  const g = await cache.get(projectId);
   return { ...g, format: item.format, hasFormat: g.formats.includes(item.format) };
 }
+const extraIds = (item) => (Array.isArray(item.extraProjectIds) ? item.extraProjectIds : []);
+// Further graphics of a set; an unavailable (deleted) one stays as null so readiness can name it.
+const extraGraphics = (db, owner, item, cache) => Promise.all(extraIds(item).map((id) => graphicState(db, owner, item, cache, id).catch(() => null)));
 
-const approvalHash = (item, graphic) => hash({ copy: item.copy, graphic: graphic ? graphic.contentHash : null, format: item.format });
+// A single-graphic variant keeps the hash it had before sets existed, so earlier approvals stay valid.
+const approvalHash = (item, graphic, extras = []) =>
+  hash({ copy: item.copy, graphic: graphic ? graphic.contentHash : null, format: item.format, ...(extras.length ? { extra: extras.map((g) => g?.contentHash ?? null) } : {}) });
 
 export async function publicationView(db, owner, id) {
   const p = await db.studioPublication.findFirst({
@@ -200,12 +211,13 @@ export async function publicationView(db, owner, id) {
   const items = [];
   for (const item of p.items.sort((a, b) => channelIds.indexOf(a.channel) - channelIds.indexOf(b.channel))) {
     const graphic = await graphicState(db, owner, item, cache).catch(() => null);
+    const extras = await extraGraphics(db, owner, item, cache);
     const issues = lintCopy(item.channel, item.copy, p.facts);
-    const stale = item.status === 'approved' && item.approvedHash !== approvalHash(item, graphic);
+    const stale = item.status === 'approved' && item.approvedHash !== approvalHash(item, graphic, extras);
     // Website variant: state of the CMS draft (events are newest first).
     const synced = item.channel === 'website' ? item.events.find((e) => e.action === 'cms-draft')?.payload : null;
     const cms = synced ? { slug: synced.slug, documentId: synced.documentId, syncedAt: item.events.find((e) => e.action === 'cms-draft').createdAt, upToDate: synced.copyHash === hash(item.copy) } : null;
-    items.push({ ...itemView(item), graphic, issues, stale, cms, ready: readiness(p, item, graphic, issues) });
+    items.push({ ...itemView(item), graphic, extraGraphics: extras, issues, stale, cms, ready: readiness(p, item, graphic, issues, extras) });
   }
   // Feed variety: compare each grid channel's graphic with the channel's other posts (published and scheduled).
   for (const item of items) {
@@ -276,18 +288,21 @@ export async function gridPreview(db, owner, channel) {
 }
 
 // What still blocks approval of a channel variant; empty = ready.
-export function readiness(p, item, graphic, issues = lintCopy(item.channel, item.copy, p.facts)) {
+export function readiness(p, item, graphic, issues = lintCopy(item.channel, item.copy, p.facts), extras = []) {
   const missing = [];
   if (!factsConfirmed(p)) missing.push('Potwierdź fakty publikacji');
   if (hasErrors(issues)) missing.push('Popraw błędy w tekście');
-  if (item.projectId) {
-    if (!graphic) missing.push('Grafika jest niedostępna');
+  const set = [...(item.projectId ? [graphic] : []), ...extras];
+  set.forEach((g, i) => {
+    // „grafice 2/3” only when the variant carries a set.
+    const which = set.length > 1 ? ` ${i + 1}/${set.length}${g ? ` („${g.name}”)` : ''}` : '';
+    if (!g) missing.push(`Grafika${which} jest niedostępna`);
     else {
-      if (!graphic.hasFormat) missing.push(`Włącz format ${item.format} w grafice`);
-      if (!graphic.valid) missing.push('Zatwierdź grafikę (dane, wygląd, kompozycja)');
-      else if (!graphic.exportJobId) missing.push('Wygeneruj eksport grafiki');
+      if (!g.hasFormat) missing.push(`Włącz format ${item.format} w grafice${which}`);
+      if (!g.valid) missing.push(`Zatwierdź grafikę${which} (dane, wygląd, kompozycja)`);
+      else if (!g.exportJobId) missing.push(`Wygeneruj eksport grafiki${which}`);
     }
-  }
+  });
   return missing;
 }
 
@@ -353,7 +368,9 @@ export async function createPublication(db, owner, input) {
   return db.$transaction(async (tx) => {
     const projects = {};
     for (const [key, definition] of Object.entries(def.graphics)) {
-      if (!wanted.some((c) => def.items[c].graphic === key)) continue;
+      if (!wanted.some((c) => itemGraphicKeys(def.items[c]).includes(key))) continue;
+      // A set graphic the facts cannot fill (no box score yet) is left out instead of shipping empty rows.
+      if (definition.role && definition.role !== 'poster' && !setContent(definition.role, facts)) continue;
       const payload = projectFromFacts(definition, facts, fromSource?.source, title, partnerIds, altText(def, facts));
       const project = await tx.studioProject.create({ data: { ownerId: owner, name: payload.name, family: payload.family } });
       await tx.studioRevision.create({ data: { projectId: project.id, number: 1, payload, contentHash: hash(payload), brandVersion: BRAND_VERSION, templateVersion: projectTemplateVersion(payload) } });
@@ -375,6 +392,7 @@ export async function createPublication(db, owner, input) {
           create: wanted.map((channel) => ({
             channel,
             projectId: def.items[channel].graphic ? projects[def.items[channel].graphic] : null,
+            extraProjectIds: (def.items[channel].extra || []).map((key) => projects[key]).filter(Boolean),
             format: def.items[channel].format,
             copy: copy[channel],
             copyOrigin: 'template',
@@ -523,9 +541,10 @@ export async function approveItem(db, owner, pubId, itemId, expectedRevision, ac
   if (repetition.length && !acceptRepetition)
     fail(422, 'Siatka się powtarza. Zmień grafikę albo zaznacz „Akceptuję powtórzenie”.', repetition.map((w) => ({ field: 'variety', message: w.message })));
   await db.$transaction(async (tx) => {
-    await bumpItem(tx, item, expectedRevision, { status: 'approved', approvedHash: approvalHash(item, item.graphic) });
+    await bumpItem(tx, item, expectedRevision, { status: 'approved', approvedHash: approvalHash(item, item.graphic, item.extraGraphics) });
     await event(tx, item.id, 'approved', 'owner', {
       graphicRevision: item.graphic?.revision ?? null,
+      ...(item.extraGraphics.length ? { extraGraphicRevisions: item.extraGraphics.map((g) => g?.revision ?? null) } : {}),
       signature: item.graphic?.signature ?? null,
       ...(repetition.length ? { acceptedRepetition: repetition.map((w) => w.message) } : {}),
     });
@@ -592,21 +611,26 @@ export async function publicationPackage(db, owner, pubId) {
   for (const item of items) {
     const folder = folders[item.channel];
     for (const [name, text] of Object.entries(channelTexts(item, item.graphic))) contents[`${folder}/${name}`] = strToU8(text);
-    if (!item.graphic) continue;
-    const job = await db.studioJob.findUnique({ where: { id: item.graphic.exportJobId } });
-    if (!job || new Date(job.result?.expiresAt || 0) <= new Date()) fail(409, `Eksport grafiki „${item.graphic.name}” wygasł. Wygeneruj go ponownie.`);
-    for (const file of filesFor(job, item.format)) {
-      const bytes = await fs.readFile(filePath(file.storageKey));
-      total += bytes.length;
-      if (total > 128 * 1024 * 1024) fail(413, 'Paczka przekracza 128 MB');
-      contents[`${folder}/${file.name}`] = new Uint8Array(bytes);
+    const set = [item.graphic, ...item.extraGraphics].filter(Boolean);
+    for (const [index, graphic] of set.entries()) {
+      const job = await db.studioJob.findUnique({ where: { id: graphic.exportJobId } });
+      if (!job || new Date(job.result?.expiresAt || 0) <= new Date()) fail(409, `Eksport grafiki „${graphic.name}” wygasł. Wygeneruj go ponownie.`);
+      // A set keeps its order in the file names (01-…, 02-…): the cover goes first in the carousel or album.
+      const prefix = set.length > 1 ? `${String(index + 1).padStart(2, '0')}-` : '';
+      if (prefix && index > 0 && graphic.altText) contents[`${folder}/tekst-alternatywny-${prefix.slice(0, 2)}.txt`] = strToU8(graphic.altText);
+      for (const file of filesFor(job, item.format)) {
+        const bytes = await fs.readFile(filePath(file.storageKey));
+        total += bytes.length;
+        if (total > 128 * 1024 * 1024) fail(413, 'Paczka przekracza 128 MB');
+        contents[`${folder}/${prefix}${file.name}`] = new Uint8Array(bytes);
+      }
     }
   }
   contents['manifest.json'] = strToU8(
     JSON.stringify(
       {
         publication: { id: view.id, title: view.title, playbook: view.playbook, factsHash: view.factsHash },
-        items: items.map((i) => ({ channel: i.channel, status: i.status, copyOrigin: i.copyOrigin, promptVersion: i.promptVersion, graphic: i.graphic && { projectId: i.graphic.projectId, revision: i.graphic.revision, exportJobId: i.graphic.exportJobId, format: i.format } })),
+        items: items.map((i) => ({ channel: i.channel, status: i.status, copyOrigin: i.copyOrigin, promptVersion: i.promptVersion, graphic: i.graphic && { projectId: i.graphic.projectId, revision: i.graphic.revision, exportJobId: i.graphic.exportJobId, format: i.format }, ...(i.extraGraphics.length ? { extraGraphics: i.extraGraphics.filter(Boolean).map((g) => ({ projectId: g.projectId, revision: g.revision, exportJobId: g.exportJobId })) } : {}) })),
         createdAt: new Date().toISOString(),
       },
       null,

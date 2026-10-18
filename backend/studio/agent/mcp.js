@@ -74,6 +74,8 @@ function agentView(p) {
       copyOrigin: i.copyOrigin,
       lint: i.issues,
       blockers: i.ready,
+      // Post-match set: the cover and further graphics in order (carousel on Instagram, album on Facebook).
+      graphics: [i.graphic, ...(i.extraGraphics || [])].filter(Boolean).map((g) => ({ name: g.name, postType: g.postType, valid: g.valid, exported: !!g.exportJobId })),
       // Feed repetition (same composition or background as recent posts) — the owner must accept it on approval.
       variety: i.variety ? { composition: i.variety.composition, warnings: i.variety.warnings.map((w) => w.message) } : undefined,
       plannedAt: i.plannedAt,
