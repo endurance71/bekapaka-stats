@@ -1,0 +1,71 @@
+{
+  "kind": "match",
+  "competition": "KALK",
+  "seasonLabel": "Sezon 2026/2027",
+  "round": "6",
+  "opponent": "GMVT TEAM",
+  "date": "2026-10-18T12:40:00.000Z",
+  "venue": "KOSiR Koszalin",
+  "entryInfo": "Wstęp wolny",
+  "scoreUs": 56,
+  "scoreThem": 54,
+  "leaders": [
+    { "name": "Filip Karpiński", "stat": "PTS", "value": "20" },
+    { "name": "Piotr Sosiński", "stat": "REB", "value": "9" },
+    { "name": "Dawid Olearczyk", "stat": "AST", "value": "6" }
+  ],
+  "notes": "Druga wygrana BeKaPaKa w drugim meczu sezonu. Czas prowadzenia: BeKaPaKa 33:33, GMVT TEAM 04:19. Po 35 minutach było 51:44, potem GMVT TEAM zdobył 6 punktów z rzędu (51:50). Ostatnie 5 minut GMVT TEAM wygrał 10:5. Filip Karpiński grał 35:44. Dawid Olearczyk wymusił 8 fauli. Alan Niwiński 4/4 z wolnych. Marcin Trawiński: +14 w 12 minut gry, najlepszy bilans w zespole. Piotr Sosiński: 9 zbiórek, w tym 4 w ataku. Wojciech Złoty (GMVT TEAM) grał 40 minut: 25 pkt, 19 zbiórek.",
+  "link": "https://bekapaka.pl/aktualnosci/bekapaka-wygrywa-z-gmvt-team-56-54-emocje-do-konca",
+  "report": {
+    "quarters": [
+      { "label": "1. kwarta", "us": 15, "them": 10 },
+      { "label": "2. kwarta", "us": 12, "them": 15 },
+      { "label": "3. kwarta", "us": 16, "them": 13 },
+      { "label": "4. kwarta", "us": 13, "them": 16 }
+    ],
+    "halftime": { "us": 27, "them": 25 },
+    "overtimes": 0,
+    "team": {
+      "us": { "fg": "21/69", "fgPct": 30, "three": "1/10", "threePct": 10, "ft": "13/26", "ftPct": 50, "reb": 49, "ast": 13, "stl": 13, "tov": 14, "blk": 1, "benchPts": 8, "fastBreakPts": 21, "ptsOffTurnovers": 20, "orb": 22, "secondChancePts": 14 },
+      "them": { "fg": "19/51", "fgPct": 37, "three": "3/15", "threePct": 20, "ft": "13/24", "ftPct": 54, "reb": 45, "ast": 10, "stl": 6, "tov": 21, "blk": 1, "benchPts": 14, "fastBreakPts": 12, "ptsOffTurnovers": 10, "orb": 9, "secondChancePts": 4 }
+    },
+    "players": [
+      { "name": "Filip Karpiński", "number": 69, "pts": 20, "reb": 7, "ast": 1, "stl": 4, "fg": "8/17", "three": "", "eval": null },
+      { "name": "Dawid Olearczyk", "number": 1, "pts": 14, "reb": 3, "ast": 6, "stl": 4, "fg": "5/9", "three": "", "eval": null },
+      { "name": "Alan Niwiński", "number": 27, "pts": 10, "reb": 3, "ast": 2, "stl": 0, "fg": "3/11", "three": "0/2", "eval": null },
+      { "name": "Damian Motyliński", "number": 24, "pts": 4, "reb": 6, "ast": 0, "stl": 0, "fg": "2/8", "three": "", "eval": null },
+      { "name": "Tomasz Kaszubowski", "number": 12, "pts": 3, "reb": 6, "ast": 1, "stl": 3, "fg": "1/8", "three": "1/6", "eval": null },
+      { "name": "Paweł Samusionek", "number": 3, "pts": 2, "reb": 1, "ast": 3, "stl": 0, "fg": "1/7", "three": "0/2", "eval": null },
+      { "name": "Emil Kłos", "number": 23, "pts": 2, "reb": 0, "ast": 0, "stl": 0, "fg": "1/3", "three": "", "eval": null },
+      { "name": "Marcin Trawiński", "number": 10, "pts": 1, "reb": 6, "ast": 0, "stl": 0, "fg": "0/1", "three": "", "eval": null },
+      { "name": "Piotr Sosiński", "number": 8, "pts": 0, "reb": 9, "ast": 0, "stl": 0, "fg": "0/2", "three": "", "eval": null },
+      { "name": "Jakub Gołębiowski", "number": 15, "pts": 0, "reb": 1, "ast": 0, "stl": 1, "fg": "0/1", "three": "", "eval": null },
+      { "name": "Maciej Tymiński", "number": 29, "pts": 0, "reb": 0, "ast": 0, "stl": 1, "fg": "0/2", "three": "", "eval": null }
+    ],
+    "opponentTop": [
+      { "name": "Wojciech Złoty", "pts": 25, "reb": 19 },
+      { "name": "Adrian Lisiecki", "pts": 10, "reb": 4 },
+      { "name": "Gracjan Sobieraj", "pts": 9, "reb": 4 }
+    ],
+    "mvp": null,
+    "nextMatch": { "opponent": "Grubik Team", "date": "2026-11-07T15:50:00.000Z", "venue": "KOSiR Koszalin" },
+    "flow": {
+      "quarters": [
+        { "label": "1. kwarta", "us": 15, "them": 10, "after": "15:10", "topScorer": null },
+        { "label": "2. kwarta", "us": 12, "them": 15, "after": "27:25", "topScorer": null },
+        { "label": "3. kwarta", "us": 16, "them": 13, "after": "43:38", "topScorer": null },
+        { "label": "4. kwarta", "us": 13, "them": 16, "after": "56:54", "topScorer": null }
+      ],
+      "runs": [
+        { "team": "us", "points": 12, "from": "27:25", "to": "39:25", "fromMinute": 21, "toMinute": 25, "quarter": "3. kwarta", "scorers": [] },
+        { "team": "them", "points": 6, "from": "51:44", "to": "51:50", "fromMinute": 36, "toMinute": 40, "quarter": "4. kwarta", "scorers": [] }
+      ],
+      "largestLead": { "points": 14, "minute": 25, "score": "39:25" },
+      "largestDeficit": null,
+      "leadChanges": 5,
+      "ties": 3,
+      "rivalDrought": { "minutes": 5, "fromMinute": 21, "toMinute": 25, "run": "12:0" },
+      "firstPoints": null
+    }
+  }
+}
