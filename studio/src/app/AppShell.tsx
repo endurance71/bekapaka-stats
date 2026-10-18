@@ -5,6 +5,7 @@ import {
   BookText,
   CalendarDays,
   Download,
+  Grid3x3,
   Home,
   Image,
   LayoutGrid,
@@ -26,6 +27,7 @@ import { ShellContext } from './shell-context';
 const nav = [
   ['/', 'Pulpit', Home],
   ['/kalendarz', 'Kalendarz', CalendarDays],
+  ['/siatka', 'Siatka', Grid3x3],
   ['/publikacje', 'Publikacje', Megaphone],
   ['/grafiki', 'Grafiki', LayoutGrid],
   ['/materialy', 'Materiały', Image],

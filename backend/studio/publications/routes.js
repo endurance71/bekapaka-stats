@@ -22,6 +22,7 @@ import {
   refreshFacts,
   createPublication,
   externalImage,
+  gridPreview,
   getSettings,
   listPublications,
   markPublished,
@@ -60,6 +61,9 @@ export function publicationRoutes(router, db) {
     const id = await createPublication(db, req.studioOwner, req.body);
     res.status(201).json(await publicationView(db, req.studioOwner, id));
   });
+  router.get('/publications/grid', async (req, res) =>
+    res.json(await gridPreview(db, req.studioOwner, z.enum(['instagram_feed', 'facebook']).parse(req.query.channel))),
+  );
   router.get('/publications/:id', async (req, res) => res.json(await publicationView(db, req.studioOwner, uuid(req.params.id))));
   router.put('/publications/:id', async (req, res) => res.json(await updatePublication(db, req.studioOwner, uuid(req.params.id), req.body)));
   router.post('/publications/:id/confirm-facts', async (req, res) =>
@@ -80,9 +84,10 @@ export function publicationRoutes(router, db) {
   router.put('/publications/:id/items/:itemId', async (req, res) =>
     res.json(await updateItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
   );
-  router.post('/publications/:id/items/:itemId/approve', async (req, res) =>
-    res.json(await approveItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), revision.parse(req.body).expectedRevision)),
-  );
+  router.post('/publications/:id/items/:itemId/approve', async (req, res) => {
+    const input = z.object({ expectedRevision: z.number().int().min(1), acceptRepetition: z.boolean().default(false) }).strict().parse(req.body);
+    res.json(await approveItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), input.expectedRevision, input.acceptRepetition));
+  });
   router.post('/publications/:id/items/:itemId/published', async (req, res) =>
     res.json(await markPublished(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
   );

@@ -67,7 +67,22 @@ export type Item = {
   stale: boolean;
   cms?: { slug: string; documentId: string; syncedAt: string; upToDate: boolean } | null;
   events?: PublishEvent[];
+  variety?: Variety;
 };
+export type VarietyWarning = { rule: 'previous' | 'frequent' | 'material'; message: string };
+export type GridEntry = {
+  itemId: string;
+  publicationId: string;
+  title: string;
+  status: 'approved' | 'published';
+  publishedAt: string | null;
+  plannedAt: string | null;
+  composition: string;
+  thumbnail: string | null;
+  warnings?: VarietyWarning[];
+};
+/** Feed repetition against the channel's recent and scheduled posts (Instagram grid, Facebook timeline). */
+export type Variety = { composition: string; warnings: VarietyWarning[]; history: GridEntry[] };
 export type Publication = {
   id: string;
   title: string;
