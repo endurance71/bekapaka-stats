@@ -27,6 +27,7 @@ function teamLine(t) {
     benchPts: num(t.benchPts),
     fastBreakPts: num(t.fastBreakPts),
     ptsOffTurnovers: num(t.ptsOffTurnovers),
+    orb: num(t.orb),
   };
 }
 

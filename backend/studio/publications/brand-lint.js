@@ -3,7 +3,7 @@
 import { channels } from './channels.js';
 import { shortDate, when } from './templates.js';
 
-export const LINT_VERSION = '1.5.0';
+export const LINT_VERSION = '1.6.0';
 
 const textFields = {
   instagram_feed: ['caption', 'firstComment', 'altText'],
@@ -49,6 +49,11 @@ const localTime = (iso) =>
     ? new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso))
     : '';
 const emoji = /\p{Extended_Pictographic}/gu;
+// Owner's post-match pattern (2026-10-18) structures Facebook and Instagram posts with emoji;
+// a story sticker stays short and the website stays without them.
+const emojiLimit = { instagram_feed: 15, facebook: 20, instagram_story: 2, website: 0 };
+// Fixed facts of the game that are not in match data.
+const fixedFacts = /\b6,75\s*m\b/g;
 // Weekday stems (all cases): „sobota”, „w sobotę”, „we wtorek”. Index matches Date#getDay in Warsaw.
 const weekdayStems = ['niedziel', 'poniedział', 'wtor', 'środ', 'czwart', 'piąt', 'sobot'];
 function warsawWeekday(iso) {
@@ -59,7 +64,14 @@ function warsawWeekday(iso) {
 
 function factNumbers(facts) {
   const raw = JSON.stringify(facts) + ' ' + [facts.date, facts.originalDate, facts.report?.nextMatch?.date].map((d) => `${shortDate(d)} ${when(d)}`).join(' ');
-  return new Set((raw.match(/\d+/g) || []).map((n) => String(Number(n))));
+  const known = new Set((raw.match(/\d+/g) || []).map((n) => String(Number(n))));
+  // Shooting percentages with one decimal, derived from made/attempted pairs in facts („21/69” → 30,4 %, „4/4” → 100 %).
+  for (const [, made, tried] of JSON.stringify(facts).matchAll(/(?<![\d/])(\d{1,3})\/(\d{1,3})(?![\d/])/g)) {
+    if (!Number(tried)) continue;
+    const [whole, tenth] = ((Number(made) * 100) / Number(tried)).toFixed(1).split('.');
+    known.add(String(Number(whole))).add(String(Number(tenth)));
+  }
+  return known;
 }
 
 /** @returns {{level:'error'|'warning', field:string, message:string}[]} */
@@ -71,18 +83,21 @@ export function lintCopy(channel, copy, facts) {
     const value = String(copy?.[field] ?? '');
     if (!value) continue;
     for (const rule of rules) if (rule.re.test(value) && !rule.unless?.(facts)) add(rule.level, field, rule.message);
-    const unknown = [...new Set((value.match(/\d+/g) || []).map((n) => String(Number(n))))].filter(
+    const unknown = [...new Set((value.replace(fixedFacts, '').match(/\d+/g) || []).map((n) => String(Number(n))))].filter(
       (n) => Number(n) > 10 && !known.has(n),
     );
     if (unknown.length) add('warning', field, `Liczby spoza potwierdzonych faktów: ${unknown.join(', ')}. Sprawdź źródło.`);
-    if ((value.match(emoji) || []).length > 2) add('warning', field, 'Maksymalnie 2 emoji.');
+    const limit = emojiLimit[channel] ?? 2;
+    if ((value.match(emoji) || []).length > limit) add('warning', field, limit ? `Maksymalnie ${limit} emoji.` : 'Na stronie bez emoji.');
     const times = new Set([facts?.date, facts?.originalDate, facts?.report?.nextMatch?.date].map(localTime).filter(Boolean));
     const wrong = [...value.matchAll(clock)].map((m) => `${m[1].padStart(2, '0')}:${m[2]}`).filter((t) => !times.has(t));
     if (wrong.length) add('warning', field, `Godzina ${[...new Set(wrong)].join(', ')} nie zgadza się z terminami w faktach (czas polski).`);
     const day = warsawWeekday(facts?.date);
     if (day !== null && day >= 0) {
       const mentioned = weekdayStems.map((stem, i) => (new RegExp(`(^|[^\\p{L}])${stem}\\p{L}*`, 'iu').test(value) ? i : -1)).filter((i) => i >= 0);
-      if (mentioned.length && !mentioned.includes(day))
+      // The next match (report.nextMatch) is announced with its own weekday.
+      const allowed = [day, warsawWeekday(facts?.report?.nextMatch?.date)].filter((d) => d !== null && d >= 0);
+      if (mentioned.length && !mentioned.some((d) => allowed.includes(d)))
         add('warning', field, `Dzień tygodnia nie zgadza się z datą w faktach (${new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', weekday: 'long' }).format(new Date(facts.date))}).`);
     }
     const shouting = (value.match(/\b[A-ZĄĆĘŁŃÓŚŹŻ]{5,}\b/g) || []).filter((w) => !allowedCaps.has(w));
