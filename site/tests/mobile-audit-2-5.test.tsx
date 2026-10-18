@@ -10,11 +10,13 @@ describe('Audyt mobilny 2.5', () => {
   it('crops photos close to the card ratio and shows posters of other ratios in full', () => {
     expect(storyImageFit(card(1200, 800))).toBe('cover') // 3:2
     expect(storyImageFit(card(1600, 1200))).toBe('cover') // 4:3
-    expect(storyImageFit(card(1920, 1080))).toBe('contain') // 16:9 poster
+    expect(storyImageFit(card(1920, 1080))).toBe('cover') // 16:9 Studio graphic = card ratio
+    expect(storyImageFit(card(1376, 768))).toBe('cover') // ~16:9 AI graphic
+    expect(storyImageFit(card(1774, 887))).toBe('contain') // 2:1 banner
     expect(storyImageFit(card(1080, 1080))).toBe('contain') // square
     expect(storyImageFit(card(1080, 1350))).toBe('contain') // portrait poster
     expect(storyImageFit({ slug: 'post' })).toBe('cover') // unknown size
-    expect(storyImageFit(card(1920, 1080, { imageFit: 'cover' }))).toBe('cover') // CMS decides
+    expect(storyImageFit(card(1920, 1080, { imageFit: 'contain' }))).toBe('contain') // CMS decides
   })
 
   it('pairs team names with the score in the match hero once there is a result', () => {
