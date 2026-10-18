@@ -301,6 +301,7 @@ Fakty:
 | `get_prompts` | read | Zasady marki i instrukcje kanałów obowiązujące przy pisaniu tekstów (ta sama wersja, której używa Studio). |
 | `list_publications` | read | Publikacje w Studio (robocze albo archiwum) ze statusami kanałów. |
 | `get_publication` | read | Fakty, teksty kanałów, wyniki kontroli marki i blokady jednej publikacji. Pisz wyłącznie na podstawie pola facts. |
+| `grid_preview` | read | Ostatnie i zaplanowane posty kanału (siatka Instagrama albo oś Facebooka): kompozycja grafiki, termin i ostrzeżenia o powtórzeniach. Pomaga dobrać inną kompozycję niż ostatnio. |
 | `schematic_copy` | read | Deterministyczny szkic tekstu ze schematu dla aktualnych faktów (bez zapisu). Dobry punkt wyjścia do redakcji. |
 | `create_publication` | draft | Tworzy roboczą publikację ze schematu. Fakty z meczu KALK (source) albo ręczne (facts). Fakty wymagają potwierdzenia przez właściciela w Studio. |
 | `propose_copy` | draft | Zapisuje propozycję tekstu jednego kanału (tylko kanał w stanie roboczym). Zwraca wynik kontroli marki. Zatwierdza wyłącznie właściciel. |

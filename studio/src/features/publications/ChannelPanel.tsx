@@ -22,6 +22,7 @@ import { Counter, HashtagInput, Issues, PlannedAtInput, StatusPill } from './bit
 import { useItemDraft } from './usePublication';
 import WebsiteActions, { useWebsiteConfig } from './WebsiteActions';
 import ExternalPublication from './ExternalPublication';
+import GridVariety from './GridVariety';
 
 function useGraphicImage(graphic: Graphic | null) {
   const exported = graphic?.exportJobId
@@ -56,6 +57,8 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
   const { draft, change, saving, dirty } = useItemDraft(publication.id, item, apply, onError);
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState(item.externalUrl || '');
+  const [acceptRepetition, setAcceptRepetition] = useState(false);
+  const repeated = (item.variety?.warnings.length ?? 0) > 0;
   const image = useGraphicImage(item.graphic);
   const websiteConfig = useWebsiteConfig();
   // With CMS configured, the website variant is published through Strapi, not marked by hand.
@@ -231,6 +234,7 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
       {item.channel === 'website' && item.status !== 'published' && item.status !== 'skipped' && (
         <WebsiteActions publication={publication} item={item} busy={busy} dirty={dirty || saving} run={run} />
       )}
+      <GridVariety item={item} candidateImage={image.src} accepted={acceptRepetition} onAccept={setAcceptRepetition} />
       <footer className="channel-foot">
         {item.status === 'draft' && (
           <>
@@ -246,8 +250,20 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             </button>
             <button
               className="primary"
-              disabled={busy || saving || dirty || item.ready.length > 0}
-              onClick={() => void run(() => send<Publication>(`${base}/approve`, { expectedRevision: item.revision }))}
+              disabled={busy || saving || dirty || item.ready.length > 0 || (repeated && !acceptRepetition)}
+              title={
+                repeated && !acceptRepetition
+                  ? 'Siatka się powtarza — zaznacz „Akceptuję powtórzenie” albo zmień grafikę'
+                  : undefined
+              }
+              onClick={() =>
+                void run(() =>
+                  send<Publication>(`${base}/approve`, {
+                    expectedRevision: item.revision,
+                    acceptRepetition: repeated && acceptRepetition,
+                  }),
+                )
+              }
             >
               <Check size={16} /> Zatwierdź wariant
             </button>

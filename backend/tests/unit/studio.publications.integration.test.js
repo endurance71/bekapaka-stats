@@ -173,6 +173,32 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     await db.studioPublication.delete({ where: { id } });
   });
 
+  it('warns about feed repetition and shows the channel grid', async () => {
+    const first = await request('/publications', { playbook: 'news', facts: { title: 'Pierwsza aktualność', date: '2026-10-01T10:00:00.000Z' } }, 'POST');
+    const second = await request('/publications', { playbook: 'news', facts: { title: 'Druga aktualność', date: '2026-10-20T10:00:00.000Z' } }, 'POST');
+    const published = first.value.items.find((i) => i.channel === 'facebook');
+    // A post that already went out with the same composition as the new one.
+    await db.studioPublicationItem.update({ where: { id: published.id }, data: { status: 'published', publishedAt: new Date('2026-10-02T16:00:00.000Z') } });
+    const view = (await request(`/publications/${second.value.id}`)).value;
+    const fb = view.items.find((i) => i.channel === 'facebook');
+    expect(fb.variety.composition).toBeTruthy();
+    expect(fb.variety.warnings.map((w) => w.rule)).toContain('previous');
+    expect(fb.variety.history[0]).toMatchObject({ itemId: published.id, status: 'published' });
+    expect(fb.variety.history[0].title).toContain('Pierwsza aktualność');
+    // Website is not a grid channel.
+    expect(view.items.find((i) => i.channel === 'website').variety).toBeUndefined();
+
+    const grid = await request('/publications/grid?channel=facebook');
+    expect(grid.res.status).toBe(200);
+    expect(grid.value[0]).toMatchObject({ itemId: published.id, composition: fb.variety.composition });
+    expect((await request('/publications/grid?channel=website')).res.status).toBe(400);
+
+    // Approval without accepting the repetition is refused once the variant is otherwise ready.
+    const blocked = await request(`/publications/${second.value.id}/items/${fb.id}/approve`, { expectedRevision: fb.revision }, 'POST');
+    expect(blocked.res.status).toBe(422);
+    await db.studioPublication.deleteMany({ where: { id: { in: [first.value.id, second.value.id] } } });
+  });
+
   it('stores owner hashtag sets and isolates other owners', async () => {
     expect((await request('/settings')).value).toEqual({ hashtags: { instagram: ['#BKPK'], facebook: [] } });
     expect((await request('/settings', { hashtags: { instagram: ['#BKPK', '#KALK'], facebook: ['#BKPK'] } }, 'PUT')).res.status).toBe(200);
