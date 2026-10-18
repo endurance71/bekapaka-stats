@@ -46,14 +46,18 @@ describe('protocol corrections (+/-, fouls drawn)', () => {
     expect(applyProtocolCorrections('other', [{ kalkMatchId: 10, box: box() }], [correction]).matches).toBe(0);
   });
 
-  it('ships a consistent correction for BeKaPaKa – Kosz-All-In (Σ +/- = 5 × margin, fouls drawn = opponent fouls)', () => {
-    const c = correctionFor('season_2026-2027', '4124', loadProtocolCorrections());
+  // [mecz, punkty BeKaPaKa, punkty rywala, faule popełnione rywala, faule popełnione BeKaPaKa]
+  it.each([
+    ['4124', 86, 20, 17, 12], // BeKaPaKa – Kosz-All-In
+    ['4144', 56, 54, 19, 14] // GMVT TEAM – BeKaPaKa
+  ])('ships a consistent correction for match %s (Σ +/- = 5 × margin, fouls drawn = opponent fouls)', (id, ours, theirs, oppFouls, ourFouls) => {
+    const c = correctionFor('season_2026-2027', id, loadProtocolCorrections());
     const sum = (team, field) => Object.values(team.players).reduce((s, p) => s + p[field], 0);
     const [us, them] = [c.teams.find((t) => t.bekapaka), c.teams.find((t) => !t.bekapaka)];
-    expect(sum(us, 'plusMinus')).toBe(5 * (86 - 20));
-    expect(sum(them, 'plusMinus')).toBe(-5 * (86 - 20));
-    expect(sum(us, 'pfDrawn')).toBe(17);
-    expect(sum(them, 'pfDrawn')).toBe(12);
+    expect(sum(us, 'plusMinus')).toBe(5 * (ours - theirs));
+    expect(sum(them, 'plusMinus')).toBe(-5 * (ours - theirs));
+    expect(sum(us, 'pfDrawn')).toBe(oppFouls);
+    expect(sum(them, 'pfDrawn')).toBe(ourFouls);
   });
 
   it('season stats take +/- and fouls drawn from game logs when KALK reports 0', () => {
