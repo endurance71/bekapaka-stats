@@ -860,6 +860,8 @@ model StudioPublicationItem {
   channel String
   projectId String?
   project StudioProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  // Further graphics of a set after the cover (projectId), in order; ids of StudioProject.
+  extraProjectIds Json @default("[]")
   format String?
   copy Json
   copyOrigin String @default("manual")

@@ -213,12 +213,12 @@ const factList = (f) =>
     .map(([k, v]) => `- **${k}:** ${v}`);
 
 // Polish plural: 1 zbiórka, 2–4 zbiórki, 5+ zbiórek.
-const plural = (n, one, few, many) => {
+export const plural = (n, one, few, many) => {
   const a = Math.abs(n);
   if (a === 1) return one;
   return a % 10 >= 2 && a % 10 <= 4 && (a % 100 < 12 || a % 100 > 14) ? few : many;
 };
-const count = (n, one, few, many) => (Number.isFinite(n) ? `${n} ${plural(n, one, few, many)}` : '');
+export const count = (n, one, few, many) => (Number.isFinite(n) ? `${n} ${plural(n, one, few, many)}` : '');
 const shot = (ratio, p) => (has(ratio) ? `${ratio}${p !== null && p !== undefined ? ` (${p}%)` : ''}` : '');
 const pair = (label, us, them, opp) => (has(us) && has(them) ? `- **${label}:** BeKaPaKa ${us} · ${opp} ${them}` : '');
 const playerStat = (p) =>

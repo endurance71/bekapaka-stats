@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { postTypes, designFormats } from '../../studio/post-types.js';
 import { channels, copySchemas, factsSchema } from '../../studio/publications/channels.js';
-import { graphicFormats, playbook, playbooks } from '../../studio/publications/playbooks.js';
+import { graphicFormats, itemGraphicKeys, playbook, playbooks } from '../../studio/publications/playbooks.js';
 import { altText, schematicCopy, when } from '../../studio/publications/templates.js';
 import { hasErrors, lintCopy } from '../../studio/publications/brand-lint.js';
 import { readiness, romanToInt, scheduleAt, settingsSchema } from '../../studio/publications/service.js';
@@ -29,16 +29,27 @@ describe('publication playbooks', () => {
       const type = postTypes.find((t) => t.id === graphic.postType);
       expect(type, `${key}: ${graphic.postType}`).toBeTruthy();
       expect(graphicFormats(graphic).length).toBeGreaterThan(0);
-      expect(graphicFormats(graphic).some((f) => designFormats(type, type.styles[0]).includes(f))).toBe(true);
+      const style = graphic.visualStyle || type.styles[0];
+      expect(type.styles, `${key}: ${style}`).toContain(style);
+      expect(graphicFormats(graphic).some((f) => designFormats(type, style).includes(f))).toBe(true);
     }
     for (const [channel, item] of Object.entries(p.items)) {
       expect(channels[channel]).toBeTruthy();
-      expect(p.graphics[item.graphic], `${channel} → ${item.graphic}`).toBeTruthy();
       expect(channels[channel].formats).toContain(item.format);
-      expect(p.graphics[item.graphic].formats, `${p.id}/${channel}`).toContain(item.format);
+      for (const key of itemGraphicKeys(item)) {
+        expect(p.graphics[key], `${channel} → ${key}`).toBeTruthy();
+        expect(p.graphics[key].formats, `${p.id}/${channel}/${key}`).toContain(item.format);
+      }
     }
   });
   it('has unique ids', () => expect(new Set(playbooks.map((p) => p.id)).size).toBe(playbooks.length));
+  it('publishes a match result as the reference set: poster cover, leaders and comparison on the feed', () => {
+    const p = playbook('match-result');
+    expect(p.graphics.main).toMatchObject({ postType: 'final', visualStyle: 'poster' });
+    for (const channel of ['instagram_feed', 'facebook']) expect(itemGraphicKeys(p.items[channel])).toEqual(['main', 'leaders', 'stats']);
+    expect(itemGraphicKeys(p.items.instagram_story)).toEqual(['main']);
+    expect(p.items.website).toEqual({ graphic: 'main', format: 'landscape' });
+  });
   it('sends a match preview to the website with its own landscape match graphic', () => {
     const p = playbook('match-preview');
     expect(p.items.website).toEqual({ graphic: 'main', format: 'landscape' });

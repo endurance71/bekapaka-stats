@@ -651,6 +651,32 @@ a.primary.is-disabled {
   display: grid;
   gap: 8px;
 }
+.set-graphics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+.set-graphic {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.set-graphic img,
+.set-graphic-empty {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #0b0b0b;
+}
+.set-graphic-empty {
+  display: grid;
+  place-items: center;
+  color: #ddd;
+  font-size: 12px;
+}
 .article-preview {
   background: #fff;
   border: 1px solid var(--line);

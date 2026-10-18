@@ -62,6 +62,9 @@ export type Item = {
   externalId: string | null;
   revision: number;
   graphic: Graphic | null;
+  // Post-match set: further graphics after the cover, in order (null = deleted project).
+  extraProjectIds: string[];
+  extraGraphics: (Graphic | null)[];
   issues: Issue[];
   ready: string[];
   stale: boolean;

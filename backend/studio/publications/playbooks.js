@@ -2,13 +2,17 @@
 // when to publish them and which confirmed facts they require. Isomorphic (shared with the browser).
 import { postTypes } from '../post-types.js';
 
-export const PLAYBOOK_VERSION = '1.0.0';
+export const PLAYBOOK_VERSION = '1.1.0';
 
 const IG = (graphic = 'main', format = 'feed') => ({ graphic, format });
 const STORY = (graphic = 'main') => ({ graphic, format: 'story' });
 const FB = (graphic = 'main', format = 'feed') => ({ graphic, format });
 const WWW = (graphic = 'main', format = 'landscape') => ({ graphic, format });
 const portraitWWW = (graphic = 'main') => WWW(graphic, 'feed');
+// Feed post with a set of graphics: the cover first, then `extra` (a carousel on Instagram, an album on Facebook).
+const SET = (graphic = 'main', extra = ['leaders', 'stats']) => ({ graphic, format: 'feed', extra });
+/** Graphic keys of one channel variant, the cover first. */
+export const itemGraphicKeys = (item) => [item.graphic, ...(item.extra || [])].filter(Boolean);
 
 // `hint` is the editorial schema of the playbook: what every variant must say. Prompts reuse it.
 // `offsetHours` picks the day relative to the event; `at` (Warsaw wall clock) the hour on that day. Without `at`
@@ -60,8 +64,14 @@ export const playbooks = [
     offsetHours: 3,
     factsKind: 'match',
     required: ['opponent', 'scoreUs', 'scoreThem'],
-    graphics: { main: { postType: 'final', formats: ['feed', 'story', 'landscape'] } },
-    items: { instagram_feed: IG(), instagram_story: STORY(), facebook: FB(), website: WWW() },
+    // Reference set 18.10.2026: poster cover, our leaders and „Klucz do wygranej” on paper. The feed posts carry
+    // all three (a set avoids a monotone grid); story and website use the cover. `role` picks the content builder.
+    graphics: {
+      main: { postType: 'final', visualStyle: 'poster', role: 'poster', formats: ['feed', 'story', 'landscape'] },
+      leaders: { postType: 'leaders', visualStyle: 'editorial', role: 'leaders', formats: ['feed'] },
+      stats: { postType: 'team-stats', visualStyle: 'editorial', role: 'comparison', formats: ['feed'] },
+    },
+    items: { instagram_feed: SET(), instagram_story: STORY(), facebook: SET(), website: WWW() },
     hint: 'Wynik (BeKaPaKa pierwsza), kolejka, 1–2 liderów z danych KALK, następny mecz jeśli znany. Porażka rzeczowo, bez dramatyzmu.',
   },
   {
