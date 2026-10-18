@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import {
   MATCH_STATUSES,
+  isAwaitingResult,
   resolvePresentation,
   selectHeroGame,
   validatePresentation
@@ -64,6 +65,26 @@ describe('Match presentation', () => {
     expect(selectHeroGame([final, scheduled])?.id).toBe('next')
     expect(selectHeroGame([final])?.id).toBe('final')
     expect(selectHeroGame([{ ...game, status: 'CANCELLED' }])).toBeNull()
+  })
+  it('keeps a played game without a league result as the hero until a newer one appears', () => {
+    const now = Date.parse('2026-10-18T15:00:00Z')
+    const final = { ...game, id: 'final', status: 'FINAL' as const, date: '2026-10-04T10:00:00Z' }
+    const played = { ...game, id: 'played', date: '2026-10-18T12:40:00Z' }
+    const next = { ...game, id: 'next', date: '2026-11-01T10:00:00Z' }
+    expect(isAwaitingResult(played, now)).toBe(true)
+    expect(isAwaitingResult(next, now)).toBe(false)
+    expect(isAwaitingResult(final, now)).toBe(false)
+    expect(selectHeroGame([final, played], now)?.id).toBe('played')
+    expect(selectHeroGame([final, played, next], now)?.id).toBe('next')
+    expect(selectHeroGame([{ ...played, status: 'FINAL' as const }, final], now)?.id).toBe('played')
+  })
+  it('renders an awaiting game as finished, without countdown or entry details', () => {
+    const html = renderToStaticMarkup(<MatchHero game={{ ...game, date: '2026-10-18T12:40:00Z' }} awaitingResult />)
+    expect(html).toContain('data-status="final"')
+    expect(html).toContain('Koniec meczu')
+    expect(html).toContain('protokołu KALK')
+    expect(html).not.toContain('Do meczu')
+    expect(html).not.toContain('Wstęp')
   })
   it('validates score ranges, status, dates and unknown fields', () => {
     for (const bad of [
