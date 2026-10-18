@@ -58,7 +58,8 @@ export function validateProject(project, { assets = [], partners = [], template,
     if (a?.provenance && a.kind !== 'background') add('assets', 'Ilustracje AI mogą być używane wyłącznie jako tło');
     if (id === d.backgroundAssetId && a && !materialCompatible(project,a)) add('backgroundAssetId','Materiał nie pasuje do powierzchni szablonu lub palety stroju. Wybierz materiał marki albo zgodne tło');
     if (id === d.backgroundAssetId && a?.kind !== 'background') add('backgroundAssetId', 'Wybierz zatwierdzone tło');
-    if (id !== d.backgroundAssetId && a && !['photo', 'portrait', 'cutout'].includes(a.kind)) add('photoAssetId', 'Pole zdjęcia wymaga prawdziwej fotografii lub wycięcia');
+    if (id === d.opponentLogoAssetId && a?.kind !== 'opponent-logo') add('opponentLogoAssetId', 'Wybierz logo rywala z biblioteki');
+    if (![d.backgroundAssetId, d.opponentLogoAssetId].includes(id) && a && !['photo', 'portrait', 'cutout'].includes(a.kind)) add('photoAssetId', 'Pole zdjęcia wymaga prawdziwej fotografii lub wycięcia');
   }
   for (const id of d.partnerIds) {
     const p = partners.find(p => p.id === id);

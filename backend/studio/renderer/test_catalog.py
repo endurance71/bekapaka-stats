@@ -103,3 +103,51 @@ class CatalogTests(unittest.TestCase):
             footer=next(b for b in r['checks'][0]['text'] if b['text']=='PODGLĄD ROBOCZY')
             self.assertGreater(footer['bounds'][1],1600)
             self.assertLessEqual(footer['bounds'][3],1848)
+
+class OpponentLogoTests(unittest.TestCase):
+    """Brand rule M8: the owner's opponent logo replaces the neutral shield on a legible plate."""
+    @classmethod
+    def setUpClass(cls):
+        cls.catalog=json.loads(subprocess.check_output(['node','studio/catalog-fixtures.js'],cwd=ROOT,text=True))
+    def logos(self,tmp):
+        from PIL import ImageDraw
+        flat=Image.new('RGB',(469,351),(140,180,230));ImageDraw.Draw(flat).ellipse((90,40,330,280),fill=(250,130,20));flat.save(Path(tmp)/'flat.jpg',quality=85)
+        clear=Image.new('RGBA',(300,300),(0,0,0,0));ImageDraw.Draw(clear).rectangle((60,60,240,240),fill=(20,20,20,255));clear.save(Path(tmp)/'clear.png')
+        tiny=Image.new('RGB',(40,30),(10,90,10));tiny.save(Path(tmp)/'tiny.png')
+        assets={}
+        for k,f in [('flat','flat.jpg'),('clear','clear.png'),('tiny','tiny.png')]:
+            with Image.open(Path(tmp)/f) as im:assets[k]={'path':str(Path(tmp)/f),'width':im.width,'height':im.height}
+        return assets
+    def test_plate_takes_flat_background_or_white(self):
+        from render_v3 import logo_ground
+        with tempfile.TemporaryDirectory() as tmp:
+            a=self.logos(tmp)
+            with Image.open(a['flat']['path']) as im:fill,box=logo_ground(im.convert('RGBA'))
+            self.assertLess(sum(abs(c-e) for c,e in zip(fill,(140,180,230))),12);self.assertLess(box[2]-box[0],300)
+            with Image.open(a['clear']['path']) as im:self.assertEqual(logo_ground(im.convert('RGBA')),((255,255,255),(60,60,241,241)))
+    def test_logo_replaces_shield_in_every_match_composition(self):
+        from copy import deepcopy
+        with tempfile.TemporaryDirectory() as tmp:
+            assets=self.logos(tmp)
+            for purpose in ['final','halftime','preview','postponed','cancelled']:
+                t=next(t for t in self.catalog if t['id']==purpose);p=deepcopy(next(x for x in t['projects'] if x['visualStyle']=='sport'))
+                for logo in ['flat','clear']:
+                    for uniform in ['A','B']:
+                        for fmt in t['formats']:
+                            with self.subTest(purpose=purpose,logo=logo,kit=uniform,format=fmt):
+                                p['content'].update(kit=uniform,opponentLogoAssetId=None)
+                                plain=Path(render({'project':p},fmt,tmp,'preview',assets,[])['files'][0]['svg']).read_text().count('<image')
+                                p['content']['opponentLogoAssetId']=logo
+                                r=render({'project':p},fmt,tmp,'export',assets,[])
+                                self.assertFalse(r['checks'][0]['errors'])
+                                svg=Path(r['files'][0]['svg']).read_text()
+                                self.assertEqual(svg.count('<image'),plain+1)
+                                if logo=='clear':self.assertIn('fill="#FFFFFF"',svg)
+    def test_missing_or_tiny_logo(self):
+        p=next(t for t in self.catalog if t['id']=='final')['projects'][0]
+        with tempfile.TemporaryDirectory() as tmp:
+            assets=self.logos(tmp)
+            p['content']['opponentLogoAssetId']='retired-or-unknown'
+            self.assertTrue(render({'project':p},'feed',tmp,'preview',assets,[])['files'])
+            p['content']['opponentLogoAssetId']='tiny'
+            with self.assertRaisesRegex(LayoutError,'opponentLogoAssetId'):render({'project':p},'feed',tmp,'preview',assets,[])

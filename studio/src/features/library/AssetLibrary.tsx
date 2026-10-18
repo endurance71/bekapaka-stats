@@ -17,6 +17,7 @@ const kinds = [
   ['cutout', 'Wycięcie PNG'],
   ['background', 'Tło'],
   ['logo', 'Logo partnera'],
+  ['opponent-logo', 'Logo rywala · nazwa = drużyna z KALK'],
 ];
 type CmsPost = { id: string; title: string; media: { id: string; name: string }[] };
 

@@ -40,6 +40,8 @@ export const projectContentSchema = z.object({
   schedule: z.array(z.object({ date: text(40), opponent: text(100), round: text(30) }).strict()).max(60).default([]),
   slides: z.array(z.object({ title: text(180), body: text(600), altText: text(1500), assetId: id.nullable().default(null) }).strict()).max(4).default([]),
   partnerIds: z.array(id).max(60).default([]), photoAssetId: id.nullable().default(null), backgroundAssetId: id.nullable().default(null),
+  // Optional so older payloads keep their content hash; without it the renderer draws the neutral M8 shield.
+  opponentLogoAssetId: id.nullable().optional(),
   crop: z.object({ x: z.number().min(0).max(1).default(.5), y: z.number().min(0).max(1).default(.5), zoom: z.number().min(1).max(3).default(1) }).default({ x: .5, y: .5, zoom: 1 }),
   caption: text(4000), altText: text(1500), link: z.string().max(500).url().or(z.literal('')).default(''), kit: z.enum(['A', 'B']).default('A'),
   kitBConfirmed: z.boolean().default(false), lineupConfirmed: z.boolean().default(false), mvpConfirmed: z.boolean().default(false),
@@ -62,7 +64,7 @@ export const projectSchema = z.object({
   }
 });
 export const assetMetadataSchema = z.object({
-  name: z.string().trim().min(1).max(180), kind: z.enum(['photo', 'portrait', 'cutout', 'background', 'logo']),
+  name: z.string().trim().min(1).max(180), kind: z.enum(['photo', 'portrait', 'cutout', 'background', 'logo', 'opponent-logo']),
   origin: z.string().trim().min(1).max(500), people: text(500), jerseyNumber: text(3), consent: z.enum(['unknown', 'granted', 'not_required', 'withdrawn']).default('unknown'),
   status: z.enum(['draft', 'approved', 'retired']).default('draft'),
 }).strict();
@@ -73,7 +75,7 @@ export function newProject(family = 'announcement') {
   return projectSchema.parse({ name: t.label, family: t.id, variant: t.variants[0], layout: t.layouts[0], formats: ['feed', 'story'], content: { venue: t.id === 'tournament' ? 'CESiR Bobolice' : 'KOSiR Koszalin' } });
 }
 export function assetIds(content) {
-  return [...new Set([content.photoAssetId, content.backgroundAssetId, ...content.slides.map(s => s.assetId)].filter(Boolean))];
+  return [...new Set([content.photoAssetId, content.backgroundAssetId, content.opponentLogoAssetId, ...content.slides.map(s => s.assetId)].filter(Boolean))];
 }
 
 export function newPostProject(id, style) {

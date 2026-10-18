@@ -17,6 +17,7 @@ import { createLoginThrottle } from '../lib/loginThrottle.js';
 import { publicationRoutes } from './publications/routes.js';
 import { mcpRoutes } from './agent/mcp.js';
 import { aiRoutes } from './providers/routes.js';
+import { opponentLogo, kalkLogoUrl, fetchKalkLogo, teamKey } from './opponent-logos.js';
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 1, fields: 2, fieldSize: 8000 } });
 const ack = z.object({ confirmed: z.literal(true) }).strict();
 const jid = value => z.string().uuid().parse(value);
@@ -170,6 +171,25 @@ export function createStudioRouter({ db, loginUser }) {
     if (meta.status === 'approved' && !['granted', 'not_required'].includes(meta.consent)) fail(422, 'Potwierdź dopuszczalność publikacji');
     if (a.provenance && meta.kind !== 'background') fail(422, 'Ilustracja AI może być tylko tłem');
     res.json(safeAsset(await db.studioAsset.update({ where: { id: a.id }, data: meta })));
+  });
+  router.get('/opponent-logos', async (req, res) => {
+    const name = z.string().trim().min(1).max(100).parse(req.query.name);
+    const asset = await opponentLogo(db, req.studioOwner, name);
+    res.json({ asset: asset ? safeAsset(asset) : null, kalkUrl: await kalkLogoUrl(db, name) });
+  });
+  // The owner confirms the rival's own KALK logo may be shown (brand rule M8); it is reused for later matches.
+  router.post('/opponent-logos/import-kalk', async (req, res) => {
+    const input = z.object({ opponent: z.string().trim().min(1).max(100), url: z.string().max(500).optional(), confirmed: z.literal(true) }).strict().parse(req.body);
+    const url = input.url || await kalkLogoUrl(db, input.opponent);
+    if (!url) fail(404, 'KALK nie ma logo tej drużyny. Wgraj plik.');
+    const { image, origin: source } = await fetchKalkLogo(url);
+    const same = (await db.studioAsset.findMany({ where: { ownerId: req.studioOwner, kind: 'opponent-logo', contentHash: image.contentHash } })).find(a => teamKey(a.name) === teamKey(input.opponent));
+    if (same) {
+      await fs.unlink(filePath(image.storageKey)).catch(() => {});
+      return res.json(safeAsset(same.status === 'approved' ? same : await db.studioAsset.update({ where: { id: same.id }, data: { status: 'approved', consent: 'not_required' } })));
+    }
+    try { res.status(201).json(safeAsset(await db.studioAsset.create({ data: { ...image, ownerId: req.studioOwner, name: input.opponent, kind: 'opponent-logo', origin: source.slice(0, 500), consent: 'not_required', status: 'approved' } }))); }
+    catch (err) { await fs.unlink(filePath(image.storageKey)).catch(() => {}); throw err; }
   });
   router.get('/assets/:id/file', async (req, res) => { const a = await db.studioAsset.findFirst({ where: { id: jid(req.params.id), ownerId: req.studioOwner } }); if (!a) fail(404, 'Materiał nie istnieje'); res.type(a.mime).sendFile(filePath(a.storageKey)); });
   router.get('/partners', async (req, res) => res.json(await db.studioPartner.findMany({ where: { ownerId: req.studioOwner }, orderBy: { name: 'asc' } })));

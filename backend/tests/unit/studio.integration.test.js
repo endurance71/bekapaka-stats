@@ -157,6 +157,31 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
   const changed=await request(`/projects/${v.id}`,{expectedRevision:1,project:{...payload,visualStyle:'editorial'}},'PUT');expect(changed.value.currentRevision).toBe(2);
   expect((await request('/designs/preview/sport/story/approve',{confirmed:true,previewJobId:story.id},'POST')).res.status).toBe(422);
  },60000);
+ it('imports the KALK opponent logo once, reuses it by team and renders it on the result board', async () => {
+  const url = 'https://www.kalk-koszalin.com/storage/media/2026/09/ad002cc1-1bd9-45c8-9784-a17f99cddd23.jpg';
+  const jpg = await sharp({ create: { width: 469, height: 351, channels: 3, background: '#8CB4E6' } }).composite([{ input: await sharp({ create: { width: 200, height: 200, channels: 3, background: '#FA8214' } }).png().toBuffer(), left: 130, top: 60 }]).jpeg().toBuffer();
+  const real = globalThis.fetch; const seen = [];
+  globalThis.fetch = async (target, options) => { const href = String(target); if (!href.includes('kalk-koszalin.com')) return real(target, options); seen.push(href); return new Response(jpg, { headers: { 'content-type': 'image/jpeg' } }); };
+  try {
+   expect((await request('/opponent-logos/import-kalk', { opponent: 'GMVT TEAM', url }, 'POST')).res.status).toBe(400);
+   expect((await request('/opponent-logos/import-kalk', { opponent: 'GMVT TEAM', url: 'https://evil.example/storage/a.jpg', confirmed: true }, 'POST')).res.status).toBe(422);
+   const first = await request('/opponent-logos/import-kalk', { opponent: 'GMVT TEAM', url, confirmed: true }, 'POST');
+   expect(first.res.status).toBe(201); expect(first.value).toMatchObject({ kind: 'opponent-logo', status: 'approved', consent: 'not_required', name: 'GMVT TEAM', origin: `KALK · ${url}` }); expect(first.value.storageKey).toBeUndefined();
+   const again = await request('/opponent-logos/import-kalk', { opponent: 'gmvt team', url, confirmed: true }, 'POST');
+   expect(again.res.status).toBe(200); expect(again.value.id).toBe(first.value.id); expect(seen).toHaveLength(2);
+   expect((await request('/opponent-logos?name=GMVT%20team')).value.asset.id).toBe(first.value.id);
+   expect((await request('/opponent-logos?name=Pantery')).value.asset).toBeNull();
+   const payload = newPostProject('final'); Object.assign(payload.content, { opponent: 'GMVT TEAM', date: '2026-10-18T16:00:00+02:00', scoreUs: 56, scoreThem: 54, altText: 'Wynik meczu.', opponentLogoAssetId: first.value.id });
+   const v = (await request('/projects', payload, 'POST')).value;
+   const job = (await request(`/projects/${v.id}/jobs`, { kind: 'preview', format: 'feed' }, 'POST')).value;
+   await processJob(db, await claimJob(db, 'render', owner));
+   const done = (await request(`/jobs/${job.id}`)).value; expect(done.status, done.error).toBe('completed');
+   const png = (await request(`/jobs/${job.id}/files/feed-01`)).value;
+   const { data, info } = await sharp(png).extract({ left: 714, top: 395, width: 8, height: 8 }).raw().toBuffer({ resolveWithObject: true });
+   expect(data[0]).toBeGreaterThan(110); expect(data[2]).toBeGreaterThan(200); expect(info.channels).toBeGreaterThanOrEqual(3);
+   expect((await request(`/projects/${v.id}/validation`)).value.errors.map(e => e.field)).not.toContain('opponentLogoAssetId');
+  } finally { globalThis.fetch = real; }
+ }, 60_000);
  it('serves the last stored preview for archived projects and restores them to draft', async () => {
   const copy = (await request(`/projects/${project.id}/duplicate`, {}, 'POST')).value;
   await db.studioJob.create({ data: { ownerId: owner, projectId: copy.id, revision: 1, kind: 'preview', status: 'completed', payload: { format: 'story' }, result: { files: [{ key: 'story-01', name: 'x.png', mime: 'image/png' }], expiresAt: new Date(Date.now() + 3600_000).toISOString() } } });

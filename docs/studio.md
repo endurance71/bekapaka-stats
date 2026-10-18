@@ -27,6 +27,12 @@ Wymagane Node 22, PostgreSQL, Python 3.11+ i środowisko backendu z poprawnym `D
 
 Przy konflikcie dwóch urządzeń Studio nie nadpisuje projektu; pokazuje błąd i pozwala wczytać aktualną rewizję. Niezapisane zmiany pozostają w formularzu. Cofanie dotyczy sesji edycji, a przywrócenie historii tworzy nową rewizję. Archiwum nie usuwa projektu. Zduplikuj projekt, aby ponownie edytować materiał z archiwum.
 
+### Logo rywala (reguła M8)
+
+Bez logo grafika meczu pokazuje neutralną tarczę ze skrótem (`opponentShort`). Prawdziwe logo rywala jest dozwolone, gdy dostarczy je lub potwierdzi właściciel (decyzja z 18.10.2026). Edytor → „Mecz” → **Logo rywala**: „Pobierz logo z KALK” (adres z `KalkTeam`/`LeagueTeam.logoUrl`, wyłącznie `https://www.kalk-koszalin.com/storage/…`), „Wgraj logo” albo wybór z biblioteki. Logo to materiał rodzaju `opponent-logo` nazwany jak drużyna w KALK; import i wgranie z edytora zapisują je jako zatwierdzone („nie wymaga zgody”). Nowe publikacje (`projectFromFacts`) same wstawiają `opponentLogoAssetId`, jeśli biblioteka ma zatwierdzone logo tej drużyny (porównanie nazwy bez wielkości liter, akcentów i interpunkcji). Starsze projekty uzupełnia się w edytorze przyciskiem „Użyj logo z biblioteki”.
+
+Renderer 3.0.0 (`render_v3.rival_logo`) rysuje logo bez zmian na płytce ze ściętymi narożnikami w miejscu tarczy: zapowiedź, dzień meczu i tablica wyniku we wszystkich formatach. Płytka przyjmuje jednolite tło JPG (np. jasnoniebieskie GMVT TEAM), a logo z przezroczystością dostaje białą płytkę, więc pozostaje czytelne na ciemnym i jasnym materiale. Logo poniżej 48 px blokuje render. Zmiana logo zmienia odcisk materiałów, więc wymaga nowego podglądu i potwierdzenia rewizji; zatwierdzenie kompozycji nie zależy od logo.
+
 Partnerzy startują jako zestaw do sprawdzenia. Obowiązuje jeden poziom, porządek alfabetyczny i równe pola optyczne. Nieaktualne „POM-PUI” jest zastąpione plakietką aktualnej nazwy. Warunki umowne zapisuje pole uwag; obecny renderer nie interpretuje swobodnego tekstu jako zmiany hierarchii. Nietypowa ekspozycja wymaga osobnego zatwierdzonego szablonu.
 
 ## Studio 2 — publikacje (IG / FB / WWW)

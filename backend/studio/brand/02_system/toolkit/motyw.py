@@ -106,7 +106,9 @@ def solid(p, s, x, y, size, color, anchor='start', fx=None, cut=True):
     g, w = Z.lettering(s, size, cut=cut); g = _place(g, x, y, anchor); shape(p, g, color, fx=fx)
     p.boxes.append({'text': s, 'bounds': [round(v, 1) for v in g.bounds], 'anchor': anchor, 'x': x}); return g
 
-# --- M8 znak rywala: neutralna tarcza + skrót (bez naśladowania cudzego herbu)
+# --- M8 znak rywala: neutralna tarcza + skrót (bez naśladowania cudzego herbu).
+# Prawdziwe logo rywala jest dozwolone, gdy dostarczy je lub potwierdzi właściciel (np. logo z KALK):
+# Studio rysuje je bez zmian na płytce w kolorze tła loga (render_v3.rival_logo). Bez logo — ta tarcza.
 def rival(p, x, y, w, short, fill='#1C1C1C', line='#5C5852', ink=C['white']):
     sh = G.union(G.rect(x, y, w, w*.62), G.poly((x, y+w*.62), (x+w, y+w*.62), (x+w/2, y+w*1.12)))
     shape(p, sh, fill); shape(p, G.keyline(sh, w*.04, w*.02), line)

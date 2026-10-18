@@ -7,6 +7,7 @@ import { designFormats, postType, projectTemplateVersion } from '../post-types.j
 import { hash, filePath } from '../storage.js';
 import { matches, sourceEnvelope } from '../sources.js';
 import { statisticalSnapshot } from '../statistics.js';
+import { opponentLogo } from '../opponent-logos.js';
 import { matchReport } from './match-report.js';
 import { currentSponsorFooter } from './sponsors.js';
 import { projectView, validation } from '../service.js';
@@ -97,7 +98,7 @@ export async function matchFacts(db, seasonId, id) {
   return { facts, source: sourceEnvelope('match', match).source };
 }
 
-// Text on the neutral rival shield (no other club's crest, brand rule M8): initials of a multi-word name
+// Text on the neutral rival shield (brand rule M8, used when the library has no logo of this rival): initials of a multi-word name
 // („Młode Wilki” → MW, „Kosz-All-In” → KAI), a short name as is, otherwise its first 4 letters.
 export function opponentShort(name) {
   const words = String(name || '')
@@ -110,7 +111,7 @@ export function opponentShort(name) {
 }
 
 // Prefill a graphic project from the facts; the project keeps its own revisions afterwards.
-function projectFromFacts(definition, facts, source, title, partnerIds, alt = '') {
+export function projectFromFacts(definition, facts, source, title, partnerIds, alt = '', opponentLogoAssetId = null) {
   const type = postType(definition.postType);
   if (!type) fail(500, `Playbook wskazuje nieznany typ grafiki: ${definition.postType}`);
   const base = newPostProject(type.id);
@@ -120,6 +121,8 @@ function projectFromFacts(definition, facts, source, title, partnerIds, alt = ''
     ...base.content,
     opponent: facts.opponent,
     opponentShort: opponentShort(facts.opponent).slice(0, 8),
+    // Match graphics draw the rival's real logo when the library has an approved one for this team.
+    ...(opponentLogoAssetId && ['announcement', 'result'].includes(type.family) ? { opponentLogoAssetId } : {}),
     date: facts.date,
     originalDate: facts.originalDate,
     venue: facts.venue || base.content.venue,
@@ -277,6 +280,7 @@ export async function createPublication(db, owner, input) {
   const fromSource = data.source ? await matchFacts(db, data.source.seasonId, data.source.id) : null;
   const facts = factsSchema.parse({ ...(fromSource?.facts || {}), ...(data.facts || {}), kind: def.factsKind });
   const settings = { ...(await getSettings(db, owner)), ...(def.items.facebook ? { sponsorFooter: await currentSponsorFooter() } : {}) };
+  const logo = facts.opponent ? await opponentLogo(db, owner, facts.opponent) : null;
   const partnerIds = def.category === 'Partnerzy' ? (await db.studioPartner.findMany({ where: { ownerId: owner, status: 'approved' }, select: { id: true } })).map((p) => p.id) : [];
   const title = (data.title || [facts.opponent || facts.title || facts.person || facts.partner, facts.date ? when(facts.date).split(',')[1]?.trim() : ''].filter(Boolean).join(' · ') || def.label).slice(0, 180);
   const anchor = scheduleAt(def, facts.date);
@@ -287,7 +291,7 @@ export async function createPublication(db, owner, input) {
     const projects = {};
     for (const [key, definition] of Object.entries(def.graphics)) {
       if (!wanted.some((c) => def.items[c].graphic === key)) continue;
-      const payload = projectFromFacts(definition, facts, fromSource?.source, title, partnerIds, altText(def, facts));
+      const payload = projectFromFacts(definition, facts, fromSource?.source, title, partnerIds, altText(def, facts), logo?.id);
       const project = await tx.studioProject.create({ data: { ownerId: owner, name: payload.name, family: payload.family } });
       await tx.studioRevision.create({ data: { projectId: project.id, number: 1, payload, contentHash: hash(payload), brandVersion: BRAND_VERSION, templateVersion: projectTemplateVersion(payload) } });
       projects[key] = project.id;
