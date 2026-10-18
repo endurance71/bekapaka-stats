@@ -24,7 +24,8 @@ export const channels = {
     label: 'Facebook',
     short: 'Facebook',
     formats: ['feed', 'landscape', 'square'],
-    limits: { text: 1500, hashtags: 2 },
+    // Owner's post-match pattern (2026-10-18) runs ~2000 characters; Facebook itself allows far more.
+    limits: { text: 3000, hashtags: 2 },
   },
   website: {
     label: 'Strona bekapaka.pl',
@@ -55,7 +56,7 @@ export const copySchemas = {
     .strict(),
   facebook: z
     .object({
-      text: text(1500),
+      text: text(3000),
       hashtags: z.array(hashtag).max(2).default([]),
       link: z.string().trim().max(500).url().or(z.literal('')).default(''),
       altText: text(1500),
@@ -101,6 +102,9 @@ const teamLine = z
     benchPts: int.nullable(),
     fastBreakPts: int.nullable(),
     ptsOffTurnovers: int.nullable(),
+    // Optional: older KALK imports and hand-entered protocols may lack them.
+    orb: int.nullable().default(null),
+    secondChancePts: int.nullable().default(null),
   })
   .strict();
 const playerLine = z

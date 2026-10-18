@@ -63,6 +63,23 @@ Każdy post na Facebooka ma stopkę „Dziękujemy naszym sponsorom: …” z li
 
 Dane: tabele `StudioPublication`, `StudioPublicationItem`, `StudioPublishEvent` (audyt), `StudioSetting` — migracja addytywna `20261008120000_studio_publications`. Moduły `channels.js`, `playbooks.js`, `templates.js`, `brand-lint.js`, `texts.js` są izomorficzne: frontend importuje je przez `studio/src/lib/publications.ts`, więc szkic zaakceptowany w przeglądarce przechodzi te same kontrole na serwerze. Nie są objęte odciskiem `design-manifest.json`.
 
+## Wzorzec publikacji pomeczowej
+
+Wzorcem jest zaakceptowana przez właściciela publikacja BeKaPaKa – GMVT TEAM 56:54 (18.10.2026). Fakty i teksty leżą w `backend/tests/fixtures/studio-reference/gmvt-2026-10-18.*`, a `studio.reference-pattern.test.js` pilnuje, żeby generator schematyczny trzymał tę strukturę i żeby kontrola marki przyjmowała teksty wzorcowe bez ostrzeżeń.
+
+- **Facebook:** minirelacja 1500–2600 znaków (limit pola 3000).
+  - Kolejność: „🏀 wynik”, hasło z 🔥, lead z kątem meczu, przebieg w kolejności zdarzeń, „dlaczego” z linią 💪, „🎯 Nasi liderzy:” z liniami 🏀, lider rywala, blok 📅/🆚/📍/🎟️ i „📲 Pełna relacja… 👇”.
+  - Bez Markdown. Lista partnerów idzie w polu `sponsors`.
+- **Instagram:** ta sama struktura w skrócie, „link w bio” i „Przesuń…”, gdy grafik jest kilka.
+- **Strona:**
+  - Kolejność: lead, linia wyniku, „- **Kwarty:** a | b | c | d” i „- **Do przerwy:**”, potem sekcje „Przebieg meczu”, „Walka na tablicach i punkty po stratach”, „Wyróżniający się zawodnicy”, „Mecz w danych”, „Statystyki naszych zawodników” i „Następny mecz”.
+  - „Mecz w danych” zawsze jako lista: strona nie wyświetla tabel Markdown (`ArticleMarkdown` bez remark-gfm).
+- **Kontrola marki:**
+  - limit emoji zależy od kanału (IG post 15, FB 20, relacja 2, strona 0);
+  - procenty z jednym miejscem po przecinku wyliczone z par „celne/oddane” w faktach są dozwolone, podobnie jak stała „6,75 m”;
+  - dzień tygodnia następnego meczu nie jest błędem.
+- **Grafiki i siatka:** komplet 3 grafik (plakat, liderzy, liczby) i kontrola monotonności siatki opisuje plan w krokach 2–4.
+
 ## Marka i renderer
 
 `backend/studio/brand/manifest.json` wersjonuje tokeny, fonty OFL, znaki 2.0, faktury, toolkit i rejestr partnerów. Import `python3 scripts/studio/import-brand.py '<ścieżka repo marki>'` kopiuje tylko dozwolone źródła. Produkcja nie odczytuje ścieżek na Macu. Zmiana źródeł marki wymaga nowego `BRAND_VERSION` w kontraktach i manifeście importu; zmiana kompozycji wymaga nowej wersji szablonu, a zmiana silnika — `RENDERER_VERSION`. Nie podmieniaj plików pod już zatwierdzoną wersją. Import nie obejmuje danych demonstracyjnych ani zdjęć zawodników.

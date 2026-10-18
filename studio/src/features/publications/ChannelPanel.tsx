@@ -420,11 +420,11 @@ function FacebookFields({ draft, change, disabled, settings }: FieldProps<Copy['
           className="copy-text"
           rows={9}
           value={draft.text}
-          maxLength={1500}
+          maxLength={channels.facebook.limits.text}
           disabled={disabled}
           onChange={(e) => change({ text: e.target.value })}
         />
-        <Counter value={draft.text} max={1500} />
+        <Counter value={draft.text} max={channels.facebook.limits.text} />
       </label>
       <label>
         Link (np. do artykułu na bekapaka.pl)
