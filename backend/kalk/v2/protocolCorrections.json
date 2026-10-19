@@ -38,5 +38,44 @@
         }
       }
     ]
+  },
+  {
+    "seasonId": "season_2026-2027",
+    "kalkMatchId": "4144",
+    "match": "GMVT TEAM – BeKaPaKa Bobolice 54:56 (2026-10-18)",
+    "source": "Oficjalny protokół meczowy — skan PDF (Adobe Scan) z 2026-10-18, sprawdzony komórka po komórce z arkuszem Google (0 rozbieżności). #7 Patryk Szczęśniak nie grał. Numery, punkty i faule popełnione zgodne z box score KALK (stan 2026-10-19).",
+    "checks": "Σ +/- BeKaPaKa = +10 = 5 × 2, rywal −10; Σ fauli wymuszonych 19 / 14 = faule popełnione rywala / nasze.",
+    "teams": [
+      {
+        "bekapaka": true,
+        "players": {
+          "1": { "name": "Dawid Olearczyk", "plusMinus": 13, "pfDrawn": 8 },
+          "3": { "name": "Paweł Samusionek", "plusMinus": -12, "pfDrawn": 0 },
+          "8": { "name": "nr 8 (brak w składzie KALK)", "plusMinus": -8, "pfDrawn": 1 },
+          "10": { "name": "Piotr Sosiński", "plusMinus": 14, "pfDrawn": 1 },
+          "12": { "name": "Tomasz Kaszubowski", "plusMinus": 7, "pfDrawn": 0 },
+          "15": { "name": "Jakub Gołębiowski", "plusMinus": -4, "pfDrawn": 0 },
+          "23": { "name": "Emil Kłos", "plusMinus": -9, "pfDrawn": 0 },
+          "24": { "name": "Damian Motyliński", "plusMinus": 7, "pfDrawn": 1 },
+          "27": { "name": "Alan Niwiński", "plusMinus": 2, "pfDrawn": 2 },
+          "29": { "name": "Maciej Tymiński", "plusMinus": -11, "pfDrawn": 0 },
+          "69": { "name": "Filip Karpiński", "plusMinus": 11, "pfDrawn": 6 }
+        }
+      },
+      {
+        "bekapaka": false,
+        "players": {
+          "3": { "name": "Czesław Michałowicz", "plusMinus": 10, "pfDrawn": 2 },
+          "6": { "name": "Wojciech Złoty", "plusMinus": -2, "pfDrawn": 7 },
+          "7": { "name": "Adrian Lisiecki", "plusMinus": 4, "pfDrawn": 3 },
+          "13": { "name": "Jacek Strycharczyk", "plusMinus": -3, "pfDrawn": 0 },
+          "15": { "name": "Krzysztof Czaplicki", "plusMinus": -10, "pfDrawn": 0 },
+          "17": { "name": "Gracjan Sobieraj", "plusMinus": 2, "pfDrawn": 0 },
+          "21": { "name": "Marcin Mora", "plusMinus": -6, "pfDrawn": 0 },
+          "34": { "name": "Michał Warzecha", "plusMinus": -5, "pfDrawn": 1 },
+          "77": { "name": "Radosław Cegliński", "plusMinus": 0, "pfDrawn": 1 }
+        }
+      }
+    ]
   }
 ]
