@@ -278,7 +278,7 @@ Nie używaj `docker system prune -a` na całym hoście — runbook MOYA. Skrypt 
 1. Przed `docker compose ... --build` sprawdź: `free -h` i ostatni wpis w `bekapaka-ram.log`.
 2. Swap 2 GiB (`/swapfile`) — bufor przy skokach pamięci; `vm.swappiness=10`.
 3. Porty BeKaPaKa w `docker-compose.prod.yml` mapowane na **`127.0.0.1`** (jak MOYA `:3000`).
-4. Po deployu usuń stare obrazy: `docker image prune -a -f` (gdy kontenery `bkpk-*` już działają na nowych tagach).
+4. Stare obrazy BeKaPaKa usuwa automatycznie `scripts/vps/prune-bekapaka-images.sh` na końcu udanego deployu (główny i CMS). Ręcznie: `bash scripts/vps/prune-bekapaka-images.sh --dry-run`, potem bez `--dry-run`. Nie używaj `docker image prune -a` — usuwa nieużywane obrazy innych projektów na VPS.
 
 ## Powiązana dokumentacja w tym repo
 
