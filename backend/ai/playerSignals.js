@@ -8,7 +8,7 @@ function positive(v) {
 
 /**
  * Rule-based signals fed into player development prompts (no LLM).
- * teamAverages.ppg — średnie PPG zawodnika BeKaPaKa (zawodnicy z ≥3 meczami),
+ * teamAverages.ppg — średnie PPG zawodnika drużyny, w której grał w sezonie (zawodnicy z ≥3 meczami),
  * teamAverages.turnoversPerGame — średnie straty zawodnika na mecz (nie suma drużyny!).
  * Gdy wartości referencyjnej brak — sygnał porównawczy nie jest emitowany.
  * @param {{ averages: object, gameLog: object[], teamAverages?: { ppg?: number | null, turnoversPerGame?: number | null } }} input
