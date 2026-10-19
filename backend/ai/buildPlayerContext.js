@@ -140,7 +140,7 @@ async function safe(fn, fallback) {
 }
 
 /**
- * Średnie odniesienia dla sygnałów: PPG i straty na mecz przeciętnego zawodnika BeKaPaKa w sezonie
+ * Średnie odniesienia dla sygnałów: PPG i straty na mecz przeciętnego zawodnika drużyny w sezonie
  * (zawodnicy z ≥3 meczami). Z KalkPlayerGameLog (typowane kolumny lub legacy `stats`).
  * @param {Array<{ kalkPlayerId: string, pts?: number | null, tov?: number | null, stats?: any }>} rows
  * @returns {{ ppg: number | null, turnoversPerGame: number | null, playersCounted: number }}
@@ -171,6 +171,28 @@ export function computeTeamPlayerAverages(rows) {
 }
 
 const normTeam = (name) => String(name || '').trim().toLowerCase();
+
+/**
+ * Drużyna zawodnika w analizowanym sezonie: najczęstsza teamName z jego logu meczów
+ * (np. sezon spędzony w innym klubie). Log bez nazw drużyn (stare dane) → BeKaPaKa.
+ * @param {Array<{ teamName?: string | null }>} gameLog
+ * @returns {{ name: string | null, isBekapaka: boolean }}
+ */
+export function resolveSeasonTeam(gameLog) {
+  /** @type {Map<string, { name: string, games: number }>} */
+  const counts = new Map();
+  for (const g of gameLog || []) {
+    const name = String(g?.teamName || '').trim();
+    if (!name) continue;
+    const cur = counts.get(normTeam(name)) || { name, games: 0 };
+    cur.games += 1;
+    counts.set(normTeam(name), cur);
+  }
+  let best = null;
+  for (const c of counts.values()) if (!best || c.games > best.games) best = c;
+  if (!best) return { name: null, isBekapaka: true };
+  return { name: best.name, isBekapaka: isBekapakaTeamName(best.name) };
+}
 
 /**
  * Wynik meczu z perspektywy drużyny, w której zawodnik grał w danym meczu
@@ -255,18 +277,24 @@ export async function buildPlayerContext(playerId, options = {}) {
   const statsSeasonId = stats.season?.id || seasonId;
 
   const matchIds = stats.gameLog.map((g) => g.gameId).filter(Boolean).map(String);
+  // Punkt odniesienia (teamAverages, teamContext) = drużyna zawodnika w tym sezonie, nie zawsze BeKaPaKa
+  const seasonTeam = resolveSeasonTeam(stats.gameLog);
 
   const [priorities, teamLogRows, matchRows, careerRows, profile, seasons, pbpEvents] = await Promise.all([
-    getTrainingPriorities(statsSeasonId),
+    seasonTeam.isBekapaka ? getTrainingPriorities(statsSeasonId) : null,
     safe(
       () =>
         prisma.kalkPlayerGameLog.findMany({
           where: {
             seasonId: statsSeasonId,
-            OR: [
-              { teamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
-              { teamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
-            ]
+            ...(seasonTeam.isBekapaka
+              ? {
+                  OR: [
+                    { teamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
+                    { teamName: { contains: 'BOBOLICE', mode: 'insensitive' } }
+                  ]
+                }
+              : { teamName: { equals: seasonTeam.name, mode: 'insensitive' } })
           },
           select: { kalkPlayerId: true, pts: true, tov: true, stats: true }
         }),
@@ -362,6 +390,7 @@ export async function buildPlayerContext(playerId, options = {}) {
     seasonStats: currentSeasonStats.length ? currentSeasonStats : null,
     career: career.length ? career : null,
     playByPlay: computePlayerPbpProfile(pbpEvents),
+    seasonTeam,
     teamAverages,
     goals: roster?.goals || null,
     gameLog: stats.gameLog.slice(0, 15).map((g) => gameLogForPrompt(g, matchById.get(String(g.gameId)))),
@@ -375,11 +404,14 @@ export async function buildPlayerContext(playerId, options = {}) {
           Object.entries(stats.leagueKalk).map(([k, v]) => [k, typeof v === 'number' ? roundOrNull(v, 1) : v ?? null])
         )
       : null,
-    teamContext: {
-      turnoversPerGame: priorities?.team?.turnovers ?? null,
-      efgPercentage: priorities?.team?.efgPercentage ?? null,
-      ftPercentage: priorities?.team?.ftPercentage ?? null
-    },
+    // Statystyki zespołowe liczone tylko dla BeKaPaKa — dla sezonu w innym klubie brak odniesienia
+    teamContext: seasonTeam.isBekapaka
+      ? {
+          turnoversPerGame: priorities?.team?.turnovers ?? null,
+          efgPercentage: priorities?.team?.efgPercentage ?? null,
+          ftPercentage: priorities?.team?.ftPercentage ?? null
+        }
+      : null,
     shootingSplits: {
       ftPct: derived.ftPct,
       threePct: derived.threePtPct,
