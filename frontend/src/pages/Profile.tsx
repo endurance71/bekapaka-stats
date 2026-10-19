@@ -13,6 +13,7 @@ import PageContainer from '../shared/ui/PageContainer';
 import PageHeader from '../shared/ui/PageHeader';
 import { PasswordInput } from '../shared/ui/PasswordInput';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
+import { planSeasonInfo } from '../components/ai/planSeason';
 import { useSeasonPreferenceContext } from '../context/SeasonPreferenceContext';
 import GoalsCard from '../features/me/GoalsCard';
 import { RankCard, RecordsCard, SeasonCompareCard, ShootingTrendCard, type CareerRecords, type RankInfo } from '../features/me/MeSections';
@@ -41,9 +42,9 @@ export default function Profile() {
 
     // AI Summary State
     const [aiSummary, setAiSummary] = useState<string | null>(null);
-    const [aiMeta, setAiMeta] = useState<{ at?: string | null; model?: string | null }>({});
+    const [aiMeta, setAiMeta] = useState<{ at?: string | null; model?: string | null; seasonId?: string | null }>({});
     const [aiLoading] = useState(false);
-    const { selectedSeason, seasonId } = useSeasonPreferenceContext();
+    const { selectedSeason, seasonId, seasons } = useSeasonPreferenceContext();
     // Średnie z wybranego sezonu (ta sama ścieżka co profil zawodnika), nie kolumny konta
     const [seasonAverages, setSeasonAverages] = useState<{ ppg: number; rpg: number; apg: number } | null>(null);
     const [gameLog, setGameLog] = useState<GameLogEntry[]>([]);
@@ -97,6 +98,8 @@ export default function Profile() {
     const values = useMemo(() => seasonValues(gameLog), [gameLog]);
     const compare = useMemo(() => seasonVsPrevious(careerRows, seasonId), [careerRows, seasonId]);
     const series = useMemo(() => shootingSeries(gameLog), [gameLog]);
+    // Liczba meczów znana dopiero po wczytaniu statystyk sezonu (wcześniej bez „za mało meczów”)
+    const planSeason = planSeasonInfo({ planSeasonId: aiMeta.seasonId, selectedSeasonId: seasonId, seasons, gamesInSelected: seasonAverages ? gameLog.length : null });
     const ranks = useMemo<RankInfo[]>(() => {
         if (!user?.id || !gameLog.length) return [];
         const played = teamPlayers.filter((p) => (p.gamesPlayed ?? 0) > 0);
@@ -128,7 +131,8 @@ export default function Profile() {
                 setGoals(playerRow?.goals ?? { items: [] });
                 setAiMeta({
                     at: playerRow?.aiDevelopmentAt,
-                    model: playerRow?.aiDevelopmentModel
+                    model: playerRow?.aiDevelopmentModel,
+                    seasonId: playerRow?.aiDevelopmentSeasonId ?? null
                 });
             } catch (err) {
                 console.error('Failed to fetch player AI data:', err);
@@ -316,6 +320,8 @@ export default function Profile() {
                         content={aiSummary}
                         generatedAt={aiMeta.at}
                         model={aiMeta.model}
+                        seasonLabel={planSeason.seasonLabel}
+                        seasonNote={planSeason.note}
                         loading={aiLoading}
                         playerEmptyHint="Twój plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach w sezonie)."
                     />

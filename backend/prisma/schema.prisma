@@ -136,6 +136,8 @@ model RosterPlayer {
   aiDevelopmentAt      DateTime?
   aiDevelopmentModel   String?
   aiDevelopmentHash    String?
+  /// Sezon danych planu (przy <3 meczach w aktywnym sezonie plan pochodzi z poprzedniego)
+  aiDevelopmentSeasonId String?
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

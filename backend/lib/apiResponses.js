@@ -72,6 +72,7 @@ export function toPlayerProfileResponse(player, { includeDevelopment = false } =
           aiDevelopmentSummary: player.aiDevelopmentSummary,
           aiDevelopmentAt: player.aiDevelopmentAt,
           aiDevelopmentModel: player.aiDevelopmentModel,
+          aiDevelopmentSeasonId: player.aiDevelopmentSeasonId ?? null,
           // Cele sezonu — jak plan rozwoju: tylko sam zawodnik i trener
           goals: normalizeGoals(player.goals)
         }

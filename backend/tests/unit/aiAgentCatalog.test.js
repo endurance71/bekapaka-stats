@@ -13,7 +13,7 @@ const catalogItems = [
 vi.mock('../../lib/prisma.js', () => ({
   prisma: {
     kalkSeason: { findMany: async () => [{ id: SEASON, label: '2026/2027', isActive: true }] },
-    rosterPlayer: { findUnique: async ({ where }) => (where.id === 'p1' ? { aiDevelopmentSummary: '## Plan', aiDevelopmentHash: 'p-new', aiDevelopmentModel: 'template' } : null) },
+    rosterPlayer: { findUnique: async ({ where }) => (where.id === 'p1' ? { aiDevelopmentSummary: '## Plan', aiDevelopmentHash: 'p-new', aiDevelopmentModel: 'template', aiDevelopmentSeasonId: 'season_2025-2026' } : null) },
   },
 }));
 vi.mock('../../seasonService.js', () => ({ resolveSeasonId: async (s) => s || SEASON }));
@@ -70,7 +70,7 @@ describe('panel analyses for the MCP agent', () => {
 
   it('reads saved analyses and judges them against current data', async () => {
     expect(await readPanelAnalysis({ kind: 'briefing' })).toMatchObject({ status: 'stale', content: '## Tydzień', model: 'agent-mcp', generatedAt: '2026-10-01T10:00:00.000Z' });
-    expect(await readPanelAnalysis({ kind: 'player', target: 'p1' })).toMatchObject({ status: 'stale', content: '## Plan' });
+    expect(await readPanelAnalysis({ kind: 'player', target: 'p1' })).toMatchObject({ status: 'stale', content: '## Plan', seasonId: 'season_2025-2026' });
     expect(await readPanelAnalysis({ kind: 'match', target: '4124' })).toMatchObject({ status: 'missing', content: null });
     expect(await readPanelAnalysis({ kind: 'pregame' })).toMatchObject({ status: 'missing', target: 'Kosz-All-In', staleTracking: false });
     await expect(readPanelAnalysis({ kind: 'player' })).rejects.toMatchObject({ status: 400 });
