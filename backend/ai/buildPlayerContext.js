@@ -170,6 +170,38 @@ export function computeTeamPlayerAverages(rows) {
   };
 }
 
+const normTeam = (name) => String(name || '').trim().toLowerCase();
+
+/**
+ * Wynik meczu z perspektywy drużyny, w której zawodnik grał w danym meczu
+ * (nie zawsze BeKaPaKa — np. poprzedni sezon w innym klubie).
+ * Kolejność: drużyna z logu zawodnika → przeciwnik z logu → BeKaPaKa jako gospodarz.
+ * @param {{ homeTeamName?: string | null, guestTeamName?: string | null, scoreHome?: number | null, scoreAway?: number | null, roundLabel?: string | null, roundCode?: string | null }} m
+ * @param {{ teamName?: string | null, opponent?: string | null }} [g]
+ * @returns {{ result: 'W' | 'L' | null, score: string | null, round: string | null }}
+ */
+export function matchResultForPlayer(m, g = {}) {
+  const home = normTeam(m.homeTeamName);
+  const guest = normTeam(m.guestTeamName);
+  const team = normTeam(g.teamName);
+  const opponent = normTeam(g.opponent);
+  let playerIsHome;
+  if (team && team === home) playerIsHome = true;
+  else if (team && team === guest) playerIsHome = false;
+  else if (opponent && opponent === guest) playerIsHome = true;
+  else if (opponent && opponent === home) playerIsHome = false;
+  else playerIsHome = isBekapakaTeamName(m.homeTeamName);
+
+  const us = playerIsHome ? m.scoreHome : m.scoreAway;
+  const them = playerIsHome ? m.scoreAway : m.scoreHome;
+  const known = us !== null && us !== undefined && them !== null && them !== undefined;
+  return {
+    result: known ? (us > them ? 'W' : us < them ? 'L' : null) : null,
+    score: known ? `${us}:${them}` : null,
+    round: m.roundLabel ?? m.roundCode ?? null
+  };
+}
+
 /**
  * Wiersz logu meczu do promptu (z W/P i wynikiem).
  * @param {Record<string, any>} g
@@ -245,7 +277,7 @@ export async function buildPlayerContext(playerId, options = {}) {
           () =>
             prisma.kalkMatch.findMany({
               where: { seasonId: statsSeasonId, id: { in: matchIds } },
-              select: { id: true, homeTeamName: true, scoreHome: true, scoreAway: true, roundLabel: true, roundCode: true }
+              select: { id: true, homeTeamName: true, guestTeamName: true, scoreHome: true, scoreAway: true, roundLabel: true, roundCode: true }
             }),
           []
         )
@@ -265,23 +297,13 @@ export async function buildPlayerContext(playerId, options = {}) {
       : []
   ]);
 
+  const matchRowById = new Map(matchRows.map((m) => [String(m.id), m]));
   /** @type {Map<string, { result: string | null, score: string | null, round: string | null }>} */
-  const matchById = new Map(
-    matchRows.map((m) => {
-      const home = isBekapakaTeamName(m.homeTeamName);
-      const us = home ? m.scoreHome : m.scoreAway;
-      const them = home ? m.scoreAway : m.scoreHome;
-      const known = us !== null && us !== undefined && them !== null && them !== undefined;
-      return [
-        String(m.id),
-        {
-          result: known ? (us > them ? 'W' : us < them ? 'L' : null) : null,
-          score: known ? `${us}:${them}` : null,
-          round: m.roundLabel ?? m.roundCode ?? null
-        }
-      ];
-    })
-  );
+  const matchById = new Map();
+  for (const g of stats.gameLog) {
+    const m = matchRowById.get(String(g.gameId));
+    if (m && !matchById.has(String(g.gameId))) matchById.set(String(g.gameId), matchResultForPlayer(m, g));
+  }
 
   const teamAverages = computeTeamPlayerAverages(teamLogRows);
 
