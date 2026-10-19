@@ -324,7 +324,8 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       aiDevelopmentSummary: true,
       aiDevelopmentAt: true,
       aiDevelopmentModel: true,
-      aiDevelopmentHash: true
+      aiDevelopmentHash: true,
+      aiDevelopmentSeasonId: true
     }
   });
 
@@ -352,7 +353,9 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       viewPath: `/players/${p.id}`,
       generateKind: 'player',
       generateTarget: p.id,
-      seasonId: targetSeasonId ?? null
+      seasonId: targetSeasonId ?? null,
+      // Sezon, z którego pochodzi zapisany plan (może być wcześniejszy niż katalogowy)
+      planSeasonId: p.aiDevelopmentSeasonId ?? null
     };
   });
   items.push(...playerItems);
