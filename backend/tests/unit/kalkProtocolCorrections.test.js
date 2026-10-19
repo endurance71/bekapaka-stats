@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyProtocolCorrections, correctBoxTeams, correctionFor, loadProtocolCorrections } from '../../kalk/v2/protocolCorrections.js';
+import { applyProtocolCorrections, correctBoxTeams, correctionFor, loadProtocolCorrections, seasonProtocolUpdates } from '../../kalk/v2/protocolCorrections.js';
 import { seasonStatFromPage } from '../../kalk/v2/mapPlayer.js';
 
 const correction = {
@@ -58,6 +58,16 @@ describe('protocol corrections (+/-, fouls drawn)', () => {
     expect(sum(them, 'plusMinus')).toBe(-5 * (ours - theirs));
     expect(sum(us, 'pfDrawn')).toBe(oppFouls);
     expect(sum(them, 'pfDrawn')).toBe(ourFouls);
+  });
+
+  it('season rows already corrected for an earlier match add the next match from logs', () => {
+    const before = { plusMinus: 50, pfDrawn: 0 };
+    const after = { plusMinus: 42, pfDrawn: 1 };
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 50, pfDrawn: 0 }, before, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 0, pfDrawn: 0 }, { plusMinus: 0, pfDrawn: 0 }, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 7, pfDrawn: 3 }, before, after)).toEqual({});
+    expect(seasonProtocolUpdates({ source: 'kalk-box', plusMinus: 7, pfDrawn: 3 }, before, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 42, pfDrawn: 1 }, after, after)).toEqual({});
   });
 
   it('season stats take +/- and fouls drawn from game logs when KALK reports 0', () => {

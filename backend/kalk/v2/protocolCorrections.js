@@ -76,3 +76,20 @@ export function applyProtocolCorrections(seasonId, matches, list = loadProtocolC
   }
   return out;
 }
+
+/**
+ * Pola protokołu do poprawienia w wierszu KalkPlayerSeasonStat po korekcie logów. Wiersz bierze Σ logów, gdy pochodzi
+ * z logów (`kalk-box`), KALK podał 0 albo wartość równa się Σ logów sprzed korekty — tak zostaje po wcześniejszej
+ * korekcie innego meczu (np. +/- z 4124), więc kolejny mecz musi ją powiększyć. Inna wartość pochodzi ze strony KALK.
+ * @param {Record<string, unknown>} row
+ * @param {Record<string, number>} before Σ logów zawodnika sprzed korekty
+ * @param {Record<string, number>} after Σ logów po korekcie
+ */
+export function seasonProtocolUpdates(row, before, after) {
+  const data = {};
+  for (const field of PROTOCOL_FIELDS) {
+    const fromLogs = row.source === 'kalk-box' || row[field] === 0 || row[field] === before[field];
+    if (fromLogs && after[field] !== row[field]) data[field] = after[field];
+  }
+  return data;
+}
