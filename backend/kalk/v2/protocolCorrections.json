@@ -51,8 +51,8 @@
         "players": {
           "1": { "name": "Dawid Olearczyk", "plusMinus": 13, "pfDrawn": 8 },
           "3": { "name": "Paweł Samusionek", "plusMinus": -12, "pfDrawn": 0 },
-          "8": { "name": "nr 8 (brak w składzie KALK)", "plusMinus": -8, "pfDrawn": 1 },
-          "10": { "name": "Piotr Sosiński", "plusMinus": 14, "pfDrawn": 1 },
+          "8": { "name": "Piotr Sosiński", "plusMinus": -8, "pfDrawn": 1 },
+          "10": { "name": "Marcin Trawiński", "plusMinus": 14, "pfDrawn": 1 },
           "12": { "name": "Tomasz Kaszubowski", "plusMinus": 7, "pfDrawn": 0 },
           "15": { "name": "Jakub Gołębiowski", "plusMinus": -4, "pfDrawn": 0 },
           "23": { "name": "Emil Kłos", "plusMinus": -9, "pfDrawn": 0 },
