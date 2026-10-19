@@ -2306,6 +2306,7 @@ export async function getPlayerById(id) {
       aiDevelopmentSummary: true,
       aiDevelopmentAt: true,
       aiDevelopmentModel: true,
+      aiDevelopmentSeasonId: true,
       kalkPlayer: { select: { id: true, name: true, raw: true } }
     }
   });

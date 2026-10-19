@@ -244,7 +244,7 @@ export async function preparePlayerDevelopment(playerId, options = {}) {
   const ctx = await buildPlayerContext(playerId, { seasonId: options.seasonId });
   const existing = await prisma.rosterPlayer.findUnique({
     where: { id: playerId },
-    select: { aiDevelopmentSummary: true, aiDevelopmentHash: true, aiDevelopmentAt: true, aiDevelopmentModel: true }
+    select: { aiDevelopmentSummary: true, aiDevelopmentHash: true, aiDevelopmentAt: true, aiDevelopmentModel: true, aiDevelopmentSeasonId: true }
   });
   return {
     operation: 'panel.player',
@@ -252,6 +252,7 @@ export async function preparePlayerDevelopment(playerId, options = {}) {
     inputHash: ctx.hash,
     version: getPromptVersion('player'),
     playerId,
+    seasonId: ctx.seasonId,
     payload: ctx.payload,
     existing,
     prompt: {
@@ -277,6 +278,7 @@ function cachedPlayerDevelopment(prep) {
       aiDevelopmentSummary: existing.aiDevelopmentSummary,
       aiDevelopmentAt: existing.aiDevelopmentAt,
       model: existing.aiDevelopmentModel,
+      seasonId: existing.aiDevelopmentSeasonId ?? null,
       isTemplate: false
     };
   }
@@ -294,9 +296,15 @@ export async function savePlayerDevelopment(prep, raw, model, { strict = false }
   const now = new Date();
   await prisma.rosterPlayer.update({
     where: { id: prep.playerId },
-    data: { aiDevelopmentSummary: finalText, aiDevelopmentAt: now, aiDevelopmentModel: savedModel, aiDevelopmentHash: prep.inputHash }
+    data: {
+      aiDevelopmentSummary: finalText,
+      aiDevelopmentAt: now,
+      aiDevelopmentModel: savedModel,
+      aiDevelopmentHash: prep.inputHash,
+      aiDevelopmentSeasonId: prep.seasonId ?? null
+    }
   });
-  return { cached: false, aiDevelopmentSummary: finalText, aiDevelopmentAt: now, model: savedModel, isTemplate };
+  return { cached: false, aiDevelopmentSummary: finalText, aiDevelopmentAt: now, model: savedModel, seasonId: prep.seasonId ?? null, isTemplate };
 }
 
 /**
