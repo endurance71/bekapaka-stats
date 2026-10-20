@@ -188,7 +188,7 @@ describe('sponsors under Facebook posts', async () => {
   const { fetchSponsors, resetSponsorCache } = await import('../../studio/publications/sponsors.js');
   it('names every sponsor in the order of the site and goes into the pasted post', () => {
     const footer = sponsorFooter([{ name: 'Gmina Bobolice' }, { name: ' Majster Plus Koszalin ' }, { name: '' }]);
-    expect(footer).toBe('Dziękujemy naszym sponsorom: Gmina Bobolice · Majster Plus Koszalin');
+    expect(footer).toBe('Dziękujemy naszym partnerom:\nGmina Bobolice\nMajster Plus Koszalin');
     expect(sponsorFooter([])).toBe('');
     const post = channelTexts({ channel: 'facebook', copy: { text: 'Wygraliśmy.', hashtags: ['#BKPK'], link: 'https://bekapaka.pl/a', altText: 'x', sponsors: footer } })['post.txt'];
     expect(post).toBe(`Wygraliśmy.\n\n${footer}\n\nhttps://bekapaka.pl/a\n\n#BKPK`);
