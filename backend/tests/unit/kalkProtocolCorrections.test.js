@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { applyProtocolCorrections, correctBoxTeams, correctionFor, loadProtocolCorrections } from '../../kalk/v2/protocolCorrections.js';
+import { applyProtocolCorrections, correctBoxTeams, correctionFor, loadProtocolCorrections, seasonProtocolUpdates } from '../../kalk/v2/protocolCorrections.js';
 import { seasonStatFromPage } from '../../kalk/v2/mapPlayer.js';
 
 const correction = {
@@ -46,14 +46,28 @@ describe('protocol corrections (+/-, fouls drawn)', () => {
     expect(applyProtocolCorrections('other', [{ kalkMatchId: 10, box: box() }], [correction]).matches).toBe(0);
   });
 
-  it('ships a consistent correction for BeKaPaKa – Kosz-All-In (Σ +/- = 5 × margin, fouls drawn = opponent fouls)', () => {
-    const c = correctionFor('season_2026-2027', '4124', loadProtocolCorrections());
+  // [mecz, punkty BeKaPaKa, punkty rywala, faule popełnione rywala, faule popełnione BeKaPaKa]
+  it.each([
+    ['4124', 86, 20, 17, 12], // BeKaPaKa – Kosz-All-In
+    ['4144', 56, 54, 19, 14] // GMVT TEAM – BeKaPaKa
+  ])('ships a consistent correction for match %s (Σ +/- = 5 × margin, fouls drawn = opponent fouls)', (id, ours, theirs, oppFouls, ourFouls) => {
+    const c = correctionFor('season_2026-2027', id, loadProtocolCorrections());
     const sum = (team, field) => Object.values(team.players).reduce((s, p) => s + p[field], 0);
     const [us, them] = [c.teams.find((t) => t.bekapaka), c.teams.find((t) => !t.bekapaka)];
-    expect(sum(us, 'plusMinus')).toBe(5 * (86 - 20));
-    expect(sum(them, 'plusMinus')).toBe(-5 * (86 - 20));
-    expect(sum(us, 'pfDrawn')).toBe(17);
-    expect(sum(them, 'pfDrawn')).toBe(12);
+    expect(sum(us, 'plusMinus')).toBe(5 * (ours - theirs));
+    expect(sum(them, 'plusMinus')).toBe(-5 * (ours - theirs));
+    expect(sum(us, 'pfDrawn')).toBe(oppFouls);
+    expect(sum(them, 'pfDrawn')).toBe(ourFouls);
+  });
+
+  it('season rows already corrected for an earlier match add the next match from logs', () => {
+    const before = { plusMinus: 50, pfDrawn: 0 };
+    const after = { plusMinus: 42, pfDrawn: 1 };
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 50, pfDrawn: 0 }, before, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 0, pfDrawn: 0 }, { plusMinus: 0, pfDrawn: 0 }, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 7, pfDrawn: 3 }, before, after)).toEqual({});
+    expect(seasonProtocolUpdates({ source: 'kalk-box', plusMinus: 7, pfDrawn: 3 }, before, after)).toEqual({ plusMinus: 42, pfDrawn: 1 });
+    expect(seasonProtocolUpdates({ source: 'kalk-page', plusMinus: 42, pfDrawn: 1 }, after, after)).toEqual({});
   });
 
   it('season stats take +/- and fouls drawn from game logs when KALK reports 0', () => {

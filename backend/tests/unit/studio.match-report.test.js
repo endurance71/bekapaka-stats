@@ -76,7 +76,7 @@ describe('match report article', () => {
     const facts = factsSchema.parse({ kind: 'match', competition: 'KALK', seasonLabel: 'Sezon 2026/2027', round: '3', opponent: 'Pantery', date: match.date, venue: 'KOSiR Koszalin', entryInfo: 'Wstęp wolny', scoreUs: 71, scoreThem: 60, report: await matchReport(db, match, schedule) });
     const { website } = schematicCopy(playbook('match-result'), facts);
     expect(website.title).toBe('BeKaPaKa Bobolice 71:60 Pantery – relacja z 3. kolejki KALK');
-    for (const part of ['## Przebieg meczu', '- **Do przerwy:** 35:30', 'BeKaPaKa w liczbach: 41 zbiórek · 18 asyst', '## Nasi zawodnicy', '- **Jan Kowalski (#7):** 24 pkt', 'MVP meczu został Jan Kowalski (eval 25)', '## Statystyki zespołów', '- **Rzuty z gry:** BeKaPaKa 28/56 (50%) · Pantery 20/60 (33%)', 'Najwięcej punktów dla Pantery: Piotr Rywal (19).', '## Następny mecz', '- **Rywal:** Kosz-All-In'])
+    for (const part of ['## Przebieg meczu', '- **Do przerwy:** 35:30', '## Wyróżniający się zawodnicy', '- **Jan Kowalski (#7):** 24 pkt', 'MVP meczu został Jan Kowalski (eval 25)', '## Mecz w danych', '- **Rzuty z gry:** BeKaPaKa 28/56 (50%) · Pantery 20/60 (33%)', 'Po stronie Pantery najwięcej punktów: Piotr Rywal (19).', '## Statystyki naszych zawodników', '## Następny mecz', '- **Rywal:** Kosz-All-In'])
       expect(website.content).toContain(part);
     expect(website.content).toContain('\n\nBeKaPaKa Bobolice 71:60 Pantery\n\n');
     expect(website.content).toContain('Jan Kowalski zdobył 24 punkty');
@@ -208,8 +208,9 @@ describe('AI reporter prompt and article assembly', async () => {
     expect(w.title).toBe('Seria 10:0 dała zwycięstwo. BeKaPaKa lepsza od Pantery');
     expect(w.content).toContain('BeKaPaKa Bobolice 12:5 Pantery');
     expect(w.content).toContain('## Przebieg meczu\n\nAkapit pierwszy z pogrubieniem.\n\nAkapit drugi.');
-    expect(w.content).toContain('## Bohaterowie meczu\n\nJan Kowalski rzucił 10 punktów.');
-    expect(w.content).toContain('## Mecz w danych\n\n- **1. kwarta:** 7:3');
+    expect(w.content).toContain('## Wyróżniający się zawodnicy\n\nJan Kowalski rzucił 10 punktów.');
+    expect(w.content).toContain('- **Kwarty:** 7:3 | 5:2\n- **Do przerwy:** 12:5');
+    expect(w.content).toContain('## Mecz w danych\n\n- **Rzuty z gry:**');
     expect(w.content).toContain('- **Rzuty z gry:** BeKaPaKa 5/9 (56%) · Pantery 2/8 (25%)');
     expect(w.content).toContain('## Następny mecz');
     expect(lintCopy('website', w, facts).filter((i) => i.level === 'error')).toEqual([]);
@@ -222,7 +223,7 @@ describe('AI reporter prompt and article assembly', async () => {
     });
     const w = assembleReport(parts, facts);
     expect(w.content).toContain('Bohater.\n\nU rywali najwięcej punktów zdobył Piotr Rywal – 5.');
-    expect(w.content).not.toContain('Najwięcej punktów dla Pantery');
+    expect(w.content).not.toContain('Po stronie Pantery najwięcej punktów');
     expect(lintCopy('website', { ...w, content: 'Rzucił 10 oczek i przypieczętował wygraną.' }, facts).some((i) => /Wytarty zwrot/.test(i.message))).toBe(true);
   });
 });

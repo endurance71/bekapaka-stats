@@ -13,7 +13,7 @@
 import { prisma } from '../lib/prisma.js';
 import { isBekapakaTeamName } from '../kalk/parseMatchBoxScore.js';
 import { seasonStatTeamKey, sumGameLogs } from '../kalk/v2/mapPlayer.js';
-import { correctBoxTeams, loadProtocolCorrections, PROTOCOL_FIELDS } from '../kalk/v2/protocolCorrections.js';
+import { correctBoxTeams, loadProtocolCorrections, PROTOCOL_FIELDS, seasonProtocolUpdates } from '../kalk/v2/protocolCorrections.js';
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
@@ -39,7 +39,8 @@ async function correctMatch(correction) {
     const data = {};
     for (const field of PROTOCOL_FIELDS) if (fix[field] != null && log[field] !== fix[field]) data[field] = fix[field];
     if (!Object.keys(data).length) continue;
-    logUpdates.push({ id: log.id, data: { ...data, stats: { ...(log.stats || {}), ...data } } });
+    const prev = Object.fromEntries(Object.keys(data).map((k) => [k, log[k]]));
+    logUpdates.push({ id: log.id, prev, data: { ...data, stats: { ...(log.stats || {}), ...data } } });
     console.log(`  log #${log.number} ${fix.name}: ${Object.entries(data).map(([k, v]) => `${k} ${log[k]} → ${v}`).join(', ')}`);
   }
 
@@ -68,27 +69,21 @@ async function correctMatch(correction) {
   return {
     seasonId,
     slugs: logs.map((l) => l.playerSlug).filter((s) => s && !s.startsWith('anon-')),
-    patched: logUpdates.map((u) => [u.id, u.data])
+    patched: logUpdates.map((u) => [u.id, { prev: u.prev, data: u.data }])
   };
 }
 
 /** Σ sezonu z logów — tak jak `seasonStatFromPage` przy następnej pełnej synchronizacji. */
 async function refreshSeasonStats(seasonId, slugs, patched) {
-  // W podglądzie logi w bazie są jeszcze sprzed korekty — Σ liczona z tymi samymi poprawkami, które zapisze --apply.
-  const logs = (await prisma.kalkPlayerGameLog.findMany({ where: { seasonId, playerSlug: { in: slugs } } })).map((l) => ({
-    ...l,
-    ...(patched.get(l.id) || {})
-  }));
+  // W bazie logi są sprzed korekty (podgląd) albo już po niej (--apply) — obie Σ liczone z tych samych poprawek.
+  const stored = await prisma.kalkPlayerGameLog.findMany({ where: { seasonId, playerSlug: { in: slugs } } });
+  const logsBefore = stored.map((l) => ({ ...l, ...(patched.get(l.id)?.prev || {}) }));
+  const logsAfter = stored.map((l) => ({ ...l, ...(patched.get(l.id)?.data || {}) }));
   const rows = await prisma.kalkPlayerSeasonStat.findMany({ where: { seasonId, playerSlug: { in: slugs } } });
   for (const row of rows) {
-    const own = logs.filter((l) => l.playerSlug === row.playerSlug && seasonStatTeamKey(l.teamKalkId, l.teamName) === row.teamKey);
-    if (!own.length) continue;
-    const totals = sumGameLogs(own);
-    const data = {};
-    for (const field of PROTOCOL_FIELDS) {
-      const fromLogs = row.source === 'kalk-box' || row[field] === 0;
-      if (fromLogs && totals[field] !== row[field]) data[field] = totals[field];
-    }
+    const own = (logs) => logs.filter((l) => l.playerSlug === row.playerSlug && seasonStatTeamKey(l.teamKalkId, l.teamName) === row.teamKey);
+    if (!own(logsAfter).length) continue;
+    const data = seasonProtocolUpdates(row, sumGameLogs(own(logsBefore)), sumGameLogs(own(logsAfter)));
     if (!Object.keys(data).length) continue;
     console.log(`  sezon ${row.playerSlug}: ${Object.entries(data).map(([k, v]) => `${k} ${row[k]} → ${v}`).join(', ')}`);
     if (apply) {
@@ -111,7 +106,7 @@ try {
     const done = await correctMatch(correction);
     if (!done) continue;
     bySeason.set(done.seasonId, new Set([...(bySeason.get(done.seasonId) || []), ...done.slugs]));
-    for (const [id, data] of done.patched) patched.set(id, data);
+    for (const [id, entry] of done.patched) patched.set(id, entry);
   }
   for (const [seasonId, slugs] of bySeason) await refreshSeasonStats(seasonId, [...slugs], patched);
   console.log(apply ? '\nZapisano.' : '\nPodgląd — nic nie zapisano. Uruchom z --apply, żeby zapisać.');

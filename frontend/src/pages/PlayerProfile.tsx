@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchJSON, postJSON, ApiError, peekApiCache } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import AiAnalysisBlock from '../components/ai/AiAnalysisBlock';
+import { planSeasonInfo } from '../components/ai/planSeason';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -111,7 +112,7 @@ interface PlayerStats {
 
 export default function PlayerProfile() {
     const { id } = useParams<{ id: string }>();
-    const { seasonId, selectedSeason } = useSeasonPreferenceContext();
+    const { seasonId, selectedSeason, seasons } = useSeasonPreferenceContext();
     // Profil już oglądany: od pierwszej klatki dane z pamięci, bez loadera (świeże dociąga fetchStats)
     const [cachedAtMount] = useState(() => {
         if (!id || !seasonId) return null;
@@ -127,7 +128,7 @@ export default function PlayerProfile() {
     const [aiLoading, setAiLoading] = useState(false);
     const [aiError, setAiError] = useState<string | null>(null);
     const [aiSummary, setAiSummary] = useState<string | null>(null);
-    const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string }>({});
+    const [aiMeta, setAiMeta] = useState<{ at?: string; model?: string; seasonId?: string | null }>({});
     const [career, setCareer] = useState<PlayerCareerResponse | null>(null);
     // Cele sezonu — backend zwraca je tylko zawodnikowi i trenerowi
     const [goals, setGoals] = useState<Goals | null>(null);
@@ -149,7 +150,8 @@ export default function PlayerProfile() {
             setGoals(playerRow?.goals ?? null);
             setAiMeta({
                 at: playerRow?.aiDevelopmentAt,
-                model: playerRow?.aiDevelopmentModel
+                model: playerRow?.aiDevelopmentModel,
+                seasonId: playerRow?.aiDevelopmentSeasonId ?? null
             });
         };
         // Z pamięci danych od razu (powrót do profilu bez loadera), świeże dane dojdą w tle
@@ -201,9 +203,10 @@ export default function PlayerProfile() {
                 aiDevelopmentSummary: string;
                 aiDevelopmentAt: string;
                 model?: string;
-            }>(`/api/players/${id}/analyze`, { force });
+                seasonId?: string | null;
+            }>(`/api/players/${id}/analyze`, { force, seasonId });
             setAiSummary(result.aiDevelopmentSummary);
-            setAiMeta({ at: result.aiDevelopmentAt, model: result.model });
+            setAiMeta({ at: result.aiDevelopmentAt, model: result.model, seasonId: result.seasonId ?? null });
         } catch (error: any) {
             setAiError(error?.message || 'Nie udało się wygenerować planu rozwoju');
         } finally {
@@ -238,6 +241,12 @@ export default function PlayerProfile() {
     }
 
     const { player, averages, gameLog } = data;
+    const planSeason = planSeasonInfo({
+        planSeasonId: aiMeta.seasonId,
+        selectedSeasonId: seasonId,
+        seasons,
+        gamesInSelected: gameLog?.length ?? 0
+    });
 
     return (
         <div className="bg-bkpk-bg">
@@ -335,6 +344,8 @@ export default function PlayerProfile() {
                         content={aiSummary}
                         generatedAt={aiMeta.at}
                         model={aiMeta.model}
+                        seasonLabel={planSeason.seasonLabel}
+                        seasonNote={planSeason.note}
                         canGenerate={isAdmin}
                         loading={aiLoading}
                         onGenerate={handleGenerateAi}

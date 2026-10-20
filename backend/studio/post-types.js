@@ -7,6 +7,7 @@ export const visualStyles = [
   { id: 'photo', label: 'Fotograficzny', description: 'Prawdziwe zdjęcie i treść w wydzielonych polach.' },
   { id: 'jersey', label: 'Koszulka matchday', description: 'Koszulka z rzeczywistym numerem i nazwiskiem, według wzorca stroju.' },
   { id: 'editorial', label: 'Redakcyjny', description: 'Jasny papier, typografia i uporządkowane sekcje.' },
+  { id: 'poster', label: 'Plakat', description: 'Wielki napis i wynik, dwie liczby meczu i tło hali (wzorzec 18.10.2026).' },
 ];
 const groups = [
   ['Mecz','announcement',[['preview','standard','Zapowiedź meczu'],['matchday','matchday','Dzień meczu'],['postponed','postponed','Mecz przełożony'],['cancelled','cancelled','Mecz odwołany']]],
@@ -23,7 +24,7 @@ const groups = [
 // Availability is deliberate. Source templates are draft until the owner reviews each native format.
 const compositionSpecs = {
   announcement: {styles:['sport','editorial'],source:'rdzen-v6/01a,01b; stroj-b/01',pages:[36,39]},
-  result: {styles:['sport','photo'],source:'rdzen-v6/02a,02b; stroj-b/02',pages:[36,39]},
+  result: {styles:['sport','photo','poster'],source:'rdzen-v6/02a,02b; stroj-b/02; wzorzec GMVT 2026-10-18 (plakat)',pages:[36,39]},
   lineup: {styles:['editorial'],source:'rdzen-v6/03',pages:[38]},
   player: {styles:['photo','sport'],source:'rdzen-v6/04a,04b',pages:[37,39]},
   tournament: {styles:['photo','sport'],source:'rdzen-v6/05',pages:[37]},
@@ -54,9 +55,10 @@ export function migrateDesign(project) {
   return {...project,postType:type.id,visualStyle:type.styles.includes(project.visualStyle)?project.visualStyle:type.styles[0],designVersion:DESIGN_VERSION,formats:project.formats.filter(f=>type.formats.includes(f))};
 }
 
-export const designFormats = (type, style) => style==='jersey' ? ['feed','story'] : type.formats;
+// The poster was designed for feed, story and the website cover (landscape); square stays on the board.
+export const designFormats = (type, style) => style==='jersey' ? ['feed','story'] : style==='poster' ? ['feed','story','landscape'] : type.formats;
 
 export function compositionLabel(type,style) {
- const names={announcement:{sport:'Mecz · znaki',editorial:'Typograficzny',jersey:'Koszulka matchday'},result:{sport:'Tablica wyniku',photo:'Zawodnik i wynik'},lineup:{editorial:'Koszulki na papierze'},player:{photo:'Portret · rama / MVP',sport:'Koszulka · bez portretu'},report:{editorial:'Zdjęcie w ramie'},partners:{editorial:'Równa ekspozycja'},schedule:{editorial:'Papier · paski stroju'},statistics:{editorial:'Tabela liczb'},club:{editorial:'Informacja na papierze',photo:'Fotografia i treść'},tournament:{photo:'Hero · fotografia',sport:'Typograficzny · parametry'}};
+ const names={announcement:{sport:'Mecz · znaki',editorial:'Typograficzny',jersey:'Koszulka matchday'},result:{sport:'Tablica wyniku',photo:'Zawodnik i wynik',poster:'Plakat'},lineup:{editorial:'Koszulki na papierze'},player:{photo:'Portret · rama / MVP',sport:'Koszulka · bez portretu'},report:{editorial:'Zdjęcie w ramie'},partners:{editorial:'Równa ekspozycja'},schedule:{editorial:'Papier · paski stroju'},statistics:{editorial:'Tabela liczb'},club:{editorial:'Informacja na papierze',photo:'Fotografia i treść'},tournament:{photo:'Hero · fotografia',sport:'Typograficzny · parametry'}};
  return names[type?.family]?.[style] || visualStyles.find(s=>s.id===style)?.label || style;
 }

@@ -41,7 +41,30 @@ class CatalogTests(unittest.TestCase):
             r=render({'project':p},'feed',tmp,'preview',{},[])
             self.assertGreater(len(r['files']),1)
             texts=[b['text'] for qa in r['checks'] for b in qa['text']]
-            for i in range(40):self.assertIn('Drużyna '+str(i),texts)
+            # Paper cards print row labels in capitals (reference publication 18.10.2026).
+            for i in range(40):self.assertIn(('Drużyna '+str(i)).upper(),texts)
+    def test_poster_and_paper_cards_follow_the_reference(self):
+        # Reference publication 18.10.2026: score and numbers are never cut, comparison rows show both teams.
+        poster=next(t for t in self.catalog if t['id']=='final')['projects'][2]
+        self.assertEqual(poster['visualStyle'],'poster')
+        poster['content'].update(scoreUs=56,scoreThem=54,venue='KOSiR Koszalin')
+        team=next(t for t in self.catalog if t['id']=='team-stats')['projects'][0]
+        team['content'].update(columns=['BKPK','GMVT'],tableRows=[{'label':'Zbiórki w ataku','value':'22','value2':'9','detail':'14 pkt drugiej szansy','unit':'','number':''},{'label':'Przechwyty','value':'13','value2':'6','detail':'','unit':'','number':''}])
+        leaders=next(t for t in self.catalog if t['id']=='leaders')['projects'][0]
+        leaders['content'].update(tableRows=[{'label':'Filip Karpiński','value':'20','unit':'PKT','detail':'7 zbiórek','number':'69','value2':''}])
+        with tempfile.TemporaryDirectory() as tmp:
+            for fmt in ['feed','story','landscape']:
+                with self.subTest(format=fmt):
+                    r=render({'project':poster},fmt,tmp,'preview',{},[])
+                    texts=[b['text'] for b in r['checks'][0]['text']]
+                    self.assertFalse(r['checks'][0]['errors'])
+                    for value in ['WYGRANA','56:54','12:0','KOSiR KOSZALIN']:self.assertIn(value,texts)
+            r=render({'project':team},'feed',tmp,'preview',{},[])
+            texts=[b['text'] for b in r['checks'][0]['text']]
+            for value in ['BKPK','GMVT','ZBIÓRKI W ATAKU','22','9','13','6']:self.assertIn(value,texts)
+            r=render({'project':leaders},'feed',tmp,'preview',{},[])
+            texts=[b['text'] for b in r['checks'][0]['text']]
+            for value in ['FILIP KARPIŃSKI','20','PKT','NR','69']:self.assertIn(value,texts)
     def test_entry_information_remains_readable_in_compact_formats(self):
         p=next(t for t in self.catalog if t['id']=='preview')['projects'][0]
         p['content']['entryInfo']='WSTĘP WOLNY'

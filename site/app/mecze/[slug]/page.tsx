@@ -4,7 +4,7 @@ import { getLeagueTableState } from '../../../lib/data/backend'
 import { getGameByIdState, getMatchup } from '../../../lib/data/backend'
 import { MatchupPreview } from '../../../components/public/match/MatchupPreview'
 import { LiveMatchCard } from '../../../components/public/shared/LiveMatchCard'
-import { resolvePresentation } from '../../../../packages/match-presentation'
+import { isAwaitingResult, resolvePresentation } from '../../../../packages/match-presentation'
 import { MatchDrawerContent } from '../MatchDrawerContent'
 import { NearestEventCalendarActions } from '../../../components/public/home/NearestEventCalendarActions'
 import { Breadcrumbs } from '../../../components/public/primitives/PageHeader'
@@ -73,6 +73,8 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
     const isFinal = game.status === 'FINAL' || (!game.status && !!game.result)
     // Mecz przed rozpoczęciem (z uwzględnieniem statusu ustawionego w panelu).
     const upcoming = resolvePresentation(game).status === 'SCHEDULED'
+    // Po godzinie rozpoczęcia, bez wyniku z ligi: karta jako zakończony mecz.
+    const awaiting = isAwaitingResult(game)
     const matchup = upcoming ? await getMatchup(game.opponent) : null
     const parentHref = isFinal ? '/mecze?widok=wyniki' : '/mecze'
     return (
@@ -106,14 +108,20 @@ export default async function MatchDetailPage({ params }: { params: Promise<Para
         <LiveMatchCard
           game={
             upcoming && !resolvePresentation(game).statusMessage
-              ? { ...game, statusMessage: 'Statystyki i przebieg meczu pojawią się po końcowej syrenie.' }
+              ? {
+                  ...game,
+                  statusMessage: awaiting
+                    ? 'Statystyki i przebieg meczu pojawią się po publikacji protokołu KALK.'
+                    : 'Statystyki i przebieg meczu pojawią się po końcowej syrenie.'
+                }
               : game
           }
+          awaitingResult={awaiting}
           heading="h1"
           priority
           actions={
             <>
-              {game.status === 'SCHEDULED' && <NearestEventCalendarActions primary highlight={{ source: 'kalk', at: game.date, game }} />}
+              {game.status === 'SCHEDULED' && !awaiting && <NearestEventCalendarActions primary highlight={{ source: 'kalk', at: game.date, game }} />}
               <ShareActions />
             </>
           }

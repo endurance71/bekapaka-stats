@@ -14,6 +14,7 @@ import ExportsPage from '../pages/ExportsPage';
 import NotFound from '../pages/NotFound';
 import DashboardPage from '../pages/DashboardPage';
 import CalendarPage from '../pages/CalendarPage';
+import GridPage from '../pages/GridPage';
 import PublicationsPage from '../pages/PublicationsPage';
 import PublicationPage from '../pages/PublicationPage';
 import SettingsPage from '../pages/SettingsPage';
@@ -51,6 +52,7 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'kalendarz', element: <CalendarPage /> },
+          { path: 'siatka', element: <GridPage /> },
           { path: 'publikacje', element: <PublicationsPage /> },
           { path: 'publikacje/:id/:kanal?', element: <PublicationPage /> },
           { path: 'ustawienia', element: <SettingsPage /> },

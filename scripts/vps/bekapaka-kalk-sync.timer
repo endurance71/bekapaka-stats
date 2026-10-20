@@ -2,8 +2,9 @@
 Description=Schedule BeKaPaKa KALK full sync
 
 [Timer]
-OnCalendar=Mon *-*-* 07:30:00
-OnCalendar=Tue *-*-* 18:00:00
+# Codziennie rano + wieczorem w dni meczowe (KALK gra w weekendy; wyniki i nowe terminy szybciej na stronie).
+OnCalendar=*-*-* 07:30:00 Europe/Warsaw
+OnCalendar=Sat,Sun *-*-* 21:00:00 Europe/Warsaw
 AccuracySec=1min
 Unit=bekapaka-kalk-sync.service
 

@@ -9,7 +9,7 @@ import { channelIds, channels } from '../publications/channels.js';
 import { playbook, playbooks } from '../publications/playbooks.js';
 import { brandVoice, channelInstructions, PROMPT_VERSION } from '../publications/prompts.js';
 import { schematicCopy } from '../publications/templates.js';
-import { createPublication, getSettings, listPublications, publicationView, updateItem, updatePublication } from '../publications/service.js';
+import { createPublication, getSettings, gridPreview, listPublications, publicationView, updateItem, updatePublication } from '../publications/service.js';
 import { allowRequest, authenticateAgent } from './tokens.js';
 import { studioAgentOperations } from './operations.js';
 import { promptsFor, SERVER_INSTRUCTIONS } from './agentPrompts.js';
@@ -74,6 +74,10 @@ function agentView(p) {
       copyOrigin: i.copyOrigin,
       lint: i.issues,
       blockers: i.ready,
+      // Post-match set: the cover and further graphics in order (carousel on Instagram, album on Facebook).
+      graphics: [i.graphic, ...(i.extraGraphics || [])].filter(Boolean).map((g) => ({ name: g.name, postType: g.postType, valid: g.valid, exported: !!g.exportJobId })),
+      // Feed repetition (same composition or background as recent posts) — the owner must accept it on approval.
+      variety: i.variety ? { composition: i.variety.composition, warnings: i.variety.warnings.map((w) => w.message) } : undefined,
       plannedAt: i.plannedAt,
     })),
   };
@@ -118,6 +122,24 @@ export const tools = [
     inputSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
     scope: 'read',
     run: async (db, owner, args) => json(agentView(await publicationView(db, owner, uuid.parse(args.id)))),
+  },
+  {
+    name: 'grid_preview',
+    description:
+      'Ostatnie i zaplanowane posty kanału (siatka Instagrama albo oś Facebooka): kompozycja grafiki, termin i ostrzeżenia o powtórzeniach. Pomaga dobrać inną kompozycję niż ostatnio.',
+    inputSchema: { type: 'object', properties: { channel: { type: 'string', enum: ['instagram_feed', 'facebook'] } }, required: ['channel'] },
+    scope: 'read',
+    run: async (db, owner, args) =>
+      json(
+        (await gridPreview(db, owner, args.channel)).map((e) => ({
+          title: e.title,
+          status: e.status,
+          publishedAt: e.publishedAt,
+          plannedAt: e.plannedAt,
+          composition: e.composition,
+          warnings: e.warnings.map((w) => w.message),
+        })),
+      ),
   },
   {
     name: 'schematic_copy',

@@ -12,6 +12,7 @@ const player = {
   aiDevelopmentSummary: 'private analysis',
   aiDevelopmentAt: new Date('2026-01-01'),
   aiDevelopmentModel: 'test-model',
+  aiDevelopmentSeasonId: 'season_2025-2026',
   kalkPlayer: {
     id: 'kalk-1',
     name: 'Jan Testowy',
@@ -35,6 +36,8 @@ describe('player API response allowlists', () => {
     const own = toPlayerProfileResponse(player, { includeDevelopment: true });
     expect(other).not.toHaveProperty('aiDevelopmentSummary');
     expect(own.aiDevelopmentSummary).toBe('private analysis');
+    expect(own.aiDevelopmentSeasonId).toBe('season_2025-2026');
+    expect(other).not.toHaveProperty('aiDevelopmentSeasonId');
     expect(JSON.stringify(own)).not.toContain('hashed-secret');
   });
 });

@@ -2,6 +2,7 @@
 // draft first (preview on bekapaka.pl in draft mode), published only after the owner approved the variant.
 // IMPORTANT: Strapi 5 REST create/update without `?status=draft` PUBLISHES immediately — every draft call sets it.
 import fs from 'node:fs/promises';
+import { z } from 'zod';
 import { fail } from '../config.js';
 import { filePath, hash } from '../storage.js';
 import { hasErrors, lintCopy } from './brand-lint.js';
@@ -205,6 +206,54 @@ async function revalidateSite() {
     // The site also refreshes on its own within about 60 s.
     return false;
   }
+}
+
+// An article already created in the CMS by hand: Studio only remembers it, it never rewrites the post or its cover.
+const linkInput = z
+  .object({
+    expectedRevision: z.number().int().min(1),
+    documentId: z.string().trim().min(1).max(64),
+    slug: z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/),
+    coverFileId: z.number().int().positive().nullable().default(null),
+    coverUrl: z.string().trim().max(500).default(''),
+    mediaRecordId: z.string().trim().max(64).default(''),
+    publishedAt: z.string().datetime({ offset: true }).nullable().default(null),
+  })
+  .strict();
+export async function linkWebsiteArticle(db, owner, pubId, itemId, input) {
+  const data = linkInput.parse(input);
+  const { item } = await context(db, owner, pubId, itemId);
+  if (item.status === 'skipped') fail(409, 'Kanał strony jest pominięty');
+  if (item.status === 'published') fail(409, 'Artykuł jest już opublikowany');
+  const url = `${websiteConfig().siteUrl}/aktualnosci/${data.slug}`;
+  const published = data.publishedAt ? new Date(data.publishedAt) : null;
+  if (published && published.getTime() > Date.now() + 5 * 60 * 1000) fail(422, 'Data publikacji nie może być z przyszłości');
+  await db.$transaction(async (tx) => {
+    const updated = await tx.studioPublicationItem.updateMany({
+      where: { id: item.id, revision: data.expectedRevision },
+      data: {
+        externalId: data.documentId,
+        error: null,
+        revision: { increment: 1 },
+        ...(published ? { status: 'published', publishedAt: published, externalUrl: url, approvedHash: null } : {}),
+      },
+    });
+    if (!updated.count) fail(409, 'Wariant zmienił się na innym urządzeniu. Odśwież widok.');
+    // Same payload shape as a Studio draft, so the view shows the CMS link; coverSha stays empty on purpose.
+    await tx.studioPublishEvent.create({
+      data: {
+        itemId: item.id,
+        action: 'cms-draft',
+        actor: 'owner',
+        payload: { documentId: data.documentId, slug: data.slug, coverFileId: data.coverFileId, coverUrl: data.coverUrl || null, coverSha: null, mediaRecordId: data.mediaRecordId || null, copyHash: hash(item.copy), linked: true },
+      },
+    });
+    if (published)
+      await tx.studioPublishEvent.create({
+        data: { itemId: item.id, action: 'published', actor: 'owner', payload: { url, cms: true, documentId: data.documentId, manual: true, external: true, unapproved: true, linked: true } },
+      });
+  });
+  return publicationView(db, owner, pubId);
 }
 
 /** Publishes the approved variant: refreshes the draft if copy or cover changed, publishes, revalidates. */

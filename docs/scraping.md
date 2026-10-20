@@ -34,7 +34,7 @@ Numery sezonów (`?sezon=`): 47 = 2023/24, 48 = 2024/25, 49 = 2025/26, 50 = 2026
 | Kiedy | Jak |
 |---|---|
 | Panel → Administracja → „Uruchom pełny import danych” | `POST /api/scrape/kalk/div2/run` — sync **przyrostowy** aktywnego sezonu |
-| Timer systemd na VPS (pon 07:30, wt 18:00) | `POST /api/internal/kalk/sync` (`X-Cron-Secret`) — przyrostowo; `?mode=resync` = pełny sezon |
+| Timer systemd na VPS (codziennie 07:30, sob/niedz 21:00) | `POST /api/internal/kalk/sync` (`X-Cron-Secret`) — przyrostowo; `?mode=resync` = pełny sezon |
 | Brakujące mecze | `POST /api/scrape/kalk/gaps` (`matchIds[]` lub automatycznie z audytu) → `kalk_sync.py --matches` |
 | Backfill / ręcznie | `docker exec -w /app bkpk-backend-prod node scripts/kalk-sync-v2.js --season history` |
 | Import gotowego pliku | `node scripts/kalk-import-v2.js <plik.json> [--dry-run]` |
@@ -63,7 +63,7 @@ Kody wyjścia: 0 = zapisano (możliwe pominięcia w `manifest.failures` / `trunc
 
 ## Tabela a wyniki
 
-Tabela (`LeagueTeam`, faza zasadnicza) pochodzi ze strony KALK `/liga/dywizja-ii/tabela`. KALK potrafi nie wliczyć zakończonych meczów (2026/27: oba mecze 1. kolejki, bez przypisanej hali), więc ingest po zapisaniu terminarza przelicza tabelę z wyników sezonu zasadniczego (`kalk/v2/standings.js`, 2 pkt za zwycięstwo, 1 za porażkę). Wiersze zgodne z wynikami zostają jak w KALK; niezgodne dostają liczby, formę i serię z wyników, a tabela jest sortowana od nowa (punkty → bilans punktów → kolejność KALK). Każda taka korekta trafia do ostrzeżeń synchronizacji („tabela KALK niezgodna z wynikami — przeliczono: …”). Tabela obejmuje tylko sezon zasadniczy — bilanse z play-off/play-out są w analizach podpisywane osobno.
+Tabela (`LeagueTeam`, faza zasadnicza) pochodzi ze strony KALK `/liga/dywizja-ii/tabela`. KALK potrafi nie wliczyć zakończonych meczów (2026/27: oba mecze 1. kolejki, bez przypisanej hali), więc ingest po zapisaniu terminarza przelicza tabelę z wyników sezonu zasadniczego (`kalk/v2/standings.js`, 2 pkt za zwycięstwo, 1 za porażkę). Wiersze zgodne z wynikami zostają jak w KALK; niezgodne dostają liczby, formę i serię z wyników, a tabela jest sortowana od nowa według kryteriów KALK/FIBA: punkty → mała tabela z meczów bezpośrednich drużyn z równą liczbą punktów (punkty, bilans, punkty zdobyte; dla drużyn wciąż remisujących liczona od nowa) → bilans sezonu → punkty zdobyte → kolejność KALK. Każda taka korekta trafia do ostrzeżeń synchronizacji („tabela KALK niezgodna z wynikami — przeliczono: …”). Tabela obejmuje tylko sezon zasadniczy — bilanse z play-off/play-out są w analizach podpisywane osobno.
 
 ## Korekty z oficjalnych protokołów
 

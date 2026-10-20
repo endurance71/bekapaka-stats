@@ -21,6 +21,8 @@ import SocialPreview from '../graphic-editor/SocialPreview';
 import { Counter, HashtagInput, Issues, PlannedAtInput, StatusPill } from './bits';
 import { useItemDraft } from './usePublication';
 import WebsiteActions, { useWebsiteConfig } from './WebsiteActions';
+import ExternalPublication from './ExternalPublication';
+import GridVariety from './GridVariety';
 
 function useGraphicImage(graphic: Graphic | null) {
   const exported = graphic?.exportJobId
@@ -42,6 +44,46 @@ function useGraphicImage(graphic: Graphic | null) {
   };
 }
 
+// Further graphic of a post-match set (carousel on Instagram, album on Facebook), shown after the cover.
+function SetGraphic({
+  graphic,
+  index,
+  total,
+  publicationId,
+  onError,
+}: {
+  graphic: Graphic | null;
+  index: number;
+  total: number;
+  publicationId: string;
+  onError: (m: string) => void;
+}) {
+  const image = useGraphicImage(graphic);
+  return (
+    <figure className="set-graphic">
+      {image.src ? <img src={image.src} alt="" /> : <div className="set-graphic-empty">Brak podglądu</div>}
+      <figcaption className="muted small">
+        {index}/{total} ·{' '}
+        {graphic ? (
+          <>
+            {graphic.name} · {image.fromExport ? 'plik z eksportu' : 'podgląd roboczy'} ·{' '}
+            <Link to={`/grafiki/${graphic.projectId}?publikacja=${publicationId}`}>otwórz grafikę</Link>
+          </>
+        ) : (
+          <b className="form-error">grafika niedostępna</b>
+        )}
+      </figcaption>
+      {graphic?.exportJobId && image.exported.length > 0 && (
+        <div className="channel-files">
+          {image.exported.map((f) => (
+            <ExportFile key={f.key} jobId={graphic.exportJobId!} output={f} onError={onError} />
+          ))}
+        </div>
+      )}
+    </figure>
+  );
+}
+
 type Props = {
   onAi: () => void;
   publication: Publication;
@@ -55,6 +97,8 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
   const { draft, change, saving, dirty } = useItemDraft(publication.id, item, apply, onError);
   const [busy, setBusy] = useState(false);
   const [url, setUrl] = useState(item.externalUrl || '');
+  const [acceptRepetition, setAcceptRepetition] = useState(false);
+  const repeated = (item.variety?.warnings.length ?? 0) > 0;
   const image = useGraphicImage(item.graphic);
   const websiteConfig = useWebsiteConfig();
   // With CMS configured, the website variant is published through Strapi, not marked by hand.
@@ -213,6 +257,7 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
           )}
           {item.graphic && (
             <p className="muted small">
+              {item.extraGraphics.length > 0 && `1/${item.extraGraphics.length + 1} · `}
               {image.fromExport ? 'Plik z eksportu' : 'Podgląd roboczy'} · {item.graphic.name} ·{' '}
               <Link to={`/grafiki/${item.graphic.projectId}?publikacja=${publication.id}`}>otwórz grafikę</Link>
             </p>
@@ -224,12 +269,27 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
               ))}
             </div>
           )}
+          {item.extraGraphics.length > 0 && (
+            <div className="set-graphics">
+              {item.extraGraphics.map((g, i) => (
+                <SetGraphic
+                  key={g?.projectId ?? i}
+                  graphic={g}
+                  index={i + 2}
+                  total={item.extraGraphics.length + 1}
+                  publicationId={publication.id}
+                  onError={onError}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {item.channel === 'website' && item.status !== 'published' && item.status !== 'skipped' && (
         <WebsiteActions publication={publication} item={item} busy={busy} dirty={dirty || saving} run={run} />
       )}
+      <GridVariety item={item} candidateImage={image.src} accepted={acceptRepetition} onAccept={setAcceptRepetition} />
       <footer className="channel-foot">
         {item.status === 'draft' && (
           <>
@@ -245,8 +305,20 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             </button>
             <button
               className="primary"
-              disabled={busy || saving || dirty || item.ready.length > 0}
-              onClick={() => void run(() => send<Publication>(`${base}/approve`, { expectedRevision: item.revision }))}
+              disabled={busy || saving || dirty || item.ready.length > 0 || (repeated && !acceptRepetition)}
+              title={
+                repeated && !acceptRepetition
+                  ? 'Siatka się powtarza — zaznacz „Akceptuję powtórzenie” albo zmień grafikę'
+                  : undefined
+              }
+              onClick={() =>
+                void run(() =>
+                  send<Publication>(`${base}/approve`, {
+                    expectedRevision: item.revision,
+                    acceptRepetition: repeated && acceptRepetition,
+                  }),
+                )
+              }
             >
               <Check size={16} /> Zatwierdź wariant
             </button>
@@ -281,10 +353,14 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
             )}
           </>
         )}
+        {(item.status === 'draft' || item.status === 'approved') && publication.status !== 'archived' && (
+          <ExternalPublication publication={publication} item={item} busy={busy || saving || dirty} run={run} />
+        )}
         {item.status === 'published' && (
           <p className="published-note">
             <Check size={15} /> Opublikowano{' '}
             {item.publishedAt ? new Date(item.publishedAt).toLocaleString('pl-PL') : ''}
+            {item.events?.find((e) => e.action === 'published')?.payload?.external === true && ' · poza Studio'}
             {item.externalUrl && (
               <a href={item.externalUrl} target="_blank" rel="noopener noreferrer">
                 Zobacz <ExternalLink size={13} />
@@ -420,11 +496,11 @@ function FacebookFields({ draft, change, disabled, settings }: FieldProps<Copy['
           className="copy-text"
           rows={9}
           value={draft.text}
-          maxLength={1500}
+          maxLength={channels.facebook.limits.text}
           disabled={disabled}
           onChange={(e) => change({ text: e.target.value })}
         />
-        <Counter value={draft.text} max={1500} />
+        <Counter value={draft.text} max={channels.facebook.limits.text} />
       </label>
       <label>
         Link (np. do artykułu na bekapaka.pl)

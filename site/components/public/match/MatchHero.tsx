@@ -28,15 +28,20 @@ export function MatchHero({
   heading = 'h2',
   kicker,
   actions,
-  priority = false
+  priority = false,
+  awaitingResult = false
 }: {
   game: GameSummary
   heading?: 'h1' | 'h2'
   kicker?: string
   actions?: ReactNode
   priority?: boolean
+  /** Mecz już się odbył, ale liga nie podała wyniku — karta w stanie „koniec meczu” (liczone na serwerze). */
+  awaitingResult?: boolean
 }) {
   const game = resolvePresentation(source)
+  const awaiting = awaitingResult && game.status === 'SCHEDULED'
+  const upcoming = game.status === 'SCHEDULED' && !awaiting
   const date = matchDateParts(game.date)
   const hasScore =
     game.scoreUs != null && game.scoreThem != null && ['LIVE', 'BREAK', 'FINAL'].includes(game.status)
@@ -45,7 +50,7 @@ export function MatchHero({
   const competition = [game.competition, game.round].filter(Boolean).join(' · ')
 
   return (
-    <article className="match-hero" data-status={game.status.toLowerCase()} data-kit={game.kit === 'B' ? 'B' : undefined}>
+    <article className="match-hero" data-status={awaiting ? 'final' : game.status.toLowerCase()} data-kit={game.kit === 'B' ? 'B' : undefined}>
       <div className="match-hero__media" aria-hidden="true">
         <FallbackImage
           src="/brand/photography/arena.webp"
@@ -61,7 +66,7 @@ export function MatchHero({
       <div className="container match-hero__inner">
         <div className="match-hero__top">
           <p className={`kicker${['LIVE', 'BREAK'].includes(game.status) ? ' kicker--live' : ''}`}>
-            {kicker || statusLabels[game.status]}
+            {kicker || statusLabels[awaiting ? 'FINAL' : game.status]}
           </p>
           {competition && <p className="match-hero__competition">{competition}</p>}
         </div>
@@ -98,6 +103,11 @@ export function MatchHero({
                     : [statusLabels[game.status], game.quarter].filter(Boolean).join(' · ')}
                 </p>
               </div>
+            ) : awaiting ? (
+              <div className="match-hero__result">
+                <p className="match-hero__date">Koniec meczu</p>
+                <p className="match-hero__outcome">Wynik pojawi się po publikacji protokołu KALK</p>
+              </div>
             ) : game.status === 'CANCELLED' ? (
               <p className="match-hero__date">{date.valid ? date.long : 'Termin odwołany'}</p>
             ) : (
@@ -114,7 +124,7 @@ export function MatchHero({
             )}
 
             <dl className="match-hero__facts">
-              {hasScore && (
+              {(hasScore || awaiting) && (
                 <div>
                   <dt>Termin</dt>
                   <dd>{matchDateParts(game.date).long}</dd>
@@ -124,7 +134,7 @@ export function MatchHero({
                 <dt>Hala</dt>
                 <dd>
                   {game.venue || 'Miejsce zostanie potwierdzone'}
-                  {game.venue && game.status === 'SCHEDULED' && (
+                  {game.venue && upcoming && (
                     <>
                       {' · '}
                       <a className="nowrap" href={mapsHref(game.venue)} target="_blank" rel="noopener noreferrer">
@@ -134,13 +144,13 @@ export function MatchHero({
                   )}
                 </dd>
               </div>
-              {game.status === 'SCHEDULED' && game.competition === 'KALK' && (
+              {upcoming && game.competition === 'KALK' && (
                 <div>
                   <dt>Wstęp</dt>
                   <dd>wolny</dd>
                 </div>
               )}
-              {game.status === 'SCHEDULED' && (
+              {upcoming && (
                 <div>
                   <dt>Do meczu</dt>
                   <dd>

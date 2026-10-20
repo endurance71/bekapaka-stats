@@ -205,7 +205,7 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_SSH_PORT || 22 }}
-          source: docker-compose.prod.yml
+          source: docker-compose.prod.yml,scripts/vps/prune-bekapaka-images.sh
           target: /opt/bekapaka-stats/
 
       - name: Deploy to VPS
@@ -280,9 +280,9 @@ jobs:
               done
               sleep 5
             done
-            echo 'Wdrażanie zakończone pomyślnie. Zachowuję obrazy rollbacku.'
-            # Shared VPS: global pruning can remove rollback images of other projects.
-            # Review BeKaPaKa image retention separately before deleting old releases.
+            echo 'Wdrażanie zakończone pomyślnie. Czyszczę stare obrazy BeKaPaKa (zostają używane i najnowszy rollback).'
+            # Shared VPS: only ghcr.io/<repo>/* images are pruned, never other projects' images or build cache.
+            bash scripts/vps/prune-bekapaka-images.sh || echo 'Czyszczenie obrazów nie powiodło się; wdrożenie pozostaje udane.' >&2
 
 
   # Studio (studio.bekapaka.pl: SPA + render worker) is not part of the deploy above; it is updated

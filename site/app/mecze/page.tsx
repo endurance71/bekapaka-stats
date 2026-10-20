@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { resolvePresentation, selectHeroGame } from '../../../packages/match-presentation'
+import { isAwaitingResult, resolvePresentation, selectHeroGame } from '../../../packages/match-presentation'
 import { FixtureRow } from '../../components/public/match/FixtureRow'
 import { ScoreBoard } from '../../components/public/match/ScoreBoard'
 import { ArrowLink } from '../../components/public/primitives/ArrowLink'
@@ -40,7 +40,7 @@ export default async function MatchesPage({
   const withLogo = (game: GameSummary) => ({ ...game, opponentLogoUrl: game.opponentLogoUrl || logos.get(game.opponent.toLocaleLowerCase()) })
   const finals = gamesState.data.filter((game) => resolvePresentation(game).status === 'FINAL').sort((a, b) => Date.parse(b.date) - Date.parse(a.date))
   const next = selectHeroGame(gamesState.data)
-  const complementGame = results ? (next && next.status !== 'FINAL' ? next : null) : finals[0] || null
+  const complementGame = results ? (next && next.status !== 'FINAL' && !isAwaitingResult(next) ? next : null) : finals[0] || null
   const complement = complementGame ? withLogo(complementGame) : null
 
   return (

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import express from 'express';
 import crypto from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createStudioRouter } from '../../studio/routes.js';
@@ -119,6 +120,110 @@ describe.skipIf(!enabled)('Studio publications on isolated PostgreSQL', () => {
     ).toBe(400);
     const applied = await request(`/publications/${p.id}/templates`, { channels: ['instagram_feed'] }, 'POST');
     expect(applied.value.items.find((i) => i.id === item.id).copyOrigin).toBe('template');
+  });
+
+  it('records a post published outside Studio without approval, with its images', async () => {
+    const created = await request('/publications', { playbook: 'news', facts: { title: 'Wynik meczu poza Studio', date: '2026-10-18T12:40:00.000Z' } }, 'POST');
+    const id = created.value.id;
+    const fb = created.value.items.find((i) => i.channel === 'facebook');
+    expect(fb.status).toBe('draft');
+    expect(fb.ready.length).toBeGreaterThan(0);
+
+    const future = await request(`/publications/${id}/items/${fb.id}/external-published`, { expectedRevision: fb.revision, publishedAt: new Date(Date.now() + 3600_000).toISOString() }, 'POST');
+    expect(future.res.status).toBe(422);
+
+    // 1×1 PNG: what actually went out goes with the record.
+    const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
+    const form = new FormData();
+    form.append('payload', JSON.stringify({ expectedRevision: fb.revision, url: 'https://www.facebook.com/post/1', publishedAt: '2026-10-04T15:00:00.000Z', note: 'Business Suite' }));
+    form.append('images', new Blob([png], { type: 'image/png' }), 'plakat.png');
+    const recorded = await fetch(`${base}/publications/${id}/items/${fb.id}/external-published`, {
+      method: 'POST',
+      headers: { Origin: 'http://localhost:5174', 'X-Studio-Request': '1', Cookie: cookie },
+      body: form,
+    });
+    expect(recorded.status).toBe(200);
+    const after = (await recorded.json()).items.find((i) => i.id === fb.id);
+    expect(after).toMatchObject({ status: 'published', externalUrl: 'https://www.facebook.com/post/1', approvedHash: null, publishedAt: '2026-10-04T15:00:00.000Z' });
+    expect(after.events[0]).toMatchObject({ action: 'published', payload: { external: true, unapproved: true, note: 'Business Suite' } });
+    expect(after.events[0].payload.images).toHaveLength(1);
+    const image = await request(`/publications/${id}/items/${fb.id}/external-images/0`);
+    expect(image.res.status).toBe(200);
+    expect(image.res.headers.get('content-type')).toContain('image/png');
+
+    const again = await request(`/publications/${id}/items/${fb.id}/external-published`, { expectedRevision: after.revision, publishedAt: '2026-10-04T15:00:00.000Z' }, 'POST');
+    expect(again.res.status).toBe(409);
+
+    // Linking an article made by hand in the CMS never calls the CMS (STUDIO_CMS_URL is not set here).
+    const web = after && (await request(`/publications/${id}`)).value.items.find((i) => i.channel === 'website');
+    const linked = await request(
+      `/publications/${id}/items/${web.id}/website/link`,
+      { expectedRevision: web.revision, documentId: 'doc123', slug: 'wynik-meczu-poza-studio', coverFileId: 41, publishedAt: '2026-10-04T14:30:00.000Z' },
+      'POST',
+    );
+    expect(linked.res.status).toBe(200);
+    const site = linked.value.items.find((i) => i.id === web.id);
+    expect(site).toMatchObject({ status: 'published', externalId: 'doc123', externalUrl: 'https://bekapaka.pl/aktualnosci/wynik-meczu-poza-studio' });
+    expect(site.cms).toMatchObject({ slug: 'wynik-meczu-poza-studio', documentId: 'doc123', upToDate: true });
+    expect((await request(`/publications/${id}/items/${web.id}/website/link`, { expectedRevision: site.revision, documentId: 'x', slug: 'x' }, 'POST')).res.status).toBe(409);
+
+    const ig = linked.value.items.find((i) => i.channel === 'instagram_feed');
+    await request(`/publications/${id}/items/${ig.id}`, { expectedRevision: ig.revision, status: 'skipped' }, 'PUT');
+    const skipped = (await request(`/publications/${id}`)).value.items.find((i) => i.id === ig.id);
+    expect((await request(`/publications/${id}/items/${ig.id}/external-published`, { expectedRevision: skipped.revision, publishedAt: '2026-10-04T15:00:00.000Z' }, 'POST')).res.status).toBe(409);
+    await db.studioPublication.delete({ where: { id } });
+  });
+
+  it('creates the post-match reference set from the match report and requires every graphic of a set', async () => {
+    const facts = JSON.parse(readFileSync(new URL('../fixtures/studio-reference/gmvt-2026-10-18.facts.json', import.meta.url), 'utf8'));
+    const created = await request('/publications', { playbook: 'match-result', facts }, 'POST');
+    expect(created.res.status).toBe(201);
+    const p = created.value;
+    const fb = p.items.find((i) => i.channel === 'facebook');
+    const ig = p.items.find((i) => i.channel === 'instagram_feed');
+    const story = p.items.find((i) => i.channel === 'instagram_story');
+    expect(fb.extraProjectIds).toHaveLength(2);
+    expect(ig.extraProjectIds).toEqual(fb.extraProjectIds);
+    expect(story.extraProjectIds).toEqual([]);
+    expect(fb.extraGraphics.map((g) => g.postType)).toEqual(['leaders', 'team-stats']);
+    const cover = await db.studioRevision.findFirst({ where: { projectId: fb.projectId } });
+    expect(cover.payload).toMatchObject({ postType: 'final', visualStyle: 'poster', formats: ['feed', 'story', 'landscape'] });
+    expect(cover.payload.content.heroStats[0]).toEqual({ value: '12:0', label: 'seria po przerwie' });
+    const [leaders, stats] = await Promise.all(fb.extraProjectIds.map((projectId) => db.studioRevision.findFirst({ where: { projectId } })));
+    expect(leaders.payload.content.tableRows[0]).toMatchObject({ label: 'Filip Karpiński', value: '20', unit: 'PKT', number: '69' });
+    expect(stats.payload.content).toMatchObject({ title: 'Klucz do wygranej', columns: ['BKPK', 'GMVT'] });
+    expect(stats.payload.content.altText).toContain('zbiórki w ataku 22:9');
+    // Readiness names each graphic of the set.
+    expect(fb.ready).toEqual(expect.arrayContaining([expect.stringMatching(/^Zatwierdź grafikę 2\/3 \(„Liderzy/)]));
+    expect(story.ready.some((m) => m.includes('/3'))).toBe(false);
+    await db.studioPublication.delete({ where: { id: p.id } });
+    await db.studioProject.deleteMany({ where: { id: { in: [fb.projectId, ...fb.extraProjectIds] } } });
+  });
+
+  it('warns about feed repetition and shows the channel grid', async () => {
+    const first = await request('/publications', { playbook: 'news', facts: { title: 'Pierwsza aktualność', date: '2026-10-01T10:00:00.000Z' } }, 'POST');
+    const second = await request('/publications', { playbook: 'news', facts: { title: 'Druga aktualność', date: '2026-10-20T10:00:00.000Z' } }, 'POST');
+    const published = first.value.items.find((i) => i.channel === 'facebook');
+    // A post that already went out with the same composition as the new one.
+    await db.studioPublicationItem.update({ where: { id: published.id }, data: { status: 'published', publishedAt: new Date('2026-10-02T16:00:00.000Z') } });
+    const view = (await request(`/publications/${second.value.id}`)).value;
+    const fb = view.items.find((i) => i.channel === 'facebook');
+    expect(fb.variety.composition).toBeTruthy();
+    expect(fb.variety.warnings.map((w) => w.rule)).toContain('previous');
+    expect(fb.variety.history[0]).toMatchObject({ itemId: published.id, status: 'published' });
+    expect(fb.variety.history[0].title).toContain('Pierwsza aktualność');
+    // Website is not a grid channel.
+    expect(view.items.find((i) => i.channel === 'website').variety).toBeUndefined();
+
+    const grid = await request('/publications/grid?channel=facebook');
+    expect(grid.res.status).toBe(200);
+    expect(grid.value[0]).toMatchObject({ itemId: published.id, composition: fb.variety.composition });
+    expect((await request('/publications/grid?channel=website')).res.status).toBe(400);
+
+    // Approval without accepting the repetition is refused once the variant is otherwise ready.
+    const blocked = await request(`/publications/${second.value.id}/items/${fb.id}/approve`, { expectedRevision: fb.revision }, 'POST');
+    expect(blocked.res.status).toBe(422);
+    await db.studioPublication.deleteMany({ where: { id: { in: [first.value.id, second.value.id] } } });
   });
 
   it('stores owner hashtag sets and isolates other owners', async () => {

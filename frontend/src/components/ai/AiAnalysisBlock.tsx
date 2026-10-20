@@ -160,6 +160,10 @@ interface AiAnalysisBlockProps {
   compactActions?: boolean;
   /** Błąd ostatniego generowania (zamiast alert()) */
   errorMessage?: string | null;
+  /** Sezon danych analizy, np. „2025/26” — przed datą generacji */
+  seasonLabel?: string | null;
+  /** Notka dla wszystkich, gdy analiza pochodzi z innego sezonu niż wybrany */
+  seasonNote?: string | null;
 }
 
 function AiAnalysisMarkdown({ markdown }: { markdown: string }) {
@@ -184,7 +188,9 @@ export default function AiAnalysisBlock({
   sourceLabel,
   staleHint,
   compactActions = false,
-  errorMessage = null
+  errorMessage = null,
+  seasonLabel = null,
+  seasonNote = null
 }: AiAnalysisBlockProps) {
   const markdown = useMemo(
     () => resolveAiMarkdown(content, structuredContent),
@@ -218,10 +224,12 @@ export default function AiAnalysisBlock({
     };
   }, [modalOpen]);
 
-  // Model i źródło (Gemini / szablon) tylko dla admina; zawodnik widzi datę
+  // Model i źródło (Gemini / szablon) tylko dla admina; zawodnik widzi sezon i datę
+  const seasonPrefix = seasonLabel && hasContent ? `Sezon ${seasonLabel} · ` : '';
   const metaLine = generatedAt
-    ? `Wygenerowano ${new Date(generatedAt).toLocaleString('pl-PL')}${canGenerate && model ? ` · ${model}` : ''}${canGenerate && sourceLabel ? ` · ${sourceLabel}` : ''}`
+    ? `${seasonPrefix}Wygenerowano ${new Date(generatedAt).toLocaleString('pl-PL')}${canGenerate && model ? ` · ${model}` : ''}${canGenerate && sourceLabel ? ` · ${sourceLabel}` : ''}`
     : canGenerate ? sourceLabel ?? null : null;
+  const shownSeasonNote = hasContent ? seasonNote : null;
   const shownEmptyHint = canGenerate ? emptyHint : playerEmptyHint;
 
   const handleOpenModal = () => {
@@ -258,6 +266,9 @@ export default function AiAnalysisBlock({
                     {hasContent ? 'Raport dostępny' : 'Brak raportu'}
                   </p>
                 )}
+                {shownSeasonNote ? (
+                  <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-primary">{shownSeasonNote}</p>
+                ) : null}
                 {canGenerate && staleHint && hasContent ? (
                   <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-danger">{staleHint}</p>
                 ) : null}
@@ -388,6 +399,9 @@ export default function AiAnalysisBlock({
                           </h2>
                           {metaLine ? (
                             <p className="text-xs font-medium text-bkpk-text-secondary mt-1">{metaLine}</p>
+                          ) : null}
+                          {shownSeasonNote ? (
+                            <p className="mt-1.5 text-xs font-semibold leading-snug text-bkpk-text-primary">{shownSeasonNote}</p>
                           ) : null}
                         </div>
                       </div>

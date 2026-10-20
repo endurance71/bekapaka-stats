@@ -44,7 +44,7 @@ Od wydania Studio 2 głównym obiektem jest **publikacja**: jedno zdarzenie (wyn
 
 ### Sponsorzy pod postami na Facebooku
 
-Każdy post na Facebooka ma stopkę „Dziękujemy naszym sponsorom: …” z listy bekapaka.pl/sponsorzy (jedno źródło: `site/lib/data/sponsors.ts`, udostępniane przez `GET /api/sponsors` strony). Studio pobiera listę (`backend/studio/publications/sponsors.js`, cache 10 min, przy chwilowej awarii strony ostatnia znana lista) i wstawia stopkę w tekstach ze schematu i z AI — model nie wymienia sponsorów. Stopka trafia do podglądu, „Kopiuj tekst” i `facebook/post.txt`; brak stopki blokuje akceptację (kontrola marki). W zakładce Facebook lista „Oznacz sponsorów” prowadzi do profili sponsorów (`facebookUrl` w liście strony): wklejony tekst nie tworzy oznaczeń, więc na Facebooku wpisuje się „@” i wybiera stronę sponsora.
+Każdy post na Facebooka ma stopkę „Dziękujemy naszym partnerom:” z listy bekapaka.pl/sponsorzy, z każdym partnerem w osobnym wierszu (jedno źródło: `site/lib/data/sponsors.ts`, udostępniane przez `GET /api/sponsors` strony). Studio pobiera listę (`backend/studio/publications/sponsors.js`, cache 10 min, przy chwilowej awarii strony ostatnia znana lista) i wstawia stopkę w tekstach ze schematu i z AI — model nie wymienia sponsorów. Stopka trafia do podglądu, „Kopiuj tekst” i `facebook/post.txt`; brak stopki blokuje akceptację (kontrola marki). W zakładce Facebook lista „Oznacz sponsorów” prowadzi do profili sponsorów (`facebookUrl` w liście strony): partnerów z profilem należy oznaczyć, wpisując na Facebooku „@” i wybierając właściwą stronę. Sam wklejony tekst nie tworzy oznaczeń. Pozostali partnerzy pozostają na liście jako nazwy; brak adresu profilu w danych nie oznacza, że partner nie ma Facebooka.
 
 ### Teksty AI i agent (Studio 2, etap 2)
 
@@ -62,6 +62,31 @@ Każdy post na Facebooka ma stopkę „Dziękujemy naszym sponsorom: …” z li
 - Konfiguracja: `STUDIO_CMS_WRITE_TOKEN` (patrz [security-rotation.md](./security-rotation.md#10-token-zapisu-cms-dla-studio-studio_cms_write_token)), `STUDIO_SITE_URL`, `STUDIO_SITE_PREVIEW_SECRET` (z `PREVIEW_SECRET`). Bez tokenu wariant strony działa jak w etapie 1 (paczka i „Oznacz jako opublikowane”).
 
 Dane: tabele `StudioPublication`, `StudioPublicationItem`, `StudioPublishEvent` (audyt), `StudioSetting` — migracja addytywna `20261008120000_studio_publications`. Moduły `channels.js`, `playbooks.js`, `templates.js`, `brand-lint.js`, `texts.js` są izomorficzne: frontend importuje je przez `studio/src/lib/publications.ts`, więc szkic zaakceptowany w przeglądarce przechodzi te same kontrole na serwerze. Nie są objęte odciskiem `design-manifest.json`.
+
+## Wzorzec publikacji pomeczowej
+
+Wzorcem jest zaakceptowana przez właściciela publikacja BeKaPaKa – GMVT TEAM 56:54 (18.10.2026). Fakty i teksty leżą w `backend/tests/fixtures/studio-reference/gmvt-2026-10-18.*`, a `studio.reference-pattern.test.js` pilnuje, żeby generator schematyczny trzymał tę strukturę i żeby kontrola marki przyjmowała teksty wzorcowe bez ostrzeżeń.
+
+- **Facebook:** minirelacja 1500–2600 znaków (limit pola 3000).
+  - Kolejność: „🏀 wynik”, hasło z 🔥, lead z kątem meczu, przebieg w kolejności zdarzeń, „dlaczego” z linią 💪, „🎯 Nasi liderzy:” z liniami 🏀, lider rywala, blok 📅/🆚/📍/🎟️ i „📲 Pełna relacja… 👇”.
+  - Bez Markdown. Lista partnerów idzie w polu `sponsors`.
+- **Instagram:** ta sama struktura w skrócie, „link w bio” i „Przesuń…”, gdy grafik jest kilka.
+- **Strona:**
+  - Kolejność: lead, linia wyniku, „- **Kwarty:** a | b | c | d” i „- **Do przerwy:**”, potem sekcje „Przebieg meczu”, „Walka na tablicach i punkty po stratach”, „Wyróżniający się zawodnicy”, „Mecz w danych”, „Statystyki naszych zawodników” i „Następny mecz”.
+  - „Mecz w danych” zawsze jako lista: strona nie wyświetla tabel Markdown (`ArticleMarkdown` bez remark-gfm).
+- **Kontrola marki:**
+  - limit emoji zależy od kanału (IG post 15, FB 20, relacja 2, strona 0);
+  - procenty z jednym miejscem po przecinku wyliczone z par „celne/oddane” w faktach są dozwolone, podobnie jak stała „6,75 m”;
+  - dzień tygodnia następnego meczu nie jest błędem.
+- **Grafiki (komplet):** „Wynik meczu” tworzy trzy grafiki.
+  - Okładka: `final` w kompozycji „Plakat” (feed, story, landscape) z nadtytułem kolejki, dwiema liczbami meczu (najdłuższa seria i największa przewaga w statystykach) i kwartami w story.
+  - Liderzy: `leaders` na papierze, czyli trzech najlepszych strzelców i najlepszy zbierający spoza nich, z jednostką, szczegółem i numerem.
+  - „Klucz do wygranej” (po porażce „Mecz w liczbach”): `team-stats` na papierze, cztery porównania z największą przewagą BeKaPaKa, kolumny BKPK i skrót rywala.
+  - Post IG i FB niosą cały komplet (`extra` w playbooku, `extraProjectIds` w kanale; karuzela lub album, w paczce ZIP pliki `01-…`, `02-…`, `03-…`). Relacja i strona używają okładki.
+  - Treść wypełnia `publications/match-graphics.js` z potwierdzonych faktów (`facts.report`). Grafika, której fakty nie wypełnią (brak statystyk z KALK), nie powstaje.
+  - Zatwierdzenie kanału wymaga zatwierdzenia i eksportu każdej grafiki kompletu.
+- **Siatka:** kontrola monotonności (sekcja „Siatka”, ostrzeżenia i „Akceptuję powtórzenie” przy zatwierdzaniu).
+- Przecięcie liter tylko w krótkich nagłówkach; wynik i liczby nigdy nie są przecinane.
 
 ## Marka i renderer
 
@@ -101,7 +126,7 @@ Przed operacjami przeczytaj runbook VPS, optymalizację, rotację sekretów, scr
 1. Ustal właściciela i odczytaj ID konta bez haseł/tokenów. Na VPS ustaw prywatnie `STUDIO_OWNER_ID`, `STUDIO_CMS_TOKEN` (Strapi read-only, nie Admin/MCP), `STUDIO_SECRETS_KEY` (`openssl rand -base64 32`; klucze API dostawców właściciel wpisuje potem w Studio) oraz budżet. Backend musi mieć `STUDIO_ORIGIN=https://studio.bekapaka.pl`.
 2. Sprawdź RAM ≥ 1,5 GiB wolnej, dysk <75%, wolny localhost:8083, działające backupy DB. Dodaj rekord DNS A Studio do istniejącego IP VPS.
 3. CI `.github/workflows/studio.yml` sprawdza API, PostgreSQL, renderer i aplikację, buduje obrazy `studio:<SHA>` i `studio-worker:<SHA>`. Istniejący pipeline wdraża backend z migracjami addytywnymi. Te same SHA muszą być użyte razem. Studio nie jest uruchamiane zwykłym deployem (profil Compose `studio`); job `studio` w „Deploy to VPS” wykrywa, że Studio zostało w tyle, i kończy się błędem z poleceniem `deploy.sh` albo — przy zmiennej repozytorium `STUDIO_AUTO_DEPLOY=true` — sam wdraża Studio. Szczegóły: [docker-deploy.md](./docker-deploy.md#studio-studiobekapakapl).
-4. Przenieś zweryfikowane skrypty i Compose na VPS z czystego checkoutu zgodnie z zasadami repo, bez zwykłego `git pull` w starym checkoutcie po przepisaniu historii. `scripts/studio/deploy.sh <pełne SHA>` sprawdza właściciela, obraz backendu, port i zdrowie. Aktualizuje wyłącznie dwie usługi Studio.
+4. Przenieś zweryfikowane skrypty i Compose na VPS z czystego checkoutu zgodnie z zasadami repo, bez zwykłego `git pull` w starym checkoutcie po przepisaniu historii. `scripts/studio/deploy.sh <pełne SHA>` sprawdza właściciela, obraz backendu, port i zdrowie. Aktualizuje wyłącznie dwie usługi Studio, a po pozytywnej kontroli zdrowia zapisuje `BKPK_STUDIO_IMAGE_TAG=<SHA>` w `.env` (zwykłe `docker compose up` nie cofnie wtedy wydania).
 5. Dopisz wyłącznie blok `scripts/studio/Caddyfile.studio` do Caddy, zachowując wszystkie istniejące hosty. Najpierw `caddy validate`, później reload, następnie test HTTPS/login/pobrania. Nie zmieniaj hostów ani portów MOYA.
 6. Worker: 1 CPU / 1 GiB RAM, dwie niezależne kolejki (jeden render i jedno AI jednocześnie), bez publicznego portu. Health check monitoruje aktualność heartbeat workera. Frontend: localhost:8083, 128 MiB. Pliki: prywatny `data/studio`, prawa 0700, bez mapowania przez serwer statyczny. Pobrania są autoryzowane i sprawdzają termin ważności.
 7. Zapisz `BKPK_STUDIO_IMAGE_TAG=<SHA>` w prywatnym `.env`, by ręczny compose zachował wydanie. Rollback dwóch obrazów Studio używa poprzedniego SHA i `up --no-deps` dla tych usług; nie cofa migracji. Nie usuwaj obrazów rollbacku przed odbiorem. Zmiana właściciela odbiera dostęp poprzednim sesjom.

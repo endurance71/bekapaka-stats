@@ -225,6 +225,9 @@ describe('AI context builders (mocked Prisma, bez sieci)', () => {
     expect(json).not.toMatch(/"raw"|updatedAt|createdAt|birthYear/);
     expect(p.player).toEqual({ firstName: 'Filip', lastName: 'Karpiński', number: 69, position: 'SF', heightCm: 185 });
     expect(p.teamAverages).toEqual({ ppg: 8, turnoversPerGame: 1.5, playersCounted: 2 });
+    expect(p.seasonTeam).toEqual({ name: null, isBekapaka: true });
+    expect(p.teamContext).toEqual({ turnoversPerGame: 14.2, efgPercentage: 48.1, ftPercentage: 65 });
+    expect(prismaMock.kalkPlayerGameLog.findMany.mock.calls[0][0].where.OR).toHaveLength(2);
     expect(p.gameLog[0]).toMatchObject({ result: 'W', score: '70:60', round: 'Kolejka - 1' });
     expect(p.gameLog[1]).toMatchObject({ result: 'L', score: '50:60' });
     expect(p.career).toHaveLength(2);
@@ -237,6 +240,114 @@ describe('AI context builders (mocked Prisma, bez sieci)', () => {
     getPlayerStats.mockResolvedValueOnce(statsFor(new Date('2020-01-01')));
     const ctx2 = await buildPlayerContext('p1');
     expect(ctx2.hash).toBe(ctx.hash);
+  });
+
+  it('buildPlayerContext: W/L and score from the player\'s own team when he played for another club', async () => {
+    // Tymiński 2025/26 grał w GLAZURIX — wcześniej wynik liczony z perspektywy BeKaPaKa (odwrócony)
+    const games = [
+      { id: '201', home: 'PIWIARNIA BUMERANG', guest: 'GLAZURIX-Salon Łazienek', sh: 105, sa: 51, pm: -54 },
+      { id: '202', home: 'GLAZURIX-Salon Łazienek', guest: 'KS Rywal', sh: 60, sa: 72, pm: -10 },
+      { id: '203', home: 'GLAZURIX-Salon Łazienek', guest: 'BeKaPaKa Bobolice', sh: 80, sa: 70, pm: 8 }
+    ];
+    const gameLog = games.map((m, i) => ({
+      gameId: m.id,
+      date: `2026-03-0${i + 1}`,
+      teamName: 'GLAZURIX-Salon Łazienek',
+      opponent: m.home === 'GLAZURIX-Salon Łazienek' ? m.guest : m.home,
+      pts: 8, reb: 4, ast: 1, stl: 0, blk: 0, tov: 2, pf: 3, min: '20:00',
+      fgm: 3, fga: 9, three_pm: 1, three_pa: 4, ftm: 1, fta: 2, efg: 0.39, ts: 0.42,
+      plusMinus: m.pm
+    }));
+    // Wpis bez teamName (stary log) — perspektywa z nazwy przeciwnika
+    gameLog.push({ ...gameLog[0], gameId: '204', teamName: null, opponent: 'Inny Klub', plusMinus: -3 });
+    games.push({ id: '204', home: 'Inny Klub', guest: 'GLAZURIX-Salon Łazienek', sh: 66, sa: 63 });
+
+    vi.doMock('../../dataStore.js', () => ({
+      getPlayerStats: vi.fn(async () => ({
+        season: { id: 'season_2025-2026', label: '2025/2026' },
+        player: { id: 'p2', firstName: 'Maciej', lastName: 'Tymiński', number: 7, position: 'PF', kalkPlayer: null },
+        leagueKalk: null,
+        averages: { ppg: 8, rpg: 4, apg: 1, efg: 0.39, ts: 0.42, plusMinusAvg: -14.75, gamesPlayed: 4, minutesPlayed: 80 },
+        gameLog
+      })),
+      getTrainingPriorities: vi.fn(async () => null)
+    }));
+    prismaMock.kalkSeason.findUnique.mockResolvedValue({ id: 'season_2025-2026' });
+    prismaMock.rosterPlayer.findUnique.mockResolvedValue({ goals: null, kalkSlug: null, heightCm: null, position: 'PF' });
+    prismaMock.kalkPlayerGameLog.findMany.mockResolvedValue([]);
+    prismaMock.kalkMatch.findMany.mockResolvedValue(
+      games.map((m) => ({ id: m.id, homeTeamName: m.home, guestTeamName: m.guest, scoreHome: m.sh, scoreAway: m.sa, roundLabel: null, roundCode: null }))
+    );
+    prismaMock.kalkSeason.findMany.mockResolvedValue([]);
+
+    const { buildPlayerContext } = await import('../../ai/buildPlayerContext.js');
+    const p = (await buildPlayerContext('p2', { seasonId: 'season_2025-2026' })).payload;
+    expectCleanPayload(p);
+    expect(p.gameLog.map((g) => [g.opponent, g.result, g.score])).toEqual([
+      ['PIWIARNIA BUMERANG', 'L', '51:105'],
+      ['KS Rywal', 'L', '60:72'],
+      ['BeKaPaKa Bobolice', 'W', '80:70'],
+      ['Inny Klub', 'L', '63:66']
+    ]);
+    expect(p.record).toEqual({ wins: 1, losses: 3 });
+  });
+
+  it('buildPlayerContext: team reference follows the player\'s team in that season (not BeKaPaKa)', async () => {
+    // Tymiński 2025/26 w GLAZURIX: teamAverages z logów GLAZURIX, teamContext (statystyki BeKaPaKa) = null
+    const gameLog = Array.from({ length: 4 }, (_, i) => ({
+      gameId: String(300 + i),
+      date: `2026-02-0${i + 1}`,
+      teamName: i === 3 ? 'BeKaPaKa Bobolice' : 'GLAZURIX-Salon Łazienek', // jeden mecz w innym składzie — wygrywa najczęstsza drużyna
+      opponent: 'Rywal',
+      pts: 14, reb: 4, ast: 1, stl: 0, blk: 0, tov: 2, pf: 3, min: '25:00',
+      fgm: 5, fga: 11, three_pm: 1, three_pa: 4, ftm: 3, fta: 4, efg: 0.5, ts: 0.55,
+      plusMinus: 0
+    }));
+    const getTrainingPriorities = vi.fn(async () => ({ team: { turnovers: 14.2, efgPercentage: 48.1, ftPercentage: 65 }, league: {} }));
+    vi.doMock('../../dataStore.js', () => ({
+      getPlayerStats: vi.fn(async () => ({
+        season: { id: 'season_2025-2026', label: '2025/2026' },
+        player: { id: 'p2', firstName: 'Maciej', lastName: 'Tymiński', number: 7, position: 'PF', kalkPlayer: null },
+        leagueKalk: null,
+        averages: { ppg: 14, rpg: 4, apg: 1, efg: 0.5, ts: 0.55, plusMinusAvg: 0, gamesPlayed: 4, minutesPlayed: 100 },
+        gameLog
+      })),
+      getTrainingPriorities
+    }));
+    prismaMock.kalkSeason.findUnique.mockResolvedValue({ id: 'season_2025-2026' });
+    prismaMock.rosterPlayer.findUnique.mockResolvedValue({ goals: null, kalkSlug: null, heightCm: null, position: 'PF' });
+    // GLAZURIX: 2 zawodników × 3 mecze, ppg 20 i 16 → 18 (14 PPG Tymińskiego to nie lider)
+    prismaMock.kalkPlayerGameLog.findMany.mockResolvedValue([
+      ...[1, 2, 3].map(() => ({ kalkPlayerId: 'g1', pts: 20, tov: 3, stats: {} })),
+      ...[1, 2, 3].map(() => ({ kalkPlayerId: 'g2', pts: 16, tov: 1, stats: {} }))
+    ]);
+    prismaMock.kalkMatch.findMany.mockResolvedValue([]);
+    prismaMock.kalkSeason.findMany.mockResolvedValue([]);
+
+    const { buildPlayerContext } = await import('../../ai/buildPlayerContext.js');
+    const p = (await buildPlayerContext('p2', { seasonId: 'season_2025-2026' })).payload;
+    expectCleanPayload(p);
+    expect(prismaMock.kalkPlayerGameLog.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { seasonId: 'season_2025-2026', teamName: { equals: 'GLAZURIX-Salon Łazienek', mode: 'insensitive' } }
+      })
+    );
+    expect(p.seasonTeam).toEqual({ name: 'GLAZURIX-Salon Łazienek', isBekapaka: false });
+    expect(p.teamAverages).toEqual({ ppg: 18, turnoversPerGame: 2, playersCounted: 2 });
+    expect(p.teamContext).toBeNull();
+    expect(getTrainingPriorities).not.toHaveBeenCalled();
+    // Ze średnią BeKaPaKa (np. 8 PPG) 14 PPG dawałoby fałszywe scoring_leader
+    expect(p.signals.map((s) => s.code)).not.toContain('scoring_leader');
+  });
+
+  it('resolveSeasonTeam: most frequent team, BeKaPaKa fallback without team names', async () => {
+    const { resolveSeasonTeam } = await import('../../ai/buildPlayerContext.js');
+    expect(resolveSeasonTeam([{ teamName: 'KS Rywal' }, { teamName: 'BeKaPaKa Bobolice' }, { teamName: 'ks rywal ' }])).toEqual({
+      name: 'KS Rywal',
+      isBekapaka: false
+    });
+    expect(resolveSeasonTeam([{ teamName: 'KS BOBOLICE' }])).toEqual({ name: 'KS BOBOLICE', isBekapaka: true });
+    expect(resolveSeasonTeam([{ teamName: null }, {}])).toEqual({ name: null, isBekapaka: true });
   });
 
   it('scoring_leader does not fire without team reference (was: fires for everyone)', async () => {
