@@ -22,6 +22,13 @@ export async function createProject(db, owner, input) {
 export async function updateProject(db, owner, id, expectedRevision, input) {
   const payload = projectSchema.parse(input);
   return db.$transaction(async tx => {
+    // Identical content is not a new revision. A client that keeps re-sending the same payload
+    // (e.g. an editor bundle from another engine build) would otherwise fill the history with duplicates.
+    const current = await tx.studioProject.findFirst({ where: { id, ownerId: owner, currentRevision: expectedRevision, status: 'draft' }, select: { id: true } });
+    if (current) {
+      const r = await tx.studioRevision.findUnique({ where: { projectId_number: { projectId: id, number: expectedRevision } }, select: { contentHash: true, brandVersion: true, templateVersion: true } });
+      if (r && r.contentHash === hash(payload) && r.brandVersion === BRAND_VERSION && r.templateVersion === projectTemplateVersion(payload)) return projectView(tx, owner, id);
+    }
     const updated = await tx.studioProject.updateMany({ where: { id, ownerId: owner, currentRevision: expectedRevision, status: 'draft' }, data: { name: payload.name, family: payload.family, currentRevision: { increment: 1 } } });
     if (!updated.count) fail(409, 'Projekt zmienił się na innym urządzeniu albo jest zarchiwizowany. Odśwież projekt; Twoje zmiany pozostają w formularzu.');
     await tx.studioRevision.create({ data: { projectId: id, number: expectedRevision + 1, payload, contentHash: hash(payload), brandVersion: BRAND_VERSION, templateVersion: projectTemplateVersion(payload) } });

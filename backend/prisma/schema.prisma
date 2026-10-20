@@ -136,6 +136,8 @@ model RosterPlayer {
   aiDevelopmentAt      DateTime?
   aiDevelopmentModel   String?
   aiDevelopmentHash    String?
+  /// Sezon danych planu (przy <3 meczach w aktywnym sezonie plan pochodzi z poprzedniego)
+  aiDevelopmentSeasonId String?
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -860,6 +862,8 @@ model StudioPublicationItem {
   channel String
   projectId String?
   project StudioProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  // Further graphics of a set after the cover (projectId), in order; ids of StudioProject.
+  extraProjectIds Json @default("[]")
   format String?
   copy Json
   copyOrigin String @default("manual")

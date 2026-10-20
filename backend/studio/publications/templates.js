@@ -213,18 +213,47 @@ const factList = (f) =>
     .map(([k, v]) => `- **${k}:** ${v}`);
 
 // Polish plural: 1 zbiórka, 2–4 zbiórki, 5+ zbiórek.
-const plural = (n, one, few, many) => {
+export const plural = (n, one, few, many) => {
   const a = Math.abs(n);
   if (a === 1) return one;
   return a % 10 >= 2 && a % 10 <= 4 && (a % 100 < 12 || a % 100 > 14) ? few : many;
 };
-const count = (n, one, few, many) => (Number.isFinite(n) ? `${n} ${plural(n, one, few, many)}` : '');
+export const count = (n, one, few, many) => (Number.isFinite(n) ? `${n} ${plural(n, one, few, many)}` : '');
 const shot = (ratio, p) => (has(ratio) ? `${ratio}${p !== null && p !== undefined ? ` (${p}%)` : ''}` : '');
 const pair = (label, us, them, opp) => (has(us) && has(them) ? `- **${label}:** BeKaPaKa ${us} · ${opp} ${them}` : '');
 const playerStat = (p) =>
   [`${p.pts} pkt`, `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : '']
     .filter(has)
     .join(', ');
+
+// Quarters as in the owner's reference article: one row with all quarters, then the halftime score.
+const quarterSummary = (r) =>
+  r.quarters.length
+    ? [`- **Kwarty:** ${r.quarters.map((x) => `${x.us}:${x.them}`).join(' | ')}`, r.halftime ? `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}` : ''].filter(has)
+    : [];
+// Team comparison rows of the reference article („Mecz w danych”), only the numbers present in facts.
+const teamComparison = (t, them, opp) =>
+  t && them
+    ? [
+        pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
+        pair('Rzuty za 3', shot(t.three, t.threePct), shot(them.three, them.threePct), opp),
+        pair('Rzuty wolne', shot(t.ft, t.ftPct), shot(them.ft, them.ftPct), opp),
+        pair('Zbiórki', t.reb, them.reb, opp),
+        pair('Zbiórki w ataku', t.orb, them.orb, opp),
+        pair('Asysty', t.ast, them.ast, opp),
+        pair('Przechwyty', t.stl, them.stl, opp),
+        pair('Straty', t.tov, them.tov, opp),
+        pair('Punkty po stratach', t.ptsOffTurnovers, them.ptsOffTurnovers, opp),
+        pair('Punkty drugiej szansy', t.secondChancePts, them.secondChancePts, opp),
+        pair('Punkty z szybkiego ataku', t.fastBreakPts, them.fastBreakPts, opp),
+        pair('Punkty zmienników', t.benchPts, them.benchPts, opp),
+      ].filter(has)
+    : [];
+const playerLines = (players) =>
+  players.map(
+    (p) =>
+      `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${[`${p.pts} pkt`, has(p.fg) ? `${p.fg} z gry` : '', p.reb ? `${p.reb} zb.` : '', p.ast ? `${p.ast} as.` : '', p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : ''].filter(has).join(', ')}`,
+  );
 
 // Full match report for bekapaka.pl from the KALK statistics and play-by-play in facts.report.
 // Prose is built only from numbers present in facts (no arithmetic beyond what match-flow.js stored).
@@ -287,13 +316,7 @@ function reportArticle(f) {
     flow?.largestDeficit ? `Największa strata do rywala wynosiła ${count(flow.largestDeficit.points, 'punkt', 'punkty', 'punktów')} (${flow.largestDeficit.minute}. minuta, ${flow.largestDeficit.score}).` : '',
     flow && flow.leadChanges > 0 ? `Prowadzenie zmieniało się ${flow.leadChanges} ${plural(flow.leadChanges, 'raz', 'razy', 'razy')}.` : '',
   ].filter(has).join(' ');
-  const quarterRows = r.quarters.map((x) => `- **${x.label}:** ${x.us}:${x.them}`);
-  if (r.halftime) quarterRows.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
-
-  const strip = t
-    ? [t.reb ? count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', t.ast ? count(t.ast, 'asysta', 'asysty', 'asyst') : '', t.stl ? count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów') : '', Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : '']
-        .filter(has)
-    : [];
+  const quarterRows = quarterSummary(r);
 
   // Players: top scorer with shooting, best passer and rebounder, other double-digit scorers.
   const [scorer] = r.players;
@@ -303,45 +326,36 @@ function reportArticle(f) {
   const people = [
     scorer && scorer.pts > 0 ? `${scorer.name} zdobył ${count(scorer.pts, 'punkt', 'punkty', 'punktów')}${has(scorer.fg) ? ` (${scorer.fg} z gry)` : ''}${scorer.reb || scorer.ast ? `, miał też ${[scorer.reb ? count(scorer.reb, 'zbiórkę', 'zbiórki', 'zbiórek') : '', scorer.ast ? count(scorer.ast, 'asystę', 'asysty', 'asyst') : ''].filter(has).join(' i ')}` : ''}.` : '',
     passer && passer !== scorer && passer.ast >= 5 ? `${passer.name} rozdał ${count(passer.ast, 'asystę', 'asysty', 'asyst')}${passer.pts ? ` i dołożył ${count(passer.pts, 'punkt', 'punkty', 'punktów')}` : ''}.` : '',
-    others.length ? `Dwucyfrową liczbę punktów zdobyli także: ${names(others.map((p) => `${p.name} (${p.pts})`))}.` : '',
+    others.length === 1 ? `Dwucyfrową liczbę punktów zdobył także ${others[0].name} (${others[0].pts}).` : others.length ? `Dwucyfrową liczbę punktów zdobyli także: ${names(others.map((p) => `${p.name} (${p.pts})`))}.` : '',
     rebounder && rebounder !== scorer && rebounder !== passer && rebounder.reb >= 5 ? `Najwięcej zbiórek miał ${rebounder.name} (${rebounder.reb}).` : '',
   ].filter(has).join(' ');
-  const playerRows = r.players.slice(0, 8).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${[`${p.pts} pkt`, has(p.fg) ? `${p.fg} z gry` : '', `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : ''].filter(has).join(', ')}`);
+  const playerRows = playerLines(r.players);
 
   const teamText = t && them
     ? [
-        has(t.fg) && has(them.fg) ? `Trafiliśmy ${t.fg.replace('/', ' z ')} rzutów z gry${t.fgPct !== null ? ` (${t.fgPct}%)` : ''}, rywale ${them.fg.replace('/', ' z ')}${them.fgPct !== null ? ` (${them.fgPct}%)` : ''}.` : '',
-        Number.isFinite(them.tov) && Number.isFinite(t.ptsOffTurnovers) && t.ptsOffTurnovers > 0 ? `Rywale popełnili ${count(them.tov, 'stratę', 'straty', 'strat')}, a po stratach zdobyliśmy ${count(t.ptsOffTurnovers, 'punkt', 'punkty', 'punktów')}.` : '',
-        Number.isFinite(t.reb) && Number.isFinite(them.reb) ? `Zbiórki: ${t.reb} do ${them.reb}.` : '',
+        has(t.fg) && has(them.fg) ? `Trafiliśmy ${t.fg.replace('/', ' z ')} rzutów z gry${t.fgPct !== null ? ` (${t.fgPct}%)` : ''}${has(t.three) ? `, w tym ${t.three.replace('/', ' z ')} za trzy punkty` : ''}. Rywale: ${them.fg.replace('/', ' z ')}${them.fgPct !== null ? ` (${them.fgPct}%)` : ''}.` : '',
+        Number.isFinite(t.reb) && Number.isFinite(them.reb) ? `Zebraliśmy ${count(t.reb, 'piłkę', 'piłki', 'piłek')}${Number.isFinite(t.orb) ? `, w tym ${t.orb} w ataku` : ''}, rywale ${them.reb}.` : '',
+        Number.isFinite(t.secondChancePts) && Number.isFinite(them.secondChancePts) ? `Punkty drugiej szansy: ${t.secondChancePts} do ${them.secondChancePts}.` : '',
+        Number.isFinite(them.tov) && Number.isFinite(t.ptsOffTurnovers) && t.ptsOffTurnovers > 0 ? `${t.stl ? `Zanotowaliśmy ${count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów')}, a p` : 'P'}o ${count(them.tov, 'stracie', 'stratach', 'stratach')} rywala zdobyliśmy ${count(t.ptsOffTurnovers, 'punkt', 'punkty', 'punktów')}.` : '',
       ].filter(has).join(' ')
     : '';
-  const teamRows = r.team
-    ? [
-        pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
-        pair('Za 3 punkty', shot(t.three, t.threePct), shot(them.three, them.threePct), opp),
-        pair('Rzuty wolne', shot(t.ft, t.ftPct), shot(them.ft, them.ftPct), opp),
-        pair('Zbiórki', t.reb, them.reb, opp),
-        pair('Asysty', t.ast, them.ast, opp),
-        pair('Przechwyty', t.stl, them.stl, opp),
-        pair('Straty', t.tov, them.tov, opp),
-        pair('Punkty z ławki', t.benchPts, them.benchPts, opp),
-      ].filter(has)
-    : [];
+  const teamRows = teamComparison(t, them, opp);
   const next = r.nextMatch;
   const nextRows = next
     ? [`- **Rywal:** ${next.opponent}`, valid(next.date) ? `- **Termin:** ${when(next.date)}` : '', has(next.venue) ? `- **Miejsce:** ${next.venue}` : '', has(f.entryInfo) ? `- **Wstęp:** ${f.entryInfo}` : ''].filter(has)
     : [];
 
+  const opponentLine = r.opponentTop.length ? `Po stronie ${opp} najwięcej punktów: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '';
+  // Section order of the owner's reference article (GMVT TEAM 56:54, 18.10.2026).
   return paragraphs(
     lead,
     scoreLine,
-    flowText.length ? `## Przebieg meczu\n\n${flowText.join('\n\n')}` : '',
-    extra,
-    quarterRows.length >= 2 ? quarterRows.join('\n') : '',
-    strip.length >= 2 ? `BeKaPaKa w liczbach: ${strip.join(' · ')}` : '',
-    playerRows.length >= 2 ? `## Nasi zawodnicy\n\n${people}\n\n${playerRows.join('\n')}` : '',
-    teamRows.length >= 2 ? `## Statystyki zespołów\n\n${teamText}\n\n${teamRows.join('\n')}` : '',
-    r.opponentTop.length ? `Najwięcej punktów dla ${opp}: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '',
+    quarterRows.length ? quarterRows.join('\n') : '',
+    flowText.length ? `## Przebieg meczu\n\n${[...flowText, extra].filter(has).join('\n\n')}` : '',
+    teamText ? `## Walka na tablicach i punkty po stratach\n\n${teamText}` : '',
+    people ? `## Wyróżniający się zawodnicy\n\n${[people, opponentLine].filter(has).join('\n\n')}` : '',
+    teamRows.length >= 2 ? `## Mecz w danych\n\n${teamRows.join('\n')}` : '',
+    playerRows.length >= 2 ? `## Statystyki naszych zawodników\n\n${playerRows.join('\n')}` : '',
     nextRows.length >= 2 ? `## Następny mecz\n\n${nextRows.join('\n')}` : '',
   );
 }
@@ -353,24 +367,12 @@ export function reportData(f) {
   const opp = f.opponent;
   const t = r.team?.us;
   const them = r.team?.them;
-  const quarterRows = r.quarters.map((x) => `- **${x.label}:** ${x.us}:${x.them}`);
-  if (r.halftime) quarterRows.splice(2, 0, `- **Do przerwy:** ${r.halftime.us}:${r.halftime.them}`);
+  const quarterRows = quarterSummary(r);
   const strip = t
     ? [t.reb ? count(t.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', t.ast ? count(t.ast, 'asysta', 'asysty', 'asyst') : '', t.stl ? count(t.stl, 'przechwyt', 'przechwyty', 'przechwytów') : '', Number.isFinite(t.fastBreakPts) && t.fastBreakPts > 0 ? `${t.fastBreakPts} pkt z kontry` : '', Number.isFinite(t.benchPts) && t.benchPts > 0 ? `${t.benchPts} pkt z ławki` : ''].filter(has)
     : [];
-  const teamRows = t && them
-    ? [
-        pair('Rzuty z gry', shot(t.fg, t.fgPct), shot(them.fg, them.fgPct), opp),
-        pair('Za 3 punkty', shot(t.three, t.threePct), shot(them.three, them.threePct), opp),
-        pair('Rzuty wolne', shot(t.ft, t.ftPct), shot(them.ft, them.ftPct), opp),
-        pair('Zbiórki', t.reb, them.reb, opp),
-        pair('Asysty', t.ast, them.ast, opp),
-        pair('Przechwyty', t.stl, them.stl, opp),
-        pair('Straty', t.tov, them.tov, opp),
-        pair('Punkty z ławki', t.benchPts, them.benchPts, opp),
-      ].filter(has)
-    : [];
-  const playerRows = r.players.slice(0, 8).map((p) => `- **${p.name}${p.number !== null && p.number !== undefined ? ` (#${p.number})` : ''}:** ${[`${p.pts} pkt`, has(p.fg) ? `${p.fg} z gry` : '', `${p.reb} zb.`, `${p.ast} as.`, p.stl ? `${p.stl} prz.` : '', p.eval !== null && p.eval !== undefined ? `eval ${p.eval}` : ''].filter(has).join(', ')}`);
+  const teamRows = teamComparison(t, them, opp);
+  const playerRows = playerLines(r.players);
   const next = r.nextMatch;
   const nextRows = next
     ? [`- **Rywal:** ${next.opponent}`, valid(next.date) ? `- **Termin:** ${when(next.date)}` : '', has(next.venue) ? `- **Miejsce:** ${next.venue}` : '', has(f.entryInfo) ? `- **Wstęp:** ${f.entryInfo}` : ''].filter(has)
@@ -381,7 +383,7 @@ export function reportData(f) {
     strip,
     teamRows,
     playerRows,
-    opponentLine: r.opponentTop.length ? `Najwięcej punktów dla ${opp}: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '',
+    opponentLine: r.opponentTop.length ? `Po stronie ${opp} najwięcej punktów: ${r.opponentTop.map((p) => `${p.name} (${p.pts})`).join(', ')}.` : '',
     nextRows,
   };
 }
@@ -393,14 +395,14 @@ export function assembleReport(parts, f) {
   const content = paragraphs(
     parts.lead,
     d.scoreLine,
+    d.quarterRows.length ? d.quarterRows.join('\n') : '',
     `## Przebieg meczu\n\n${parts.story.join('\n\n')}`,
-    `## Bohaterowie meczu\n\n${parts.heroes.join('\n\n')}`,
+    `## Wyróżniający się zawodnicy\n\n${parts.heroes.join('\n\n')}`,
     parts.closing || '',
-    d.strip.length >= 2 ? `BeKaPaKa w liczbach: ${d.strip.join(' · ')}` : '',
-    data.length >= 2 ? `## Mecz w danych\n\n${data.join('\n')}` : '',
-    d.playerRows.length >= 2 ? `### Nasi zawodnicy\n\n${d.playerRows.join('\n')}` : '',
     // The closing paragraph already names the rival's top scorer.
     parts.closing ? '' : d.opponentLine,
+    d.teamRows.length >= 2 ? `## Mecz w danych\n\n${d.teamRows.join('\n')}` : '',
+    d.playerRows.length >= 2 ? `## Statystyki naszych zawodników\n\n${d.playerRows.join('\n')}` : '',
     d.nextRows.length >= 2 ? `## Następny mecz\n\n${d.nextRows.join('\n')}` : '',
   );
   return copySchemas.website.parse({ title: parts.title, excerpt: parts.excerpt, content, tags: ['mecz', 'kalk'], coverAlt: parts.coverAlt || altText({ id: 'match-result', label: 'Wynik meczu' }, f).slice(0, 300) });
@@ -433,6 +435,61 @@ function reportExcerpt(id, f) {
   return text.length <= 220 ? text : text.slice(0, 217).replace(/\s+\S*$/, '') + '…';
 }
 
+// Post-match Facebook / Instagram post in the owner's reference structure (GMVT TEAM 56:54, 18.10.2026):
+// score line, storyline from the play-by-play, why we won, leaders, rival top scorer, next match block.
+// Schematic prose stays factual — the emotional framing is left to the AI prompt and the owner.
+function reportSocial(f, instagram) {
+  const r = f.report;
+  const opp = f.opponent;
+  const flow = r.flow;
+  const t = r.team?.us;
+  const them = r.team?.them;
+  const usRun = flow?.runs?.find((run) => run.team === 'us');
+  const themRun = flow?.runs?.find((run) => run.team === 'them');
+  const result = won(f) ? `pokonaliśmy ${opp} ${score(f)}` : f.scoreUs === f.scoreThem ? `zremisowaliśmy z ${opp} ${score(f)}` : `przegraliśmy z ${opp} ${score(f)}`;
+  const lead = [
+    `W meczu${has(f.round) ? ` ${f.round}. kolejki` : ''} ${f.competition || 'KALK'} ${result}.`,
+    flow?.largestLead ? `Najwyższe prowadzenie – ${count(flow.largestLead.points, 'punkt', 'punkty', 'punktów')} – mieliśmy w ${flow.largestLead.minute}. minucie.` : '',
+  ].filter(has).join(' ');
+  const story = [
+    r.halftime ? `Do przerwy było ${r.halftime.us}:${r.halftime.them}.` : '',
+    usRun ? `Seria ${usRun.points}:0 (z ${usRun.from} na ${usRun.to}) dała nam przewagę.` : '',
+    themRun ? `${opp} odpowiedział serią ${themRun.points}:0 – z ${themRun.from} zrobiło się ${themRun.to}.` : '',
+    scored(f) ? `Końcowy wynik: ${score(f)}.` : '',
+  ].filter(has).join(' ');
+  const why = t && them
+    ? [
+        has(t.fg) ? `Z gry trafiliśmy ${t.fg.replace('/', ' z ')} rzutów${has(t.three) ? `, za trzy ${t.three.replace('/', ' z ')}` : ''}.` : '',
+        [Number.isFinite(t.orb) && t.orb > 0 ? `${count(t.orb, 'zbiórka', 'zbiórki', 'zbiórek')} w ataku${Number.isFinite(t.secondChancePts) ? ` dały nam ${t.secondChancePts} pkt drugiej szansy` : ''}` : '', Number.isFinite(them.tov) && Number.isFinite(t.ptsOffTurnovers) && t.ptsOffTurnovers > 0 ? `po ${count(them.tov, 'stracie', 'stratach', 'stratach')} rywala zdobyliśmy ${t.ptsOffTurnovers} pkt` : '']
+          .filter(has)
+          .join(', a ')
+          .replace(/^./, (c) => `💪 ${c.toUpperCase()}`)
+          .replace(/$/, (m, i, all) => (all ? '.' : '')),
+      ].filter((x) => has(x) && x !== '.').join('\n\n')
+    : '';
+  const scorers = r.players.filter((p) => p.pts > 0).slice(0, 3);
+  const rebounder = [...r.players].sort((a, b) => b.reb - a.reb)[0];
+  const leaders = [...scorers, ...(rebounder && !scorers.includes(rebounder) && rebounder.reb >= 5 ? [rebounder] : [])].map(
+    (p) =>
+      `🏀 ${p.name} – ${[p.pts ? `${p.pts} pkt` : '', p.reb >= 5 ? count(p.reb, 'zbiórka', 'zbiórki', 'zbiórek') : '', p.ast >= 5 ? count(p.ast, 'asysta', 'asysty', 'asyst') : '', p.stl >= 3 ? count(p.stl, 'przechwyt', 'przechwyty', 'przechwytów') : ''].filter(has).join(', ')}`,
+  );
+  const rival = r.opponentTop[0];
+  const next = r.nextMatch;
+  const nextBlock = next
+    ? [`📅 Następny mecz: ${valid(next.date) ? when(next.date) : ''}`.trim(), `🆚 ${next.opponent}`, has(next.venue) ? `📍 ${next.venue}` : '', has(f.entryInfo) ? `🎟️ ${f.entryInfo}` : ''].filter(has).join('\n')
+    : '';
+  return paragraphs(
+    `🏀 ${CLUB} ${score(f)} ${opp}`,
+    lead,
+    story,
+    why,
+    leaders.length ? `🎯 Nasi liderzy:\n${leaders.join('\n')}` : '',
+    rival ? `Po stronie ${opp} najwięcej punktów: ${rival.name} – ${rival.pts} pkt${rival.reb >= 5 ? ` i ${count(rival.reb, 'zbiórka', 'zbiórki', 'zbiórek')}` : ''}.` : '',
+    nextBlock,
+    instagram ? '📲 Pełna relacja i statystyki – link w bio' : '📲 Pełna relacja i statystyki na bekapaka.pl 👇',
+  );
+}
+
 // On bekapaka.pl itself „more on bekapaka.pl / link in bio” sentences make no sense.
 const offSite = (line) => /bekapaka\.pl|link w bio/i.test(line);
 function excerpt(c) {
@@ -455,9 +512,9 @@ export function schematicCopy(playbookDef, facts, settings = {}) {
   const fbTags = settings.hashtags?.facebook ?? [];
   const alt = altText(playbookDef, facts);
   const out = {
-    instagram_feed: { caption: body.replace(/Pełna relacja na bekapaka\.pl\./, 'Pełna relacja: link w bio.').replace('Więcej na bekapaka.pl.', 'Więcej: link w bio.'), hashtags: igTags, firstComment: '', altText: alt },
+    instagram_feed: { caption: isReport(playbookDef.id, facts) ? reportSocial(facts, true) : body.replace(/Pełna relacja na bekapaka\.pl\./, 'Pełna relacja: link w bio.').replace('Więcej na bekapaka.pl.', 'Więcej: link w bio.'), hashtags: igTags, firstComment: '', altText: alt },
     instagram_story: { stickerText: (c.sticker || '').slice(0, 60), sticker: playbookDef.id === 'match-preview' ? 'countdown' : 'none', link: '', altText: alt },
-    facebook: { text: body, hashtags: fbTags, link: facts.link || '', altText: alt, sponsors: settings.sponsorFooter || '' },
+    facebook: { text: isReport(playbookDef.id, facts) ? reportSocial(facts, false) : body, hashtags: fbTags, link: facts.link || '', altText: alt, sponsors: settings.sponsorFooter || '' },
     website: {
       title: (reportTitle(playbookDef.id, facts) || c.hook || facts.title || playbookDef.label).replace(/[.!]$/, '').slice(0, 90),
       excerpt: reportExcerpt(playbookDef.id, facts) || excerpt(c),

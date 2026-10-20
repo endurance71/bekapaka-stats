@@ -3,11 +3,14 @@ Native Story/square/landscape coordinates are explicit adaptations requiring rev
 References and their hashes live in references/; version 2 stays immutable.
 """
 import math, re
+from pathlib import Path
 from PIL import Image, ImageChops
 from poster import C, el, width, FONTS
 import motyw as M, material as MAT, sym, kit
 from render import text, wrap, display, mark, photo, date_parts, LayoutError
 NAVY_D='#0B1E55'; NAVY_P='#0E2770'; MUT_B='#AFC0EE'
+# Default material of the poster (reference publication 18.10.2026): the three-point arc of the hall.
+POSTER_HALL=Path(__file__).resolve().parents[1]/'backgrounds'/'09-luk-za-trzy.png'
 
 def grid(p):
     # (ribbon, metadata, mark centre, mark height, score, names, panel, stripes, footer)
@@ -57,6 +60,8 @@ def foundation(p):
     p.layer('10-material')
     if p.data.get('backgroundAssetId'):
         photo(p,p.data['backgroundAssetId'],0,0,p.w,p.h)
+    elif getattr(p,'visual_style',None)=='poster':
+        p.image(POSTER_HALL,0,0,p.w,p.h,align='xMaxYMax')
     elif p.paper and p.w>p.h:
         # The paper sheet is portrait: overscan it so its torn edges and black surround stay off a landscape canvas.
         bleed=110;p.image(MAT.MAT/'lineup-paper.png',-bleed,-bleed,p.w+2*bleed,p.h+2*bleed)
@@ -79,7 +84,9 @@ def foot(p,note=None):
         M.stripes(p,p.m,sy,p.w-2*p.m,color=M.GOLD if p.family=='player' and p.variant=='mvp' else p.accent)
     sym.place(p,'wordmark-kolor' if p.paper else 'wordmark-negatyw',p.m,fy-(44 if p.w>p.h else 40),h=60 if p.w>p.h else 50)
     note=note or ('PODGLĄD ROBOCZY' if p.mode=='preview' else 'BEKAPAKA BOBOLICE')
-    text(p,note,p.w-p.m,fy,20,'body',C['black'] if p.paper else MUT_B if p.kit=='B' else C['muted'],'end',p.w-2*p.m-260)
+    # The portrait paper sheet curls at its bottom-right corner; keep the note clear of the fold.
+    fold=90 if p.paper and p.h>p.w else 0
+    text(p,note,p.w-p.m-fold,fy,20,'body',C['black'] if p.paper else MUT_B if p.kit=='B' else C['muted'],'end',p.w-2*p.m-260-fold)
 
 def mini_header(p,label):
     y=334 if p.story else 150
@@ -93,7 +100,61 @@ def metadata(p,value,y):
         p.text(value,p.w/2,y,26,'label',spacing=4,anchor='middle',fill=MUT_B if p.kit=='B' else C['muted'])
     else:wrap(p,value,p.w/2,y,p.w-2*p.m,26,'label',maxlines=2,color=MUT_B if p.kit=='B' else p.ink,anchor='middle')
 
+def venue_caps(value):
+    """Venue in capitals keeps the brand spelling of KOSiR and CESiR."""
+    return re.sub(r'\b(KOS|CES)IR\b',lambda m:m.group(1)+'iR',str(value or '').upper())
+
+# Poster geometry per native format: mark (centre y, height), headline and score (baseline, size),
+# chevron y, hero numbers (x offsets, baseline), quarters y (story only) and the meta line y.
+POSTER_LAYOUT={
+    'feed':{'mark':(215,210),'head':(560,200),'score':(822,290),'chev':860,'stats':((0,360),1045),'meta':1136},
+    'story':{'mark':(420,210),'head':(790,200),'score':(1045,290),'chev':1070,'quarters':1190,'stats':((0,360),1475),'meta':1600},
+    'square':{'mark':(170,150),'head':(430,160),'score':(640,210),'chev':None,'stats':((0,330),790),'meta':868},
+    'landscape':{'mark':(205,190),'head':(530,190),'score':(785,270),'chev':385,'stats':((882,882),(575,775)),'meta':850},
+}
+
+def poster(p):
+    """Plakat (wzorzec 18.10.2026): herb i kicker, wielki napis z przecięciem, wynik bez przecięcia,
+    szewron, dwie liczby meczu, data i hala. Wynik, godzina i hala nigdy nie są przecinane (brandbook)."""
+    d=p.data; us,them=d.get('scoreUs'),d.get('scoreThem'); scored=us is not None and them is not None
+    headline=('WYGRANA' if scored and us>them else 'PORAŻKA' if scored and us<them else 'WYNIK') if p.variant=='final' else 'PRZERWA' if p.variant=='halftime' else 'NA ŻYWO'
+    land=p.w>p.h; L=POSTER_LAYOUT[p.format_name]
+    # Dark side for the copy, the hall stays visible on the other side.
+    p.layer('15-cien')
+    p.rect(0,0,p.w,p.h,p.fade('poster-shade',0,0,p.w,0,[(0,C['black'],1),(.45 if land else .5,C['black'],.92),(.72,C['black'],.55),(1,C['black'],.2)]))
+    p.layer('20-naglowek')
+    # The mark keeps its protection zone (1/8 of its width) inside the margins and the safe area.
+    hy,hh=L['mark'];hx=p.m+hh*.7
+    mark(p,hx,hy,hh)
+    kx=hx+hh*.72
+    if d.get('kicker'):p.text(d['kicker'].upper(),kx,hy-28,28 if hh>160 else 24,'label',fill=M.GOLD,spacing=5)
+    text(p,('BEKAPAKA – '+d.get('opponent','')).upper(),kx,hy+18,32 if hh>160 else 28,'label',C['white'],maxw=(p.w*.5 if land else p.w-kx-p.m),minimum=22)
+    p.layer('30-napis')
+    span=820 if land else p.w-2*p.m
+    display(p,headline,p.m,L['head'][0],L['head'][1],C['white'],maxw=span)
+    display(p,f'{us}:{them}' if scored else '—',p.m,L['score'][0],L['score'][1],p.accent,maxw=min(span,p.w*.72),cut=False)
+    cs=110 if land else 90
+    if L['chev']:M.chevrons(p,1065 if land else p.m+cs/2,L['chev'],cs,colors=(p.accent,p.accent))
+    p.layer('40-liczby')
+    (x1,x2),ys=L['stats'];ys=ys if isinstance(ys,tuple) else (ys,ys)
+    for (sx,sy),stat in zip([(p.m+x1 if not land else x1+p.m,ys[0]),(p.m+x2 if not land else x2+p.m,ys[1])],d.get('heroStats') or []):
+        size=100 if p.format_name=='square' else 120
+        display(p,stat['value'],sx,sy,size,C['white'],maxw=300,cut=False)
+        p.text(stat['label'].upper(),sx,sy+(34 if size<120 else 40),22 if size<120 else 24,'label',fill=C['white'],spacing=4,max_width=320)
+    if L.get('quarters') and d.get('quarters'):
+        qs=d['quarters'][:4];gap=14;bw=(p.w-2*p.m-gap*(len(qs)-1))/len(qs);qy=L['quarters']
+        for i,q in enumerate(qs):
+            qx=p.m+i*(bw+gap);p.rect(qx,qy,bw,112,'#000000',opacity=.45,stroke='#F7F6F2',**{'stroke-opacity':.35,'stroke-width':2})
+            text(p,q.get('label','').upper(),qx+bw/2,qy+34,20,'label',C['muted'],'middle',bw-16)
+            display(p,f"{q['us']}:{q['them']}",qx+bw/2,qy+92,52,C['white'],'middle',bw-24,cut=False)
+    p.layer('50-meta')
+    day,_=date_parts(d.get('date','')) if d.get('date') else ('','')
+    items=[i for i in [('data',day.split(' · ')[-1]),('hala',venue_caps(d.get('venue','')))] if i[1]]
+    if items:sym.icon_row(p,items,p.m,L['meta'],size=26,text_size=22 if p.format_name=='square' else 24,color=C['white'])
+
 def result(p):
+    if p.visual_style=='poster':
+        poster(p);return
     d=p.data; ry,my,cy,mh,sy,ny,py,_,_=grid(p); delta=290 if p.w==1080 else 560
     us,them=d.get('scoreUs'),d.get('scoreThem'); final=p.variant=='final'
     label=('WYGRANA' if us>them else 'PORAŻKA' if us<them else 'WYNIK DO POTWIERDZENIA') if final and us is not None and them is not None else 'PRZERWA' if p.variant=='halftime' else 'NA ŻYWO' if p.variant=='live' else 'WYNIK'
@@ -355,24 +416,66 @@ def extension(p,part):
     # Explicit draft extensions: numerical tables, quote, photo story, information.
     if p.variant=='news' and p.w>p.h:return news_cover(p)
     from render_v2 import LABELS
-    mini_header(p,LABELS[p.post_type]);y=p.top+260;w=p.w-2*p.m
     if p.family=='statistics':
-        display(p,p.data.get('title',''),p.m,y,72,p.accent,maxw=w);y+=100
-        for i,row in enumerate(part or []):
-            M.blade_panel(p,p.m,y-40,w,100,'#FFFFFF' if p.paper else '#161616',left=False)
-            text(p,row['label'],p.m+24,y,30,'label',maxw=w*.60,minimum=24);text(p,row['value'],p.w-p.m-80,y,38,'label',p.accent,'end',w*.25,minimum=24)
-            if row.get('detail'):text(p,row['detail'],p.m+24,y+35,22,'body',maxw=w-120)
-            y+=120
+        stats_paper(p,part or []);return
+    mini_header(p,LABELS[p.post_type]);y=p.top+260;w=p.w-2*p.m
+    if p.visual_style=='photo':photo(p,p.data.get('photoAssetId'),p.m,y,w,400,p.data['crop']);y+=470
+    if p.variant=='quote':M.step_frame(p,p.m,y-80,w,500,t=6,color=p.accent,step=30)
+    title=(p.data.get('firstName','')+' '+p.data.get('lastName','')).strip() if p.variant=='birthday' else p.data.get('title','')
+    y=wrap(p,title.upper(),p.m,y,w,72,'display',maxlines=2,color=p.accent)+35
+    maxlines=min(8,int((p.bottom-150-y)/45))
+    if p.data.get('body') and maxlines<1:raise LayoutError('body: Brak miejsca na treść')
+    y=wrap(p,p.data.get('body',''),p.m,y,w,30,'body',maxlines=maxlines)+30
+    if p.variant=='quote':text(p,p.data.get('attribution',''),p.m,y,28,'label',p.accent,maxw=w)
+    if p.data.get('venue'):text(p,p.data['venue'],p.m,p.bottom-130,28,'label',maxw=w)
+
+GREY_INK='#4B4741'; CREAM='#EFEBE3'
+
+def stats_paper(p,rows):
+    """Karty na papierze (wzorzec 18.10.2026): nagłówek z herbem, tytuł z przecięciem i paski, pasy
+    naprzemiennie białe i kremowe. Liderzy: czerwona liczba z jednostką, nazwisko, szczegół i NR.
+    Porównanie (value2): etykieta, szczegół, nasza wartość na czerwono i wartość rywala na szaro."""
+    from render_v2 import LABELS
+    d=p.data;w=p.w-2*p.m;story=p.story
+    hy=334 if story else 150
+    mark(p,p.m+76,hy,116,'herb2mini')
+    text(p,(d.get('kicker') or LABELS[p.post_type]).upper(),p.m+168,hy-10,30,'label',C['black'],maxw=w-138,minimum=24)
+    if d.get('subtitle'):text(p,d['subtitle'],p.m+168,hy+28,24,'body',GREY_INK,maxw=w-138)
     else:
-        if p.visual_style=='photo':photo(p,p.data.get('photoAssetId'),p.m,y,w,400,p.data['crop']);y+=470
-        if p.variant=='quote':M.step_frame(p,p.m,y-80,w,500,t=6,color=p.accent,step=30)
-        title=(p.data.get('firstName','')+' '+p.data.get('lastName','')).strip() if p.variant=='birthday' else p.data.get('title','')
-        y=wrap(p,title.upper(),p.m,y,w,72,'display',maxlines=2,color=p.accent)+35
-        maxlines=min(8,int((p.bottom-150-y)/45))
-        if p.data.get('body') and maxlines<1:raise LayoutError('body: Brak miejsca na treść')
-        y=wrap(p,p.data.get('body',''),p.m,y,w,30,'body',maxlines=maxlines)+30
-        if p.variant=='quote':text(p,p.data.get('attribution',''),p.m,y,28,'label',p.accent,maxw=w)
-        if p.data.get('venue'):text(p,p.data['venue'],p.m,p.bottom-130,28,'label',maxw=w)
+        day,_=date_parts(d.get('date','')) if d.get('date') else ('','')
+        text(p,day,p.m+168,hy+28,22,'body',GREY_INK,maxw=w-138)
+    compare=any(r.get('value2') for r in rows)
+    ty=hy+250
+    display(p,d.get('title',''),p.m,ty,120,C['black'],maxw=w)
+    M.stripes(p,p.m,ty+26,w,color=p.accent)
+    # Comparison cards carry a column header, so their rows are a little tighter.
+    pitch,h=((140,124) if story else (156,138)) if compare else ((150,134) if story else (168,150))
+    top=ty+100
+    col_them=p.w-p.m-64-87;col_us=col_them-150
+    if compare:
+        cols=(d.get('columns') or ['BKPK','RYWAL'])+['','']
+        p.text(cols[0].upper(),col_us,top-8,22,'label',fill=p.accent,spacing=3,anchor='middle')
+        p.text(cols[1].upper(),col_them,top-8,22,'label',fill=C['black'],spacing=3,anchor='middle')
+        top+=30
+    for i,row in enumerate(rows):
+        y=top+i*pitch
+        M.blade_panel(p,p.m,y,w,h,'#FFFFFF' if i%2==0 else CREAM,left=False)
+        mid=y+h/2
+        if compare:
+            label_y=mid+(4 if not row.get('detail') else -6)
+            text(p,row['label'].upper(),p.m+30,label_y,44,'display',C['black'],maxw=col_us-p.m-130,minimum=28)
+            if row.get('detail'):text(p,row['detail'],p.m+30,label_y+38,22,'body',GREY_INK,maxw=col_us-p.m-130)
+            display(p,row['value'],col_us,mid+30,84,p.accent,'middle',140,cut=False)
+            display(p,row['value2'],col_them,mid+22,60,'#77726B','middle',130,cut=False)
+        else:
+            vx=p.m+28;display(p,row['value'],vx,mid+36,104,p.accent,maxw=170,cut=False)
+            if row.get('unit'):p.text(row['unit'].upper(),vx+(p.boxes[-1]['bounds'][2]-vx)+10,mid+36,32,'display',fill=p.accent)
+            nx=p.m+300;nr_w=200 if row.get('number') else 0
+            text(p,row['label'].upper(),nx,mid-4,48,'display',C['black'],maxw=w-300-nr_w-80,minimum=28)
+            if row.get('detail'):text(p,row['detail'],nx,mid+34,24,'body',GREY_INK,maxw=w-300-nr_w-80)
+            if row.get('number'):
+                p.text('NR',p.w-p.m-250,mid+12,22,'label',fill=GREY_INK,spacing=3)
+                display(p,row['number'],p.w-p.m-208,mid+18,44,C['black'],maxw=90,cut=False)
 
 def compose(p,part,index):
     foundation(p);p.layer('30-tresc')

@@ -129,17 +129,21 @@ export async function readPanelAnalysis({ kind, target, seasonId }) {
   }
   if (kind === 'player') {
     const [e, now] = await Promise.all([
-      prisma.rosterPlayer.findUnique({ where: { id: target }, select: { aiDevelopmentSummary: true, aiDevelopmentHash: true, aiDevelopmentAt: true, aiDevelopmentModel: true } }),
+      prisma.rosterPlayer.findUnique({ where: { id: target }, select: { aiDevelopmentSummary: true, aiDevelopmentHash: true, aiDevelopmentAt: true, aiDevelopmentModel: true, aiDevelopmentSeasonId: true } }),
       currentHash(() => preparePlayerDevelopment(target, { seasonId }))
     ]);
     if (!e) throw Object.assign(new Error(`Nie znaleziono zawodnika ${target}`), { status: 404 });
-    return view(kind, target, 'markdown', e.aiDevelopmentSummary, {
-      savedHash: e.aiDevelopmentHash,
-      now,
-      generatedAt: e.aiDevelopmentAt,
-      model: e.aiDevelopmentModel,
-      isTemplate: e.aiDevelopmentModel === TEMPLATE_MODEL_NAME
-    });
+    // Plan może pochodzić z innego sezonu niż żądany (za mało meczów w bieżącym) — sezon planu podany jawnie.
+    return {
+      ...view(kind, target, 'markdown', e.aiDevelopmentSummary, {
+        savedHash: e.aiDevelopmentHash,
+        now,
+        generatedAt: e.aiDevelopmentAt,
+        model: e.aiDevelopmentModel,
+        isTemplate: e.aiDevelopmentModel === TEMPLATE_MODEL_NAME
+      }),
+      seasonId: e.aiDevelopmentSeasonId ?? null
+    };
   }
   if (kind === 'scouting') {
     const now = await currentHash(() => prepareScoutingReport(target, { seasonId }));

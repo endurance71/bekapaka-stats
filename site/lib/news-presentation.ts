@@ -11,8 +11,9 @@ export function newsImageFit(item: Pick<NewsPost, 'slug' | 'imageFit'>): 'cover'
   return item.imageFit || (knownPosters.has(item.slug) ? 'contain' : 'cover')
 }
 /**
- * Kadrowanie okładki w kartach (3:2 / 16:10): zdjęcia o zbliżonych proporcjach kadrujemy, grafiki innych proporcji
- * (plakaty pionowe, kwadratowe i panoramiczne 16:9) pokazujemy w całości, żeby napisy przy krawędziach nie znikały.
+ * Kadrowanie okładki w kartach (16:9, jak grafiki ze Studio): grafiki 16:9 i zdjęcia 4:3–3:2 wypełniają kafel,
+ * plakaty pionowe i kwadratowe oraz bardzo szerokie grafiki (np. 2:1) pokazujemy w całości, żeby napisy przy
+ * krawędziach nie znikały.
  * Ustawienie `imageFit` w CMS ma pierwszeństwo.
  */
 export function storyImageFit(item: Pick<NewsPost, 'slug' | 'imageFit' | 'coverImageWidth' | 'coverImageHeight'>): 'cover' | 'contain' {
@@ -20,7 +21,7 @@ export function storyImageFit(item: Pick<NewsPost, 'slug' | 'imageFit' | 'coverI
   if (newsImageFit(item) === 'contain') return 'contain'
   const ratio = item.coverImageWidth && item.coverImageHeight ? item.coverImageWidth / item.coverImageHeight : null
   if (ratio === null) return 'cover'
-  return ratio < 1.3 || ratio > 1.7 ? 'contain' : 'cover'
+  return ratio < 1.3 || ratio > 1.9 ? 'contain' : 'cover'
 }
 export function newsEventDate(item: Pick<NewsPost, 'slug' | 'eventDate'>): string | undefined {
   return item.eventDate || knownEvents[item.slug]

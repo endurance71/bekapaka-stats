@@ -36,6 +36,7 @@ import {
   PlayerStatistics,
   ScheduleEditor,
   StatisticsTable,
+  PosterNumbers,
 } from './ListEditors';
 import PreviewPanel from './PreviewPanel';
 import ExportPanel from './ExportPanel';
@@ -173,7 +174,7 @@ export default function GraphicEditor({ initial, posts, templates, assets, partn
     [project, d, readonly, busy, draft.change, draft.field, action, assets, partners, players, publication, template],
   );
 
-  const { family, variant, postType } = project;
+  const { family, variant, postType, visualStyle } = project;
   return (
     <EditorContext.Provider value={ctx}>
       <header className="editor-header">
@@ -330,6 +331,7 @@ export default function GraphicEditor({ initial, posts, templates, assets, partn
           )}
           <CompositionPanel />
           <ContentPanel />
+          {visualStyle === 'poster' && <PosterNumbers />}
           {family === 'statistics' && <StatisticsTable />}
           {family === 'player' && <PlayerStatistics />}
           {family === 'lineup' && <LineupEditor />}

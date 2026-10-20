@@ -29,7 +29,13 @@ const id = z.string().min(1).max(128);
 const person = z.object({ id: text(128), firstName: text(60), lastName: text(80), number: z.string().regex(/^\d{1,3}$/).or(z.literal('')).default(''), position: text(40) }).strict();
 const sourceSchema = z.object({ subjectId: z.string().max(128).optional(), view: z.enum(['team','player','leaders']).optional(), kind: z.enum(['manual', 'match', 'player', 'event', 'news', 'standings', 'round', 'season', 'match-statistics']).default('manual'), id: text(128), seasonId: text(128), hash: text(128), fetchedAt: text(40) }).strict();
 export const projectContentSchema = z.object({
-  tableRows: z.array(z.object({ label: z.string().trim().max(100), value: z.string().trim().max(80), detail: z.string().trim().max(100).default('') }).strict()).max(60).optional(),
+  // value2: rival's value in a comparison row; unit: shown after the value („PKT”); number: shirt number (NR column).
+  tableRows: z.array(z.object({ label: z.string().trim().max(100), value: z.string().trim().max(80), detail: z.string().trim().max(100).default(''), value2: z.string().trim().max(40).default(''), unit: z.string().trim().max(12).default(''), number: z.string().regex(/^\d{1,3}$/).or(z.literal('')).default('') }).strict()).max(60).optional(),
+  // Poster and paper cards (reference publication 18.10.2026): kicker line, two hero numbers, quarters, comparison columns.
+  kicker: text(60), subtitle: text(120),
+  heroStats: z.array(z.object({ value: z.string().trim().min(1).max(12), label: z.string().trim().min(1).max(40) }).strict()).max(2).default([]),
+  quarters: z.array(z.object({ label: text(20), us: z.number().int().min(0).max(999), them: z.number().int().min(0).max(999) }).strict()).max(5).default([]),
+  columns: z.array(z.string().trim().max(12)).max(2).default([]),
   statScope: z.enum(['match','season']).optional(), attribution: z.string().trim().max(100).optional(),
   opponent: text(100), opponentShort: text(8), date: text(40), originalDate: text(40), venue: text(100), title: text(180), body: text(1500),
   scoreUs: z.number().int().min(0).max(999).nullable().default(null), scoreThem: z.number().int().min(0).max(999).nullable().default(null),
@@ -49,7 +55,7 @@ export const projectContentSchema = z.object({
   source: sourceSchema.default({ kind: 'manual', id: '', seasonId: '', hash: '', fetchedAt: '' }),
 }).strict();
 export const projectSchema = z.object({
-  postType: z.string().max(60).optional(), visualStyle: z.enum(['sport','photo','editorial','jersey']).optional(), designVersion: z.enum(['2.0.0', DESIGN_VERSION]).optional(),
+  postType: z.string().max(60).optional(), visualStyle: z.enum(['sport','photo','editorial','jersey','poster']).optional(), designVersion: z.enum(['2.0.0', DESIGN_VERSION]).optional(),
   name: z.string().trim().min(1).max(180), family: z.enum(templates.map(t => t.id)), variant: z.string().min(1).max(30), layout: z.string().min(1).max(30),
   formats: z.array(z.enum(Object.keys(formats))).min(1).max(4).refine(a => new Set(a).size === a.length, 'Formaty nie mogą się powtarzać'),
   content: projectContentSchema,

@@ -48,4 +48,19 @@ describe('teksty zależne od roli', () => {
         expect(screen.getByText(/gemini-x/)).toBeInTheDocument();
         expect(screen.getByText('Nieaktualna')).toBeInTheDocument();
     });
+
+    it('AiAnalysisBlock: sezon planu przed datą i notka o innym sezonie — także dla zawodnika', () => {
+        render(
+            <AiAnalysisBlock
+                loading={false}
+                title="Twój plan rozwoju (AI)"
+                content="## Tekst"
+                generatedAt="2026-10-19T10:00:00Z"
+                seasonLabel="2025/26"
+                seasonNote="Za mało meczów w sezonie 2026/27 — pokazujemy plan z sezonu 2025/26"
+            />
+        );
+        expect(screen.getByText(/^Sezon 2025\/26 · Wygenerowano/)).toBeInTheDocument();
+        expect(screen.getByText(/Za mało meczów w sezonie 2026\/27/)).toBeInTheDocument();
+    });
 });

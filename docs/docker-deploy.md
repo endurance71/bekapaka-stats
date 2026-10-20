@@ -16,6 +16,18 @@ Jeśli `latest` zostanie ręcznie wdrożony po automatycznym deployu, pamiętaj,
 
 Szczegóły sekretów i diagnostyka: **[github-deploy-setup.md](./github-deploy-setup.md)**.
 
+### Studio (studio.bekapaka.pl)
+
+Zwykły deploy **nie aktualizuje** kontenerów `bkpk-studio-prod` i `bkpk-studio-worker-prod` — robi to wyłącznie `scripts/studio/deploy.sh <SHA>` (wymaga backendu z tego samego SHA). Backend i Studio z różnych wydań psują rendery („Implementacja tej rewizji została zarchiwizowana”), a stary edytor potrafił zapętlić autozapis.
+
+Dlatego po deployu działa job **studio** w workflow „Deploy to VPS”: porównuje SHA działającego Studio z wydaniem i sprawdza `git diff` po plikach, z których budowane są obrazy Studio (`studio/`, `backend/studio/`, `backend/ai-engine/`, `backend/prisma/`, `backend/package*.json` …).
+
+- Brak zmian → nic nie robi.
+- Zmiany i brak zmiennej repozytorium `STUDIO_AUTO_DEPLOY=true` → job **kończy się błędem** z poleceniem `bash scripts/studio/deploy.sh <SHA>` w podsumowaniu przebiegu. Uruchom je na VPS, gdy „Studio quality and images” dla tego SHA jest zielone.
+- Zmiany i `STUDIO_AUTO_DEPLOY=true` → czeka (do ~33 min) na zielony „Studio quality and images” tego SHA i uruchamia `deploy.sh` z tego wydania przez SSH. Skrypt aktualizuje tylko dwie usługi Studio; MOYA pozostaje nietknięta. Wymaga, by `VPS_USER` miał `sudo` bez hasła (`sudo install -d … data/studio`).
+
+`studio.yml` buduje obrazy `studio:<SHA>` i `studio-worker:<SHA>` dla każdego commita na `main`, żeby SHA backendu i Studio zawsze mogły być równe.
+
 ### Konfiguracja Secrets na GitHub:
 1. `CR_PAT`: Personal Access Token z uprawnieniami do pakietów (`read:packages`, `write:packages`).
 2. `VPS_HOST`: Adres Twojego VPS.
@@ -52,7 +64,7 @@ docker compose -f docker-compose.prod.yml up -d --no-deps bkpk-frontend
 curl -fsS http://127.0.0.1:8081/
 ```
 
-Nie uruchamiaj masowego `docker image prune -a` bez sprawdzenia zachowanych obrazów rollbacku.
+Po udanym wdrożeniu workflow uruchamia `scripts/vps/prune-bekapaka-images.sh`, który zdejmuje stare tagi wyłącznie z `ghcr.io/endurance71/bekapaka-stats/{backend,frontend,site,studio,studio-worker,cms}`. Zostają obrazy używane przez dowolny kontener (porównanie po ID obrazu), najnowszy `rollback-<run_id>` / `cms-rollback-<run_id>`, a w repozytoriach Studio (bez tagów rollbacku) najnowszy nieużywany obraz jako poprzednie wydanie. Skrypt nie używa `-f` i nie dotyka obrazów innych projektów ani build cache; jego błąd nie oznacza nieudanego wdrożenia. Podgląd bez zmian: `bash scripts/vps/prune-bekapaka-images.sh --dry-run`. Nie uruchamiaj masowego `docker image prune -a` — na współdzielonym VPS usuwa nieużywane obrazy innych projektów.
 
 CMS (`bkpk-cms`) pobiera gotowy obraz GHCR. Domyślny tag `cms:legacy` jest przypisany na obecnym VPS do obrazu działającego przed migracją; zapobiega niezamierzonej aktualizacji CMS przy zwykłym `docker compose up`. Na nowym VPS przed uruchomieniem całości ustaw `BKPK_CMS_IMAGE_TAG` na istniejący tag obrazu. Przed ręcznym workflow sprawdź, czy obraz `cms:<SHA>` jest już opublikowany oraz czy na VPS jest co najmniej 1 GiB dostępnej pamięci i 2 GiB wolnego dysku. Workflow wykonuje spójny backup SQLite i uploadów do `/home/debian/backups/bekapaka-cms-*`, sprawdza `PRAGMA quick_check`, wdraża obraz, kontroluje `/_health` i dopiero wtedy zapisuje `BKPK_CMS_IMAGE_TAG=<SHA>` w produkcyjnym `.env`. Przy błędzie zachowuje backup oraz tag poprzedniego obrazu. **Nie przywracaj samego obrazu bez sprawdzenia kompatybilności bazy po migracji Strapi**; w razie potrzeby przywróć razem SQLite i uploady z tej samej kopii. Po automatycznej kontroli zdrowia zweryfikuj ręcznie panel `/admin`, MCP, publikację szkicu i podgląd CMS.
 

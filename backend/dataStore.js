@@ -509,6 +509,8 @@ function gameLogEntryFromKalkStats(stats, matchMeta) {
     gameId: matchMeta.kalkMatchId,
     date: matchMeta.date,
     opponent: stats.opponent || matchMeta.opponent || '',
+    // Drużyna zawodnika w tym meczu (W/P i wynik z jej perspektywy, nie zawsze BeKaPaKa)
+    teamName: matchMeta.teamName || null,
     pts,
     reb,
     ast,
@@ -564,6 +566,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
             ? row.kalkMatch.date.toISOString().split('T')[0]
             : null,
           opponent: row.opponentName,
+          teamName: row.teamName,
           eval: typeof row.eval === 'number' ? row.eval : null,
           plusMinusAvailable: row.kalkMatch?.boxScore ? matchHasPlusMinus(row.kalkMatch.boxScore) : true
         });
@@ -2306,6 +2309,7 @@ export async function getPlayerById(id) {
       aiDevelopmentSummary: true,
       aiDevelopmentAt: true,
       aiDevelopmentModel: true,
+      aiDevelopmentSeasonId: true,
       kalkPlayer: { select: { id: true, name: true, raw: true } }
     }
   });

@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import multer from 'multer';
+import fs from 'node:fs/promises';
+import { filePath, saveImage } from '../storage.js';
 import { channelIds, channels, itemStatuses, PUBLICATION_VERSION, sponsorFooter } from './channels.js';
 import { playbooks, PLAYBOOK_VERSION } from './playbooks.js';
 import { TEMPLATE_VERSION } from './templates.js';
@@ -10,7 +13,7 @@ import { createAgentToken, listAgentTokens, revokeAgentToken } from '../agent/to
 import { contentSystemDocument } from './document.js';
 import { tools as agentTools } from '../agent/mcp.js';
 import { origin } from '../config.js';
-import { publishWebsite, syncWebsiteDraft, websiteConfigured, websitePreviewUrl } from './website.js';
+import { linkWebsiteArticle, publishWebsite, syncWebsiteDraft, websiteConfigured, websitePreviewUrl } from './website.js';
 import {
   applyTemplates,
   approveItem,
@@ -18,11 +21,14 @@ import {
   confirmFacts,
   refreshFacts,
   createPublication,
+  externalImage,
+  gridPreview,
   getSettings,
   listPublications,
   markPublished,
   publicationPackage,
   publicationView,
+  recordExternalPublication,
   saveSettings,
   suggestions,
   updateItem,
@@ -31,6 +37,8 @@ import {
 
 const uuid = (v) => z.string().uuid().parse(v);
 const revision = z.object({ expectedRevision: z.number().int().min(1) }).strict();
+// Screenshots/PNGs of what actually went out when a post was published outside Studio.
+const evidence = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024, files: 10, fields: 1, fieldSize: 4000 } });
 
 /** Studio 2 publication endpoints; mounted after Studio authentication. */
 export function publicationRoutes(router, db) {
@@ -53,6 +61,9 @@ export function publicationRoutes(router, db) {
     const id = await createPublication(db, req.studioOwner, req.body);
     res.status(201).json(await publicationView(db, req.studioOwner, id));
   });
+  router.get('/publications/grid', async (req, res) =>
+    res.json(await gridPreview(db, req.studioOwner, z.enum(['instagram_feed', 'facebook']).parse(req.query.channel))),
+  );
   router.get('/publications/:id', async (req, res) => res.json(await publicationView(db, req.studioOwner, uuid(req.params.id))));
   router.put('/publications/:id', async (req, res) => res.json(await updatePublication(db, req.studioOwner, uuid(req.params.id), req.body)));
   router.post('/publications/:id/confirm-facts', async (req, res) =>
@@ -73,11 +84,35 @@ export function publicationRoutes(router, db) {
   router.put('/publications/:id/items/:itemId', async (req, res) =>
     res.json(await updateItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
   );
-  router.post('/publications/:id/items/:itemId/approve', async (req, res) =>
-    res.json(await approveItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), revision.parse(req.body).expectedRevision)),
-  );
+  router.post('/publications/:id/items/:itemId/approve', async (req, res) => {
+    const input = z.object({ expectedRevision: z.number().int().min(1), acceptRepetition: z.boolean().default(false) }).strict().parse(req.body);
+    res.json(await approveItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), input.expectedRevision, input.acceptRepetition));
+  });
   router.post('/publications/:id/items/:itemId/published', async (req, res) =>
     res.json(await markPublished(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
+  );
+  // Published outside Studio (Business Suite, phone, CMS): JSON or multipart with `payload` + up to 10 images.
+  router.post('/publications/:id/items/:itemId/external-published', evidence.array('images', 10), async (req, res) => {
+    const input = req.is('multipart/form-data') ? JSON.parse(req.body.payload || '{}') : req.body;
+    const images = [];
+    try {
+      for (const file of req.files || []) {
+        const image = await saveImage(file.buffer);
+        images.push({ ...image, name: String(file.originalname || '').slice(0, 180) });
+      }
+      res.json(await recordExternalPublication(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), input, images));
+    } catch (err) {
+      await Promise.all(images.map((i) => fs.unlink(filePath(i.storageKey)).catch(() => {})));
+      throw err;
+    }
+  });
+  router.get('/publications/:id/items/:itemId/external-images/:index', async (req, res) => {
+    const image = await externalImage(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), z.coerce.number().int().min(0).max(9).parse(req.params.index));
+    // The path comes from filePath() (inside the storage dir), never from the request.
+    res.type(image.mime).sendFile(filePath(image.storageKey), { dotfiles: 'allow' });
+  });
+  router.post('/publications/:id/items/:itemId/website/link', async (req, res) =>
+    res.json(await linkWebsiteArticle(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
   );
   router.get('/publications/:id/package', async (req, res) => {
     const { name, zip } = await publicationPackage(db, req.studioOwner, uuid(req.params.id));

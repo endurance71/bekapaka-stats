@@ -606,15 +606,20 @@
     display: block;
     font-weight: 600;
   }
+  /* Etykieta w lewej kolumnie jako float w paddingu: wiersz (flow-root) rośnie, gdy etykieta zawija się
+     do dwóch linii („Punkty z szybkiego ataku:”, „Damian Motyliński (#24):”), zamiast wychodzić pod następny. */
   @media (min-width: 768px) {
+    .article-markdown__facts {
+      --facts-label: 12rem;
+    }
     .article-markdown__facts > li {
-      padding-left: calc(12rem + var(--space-8));
+      display: flow-root;
+      padding-left: calc(var(--facts-label) + var(--space-8));
     }
     .article-markdown__facts > li > strong:first-child {
-      position: absolute;
-      top: var(--space-3);
-      left: var(--space-4);
-      width: 12rem;
+      float: left;
+      width: var(--facts-label);
+      margin-left: calc(-1 * (var(--facts-label) + var(--space-8)));
     }
   }
 

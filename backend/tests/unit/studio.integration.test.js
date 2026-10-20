@@ -91,8 +91,9 @@ describe.skipIf(!enabled)('Studio isolated PostgreSQL integration', () => {
  it('keeps immutable revisions, rejects stale updates and blocks unapproved export', async () => {
   const p = newProject('announcement'); p.content.opponent = 'Koszalin Basketball'; p.content.opponentShort = 'KBS'; p.content.date = '2026-10-11T14:30:00+02:00'; p.content.altText = 'Mecz BeKaPaKa z Koszalin Basketball.';
   project = (await request('/projects', p, 'POST')).value; expect(project.currentRevision).toBe(1);
-  const updated = await request(`/projects/${project.id}`, { expectedRevision: 1, project: { ...p, name: 'Zapowiedź meczu' } }, 'PUT'); expect(updated.res.status).toBe(200); project = updated.value;
+  const updated = await request(`/projects/${project.id}`, { expectedRevision: 1, project: { ...p, name: 'Zapowiedź meczu z KBS' } }, 'PUT'); expect(updated.res.status).toBe(200); project = updated.value;
   expect((await request(`/projects/${project.id}`, { expectedRevision: 1, project: p }, 'PUT')).res.status).toBe(409);
+  const unchanged = await request(`/projects/${project.id}`, { expectedRevision: 2, project: { ...p, name: 'Zapowiedź meczu z KBS' } }, 'PUT'); expect(unchanged.res.status).toBe(200); expect(unchanged.value.currentRevision).toBe(2);
   expect((await request(`/projects/${project.id}/revisions`)).value).toHaveLength(2);
   expect((await request(`/projects/${project.id}/jobs`, { kind: 'export', idempotencyKey: 'before-approval' }, 'POST')).res.status).toBe(422);
  });
