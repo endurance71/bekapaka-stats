@@ -25,8 +25,36 @@ def ribbon(p,label,y,size=40,grey=False):
              tail='#444444' if grey else '#E0600A' if p.kit=='B' else M.GOLD_D)
 
 def rival(p,cx,cy,h):
+    logo=p.assets.get(p.data.get('opponentLogoAssetId') or '')
+    if logo:return rival_logo(p,logo,cx,cy,h*.9)
     M.rival_c(p,cx,cy,h,p.data.get('opponentShort') or 'RYWAL',
               **({'fill':'#0A1A4A','line':'#3A5BB8'} if p.kit=='B' else {}))
+
+def logo_ground(im):
+    """Plate colour and content box of a logo: transparent logos sit on white, a flat JPG background is kept as the plate."""
+    alpha=im.getchannel('A')
+    if alpha.getextrema()[0]<250:return (255,255,255),alpha.point(lambda v:255 if v>16 else 0).getbbox()
+    rgb=im.convert('RGB');px=rgb.load();w,h=rgb.size
+    edge=[px[x,y] for x in range(0,w,max(1,w//60)) for y in (0,h-1)]+[px[x,y] for y in range(0,h,max(1,h//60)) for x in (0,w-1)]
+    mid=tuple(sorted(c[i] for c in edge)[len(edge)//2] for i in range(3))
+    if sum(sum(abs(c[i]-mid[i]) for i in range(3))<=48 for c in edge)<.9*len(edge):return (255,255,255),None
+    return mid,ImageChops.difference(rgb,Image.new('RGB',rgb.size,mid)).convert('L').point(lambda v:255 if v>32 else 0).getbbox()
+
+def rival_logo(p,asset,cx,cy,s):
+    """M8 with the owner's supplied logo: the rival's real mark on a stepped plate, legible on dark and paper materials."""
+    with Image.open(asset['path']) as src:im=src.convert('RGBA')
+    fill,box=logo_ground(im)
+    if box:im=im.crop(box)
+    iw,ih=im.size
+    if min(iw,ih)<48:raise LayoutError('opponentLogoAssetId: Logo rywala ma za małą rozdzielczość. Wgraj większy plik.')
+    out=p.out/'rival-logo.png';im.save(out)
+    # The plate follows the logo's proportions within limits; its height matches our crest for the pair check.
+    w=s*min(1.25,max(.85,iw/ih*.94));x,y=cx-w/2,cy-s/2;c=s*.09
+    plate=M.G.poly((x+c,y),(x+w-c,y),(x+w,y+c),(x+w,y+s-c),(x+w-c,y+s),(x+c,y+s),(x,y+s-c),(x,y+c))
+    M.shape(p,plate,'#%02X%02X%02X'%fill)
+    M.shape(p,M.G.keyline(plate,0,s*.014),'#3A5BB8' if p.kit=='B' else '#5C5852')
+    k=min(w*.84/iw,s*.8/ih);p.image(out,cx-iw*k/2,cy-ih*k/2,iw*k,ih*k,fit='meet')
+    box=[x,y,x+w,y+s];p.marks=getattr(p,'marks',[])+[('rywal',box)];return box
 
 def foundation(p):
     p.layer('10-material')

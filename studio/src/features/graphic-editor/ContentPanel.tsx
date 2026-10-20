@@ -1,5 +1,6 @@
 import { useEditor } from './editor-context';
 import { AreaField, DateField, NumberField, TextField, Toggle } from './fields';
+import OpponentLogo from './OpponentLogo';
 
 const matchFamilies = ['announcement', 'result', 'lineup'];
 
@@ -18,6 +19,7 @@ export default function ContentPanel() {
           <>
             <TextField k="opponent" label="Rywal" maxLength={100} />
             <TextField k="opponentShort" label="Skrót rywala na tarczy" maxLength={8} />
+            {family !== 'lineup' && <OpponentLogo />}
           </>
         )}
         {!['player', 'partners'].includes(family) && <DateField k="date" label="Data i godzina · Europe/Warsaw" />}
