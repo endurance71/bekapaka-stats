@@ -318,6 +318,30 @@
       line-height: 1;
     }
   }
+  /* Komponenty zmieniają line-height (wynik 0,86, miejsce w tabeli 0,8). Glif jest wyśrodkowany w linii,
+     więc przy line-height ≠ 1 przesuwa się o (1lh − 1em) / 2 względem góry pudełka — o tyle samo przesuwamy
+     przecięcie. Kafel ma wysokość jednej linii, więc w tekście wielowierszowym kreska trafia w każdą linię.
+     Przeglądarki bez jednostki lh zostają przy masce powyżej. */
+  @supports ((mask-image: linear-gradient(#000, #000)) or (-webkit-mask-image: linear-gradient(#000, #000))) and (height: 1lh) {
+    .cut {
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0 calc(var(--cut-top) + (1lh - 1em) / 2),
+        transparent calc(var(--cut-top) + (1lh - 1em) / 2) calc(var(--cut-bottom) + (1lh - 1em) / 2),
+        #000 calc(var(--cut-bottom) + (1lh - 1em) / 2)
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        #000 0 calc(var(--cut-top) + (1lh - 1em) / 2),
+        transparent calc(var(--cut-top) + (1lh - 1em) / 2) calc(var(--cut-bottom) + (1lh - 1em) / 2),
+        #000 calc(var(--cut-bottom) + (1lh - 1em) / 2)
+      );
+      -webkit-mask-size: 100% 1lh;
+      mask-size: 100% 1lh;
+      -webkit-mask-repeat: repeat-y;
+      mask-repeat: repeat-y;
+    }
+  }
   @supports (-moz-appearance: none) {
     .cut {
       -webkit-mask-image: none;
