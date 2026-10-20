@@ -76,10 +76,10 @@ export const copySchemas = {
 };
 export const emptyCopy = (channel) => copySchemas[channel].parse({});
 
-/** Facebook footer naming every sponsor of bekapaka.pl/sponsorzy, in the order of that page. */
+/** Facebook partner list, one name per line, in the order of bekapaka.pl/sponsorzy. */
 export function sponsorFooter(sponsors = []) {
   const names = sponsors.map((s) => String(s.name || '').trim()).filter(Boolean);
-  return names.length ? `Dziękujemy naszym sponsorom: ${names.join(' · ')}` : '';
+  return names.length ? `Dziękujemy naszym partnerom:\n${names.join('\n')}` : '';
 }
 
 // Full public statistics of a played KALK match (box score, quarters, team totals), filled by the stats system.
