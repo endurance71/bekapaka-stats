@@ -25,7 +25,7 @@ export default function OpponentLogo() {
   const match = logos.find((a) => a.status === 'approved' && !!name && sameTeam(a.name, name)) || lookup.data?.asset;
   const suggested = match && match.id !== d.opponentLogoAssetId ? match : null;
   const drawn = project.visualStyle === 'sport' && ['announcement', 'result'].includes(project.family);
-  const use = async (asset: Asset) => {
+  const chooseLogo = async (asset: Asset) => {
     await Promise.all([reload(), client.invalidateQueries({ queryKey: ['opponent-logo'] })]);
     field('opponentLogoAssetId', asset.id);
   };
@@ -44,7 +44,7 @@ export default function OpponentLogo() {
         status: 'approved',
       }),
     );
-    await use(await api<Asset>('/assets', { method: 'POST', body }));
+    await chooseLogo(await api<Asset>('/assets', { method: 'POST', body }));
   }
   return (
     <div className="opponent-logo">
@@ -69,7 +69,12 @@ export default function OpponentLogo() {
       {!readonly && (
         <div className="button-row">
           {suggested && (
-            <button type="button" className="secondary" disabled={busy} onClick={() => void action(() => use(suggested))}>
+            <button
+              type="button"
+              className="secondary"
+              disabled={busy}
+              onClick={() => void action(() => chooseLogo(suggested))}
+            >
               Użyj logo z biblioteki · {suggested.name}
             </button>
           )}
@@ -81,7 +86,7 @@ export default function OpponentLogo() {
               title={lookup.data.kalkUrl}
               onClick={() =>
                 void action(async () =>
-                  use(await send<Asset>('/opponent-logos/import-kalk', { opponent: name, confirmed: true })),
+                  chooseLogo(await send<Asset>('/opponent-logos/import-kalk', { opponent: name, confirmed: true })),
                 )
               }
             >
