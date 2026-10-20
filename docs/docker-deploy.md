@@ -16,6 +16,18 @@ Jeśli `latest` zostanie ręcznie wdrożony po automatycznym deployu, pamiętaj,
 
 Szczegóły sekretów i diagnostyka: **[github-deploy-setup.md](./github-deploy-setup.md)**.
 
+### Studio (studio.bekapaka.pl)
+
+Zwykły deploy **nie aktualizuje** kontenerów `bkpk-studio-prod` i `bkpk-studio-worker-prod` — robi to wyłącznie `scripts/studio/deploy.sh <SHA>` (wymaga backendu z tego samego SHA). Backend i Studio z różnych wydań psują rendery („Implementacja tej rewizji została zarchiwizowana”), a stary edytor potrafił zapętlić autozapis.
+
+Dlatego po deployu działa job **studio** w workflow „Deploy to VPS”: porównuje SHA działającego Studio z wydaniem i sprawdza `git diff` po plikach, z których budowane są obrazy Studio (`studio/`, `backend/studio/`, `backend/ai-engine/`, `backend/prisma/`, `backend/package*.json` …).
+
+- Brak zmian → nic nie robi.
+- Zmiany i brak zmiennej repozytorium `STUDIO_AUTO_DEPLOY=true` → job **kończy się błędem** z poleceniem `bash scripts/studio/deploy.sh <SHA>` w podsumowaniu przebiegu. Uruchom je na VPS, gdy „Studio quality and images” dla tego SHA jest zielone.
+- Zmiany i `STUDIO_AUTO_DEPLOY=true` → czeka (do ~33 min) na zielony „Studio quality and images” tego SHA i uruchamia `deploy.sh` z tego wydania przez SSH. Skrypt aktualizuje tylko dwie usługi Studio; MOYA pozostaje nietknięta. Wymaga, by `VPS_USER` miał `sudo` bez hasła (`sudo install -d … data/studio`).
+
+`studio.yml` buduje obrazy `studio:<SHA>` i `studio-worker:<SHA>` dla każdego commita na `main`, żeby SHA backendu i Studio zawsze mogły być równe.
+
 ### Konfiguracja Secrets na GitHub:
 1. `CR_PAT`: Personal Access Token z uprawnieniami do pakietów (`read:packages`, `write:packages`).
 2. `VPS_HOST`: Adres Twojego VPS.

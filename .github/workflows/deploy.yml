@@ -284,3 +284,104 @@ jobs:
             # Shared VPS: only ghcr.io/<repo>/* images are pruned, never other projects' images or build cache.
             bash scripts/vps/prune-bekapaka-images.sh || echo 'Czyszczenie obrazów nie powiodło się; wdrożenie pozostaje udane.' >&2
 
+
+  # Studio (studio.bekapaka.pl: SPA + render worker) is not part of the deploy above; it is updated
+  # only by scripts/studio/deploy.sh. A backend and Studio on different builds break renders
+  # („Implementacja tej rewizji została zarchiwizowana”) and once looped the editor autosave.
+  # This job compares the running Studio with this release. Without the repository variable
+  # STUDIO_AUTO_DEPLOY=true it only fails loudly with the command to run; with it, it waits for
+  # „Studio quality and images” of this SHA and runs deploy.sh (two Studio services only, no MOYA).
+  studio:
+    if: github.event_name != 'pull_request'
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      actions: read
+    env:
+      # Everything the Studio images are built from (studio/Dockerfile, backend/studio/Dockerfile.worker).
+      STUDIO_PATHS: studio backend/studio backend/ai-engine backend/prisma backend/lib/prisma.js backend/prisma.config.js backend/package.json backend/package-lock.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SSH access to the VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_SSH_PORT: ${{ secrets.VPS_SSH_PORT }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/vps
+          chmod 600 ~/.ssh/vps
+          printf 'Host vps\n  HostName %s\n  User %s\n  Port %s\n  IdentityFile ~/.ssh/vps\n  BatchMode yes\n  StrictHostKeyChecking accept-new\n' \
+            "$VPS_HOST" "$VPS_USER" "${VPS_SSH_PORT:-22}" > ~/.ssh/config
+
+      - name: Compare running Studio with this release
+        id: drift
+        run: |
+          set -euo pipefail
+          image="$(ssh vps "docker inspect --format '{{.Config.Image}}' bkpk-studio-prod" 2>/dev/null || true)"
+          running="${image##*:}"
+          echo "running=${running:-brak}" >> "$GITHUB_OUTPUT"
+          if [ "$running" = "$GITHUB_SHA" ]; then
+            drift=false
+          elif [[ "$running" =~ ^[0-9a-f]{40}$ ]] && git cat-file -e "${running}^{commit}" 2>/dev/null \
+            && git diff --quiet "$running" "$GITHUB_SHA" -- $STUDIO_PATHS; then
+            drift=false
+          else
+            drift=true
+          fi
+          echo "drift=$drift" >> "$GITHUB_OUTPUT"
+          echo "Studio na VPS: ${image:-brak kontenera}; to wydanie: $GITHUB_SHA; wymaga wdrożenia: $drift"
+
+      - name: Studio left behind
+        if: steps.drift.outputs.drift == 'true' && vars.STUDIO_AUTO_DEPLOY != 'true'
+        env:
+          RUNNING: ${{ steps.drift.outputs.running }}
+        run: |
+          {
+            echo '### Studio nie jest wdrożone'
+            echo
+            echo "Na VPS działa Studio \`${RUNNING}\`, a backend jest już na \`${GITHUB_SHA}\` i pliki Studio się zmieniły."
+            echo 'Gdy workflow „Studio quality and images” dla tego SHA zakończy się sukcesem, uruchom na VPS:'
+            echo
+            echo '```bash'
+            echo "cd /opt/bekapaka-stats && bash scripts/studio/deploy.sh ${GITHUB_SHA}"
+            echo '```'
+            echo
+            echo 'Automatyczne wdrożenie: zmienna repozytorium `STUDIO_AUTO_DEPLOY=true`.'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error title=Studio nie jest wdrożone::Studio działa na ${RUNNING}, backend na ${GITHUB_SHA}. Uruchom scripts/studio/deploy.sh ${GITHUB_SHA} na VPS."
+          exit 1
+
+      - name: Wait for Studio images of this release
+        if: steps.drift.outputs.drift == 'true' && vars.STUDIO_AUTO_DEPLOY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 100); do
+            run="$(gh run list --workflow studio.yml --commit "$GITHUB_SHA" --limit 1 --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"')"
+            case "$run" in
+              'completed success') exit 0 ;;
+              completed*) echo "::error::„Studio quality and images” dla $GITHUB_SHA zakończył się: $run. Studio nie zostało wdrożone."; exit 1 ;;
+              '') if [ "$attempt" -ge 15 ]; then echo "::error::Brak przebiegu „Studio quality and images” dla $GITHUB_SHA."; exit 1; fi ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Obrazy Studio dla $GITHUB_SHA nie są gotowe po 33 minutach."
+          exit 1
+
+      - name: Deploy Studio
+        if: steps.drift.outputs.drift == 'true' && vars.STUDIO_AUTO_DEPLOY == 'true'
+        env:
+          CR_PAT: ${{ secrets.CR_PAT }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$CR_PAT" | ssh vps "docker login ghcr.io -u '${GITHUB_ACTOR}' --password-stdin"
+          # deploy.sh of this release, uploaded to a temp file: the VPS checkout is not updated by CI.
+          ssh vps "f=\$(mktemp) && cat > \"\$f\" && bash \"\$f\" ${GITHUB_SHA} < /dev/null; s=\$?; rm -f \"\$f\"; exit \$s" < scripts/studio/deploy.sh

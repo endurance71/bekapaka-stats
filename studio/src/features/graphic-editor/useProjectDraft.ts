@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, message, send } from '../../lib/api';
-import { DESIGN_VERSION, projectSchema, projectTemplateVersion } from '../../lib/contracts';
+import { projectSchema } from '../../lib/contracts';
 import type { Content, Project, View } from '../../lib/types';
+import { engineMismatch, needsSave, payloadKey } from './draft-sync';
 
 export type SaveState = 'saved' | 'saving' | 'invalid' | 'conflict' | 'failed';
 export const saveLabels: Record<SaveState, string> = {
@@ -13,7 +14,9 @@ export const saveLabels: Record<SaveState, string> = {
 };
 const AUTOSAVE_MS = 1200;
 const UNDO_LIMIT = 40;
-const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+const ENGINE_MISMATCH =
+  'Studio w przeglądarce i serwer mają różne wersje silnika grafik. Odśwież stronę; jeśli to nie pomoże, Studio trzeba wdrożyć z tym samym SHA co backend.';
+const syncView = (v: View) => ({ payload: v.payload, templateVersion: v.revision.templateVersion });
 
 // Owns the editable project, autosave with optimistic revisions and session undo.
 // Every save creates an immutable server revision; approvals and exports pin to it.
@@ -24,6 +27,9 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
   const [undoStack, setUndoStack] = useState<Project[]>([]);
   const latest = useRef(project);
   const server = useRef(initial);
+  // payloadKey of the last payload the server accepted; see needsSave.
+  const accepted = useRef<string | null>(null);
+  const warned = useRef(false);
   const saving = useRef<Promise<View> | null>(null);
   const mounted = useRef(true);
   const readonly = view.status === 'archived';
@@ -47,9 +53,7 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
   }
 
   const upToDate = () =>
-    same(latest.current, server.current.payload) &&
-    (latest.current.designVersion !== DESIGN_VERSION ||
-      server.current.revision.templateVersion === projectTemplateVersion(latest.current));
+    !needsSave({ latest: latest.current, server: syncView(server.current), accepted: accepted.current });
 
   const flush = useCallback(async (): Promise<View> => {
     if (saving.current) {
@@ -62,8 +66,9 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
       setSaved('invalid');
       throw new Error(parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; '));
     }
+    if (payloadKey(parsed.data) !== payloadKey(latest.current)) setProject(parsed.data);
     latest.current = parsed.data;
-    setProject(parsed.data);
+    const sent = payloadKey(parsed.data);
     setSaved('saving');
     const promise = send<View>(
       `/projects/${initial.id}`,
@@ -74,9 +79,14 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
     try {
       const v = await promise;
       server.current = v;
+      accepted.current = sent;
       if (mounted.current) {
         setView(v);
         setSaved('saved');
+        if (engineMismatch(syncView(v)) && !warned.current) {
+          warned.current = true;
+          onError(ENGINE_MISMATCH);
+        }
       }
     } catch (err) {
       if (mounted.current) {
@@ -93,6 +103,7 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
   // Replace local state with a server view (conflict reload, restore from archive).
   const replace = useCallback((v: View) => {
     server.current = v;
+    accepted.current = null;
     latest.current = v.payload;
     setProject(v.payload);
     setView(v);
@@ -103,7 +114,8 @@ export function useProjectDraft(initial: View, onError: (message: string) => voi
   useEffect(() => {
     mounted.current = true;
     const guard = (e: BeforeUnloadEvent) => {
-      if (!same(latest.current, server.current.payload)) {
+      const key = payloadKey(latest.current);
+      if (key !== accepted.current && key !== payloadKey(server.current.payload)) {
         e.preventDefault();
         e.returnValue = '';
       }
