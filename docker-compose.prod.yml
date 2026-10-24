@@ -9,6 +9,12 @@ services:
       POSTGRES_DB: bekapaka_stats
     volumes:
       - ./data/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bekapaka -d bekapaka_stats"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
     networks:
       - bkpk-network
 
@@ -60,6 +66,12 @@ services:
       - bkpk-db
     ports:
       - "127.0.0.1:4001:4001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4001/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     networks:
       - bkpk-network
 
@@ -71,6 +83,12 @@ services:
       - "127.0.0.1:8081:80"
     depends_on:
       - bkpk-backend
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - bkpk-network
 
@@ -99,6 +117,12 @@ services:
     depends_on:
       - bkpk-backend
       - bkpk-cms
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://$$(hostname):3000/robots.txt"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
     networks:
       - bkpk-network
 
@@ -123,6 +147,12 @@ services:
       - ./data/cms-uploads:/opt/app/public/uploads
     ports:
       - "127.0.0.1:1337:1337"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:1337/_health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     networks:
       - bkpk-network
 
