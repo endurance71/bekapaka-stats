@@ -36,6 +36,7 @@
     "installId": "a3d5c1dcd7813daaf0e98fffac7a34cafec9009d3d35dce95c8886c874221252"
   },
   "overrides": {
-    "handlebars": "^4.7.10"
+    "handlebars": "^4.7.10",
+    "dompurify": "3.4.17"
   }
 }
