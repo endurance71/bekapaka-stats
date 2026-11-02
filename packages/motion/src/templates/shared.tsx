@@ -42,7 +42,10 @@ export const Film: React.FC<{ m: MatchProps; template: Template }> = ({ m, templ
 
 // ======================= sceny wspólne =======================
 
-/** Kadr dzielony po skosie: herb z lewej, znak rywala z prawej, VS ląduje na linii podziału. */
+/**
+ * Kadr dzielony po skosie: herb z lewej, znak rywala z prawej, VS ląduje na linii podziału.
+ * Wszystko między y 290 a 1240: Reels zasłania górne 14% i dolne 35% kadru (wytyczne Meta 2026).
+ */
 export const Matchup: React.FC<{ len: number }> = ({ len }) => {
   const f = useCurrentFrame();
   const { m, parts } = useMatch();
@@ -56,18 +59,18 @@ export const Matchup: React.FC<{ len: number }> = ({ len }) => {
       <Push f={f} len={len}>
         <Plate dim={0.35} url={generated(m.posterId, parts.materialFile)} />
         <svg viewBox="0 0 1080 1920" style={{ position: 'absolute', inset: 0 }}>
-          <polygon points={`${-200 + off},${1290 + off * 0.45} ${1280 + off},${630 + off * 0.45} 1400,2100 -200,2100`} fill={C.red} />
-          <polygon points={`${-200 + off},${1310 + off * 0.45} ${1280 + off},${650 + off * 0.45} 1400,2100 -200,2100`} fill={C.redDark} opacity={0.5} />
+          <polygon points={`${-200 + off},${1050 + off * 0.45} ${1280 + off},${390 + off * 0.45} 1400,2100 -200,2100`} fill={C.red} />
+          <polygon points={`${-200 + off},${1070 + off * 0.45} ${1280 + off},${410 + off * 0.45} 1400,2100 -200,2100`} fill={C.redDark} opacity={0.5} />
         </svg>
-        <Crest style={{ width: 520, left: 90, top: 250, transform: `translateX(${(1 - crest) * -800}px) rotate(${(1 - crest) * -6}deg)` }} />
-        <Rival svg={parts.rival} width={420} style={{ left: 560, top: 1010, transform: `translateX(${(1 - rival) * 800}px) rotate(${(1 - rival) * 6}deg)` }} />
-        <Label text={m.opponent.toUpperCase()} f={f} at={14} y={1500} size={52} />
+        <Crest style={{ width: 430, left: 100, top: 300, transform: `translateX(${(1 - crest) * -800}px) rotate(${(1 - crest) * -6}deg)` }} />
+        <Rival svg={parts.rival} width={330} style={{ left: 680, top: 740, transform: `translateX(${(1 - rival) * 800}px) rotate(${(1 - rival) * 6}deg)` }} />
+        <Label text={m.opponent.toUpperCase()} f={f} at={14} y={1150} size={50} />
       </Push>
       <div style={{
-        position: 'absolute', left: 0, right: 0, top: 820, textAlign: 'center', fontFamily: 'BC', fontWeight: 800, fontSize: 280,
+        position: 'absolute', left: 0, right: 0, top: 555, textAlign: 'center', fontFamily: 'BC', fontWeight: 800, fontSize: 250,
         color: C.white, lineHeight: 1, opacity: Math.min(1, vs * 3),
-        transform: `skewX(-9deg) scale(${lerp(2.4, 1, vs)})`, filter: 'drop-shadow(0 14px 18px rgba(0,0,0,.8))', ...wear,
-      }}>VS</div>
+        transform: `skewX(-9deg) scale(${lerp(2.4, 1, vs)})`, filter: 'drop-shadow(0 14px 18px rgba(0,0,0,.8))',
+      }}><span style={{ ...wear, WebkitMaskPosition: '-450px -700px', display: 'inline-block', padding: '0 40px' }}>VS</span></div>
     </AbsoluteFill>
   );
 };
@@ -84,22 +87,22 @@ export const When: React.FC<{ len: number }> = ({ len }) => {
         <Plate dim={0.5} />
         <Img src={brand('wzor-skrzydla.svg')} style={{ position: 'absolute', width: 1080, left: 0, top: 420 + interpolate(f, [0, 60], [0, -80]), opacity: 0.55 }} />
         <AbsoluteFill style={{ background: 'linear-gradient(180deg, rgba(11,11,11,.9) 0%, rgba(11,11,11,0) 30%, rgba(11,11,11,0) 70%, rgba(11,11,11,.9) 100%)' }} />
-        <Label text={`${w.day} · ${w.dm}`} f={f} at={0} y={640} size={56} />
+        <Label text={`${w.day} · ${w.dm}`} f={f} at={0} y={570} size={56} />
         <svg viewBox="0 0 1080 1920" style={{ position: 'absolute', inset: 0 }}>
           <defs><clipPath id="whenPanel"><rect x={0} y={0} width={1080 * panel} height={1920} /></clipPath></defs>
           <g clipPath="url(#whenPanel)">
-            <polygon points="250,780 980,780 830,1080 100,1080" fill={C.black} />
-            <polygon points="250,780 980,780 830,1080 100,1080" fill="none" stroke={C.gold} strokeWidth={8} />
+            <polygon points="250,710 980,710 830,1010 100,1010" fill={C.black} />
+            <polygon points="250,710 980,710 830,1010 100,1010" fill="none" stroke={C.gold} strokeWidth={8} />
           </g>
         </svg>
         <div style={{
-          position: 'absolute', left: 0, right: 0, top: 810, display: 'flex', justifyContent: 'center', fontFamily: 'BC', fontWeight: 800,
-          fontSize: size, color: C.white, transform: 'skewX(-9deg)', filter: 'drop-shadow(0 10px 14px rgba(0,0,0,.7))', opacity: Math.min(1, panel * 2), ...wear,
+          position: "absolute", left: 0, right: 0, top: 740, display: "flex", justifyContent: "center", fontFamily: "BC", fontWeight: 800,
+          fontSize: size, color: C.white, transform: 'skewX(-9deg)', filter: 'drop-shadow(0 10px 14px rgba(0,0,0,.7))', opacity: Math.min(1, panel * 2),
         }}>
-          <Clock time={w.time} f={f} at={6} size={size} />
+          <div style={{ ...wear, display: 'flex', padding: '0 40px' }}><Clock time={w.time} f={f} at={6} size={size} /></div>
         </div>
-        <Label text={m.venue} f={f} at={18} y={1150} size={48} />
-        {m.entry ? <Label text={m.entry.toUpperCase()} f={f} at={22} y={1225} size={40} color={C.gold} /> : null}
+        <Label text={m.venue} f={f} at={18} y={1080} size={48} />
+        {m.entry ? <Label text={m.entry.toUpperCase()} f={f} at={22} y={1155} size={40} color={C.gold} /> : null}
       </Push>
     </AbsoluteFill>
   );

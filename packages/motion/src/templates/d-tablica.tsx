@@ -78,8 +78,8 @@ const Circle: React.FC<{ len: number }> = ({ len }) => {
       </Push>
       <div style={{
         position: 'absolute', left: 0, right: 0, top: 860, textAlign: 'center', fontFamily: 'BC', fontWeight: 800, fontSize: 200, lineHeight: 1,
-        color: C.white, opacity: Math.min(1, vs * 3), transform: `skewX(-9deg) scale(${lerp(2.4, 1, vs)})`, filter: 'drop-shadow(0 12px 16px rgba(0,0,0,.8))', ...wear,
-      }}>VS</div>
+        color: C.white, opacity: Math.min(1, vs * 3), transform: `skewX(-9deg) scale(${lerp(2.4, 1, vs)})`, filter: 'drop-shadow(0 12px 16px rgba(0,0,0,.8))',
+      }}><span style={{ ...wear, WebkitMaskPosition: '-450px -700px', display: 'inline-block', padding: '0 40px' }}>VS</span></div>
     </AbsoluteFill>
   );
 };

@@ -15,7 +15,7 @@ if (!fs.existsSync(path.join(pkg, 'public/generated', match.posterId, 'parts.jso
 // Te same warunki co `requires` we wzorach - tu tylko po to, żeby pominąć wzory bez danych zamiast przerywać.
 const has = {
   'A-Wracamy': () => match.headline,
-  'B-Rewanz': () => match.h2h?.results?.length && match.rematch,
+  'B-Rewanz': () => match.rematch,
   'C-Forma': () => match.season?.scores?.length,
   'D-Tablica': () => true,
   'E-Redakcyjnie': () => true,

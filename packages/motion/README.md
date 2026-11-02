@@ -7,7 +7,7 @@ i kończy się grafiką zapowiedzi ze Studio, więc typografia planszy końcowej
 | Wzór | Pomysł | Wymagane dane | Długość |
 |---|---|---|---|
 | `A-Wracamy` | hak „WRACAMY” na skrzydłach V → starcie → bilans z rywalem → puenta → godzina → plakat | `headline`; `comeback` i `h2h` opcjonalnie | ok. 9–11 s |
-| `B-Rewanz` | dawne wyniki z datą przekreślone kreską → złote „?:?” → odpowiedź → starcie → godzina → plakat | `h2h.results`, `rematch` | ok. 10–12 s |
+| `B-Rewanz` | tablica wyników kręci się i staje na złotym „?:?” → „TERAZ NASZA KOLEJ” → starcie → godzina → plakat | `rematch` | 8,1 s |
 | `C-Forma` | sezon w liczbach: mecze i wygrane, punkty, lider, niepokonani → starcie → plakat | `season.scores`; `leader`, `unbeaten` opcjonalnie | ok. 7–11 s |
 | `D-Tablica` | tablica trenera: boisko rysuje się samo, akcja i podanie → koło środkowe → linia boczna → plakat | tylko podstawa | 8,7 s |
 | `E-Redakcyjnie` | papier: data w obrysie → paski z nazwami → godzina i pieczątka „WSTĘP WOLNY” → plakat redakcyjny | tylko podstawa | 8,2 s |
@@ -60,6 +60,8 @@ Wynik: `out/<posterId>/<wzór>.mp4`. Katalogi `public/` i `out/` nie trafiają d
 - Ujęcia 1,3–2,5 s, plansza końcowa ok. 2,3 s. Każda scena ma powolny najazd kamery, więc obraz nie zamiera
   (kontrola: `ffmpeg … -vf freezedetect=d=1.0`).
 - Cięcia na twardo albo ostrzem, bez przenikania scen. Tekst wchodzi z maski albo uderzeniem skali.
+- Napisy i znaki w scenach między y 270 a 1250. Reels zasłania górne 14% i dolne 35% kadru (wytyczne Meta 2026). Wyjątkiem jest dół plakatu ze Studio, bo godzinę i halę pokazuje wcześniej scena „When”.
+- Cień i faktura nadruku zawsze na osobnych warstwach: maska na elemencie z cieniem tnie cień do prostokąta.
 - Logo i fonty tylko z plików marki (`backend/studio/brand/02_system`), herb 2.0 z napisem BOBOLICE.
 - Licencja Remotion: bezpłatna dla osób prywatnych, firm do 3 osób i organizacji non-profit. Przed użyciem
   przez klub potwierdź, że spełnia warunki.
