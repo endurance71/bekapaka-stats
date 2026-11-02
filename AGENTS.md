@@ -10,6 +10,7 @@ Przed pracą na VPS lub deployem produkcyjnym **przeczytaj**:
 6. **[VPS-dane/README.md](VPS-dane/README.md)** — skrót dostępu i mapa folderów na serwerze
 7. **[docs/docker-deploy.md](docs/docker-deploy.md)** — CI/CD i obrazy Docker
 8. **[docs/ai-engine.md](docs/ai-engine.md)** — silnik AI (API ↔ Claude Agent SDK), MCP dla Claude Code, zasady uwierzytelniania
+9. **[packages/motion/README.md](packages/motion/README.md)** — wzory filmów (Remotion): zapowiedzi meczów z faktów publikacji i grafiki Studio
 
 Reguły Cursor (auto): `.cursor/rules/vps-moya-deployment.mdc`, `.cursor/rules/no-ai-labels.mdc`
 

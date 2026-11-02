@@ -1,0 +1,23 @@
+{
+  "name": "@bekapaka/motion",
+  "private": true,
+  "type": "module",
+  "description": "Wzory filmów BeKaPaKa (Remotion): zapowiedzi meczów z danych publikacji i grafiki ze Studio.",
+  "scripts": {
+    "prepare-match": "node scripts/prepare.mjs",
+    "studio": "remotion studio src/index.ts",
+    "render": "node scripts/render.mjs",
+    "metrics": "../../backend/studio/.venv/bin/python scripts/font-metrics.py"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "@remotion/motion-blur": "4.0.534",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.534"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.0",
+    "typescript": "5.9.3"
+  }
+}
