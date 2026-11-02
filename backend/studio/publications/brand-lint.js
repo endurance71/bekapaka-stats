@@ -48,6 +48,9 @@ const localTime = (iso) =>
   iso && Number.isFinite(Date.parse(iso))
     ? new Intl.DateTimeFormat('pl-PL', { timeZone: 'Europe/Warsaw', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso))
     : '';
+// Confirmed notes already give Warsaw times („następny mecz: sobota 14.11.2026, 17:40”). Scores like „86:20” are not clock times.
+const noteTimes = (notes) =>
+  [...String(notes || '').matchAll(/(?<![\d:])([01]?\d|2[0-3]):([0-5]\d)(?![\d:])/g)].map((m) => `${m[1].padStart(2, '0')}:${m[2]}`);
 const emoji = /\p{Extended_Pictographic}/gu;
 // Owner's post-match pattern (2026-10-18) structures Facebook and Instagram posts with emoji;
 // a story sticker stays short and the website stays without them.
@@ -89,7 +92,7 @@ export function lintCopy(channel, copy, facts) {
     if (unknown.length) add('warning', field, `Liczby spoza potwierdzonych faktów: ${unknown.join(', ')}. Sprawdź źródło.`);
     const limit = emojiLimit[channel] ?? 2;
     if ((value.match(emoji) || []).length > limit) add('warning', field, limit ? `Maksymalnie ${limit} emoji.` : 'Na stronie bez emoji.');
-    const times = new Set([facts?.date, facts?.originalDate, facts?.report?.nextMatch?.date].map(localTime).filter(Boolean));
+    const times = new Set([...[facts?.date, facts?.originalDate, facts?.report?.nextMatch?.date].map(localTime).filter(Boolean), ...noteTimes(facts?.notes)]);
     const wrong = [...value.matchAll(clock)].map((m) => `${m[1].padStart(2, '0')}:${m[2]}`).filter((t) => !times.has(t));
     if (wrong.length) add('warning', field, `Godzina ${[...new Set(wrong)].join(', ')} nie zgadza się z terminami w faktach (czas polski).`);
     const day = warsawWeekday(facts?.date);

@@ -139,6 +139,14 @@ describe('brand lint', () => {
     expect(lintCopy('instagram_feed', ig('W sobotę gramy!'), match).map((i) => i.message)).toContain('Dzień tygodnia nie zgadza się z datą w faktach (niedziela).');
     expect(lintCopy('instagram_feed', ig('W niedzielę gramy, trening we wtorek.'), match).some((i) => i.message.startsWith('Dzień tygodnia'))).toBe(false);
   });
+  it('accepts clock times from the dates and confirmed notes, not from scores', () => {
+    // Preview: 16:50 in Warsaw, the next match only in notes.
+    const preview = { date: '2026-11-07T15:50:00.000Z', notes: 'Wygrana 86:20. Następny mecz: sobota 14.11.2026, 17:40.' };
+    const timeIssues = (text) => lintCopy('instagram_feed', ig(text), preview).filter((i) => i.message.startsWith('Godzina'));
+    expect(timeIssues('Gramy o 16:50, a tydzień później o 17:40.')).toEqual([]);
+    expect(timeIssues('Gramy o 18:00.')[0]?.message).toBe('Godzina 18:00 nie zgadza się z terminami w faktach (czas polski).');
+    expect(timeIssues('Początek o 20:86.')).toHaveLength(1);
+  });
   it('checks the website excerpt length and required alt texts', () => {
     expect(lintCopy('website', { title: 'T', excerpt: 'krótko', content: 'x', tags: [], coverAlt: '' }, match)[0]).toMatchObject({ level: 'warning', field: 'excerpt' });
     expect(hasErrors(lintCopy('facebook', { text: 'Tekst', hashtags: [], link: '', altText: '' }, match))).toBe(true);
