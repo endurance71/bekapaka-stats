@@ -1,0 +1,29 @@
+{
+  "posterId": "grubik-2026-11-07",
+  "opponent": "Grubik Team",
+  "opponentShort": "GT",
+  "kickoff": "2026-11-07T16:50:00+01:00",
+  "venue": "KOSiR Koszalin",
+  "entry": "Wstęp wolny",
+  "round": "9. KOLEJKA KALK",
+  "source": "Publikacja Studio „Grubik · zapowiedź” (fakty z kalk-koszalin.com, stan na 2.11.2026)",
+  "comeback": "PO 3 TYGODNIACH",
+  "headline": ["CZAS NA", "PIERWSZĄ", "WYGRANĄ"],
+  "h2h": {
+    "label": "NASZ BILANS Z NIMI",
+    "results": [
+      { "date": "16 MARCA 2025", "us": 42, "them": 70 },
+      { "date": "1 LUTEGO 2026", "us": 60, "them": 77 }
+    ]
+  },
+  "rematch": ["TERAZ", "NASZA KOLEJ"],
+  "season": {
+    "label": "SEZON 2026/2027",
+    "scores": [
+      { "us": 86, "them": 20 },
+      { "us": 56, "them": 54 }
+    ],
+    "leader": { "firstName": "Filip", "lastName": "Karpiński", "perGame": 24 },
+    "unbeaten": { "group": "DYWIZJA II", "count": 3, "withUs": true }
+  }
+}
