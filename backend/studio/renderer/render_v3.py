@@ -322,14 +322,29 @@ def partners(p,items):
     if p.variant=='thanks':wrap(p,p.data.get('body',''),p.m,start+math.ceil(len(items)/cols)*(ch+28)+30,p.w-2*p.m,28,'body',maxlines=2,color=C['black'])
 
 def schedule(p,items):
-    mini_header(p,'TERMINARZ');start=760 if p.story else 470 if p.h<=1080 else 560
-    display(p,p.data.get('title','').upper(),p.m,350 if p.h<=1080 else start-230,100,C['black'],maxw=p.w-2*p.m);M.stripes(p,p.m,380 if p.h<=1080 else start-200,p.w-2*p.m,color=p.accent)
+    # The rows share the sheet between the title stripes and the venue line: a month with two matches gets larger cards, not a blank page.
+    mini_header(p,'TERMINARZ');compact=p.h<=1080;ty=350 if compact else 530 if p.story else 330
+    display(p,p.data.get('title','').upper(),p.m,ty,100,C['black'],maxw=p.w-2*p.m);M.stripes(p,p.m,ty+30,p.w-2*p.m,color=p.accent)
+    info=[r for r in (('hala',p.data.get('venue')),('info',p.data.get('entryInfo'))) if r[1]]
+    sy=grid(p)[7];top=ty+(95 if compact else 110);n=max(1,len(items));gap=12 if compact else 20
+    fit=lambda bottom:(bottom-top-gap*(n-1))/n
+    if info and fit(sy-110)<130:info=[]  # a full page keeps the original row height; the venue line yields
+    bottom=sy-(110 if info else 40)
+    rh=min(150 if compact else 330 if p.story else 250,fit(bottom));s=rh/140
+    top+=(bottom-top-n*rh-gap*(n-1))/3
+    ds=min(76*s,124);os=min(40*s,64);ts=min(22*s,34);dw=lettering_width('00.00',ds)
+    x=max(p.m+288,p.m+28+dw+(64 if s>1.2 else 40))
     for i,row in enumerate(items):
-        y=start+i*(140 if p.h<=1080 else 160);M.blade_panel(p,p.m,y-120,p.w-2*p.m,140,'#FFFFFF' if i%2==0 else '#EFEBE3',left=False)
-        day,time=date_parts(row['date']);date=day.split(' · ')[-1][:5]
-        display(p,date,p.m+28,y-15,76,p.accent,maxw=220)
-        text(p,row['opponent'].upper(),p.m+288,y-45,40,'label',C['black'],maxw=400,minimum=26)
-        text(p,time,p.m+288,y,22,'body',C['black']);text(p,row.get('round',''),p.w-p.m-120,y-25,22,'label',C['black'],'end',130)
+        y0=top+i*(rh+gap);mid=y0+rh/2
+        M.blade_panel(p,p.m,y0,p.w-2*p.m,rh,'#FFFFFF' if i%2==0 else '#EFEBE3',left=False)
+        day,time=date_parts(row['date']);weekday,_,full=day.partition(' · ')
+        display(p,full[:5],p.m+28,mid+ds*.38,ds,p.accent,maxw=dw+20)
+        # The blade's 24° cut eats about half its run at mid-height; text stops short of it.
+        right=p.w-p.m-rh*.45;rw=150 if row.get('round') else 0;b=mid-ts+os*.36
+        text(p,row['opponent'].upper(),x,b,os,'label',C['black'],maxw=right-x-rw,minimum=26)
+        text(p,weekday.capitalize()+(' · '+time if time else ''),x,b+ts*2,ts,'body',C['black'])
+        text(p,row.get('round',''),right,mid+8,22,'label',C['black'],'end',130)
+    if info:sym.icon_row(p,info,p.m,sy-44,size=36,text_size=32,color=C['black'])
 
 def tournament(p):
     d=p.data;off=200 if p.story else 0

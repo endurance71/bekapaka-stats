@@ -1,9 +1,9 @@
 {
   "version": "3.0.0",
-  "sha256": "f7acf6aa04ef82a413c4a3bd385724f19518d92dbfed8a8758932ae5dcbc199f",
+  "sha256": "3c9ed1978c9ce9aa38770659408482754941035cf2b27f710eb03dd4045eb752",
   "files": {
     "renderer/render.py": "157e77237e98947794d32686b257b87671a53e1e76f0610d6eac289732803b4c",
-    "renderer/render_v3.py": "c3153efec32bebdb726bb4e3d44ffaff0662246cb4d5b8948a163fab33901e16",
+    "renderer/render_v3.py": "ce864fc63b7af4205dbb64ad554b720c12cce899e909b240a89442c6c9df8f09",
     "renderer/render_v2.py": "5622d6ea6a640f51e269ca291c772b0a75c76237d7ce5483086ca3cc6718ef2d",
     "renderer/references/core.py": "2b37f4a4992567899ccb83b22d8b6de77c28e5356c8414f899da09628c92ad27",
     "renderer/references/kit_b.py": "a134575623a73b448a534b755edde7ce871c380721278a8e4c8853fd98a768b1",
