@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { createStudioRouter } from '../../studio/routes.js';
 import { filePath, hash } from '../../studio/storage.js';
-import { slugify } from '../../studio/publications/website.js';
+import { publishDueWebsite, slugify } from '../../studio/publications/website.js';
 
 const enabled = !!process.env.STUDIO_TEST_DATABASE_URL;
 const owner = `studio-www-${crypto.randomUUID()}`;
@@ -185,5 +185,31 @@ describe.skipIf(!enabled)('Studio website channel → Strapi drafts', () => {
     const writes = calls.filter((c) => c.path === '/api/news-posts');
     expect(writes.slice(0, -1).every((c) => c.status === 'draft')).toBe(true);
     expect((await request(`/publications/${publication.id}/items/${item.id}/website/draft`, {}, 'POST')).res.status).toBe(409);
+  });
+
+  it('publishes an approved article by itself at its planned time — only approvals that mean „publish”', async () => {
+    const pub = (await request('/publications', { playbook: 'news', facts: { title: 'Zbiórka sprzętu dla dzieci', date: '2026-11-07T15:00:00.000Z' } }, 'POST')).value;
+    const w0 = website(pub);
+    const project = await db.studioProject.findUnique({ where: { id: w0.projectId } });
+    const key = `jobs/test-${owner}/cover-2.png`;
+    await fs.writeFile(filePath(key), Buffer.from('89504e470d0a1a0a', 'hex'));
+    await db.studioJob.create({
+      data: { ownerId: owner, projectId: project.id, revision: project.currentRevision, kind: 'export', status: 'completed', payload: {}, result: { files: [{ key: `${w0.format}-01`, name: 'cover-2.png', mime: 'image/png', storageKey: key, sha256: 'sha-2' }], expiresAt: new Date(Date.now() + 86400_000).toISOString() } },
+    });
+    const graphic = await db.studioRevision.findFirst({ where: { projectId: w0.projectId }, orderBy: { number: 'desc' } });
+    const later = new Date(Date.now() + 3600_000);
+    await db.studioPublicationItem.update({ where: { id: w0.id }, data: { status: 'approved', plannedAt: later, approvedHash: hash({ copy: w0.copy, graphic: graphic.contentHash, format: w0.format }) } });
+    // An approval from before „OK = publish” (no flag) is never published by the scheduler.
+    await db.studioPublishEvent.create({ data: { itemId: w0.id, action: 'approved', actor: 'owner', payload: {} } });
+    expect(await publishDueWebsite(db, owner, new Date(Date.now() + 2 * 3600_000))).toEqual([]);
+    // A current approval waits for the planned time, then goes live.
+    await db.studioPublishEvent.create({ data: { itemId: w0.id, action: 'approved', actor: 'owner', payload: { autoPublish: true } } });
+    expect(await publishDueWebsite(db, owner)).toEqual([]);
+    expect(await publishDueWebsite(db, owner, new Date(later.getTime() + 60_000))).toEqual([w0.id]);
+    const w = website((await request(`/publications/${pub.id}`)).value);
+    expect(w).toMatchObject({ status: 'published', externalUrl: 'https://bekapaka.example/aktualnosci/zbiorka-sprzetu-dla-dzieci', error: null });
+    const event = await db.studioPublishEvent.findFirst({ where: { itemId: w0.id, action: 'published' } });
+    expect(event.actor).toBe('auto');
+    expect(await publishDueWebsite(db, owner, new Date(later.getTime() + 120_000))).toEqual([]);
   });
 });

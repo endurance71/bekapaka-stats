@@ -536,7 +536,7 @@ export async function applyTemplates(db, owner, pubId, channelList) {
   return publicationView(db, owner, pubId);
 }
 
-export async function approveItem(db, owner, pubId, itemId, expectedRevision, acceptRepetition = false) {
+export async function approveItem(db, owner, pubId, itemId, expectedRevision, acceptRepetition = false, actor = 'owner') {
   const view = await publicationView(db, owner, pubId);
   const item = view.items.find((i) => i.id === itemId);
   if (!item) fail(404, 'Wariant publikacji nie istnieje');
@@ -547,7 +547,9 @@ export async function approveItem(db, owner, pubId, itemId, expectedRevision, ac
     fail(422, 'Siatka się powtarza. Zmień grafikę albo zaznacz „Akceptuję powtórzenie”.', repetition.map((w) => ({ field: 'variety', message: w.message })));
   await db.$transaction(async (tx) => {
     await bumpItem(tx, item, expectedRevision, { status: 'approved', approvedHash: approvalHash(item, item.graphic, item.extraGraphics) });
-    await event(tx, item.id, 'approved', 'owner', {
+    await event(tx, item.id, 'approved', actor, {
+      // The OK is the decision to publish: the website variant goes live at its planned time by itself.
+      ...(item.channel === 'website' ? { autoPublish: true } : {}),
       graphicRevision: item.graphic?.revision ?? null,
       ...(item.extraGraphics.length ? { extraGraphicRevisions: item.extraGraphics.map((g) => g?.revision ?? null) } : {}),
       signature: item.graphic?.signature ?? null,
@@ -562,7 +564,7 @@ export async function approveItem(db, owner, pubId, itemId, expectedRevision, ac
  * variant in the formats this publication's channels use (a graphic shared by the post and the story is approved
  * in both at once), exports them and, when nothing else blocks it, approves the variant too.
  */
-export async function approveItemGraphics(db, owner, pubId, itemId, input, wait) {
+export async function approveItemGraphics(db, owner, pubId, itemId, input, wait, actor = 'owner') {
   const data = z
     .object({ expectedRevision: z.number().int().min(1), approveVariant: z.boolean().default(true), acceptRepetition: z.boolean().default(false) })
     .strict()
@@ -592,7 +594,7 @@ export async function approveItemGraphics(db, owner, pubId, itemId, input, wait)
     set.map((g) => ({ projectId: g.projectId, formats: formatsFor(g) })),
     { render: true, adjustFormats: true, wait },
   );
-  await event(db, item.id, 'graphics-approved', 'owner', {
+  await event(db, item.id, 'graphics-approved', actor, {
     graphics: result.approved.map(({ projectId, revision, previews }) => ({ projectId, revision, formats: previews.map((p) => p.format) })),
   });
   let publication = await publicationView(db, owner, pubId);
@@ -600,7 +602,7 @@ export async function approveItemGraphics(db, owner, pubId, itemId, input, wait)
   const repeated = (current.variety?.warnings.length ?? 0) > 0;
   let variantApproved = false;
   if (data.approveVariant && current.status === 'draft' && !current.ready.length && (!repeated || data.acceptRepetition)) {
-    publication = await approveItem(db, owner, pubId, itemId, current.revision, data.acceptRepetition);
+    publication = await approveItem(db, owner, pubId, itemId, current.revision, data.acceptRepetition, actor);
     variantApproved = true;
   }
   return {

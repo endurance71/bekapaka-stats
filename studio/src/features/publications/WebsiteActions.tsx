@@ -7,7 +7,8 @@ type Config = { draft: boolean; preview: boolean; revalidate: boolean };
 export const useWebsiteConfig = () =>
   useQuery({ queryKey: ['website-config'], queryFn: () => api<Config>('/website/config'), staleTime: 5 * 60_000 });
 
-// Website variant ↔ CMS draft: the article stays a draft on bekapaka.pl until the owner publishes it here.
+// Website variant ↔ CMS: once approved, the article goes live by itself at its planned time (the OK is the decision);
+// „Opublikuj teraz” does it right away.
 export default function WebsiteActions({
   publication,
   item,
@@ -53,6 +54,16 @@ export default function WebsiteActions({
         </a>
       )}
       {item.status === 'approved' && (
+        <p className="website-auto small">
+          {item.plannedAt && new Date(item.plannedAt) > new Date()
+            ? `Opublikuje się automatycznie ${new Date(item.plannedAt).toLocaleString('pl-PL', { weekday: 'short', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}.`
+            : 'Publikuje się automatycznie — w ciągu minuty.'}
+          {item.error && (
+            <b className="form-error"> Ostatnia próba nie udała się: {item.error}. Ponowienie za kilka minut.</b>
+          )}
+        </p>
+      )}
+      {item.status === 'approved' && (
         <button
           className="primary"
           disabled={busy || dirty || item.stale}
@@ -61,7 +72,7 @@ export default function WebsiteActions({
               void run(() => send<Publication>(`${base}/publish`, { expectedRevision: item.revision }));
           }}
         >
-          <Globe size={16} /> Opublikuj na stronie
+          <Globe size={16} /> Opublikuj teraz
         </button>
       )}
     </div>

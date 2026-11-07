@@ -257,9 +257,9 @@ export async function linkWebsiteArticle(db, owner, pubId, itemId, input) {
 }
 
 /** Publishes the approved variant: refreshes the draft if copy or cover changed, publishes, revalidates. */
-export const publishWebsite = (db, owner, pubId, itemId, expectedRevision) =>
-  exclusive(itemId, () => publish(db, owner, pubId, itemId, expectedRevision));
-async function publish(db, owner, pubId, itemId, expectedRevision) {
+export const publishWebsite = (db, owner, pubId, itemId, expectedRevision, actor = 'owner') =>
+  exclusive(itemId, () => publish(db, owner, pubId, itemId, expectedRevision, actor));
+async function publish(db, owner, pubId, itemId, expectedRevision, actor) {
   let { view, item } = await context(db, owner, pubId, itemId);
   if (item.revision !== expectedRevision) fail(409, 'Wariant zmienił się na innym urządzeniu. Odśwież widok.');
   if (item.status !== 'approved' || item.stale) fail(422, 'Opublikować można tylko aktualnie zatwierdzony wariant strony');
@@ -275,8 +275,57 @@ async function publish(db, owner, pubId, itemId, expectedRevision) {
   const url = `${websiteConfig().siteUrl}/aktualnosci/${slug}`;
   await db.$transaction(async (tx) => {
     // Approval stays valid: syncing the draft only stored the CMS ids, not a copy change.
-    await tx.studioPublicationItem.update({ where: { id: item.id }, data: { status: 'published', publishedAt: new Date(), externalUrl: url, revision: { increment: 1 } } });
-    await tx.studioPublishEvent.create({ data: { itemId: item.id, action: 'published', actor: 'owner', payload: { url, cms: true, documentId: item.externalId, revalidated } } });
+    await tx.studioPublicationItem.update({ where: { id: item.id }, data: { status: 'published', publishedAt: new Date(), externalUrl: url, error: null, revision: { increment: 1 } } });
+    await tx.studioPublishEvent.create({ data: { itemId: item.id, action: 'published', actor, payload: { url, cms: true, documentId: item.externalId, revalidated } } });
   });
   return publicationView(db, owner, pubId);
+}
+
+const RETRY_MS = 10 * 60_000;
+/**
+ * The owner's OK is the decision to publish: an approved website variant goes live at its planned time
+ * (or right away when that time has passed or none is set). A failed attempt is noted on the variant and
+ * retried after 10 minutes.
+ */
+export async function publishDueWebsite(db, owner, now = new Date()) {
+  if (!owner || !websiteConfigured().draft) return [];
+  const due = await db.studioPublicationItem.findMany({
+    where: { channel: 'website', status: 'approved', publication: { ownerId: owner, status: 'draft' }, OR: [{ plannedAt: null }, { plannedAt: { lte: now } }] },
+    select: { id: true, publicationId: true, revision: true },
+  });
+  const published = [];
+  for (const item of due) {
+    // Only approvals given since the OK means „publish” (marked on the event); older approved drafts stay put.
+    const approval = await db.studioPublishEvent.findFirst({ where: { itemId: item.id, action: 'approved' }, orderBy: { createdAt: 'desc' } });
+    if (!approval?.payload?.autoPublish) continue;
+    const failed = await db.studioPublishEvent.findFirst({ where: { itemId: item.id, action: 'publish-failed', createdAt: { gt: new Date(now.getTime() - RETRY_MS) } } });
+    if (failed) continue;
+    try {
+      await publishWebsite(db, owner, item.publicationId, item.id, item.revision, 'auto');
+      published.push(item.id);
+    } catch (err) {
+      const message = String(err.message || err).slice(0, 500);
+      await db.studioPublishEvent.create({ data: { itemId: item.id, action: 'publish-failed', actor: 'auto', payload: { message } } });
+      await db.studioPublicationItem.update({ where: { id: item.id }, data: { error: message } });
+    }
+  }
+  return published;
+}
+
+/** Checks every minute for approved website variants whose time has come. */
+export function startWebsiteScheduler(db, owner, { intervalMs = 60_000 } = {}) {
+  let running = false;
+  const timer = setInterval(async () => {
+    if (running) return;
+    running = true;
+    try {
+      await publishDueWebsite(db, owner());
+    } catch (err) {
+      console.error('Studio website scheduler', err.message);
+    } finally {
+      running = false;
+    }
+  }, intervalMs);
+  timer.unref?.();
+  return timer;
 }

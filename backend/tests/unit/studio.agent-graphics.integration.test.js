@@ -207,4 +207,40 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     const stale = await request(`/publications/${publication.id}/items/${fb.id}/approve-graphics`, { expectedRevision: fb.revision + 5 }, 'POST');
     expect(stale.res.status).toBe(409);
   }, 120_000);
+
+  it('lets the agent fix the graphic, then carry out everything after one „akceptuję”', async () => {
+    const pub = (await request('/publications', { playbook: 'news', facts: { title: 'Mikołajkowy turniej rodzinny', date: '2026-12-06T10:00:00.000Z', notes: 'Turniej rodzinny w CESiR Bobolice.' } }, 'POST')).value;
+    const agentToken = (await request('/agent-tokens', { name: 'OpenBot 3', scopes: ['graphics'] }, 'POST')).value.token;
+    // Only photos the owner may publish can go on a graphic.
+    const badPhoto = await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', photoAssetId: 'nie-ma-takiego' }, agentToken);
+    expect(badPhoto.result.isError).toBe(true);
+    const fixed = summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', title: 'Mikołajkowy turniej rodzinny w Bobolicach' }, agentToken));
+    expect(fixed).toMatchObject({ title: 'Mikołajkowy turniej rodzinny w Bobolicach', stillToFix: [] });
+    expect(summary(await call('list_photos', {}, agentToken)).photos).toEqual([]);
+    // No OK from the owner, no call: the tool requires the verbatim answer.
+    expect((await call('accept_publication', { publicationId: pub.id }, agentToken)).result.isError).toBe(true);
+    const r = await call('accept_publication', { publicationId: pub.id, ownerApproval: 'akceptuję' }, agentToken);
+    expect(r.result.isError, r.result.content[0].text).toBeFalsy();
+    const s = summary(r);
+    expect(s.factsConfirmed).toBe(true);
+    const after = (await request(`/publications/${pub.id}`)).value;
+    expect(after.factsConfirmed).toBe(true);
+    for (const c of s.channels.filter((c) => !c.problem)) expect(after.items.find((i) => i.channel === c.channel).status, c.channel).toMatch(/approved|published/);
+    for (const item of after.items) expect(item.graphic.valid && !!item.graphic.exportJobId, item.channel).toBe(true);
+    const feed = s.channels.find((c) => c.channel === 'instagram_feed');
+    expect(feed.files[0].url).toContain('/agent-files/');
+    // Without CMS settings the article waits in Studio instead of failing.
+    const www = s.channels.find((c) => c.channel === 'website');
+    expect(www.website).toContain('CMS');
+    const accepted = await db.studioPublishEvent.findMany({ where: { action: 'owner-accepted', item: { publicationId: pub.id } } });
+    expect(accepted.length).toBe(after.items.length);
+    expect(accepted.every((e) => e.payload.ownerApproval.startsWith('akceptuję') && e.actor === 'agent:OpenBot 3')).toBe(true);
+    // Facebook repeats the previous post's composition: reported, not silently accepted.
+    expect(s.channels.filter((c) => c.problem).map((c) => c.channel)).toEqual(['facebook']);
+    // The agent showed the owner the warning and the OK covered it.
+    const again = summary(await call('accept_publication', { publicationId: pub.id, ownerApproval: 'akceptuję, powtórzenie OK', acceptRepetition: true }, agentToken));
+    expect(again.channels.map((c) => [c.channel, c.status, c.problem])).toEqual([['facebook', 'approved', undefined]]);
+    const final = (await request(`/publications/${pub.id}`)).value;
+    expect(final.items.map((i) => i.status)).toEqual(['approved', 'approved', 'approved']);
+  }, 120_000);
 });
