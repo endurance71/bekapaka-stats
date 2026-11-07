@@ -7,8 +7,11 @@ import sharp from 'sharp';
 import { z } from 'zod';
 import { fail, origin, ownerId } from '../config.js';
 import { filePath } from '../storage.js';
-import { context, projectView, queueJob, validation } from '../service.js';
+import { projectView, queueJob, validation } from '../service.js';
 import { publicationView } from '../publications/service.js';
+import { approveGraphics, dropUnusedFormats, waitForJobs } from '../publications/graphics-approval.js';
+
+export { waitForJobs };
 
 export const LINK_TTL_MS = 3600_000;
 const TERMINAL = ['completed', 'failed', 'superseded', 'uncertain'];
@@ -24,16 +27,6 @@ export async function channelGraphics(db, owner, publicationId, channel) {
   if (!item.graphic) fail(422, 'Ten kanał nie ma grafiki');
   if (graphics.some((g) => !g)) fail(409, 'Grafika zestawu nie jest już dostępna. Uzupełnij zestaw w Studio.');
   return { publication: p, item, graphics: graphics.map((g) => ({ ...g, format: g.formats.includes(item.format) ? item.format : g.formats[0] })) };
-}
-
-/** Polls the queue until every job ends or the wait runs out (the render worker works one job at a time). */
-export async function waitForJobs(db, ids, { timeoutMs = 90_000, intervalMs = 1000 } = {}) {
-  const deadline = Date.now() + timeoutMs;
-  for (;;) {
-    const jobs = await db.studioJob.findMany({ where: { id: { in: ids } } });
-    if (jobs.every((j) => TERMINAL.includes(j.status)) || Date.now() >= deadline) return new Map(jobs.map((j) => [j.id, j]));
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
-  }
 }
 
 const signature = (secret, jobId, key, exp) => crypto.createHmac('sha256', secret).update(`${jobId}/${key}/${exp}`).digest('base64url');
@@ -78,8 +71,10 @@ export async function renderChannelPreviews(db, owner, agent, { publicationId, c
   const { publication, graphics } = await channelGraphics(db, owner, publicationId, channel);
   const queued = [];
   for (const g of graphics) {
-    const view = await projectView(db, owner, g.projectId);
+    let view = await projectView(db, owner, g.projectId);
     if (view.status === 'archived') fail(409, `Grafika „${view.name}” jest zarchiwizowana`);
+    // Before the owner sees it: formats no channel publishes would block the export after the OK.
+    if (!(await validation(db, owner, view)).valid) view = await dropUnusedFormats(db, owner, view);
     queued.push({ g, view, job: await queueJob(db, owner, view, 'preview', { format: g.format }) });
   }
   const done = await waitForJobs(db, queued.map((q) => q.job.id), wait);
@@ -122,62 +117,47 @@ export async function renderChannelPreviews(db, owner, agent, { publicationId, c
 }
 
 /**
- * Records the owner's approval (given to the agent in chat) for the revisions shown in the latest previews,
- * then exports them and returns signed links to the final PNG files of the channel's format.
+ * Records the owner's approval (given to the agent in chat) for the revisions and the format shown in the latest
+ * previews: the composition of that format and the revision itself. Then exports the graphics that pass every
+ * Studio check and returns signed links to the final PNG files of the channel's format.
  */
 export async function approveChannelGraphics(db, owner, agent, { publicationId, channel, ownerApproval }, wait = {}) {
   const { item, graphics } = await channelGraphics(db, owner, publicationId, channel);
-  const approved = [];
-  for (const g of graphics) {
-    await db.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT id FROM "StudioProject" WHERE id = ${g.projectId} FOR UPDATE`;
-      const view = await projectView(tx, owner, g.projectId);
-      const ctx = await context(tx, owner, view);
-      // The owner saw a preview of exactly this revision and these materials (render_graphics); anything newer needs a new look.
-      const preview = await tx.studioJob.findFirst({ where: { ownerId: owner, projectId: view.id, kind: 'preview', status: 'completed', revision: view.currentRevision }, orderBy: { createdAt: 'desc' } });
-      if (!preview || preview.result?.resourceHash !== ctx.resourceHash)
-        fail(422, `Grafika „${view.name}” zmieniła się od podglądu albo nie ma podglądu. Wywołaj render_graphics i pokaż ją właścicielowi ponownie.`);
-      await tx.studioApproval.upsert({
-        where: { revisionId_ownerId: { revisionId: view.revision.id, ownerId: owner } },
-        create: { revisionId: view.revision.id, ownerId: owner, contentHash: view.revision.contentHash, resourceHash: ctx.resourceHash },
-        update: { resourceHash: ctx.resourceHash },
-      });
-      approved.push({ projectId: view.id, revision: view.currentRevision, previewJobId: preview.id });
-    });
-  }
-  await db.studioPublishEvent.create({ data: { itemId: item.id, action: 'graphics-approved', actor: `agent:${agent.name}`.slice(0, 120), payload: { ownerApproval, graphics: approved } } });
-
-  const queued = [];
-  const blocked = [];
-  for (const g of graphics) {
-    const view = await projectView(db, owner, g.projectId);
-    const report = await validation(db, owner, view);
-    if (!report.valid) {
-      blocked.push({ name: view.name, errors: messages(report.errors) });
-      continue;
-    }
-    const ctx = await context(db, owner, view);
-    const key = `agent:${view.id}:${view.revision.contentHash.slice(0, 16)}:${ctx.resourceHash.slice(0, 16)}`;
-    queued.push({ g, view, job: await queueJob(db, owner, view, 'export', {}, key) });
-  }
+  const result = await approveGraphics(db, owner, graphics.map((g) => ({ projectId: g.projectId, formats: [g.format] })), { wait });
+  await db.studioPublishEvent.create({
+    data: {
+      itemId: item.id,
+      action: 'graphics-approved',
+      actor: `agent:${agent.name}`.slice(0, 120),
+      payload: { ownerApproval, graphics: result.approved.map(({ projectId, revision, previews }) => ({ projectId, revision, previewJobId: previews[0]?.previewJobId, formats: previews.map((p) => p.format) })) },
+    },
+  });
+  const blocked = result.graphics.filter((g) => g.status === 'blocked');
   if (blocked.length)
     return {
-      summary: { publicationId, channel, approved: approved.length, exported: false, blocked, note: 'Zatwierdzenie zapisane, ale eksport wymaga poprawek w Studio (np. zatwierdzenia szablonu albo materiałów). Przekaż je właścicielowi.' },
+      summary: {
+        publicationId,
+        channel,
+        approved: result.approved.length,
+        exported: false,
+        blocked: blocked.map((g) => ({ name: g.name, errors: g.errors })),
+        note: 'Zatwierdzenie zapisane. Eksport czeka: grafika ma jeszcze format innego kanału do akceptacji (pokaż go właścicielowi i wywołaj approve_graphics dla tamtego kanału, a potem ponownie dla tego) albo wymaga poprawek w Studio. Przekaż je właścicielowi.',
+      },
       images: [],
     };
-  const done = await waitForJobs(db, queued.map((q) => q.job.id), wait);
   const out = [];
   const images = [];
-  for (const [index, { g, view, job }] of queued.entries()) {
-    const j = done.get(job.id) || job;
-    const files = j.status === 'completed' ? filesFor(j, g.format) : [];
+  for (const [index, g] of result.graphics.entries()) {
+    const format = graphics[index].format;
+    const j = g.job;
+    const files = j?.status === 'completed' ? filesFor(j, format) : [];
     out.push({
       index: index + 1,
-      name: view.name,
-      format: g.format,
-      exportJobId: j.id,
-      status: j.status,
-      error: j.status === 'failed' ? j.error : undefined,
+      name: g.name,
+      format,
+      exportJobId: j?.id,
+      status: g.status,
+      error: g.status === 'failed' ? j.error : undefined,
       files: files.map((f) => ({ name: f.name, width: f.width, height: f.height, sha256: f.sha256, url: signedLink(agent, j.id, f.key) })),
     });
     for (const f of files) images.push(await thumbnail(f));
@@ -187,7 +167,7 @@ export async function approveChannelGraphics(db, owner, agent, { publicationId, 
     summary: {
       publicationId,
       channel,
-      approved: approved.length,
+      approved: result.approved.length,
       exported: !pending,
       graphics: out,
       note: pending

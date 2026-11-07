@@ -121,6 +121,43 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
   const put = (body: Record<string, unknown>) =>
     run(() => send<Publication>(base, { expectedRevision: item.revision, ...body }, 'PUT'));
 
+  // Graphic blockers are cleared by one OK below; the rest of the list still needs the owner's hand.
+  const isGraphicStep = (r: string) => r.startsWith('Zatwierdź grafikę') || r.startsWith('Wygeneruj eksport grafiki');
+  const graphicsPending = item.status === 'draft' && !!item.graphic && item.ready.some(isGraphicStep);
+  const otherBlockers = item.ready.filter((r) => !isGraphicStep(r));
+  const [approving, setApproving] = useState(false);
+  const approveGraphics = async () => {
+    setBusy(true);
+    setApproving(true);
+    try {
+      const r = await send<{
+        publication: Publication;
+        variantApproved: boolean;
+        graphics: { name: string; status: string; errors: string[]; error: string | null }[];
+      }>(`${base}/approve-graphics`, {
+        expectedRevision: item.revision,
+        approveVariant: true,
+        acceptRepetition: repeated && acceptRepetition,
+      });
+      apply(r.publication);
+      const problems = r.graphics
+        .filter((g) => g.status !== 'completed')
+        .map((g) =>
+          g.status === 'blocked'
+            ? `„${g.name}”: ${g.errors.join('; ')}`
+            : g.status === 'failed'
+              ? `„${g.name}”: eksport się nie udał${g.error ? ` (${g.error})` : ''}`
+              : `„${g.name}”: eksport jeszcze trwa — odśwież za chwilę`,
+        );
+      onError(problems.length ? `Grafiki zatwierdzone, ale: ${problems.join(' · ')}` : '');
+    } catch (err) {
+      onError(message(err));
+    } finally {
+      setBusy(false);
+      setApproving(false);
+    }
+  };
+
   const formats = spec.formats.filter((f) => item.graphic?.formats.includes(f) || f === item.format);
   const caption =
     item.channel === 'instagram_feed'
@@ -293,35 +330,61 @@ export default function ChannelPanel({ publication, item, settings, apply, onErr
       <footer className="channel-foot">
         {item.status === 'draft' && (
           <>
-            {item.ready.length > 0 && (
+            {(otherBlockers.length > 0 || graphicsPending) && (
               <ul className="ready-list">
-                {item.ready.map((r) => (
+                {otherBlockers.map((r) => (
                   <li key={r}>{r}</li>
                 ))}
+                {graphicsPending && (
+                  <li className="ready-graphics">
+                    Grafiki czekają na Twoją akceptację: obejrzyj podgląd obok i kliknij „Akceptuję”.
+                  </li>
+                )}
               </ul>
             )}
             <button className="text-button" disabled={busy || locked} onClick={() => void put({ status: 'skipped' })}>
               <SkipForward size={14} /> Pomiń ten kanał
             </button>
-            <button
-              className="primary"
-              disabled={busy || saving || dirty || item.ready.length > 0 || (repeated && !acceptRepetition)}
-              title={
-                repeated && !acceptRepetition
-                  ? 'Siatka się powtarza — zaznacz „Akceptuję powtórzenie” albo zmień grafikę'
-                  : undefined
-              }
-              onClick={() =>
-                void run(() =>
-                  send<Publication>(`${base}/approve`, {
-                    expectedRevision: item.revision,
-                    acceptRepetition: repeated && acceptRepetition,
-                  }),
-                )
-              }
-            >
-              <Check size={16} /> Zatwierdź wariant
-            </button>
+            {graphicsPending && (
+              <button
+                className="primary"
+                disabled={busy || saving || dirty || !publication.factsConfirmed || (repeated && !acceptRepetition)}
+                title={
+                  !publication.factsConfirmed
+                    ? 'Najpierw potwierdź fakty — grafiki pokazują te dane'
+                    : 'Zatwierdza grafiki w formatach kanałów tej publikacji, eksportuje je i zatwierdza wariant'
+                }
+                onClick={() => void approveGraphics()}
+              >
+                <Check size={16} />{' '}
+                {approving
+                  ? 'Zatwierdzam i eksportuję… (do minuty)'
+                  : otherBlockers.length
+                    ? 'Akceptuję grafiki'
+                    : 'Akceptuję grafiki i tekst'}
+              </button>
+            )}
+            {!graphicsPending && (
+              <button
+                className="primary"
+                disabled={busy || saving || dirty || item.ready.length > 0 || (repeated && !acceptRepetition)}
+                title={
+                  repeated && !acceptRepetition
+                    ? 'Siatka się powtarza — zaznacz „Akceptuję powtórzenie” albo zmień grafikę'
+                    : undefined
+                }
+                onClick={() =>
+                  void run(() =>
+                    send<Publication>(`${base}/approve`, {
+                      expectedRevision: item.revision,
+                      acceptRepetition: repeated && acceptRepetition,
+                    }),
+                  )
+                }
+              >
+                <Check size={16} /> Zatwierdź wariant
+              </button>
+            )}
           </>
         )}
         {item.status === 'skipped' && (

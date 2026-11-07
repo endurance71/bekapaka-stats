@@ -250,7 +250,7 @@ export const tools = [
   {
     name: 'approve_graphics',
     description:
-      'Po wyraźnej akceptacji właściciela w czacie („akceptuję”, „OK”) zatwierdza grafiki kanału w wersji z ostatniego podglądu render_graphics i eksportuje je bez napisu podglądu. Zwraca linki do finalnych PNG w pełnej jakości (ważne godzinę) do publikacji. ownerApproval to dosłowna odpowiedź właściciela; zapisuje się w historii publikacji. Bez akceptacji właściciela nie wywołuj. Gdy grafika zmieniła się od podglądu, pokaż ją ponownie.',
+      'Po wyraźnej akceptacji właściciela w czacie („akceptuję”, „OK”) zatwierdza grafiki kanału w wersji z ostatniego podglądu render_graphics (kompozycję w formacie kanału i rewizję) i eksportuje je bez napisu podglądu. Grafika wspólna z innym kanałem (np. post i relacja) eksportuje się po akceptacji obu kanałów; wtedy wywołaj approve_graphics ponownie dla pierwszego. Zwraca linki do finalnych PNG w pełnej jakości (ważne godzinę) do publikacji. ownerApproval to dosłowna odpowiedź właściciela; zapisuje się w historii publikacji. Bez akceptacji właściciela nie wywołuj. Gdy grafika zmieniła się od podglądu, pokaż ją ponownie.',
     inputSchema: {
       type: 'object',
       properties: {
