@@ -113,6 +113,12 @@ export function opponentShort(name) {
   return short.toLocaleUpperCase('pl-PL');
 }
 
+const bodyIsContent = (type) =>
+  type.family === 'club' ||
+  (type.family === 'schedule' && type.variant !== 'schedule') ||
+  (type.family === 'tournament' && type.variant === 'program') ||
+  (type.family === 'partners' && type.variant === 'thanks');
+
 // Prefill a graphic project from the facts; the project keeps its own revisions afterwards.
 export function projectFromFacts(definition, facts, source, title, partnerIds, alt = '', opponentLogoAssetId = null) {
   const type = postType(definition.postType);
@@ -135,7 +141,9 @@ export function projectFromFacts(definition, facts, source, title, partnerIds, a
     scoreUs: facts.scoreUs,
     scoreThem: facts.scoreThem,
     title: facts.title || facts.partner || '',
-    body: facts.notes,
+    // Facts notes are working notes (sources, numbers for the copy). They become graphic text only where the
+    // body is the post itself; elsewhere (e.g. a match report cover with room for two lines) they stay out.
+    body: bodyIsContent(type) ? facts.notes : '',
     ...(type.family === 'player' || type.variant === 'birthday' ? { firstName, lastName: rest.join(' ') } : {}),
     ...(type.variant === 'quote' ? { attribution: facts.person.slice(0, 100) } : {}),
     ...(type.family === 'tournament' ? { edition: romanToInt(facts.edition) } : {}),

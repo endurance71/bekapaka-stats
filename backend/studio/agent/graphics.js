@@ -63,6 +63,14 @@ async function thumbnail(file) {
   return { type: 'image', mimeType: 'image/jpeg', data: data.toString('base64') };
 }
 
+// The renderer's generic failure usually means text that does not fit; point the agent at the long field.
+const GENERIC_RENDER_ERROR = 'Renderowanie nie powiodło się. Sprawdź pola i długość tekstów.';
+export function failureHint(error, content = {}) {
+  if (error !== GENERIC_RENDER_ERROR) return error;
+  const long = [['body', 160], ['subtitle', 120], ['title', 70]].filter(([f, max]) => String(content[f] || '').length > max).map(([f]) => `${f} (${String(content[f]).length} znaków)`);
+  return long.length ? `${error} Za długie: ${long.join(', ')} — skróć przez update_graphic (opis na okładce mieści zwykle 1–2 zdania).` : error;
+}
+
 const filesFor = (job, format) => (job?.result?.files || []).filter((f) => f.mime === 'image/png' && (f.key === format || f.key.startsWith(`${format}-`)));
 const messages = (errors) => errors.map((e) => e.message);
 
@@ -94,7 +102,7 @@ export async function renderChannelPreviews(db, owner, agent, { publicationId, c
       format: g.format,
       previewJobId: j.id,
       status: j.status,
-      error: j.status === 'failed' ? j.error : undefined,
+      error: j.status === 'failed' ? failureHint(j.error, view.payload.content) : undefined,
       previewLinks: files.map((f) => signedLink(agent, j.id, f.key)),
       blockersBeforeExport: messages(blockers),
     });

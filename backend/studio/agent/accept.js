@@ -39,6 +39,8 @@ const graphicInput = z
     channel: z.string(),
     index: z.number().int().min(1).max(10).default(1),
     title: z.string().trim().max(180).optional(),
+    body: z.string().trim().max(1500).optional(),
+    subtitle: z.string().trim().max(120).optional(),
     photoAssetId: z.string().max(128).nullable().optional(),
     visualStyle: z.string().max(40).optional(),
   })
@@ -57,6 +59,8 @@ export async function updateChannelGraphic(db, owner, input) {
   if (view.status !== 'draft') fail(409, `Grafika „${view.name}” jest zarchiwizowana`);
   const payload = structuredClone(view.payload);
   if (a.title !== undefined) payload.content.title = a.title;
+  if (a.body !== undefined) payload.content.body = a.body;
+  if (a.subtitle !== undefined) payload.content.subtitle = a.subtitle;
   if (a.photoAssetId !== undefined) {
     if (a.photoAssetId) {
       const asset = await db.studioAsset.findFirst({ where: { id: a.photoAssetId, ownerId: owner } });
@@ -79,6 +83,8 @@ export async function updateChannelGraphic(db, owner, input) {
     name: updated.name,
     revision: updated.currentRevision,
     title: updated.payload.content.title,
+    body: updated.payload.content.body,
+    subtitle: updated.payload.content.subtitle,
     photoAssetId: updated.payload.content.photoAssetId,
     visualStyle: updated.payload.visualStyle,
     compositions: type?.styles || [],
