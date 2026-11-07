@@ -72,8 +72,9 @@ export default function AgentTokens() {
         <KeyRound size={18} /> Agent (MCP)
       </h2>
       <p className="muted">
-        Agent czyta schematy, fakty i zasady marki, tworzy robocze publikacje, proponuje teksty kanałów i renderuje
-        podglądy grafik. Nie potwierdza faktów i nie zatwierdza tekstów. Adres: <code>{mcpUrl}</code>
+        Agent czyta schematy, fakty i zasady marki, tworzy robocze publikacje, proponuje teksty, uzupełnia grafiki
+        (nagłówek, zdjęcie, kompozycja) i renderuje podglądy. Bez Twojego „akceptuję” niczego nie zatwierdza ani nie
+        publikuje. Adres: <code>{mcpUrl}</code>
       </p>
       <p className="muted">
         Twój Claude Code (na Twojej subskrypcji) może też wykonywać zadania AI Studio: <code>list_ai_tasks</code> →{' '}
@@ -121,8 +122,9 @@ export default function AgentTokens() {
         <label className="token-scope">
           <input type="checkbox" checked={graphics} onChange={(e) => setGraphics(e.target.checked)} />
           <span>
-            Także zatwierdzanie grafik (<code>graphics</code>): po Twoim „akceptuję” w czacie agent zatwierdza grafiki
-            kanału w wersji, którą Ci pokazał, i pobiera finalne PNG do publikacji.
+            Także akceptacja i publikacja (<code>graphics</code>): po Twoim „akceptuję” w czacie agent potwierdza fakty,
+            zatwierdza grafiki i kanały w wersji, którą Ci pokazał, publikuje artykuł na stronie o zaplanowanej godzinie
+            i pobiera finalne PNG do Facebooka i Instagrama.
           </span>
         </label>
       </form>
@@ -151,7 +153,7 @@ export default function AgentTokens() {
               <b>{t.name}</b>
               <small>
                 {t.prefix}… · {t.scopes.includes('panel-ai') ? 'Studio + panel · ' : ''}
-                {t.scopes.includes('graphics') ? 'zatwierdza grafiki po akceptacji · ' : ''}utworzony{' '}
+                {t.scopes.includes('graphics') ? 'akceptuje i publikuje po Twoim „akceptuję” · ' : ''}utworzony{' '}
                 {new Date(t.createdAt).toLocaleDateString('pl-PL')} ·{' '}
                 {t.revokedAt
                   ? 'odwołany'
@@ -162,7 +164,7 @@ export default function AgentTokens() {
             </span>
             {!t.revokedAt && (
               <button className="text-button" onClick={() => void toggleGraphics(t)}>
-                {t.scopes.includes('graphics') ? 'Wyłącz zatwierdzanie grafik' : 'Pozwól zatwierdzać grafiki'}
+                {t.scopes.includes('graphics') ? 'Wyłącz akceptację i publikację' : 'Pozwól akceptować i publikować'}
               </button>
             )}
             {!t.revokedAt && (

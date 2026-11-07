@@ -51,12 +51,14 @@ describe('content system document', () => {
 });
 
 describe('agent access', () => {
-  it('never exposes publishing, facts confirmation or settings tools; graphics approval only behind its opt-in scope', () => {
+  it('keeps approval and publishing behind the opt-in graphics scope (the owner says „akceptuję”), never settings or tokens', () => {
     const names = tools.map((t) => t.name);
-    expect(names).toEqual(['list_playbooks', 'get_prompts', 'list_publications', 'get_publication', 'grid_preview', 'schematic_copy', 'create_publication', 'propose_copy', 'schedule_publication', 'render_graphics', 'approve_graphics', 'list_seasons', 'list_panel_analyses', 'get_panel_analysis', 'list_ai_tasks', 'prepare_ai_task', 'submit_ai_task_result']);
+    expect(names).toEqual(['list_playbooks', 'get_prompts', 'list_publications', 'get_publication', 'grid_preview', 'schematic_copy', 'create_publication', 'propose_copy', 'schedule_publication', 'render_graphics', 'approve_graphics', 'list_photos', 'update_graphic', 'accept_publication', 'list_seasons', 'list_panel_analyses', 'get_panel_analysis', 'list_ai_tasks', 'prepare_ai_task', 'submit_ai_task_result']);
     expect(names.some((n) => /publish|confirm|settings|package|token/.test(n))).toBe(false);
-    expect(tools.filter((t) => /approve/.test(t.name)).map((t) => [t.name, t.scope])).toEqual([['approve_graphics', 'graphics']]);
-    expect(tools.every((t) => ['read', 'draft'].includes(t.scope) || t.name === 'approve_graphics')).toBe(true);
+    expect(tools.filter((t) => t.scope === 'graphics').map((t) => t.name)).toEqual(['approve_graphics', 'accept_publication']);
+    expect(tools.every((t) => ['read', 'draft', 'graphics'].includes(t.scope))).toBe(true);
+    // Both acting tools need the owner's verbatim answer.
+    for (const t of tools.filter((t) => t.scope === 'graphics')) expect(t.inputSchema.required).toContain('ownerApproval');
   });
   it('limits requests per token in a fixed window', () => {
     const id = `t-${Math.random()}`;

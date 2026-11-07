@@ -52,7 +52,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '3. **Grafiki** — projekty Studio (renderer marki 2.0). Na stronie publikacji jedno „Akceptuję grafiki i tekst” zatwierdza kompozycję w formatach kanałów tej publikacji, potwierdza rewizję, eksportuje PNG i zatwierdza wariant. Formaty, których żaden kanał nie publikuje, są wcześniej usuwane z grafiki. Edytor nadal pozwala zatwierdzać format po formacie.',
     '4. **Teksty kanałów** — ze schematu (deterministycznie), z AI w Studio (Gemini, budżet miesięczny, cache) albo od agenta przez MCP. Wszystkie przechodzą tę samą kontrolę marki.',
     '5. **Zatwierdzenie** — tylko właściciel, osobno dla każdego kanału. Zmiana tekstu, formatu lub grafiki cofa zatwierdzenie.',
-    '6. **Publikacja** — Instagram i Facebook ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”); strona bekapaka.pl przez szkic w CMS, podgląd w trybie draft i publikację ze Studio po zatwierdzeniu. Meta API — kolejny etap.',
+    '6. **Publikacja** — Instagram i Facebook ręcznie (kopiuj tekst, zapisz grafikę, paczka ZIP, „Oznacz jako opublikowane”); strona bekapaka.pl publikuje się sama o zaplanowanej godzinie po zatwierdzeniu wariantu (zatwierdzenie = decyzja o publikacji; wcześniej możliwy szkic w CMS i podgląd w trybie draft, „Opublikuj na stronie” wystawia od razu). Meta API — kolejny etap.',
     '',
     '## Kanały i limity',
     '',
@@ -99,7 +99,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     `- Adres: \`${mcpUrl}\` (Streamable HTTP, bez sesji, tylko POST).`,
     '- Autoryzacja: nagłówek `Authorization: Bearer bkpk_agent_…`. Token tworzy właściciel w Studio → Ustawienia → Agent. Token pokazywany jest raz; można go odwołać.',
-    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym i renderować podglądy grafik (`render_graphics`). **Nie może** potwierdzać faktów, zatwierdzać tekstów, publikować ani zmieniać ustawień.',
+    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym uzupełniać grafiki (`update_graphic`: nagłówek, zdjęcie z `list_photos`, kompozycja) i renderować podglądy (`render_graphics`). Bez dosłownego „akceptuję” właściciela nie potwierdza faktów, nie zatwierdza i nie publikuje; ustawień nie zmienia nigdy.',
     '- Z dodatkowym uprawnieniem `graphics` (Studio → Ustawienia → Agent) agent po akceptacji właściciela w czacie zatwierdza grafiki kanału w wersji z podglądu (kompozycję w formacie kanału i rewizję) i eksportuje finalne PNG (`approve_graphics`). Grafika wspólna dla posta i relacji eksportuje się, gdy właściciel zaakceptuje oba kanały. Dosłowna akceptacja właściciela trafia do historii publikacji (`graphics-approved`). Pliki agent pobiera z podpisanych linków ważnych godzinę; odwołanie tokenu unieważnia je od razu.',
     '- Limit: 120 żądań na minutę na token.',
     '',
@@ -114,7 +114,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     'Serwer udostępnia też gotowe polecenia (MCP prompts, w Desktop menu „+”): `odswiez-analizy`, `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa`, `zagrywka` (z panel-ai) oraz `teksty-publikacji`.',
     '',
-    'Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → `render_graphics` → grafiki i tekst do właściciela → po „akceptuję” `approve_graphics` → publikacja finalnych PNG z tym tekstem.',
+    'Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → `update_graphic` do zera blokad grafik → `render_graphics` każdego kanału → jedna wiadomość do właściciela: fakty i wszystkie wątpliwości, grafiki, teksty, termin → po „akceptuję” `accept_publication` (fakty, grafiki, kanały, eksport, artykuł na stronie o zaplanowanej godzinie) → publikacja finalnych PNG z tym tekstem na Facebooku i Instagramie.',
     '',
   ].join('\n');
 }

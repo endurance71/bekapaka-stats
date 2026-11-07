@@ -17,6 +17,7 @@ import { promptsFor, SERVER_INSTRUCTIONS } from './agentPrompts.js';
 import { fail } from '../config.js';
 import { logGeneration } from '../../ai-engine/log.js';
 import { approveChannelGraphics, renderChannelPreviews, resolveSignedLink } from './graphics.js';
+import { acceptPublication, listPhotos, updateChannelGraphic } from './accept.js';
 
 const json = (data) => ({ content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] });
 const uuid = z.string().uuid();
@@ -264,6 +265,55 @@ export const tools = [
     run: async (db, owner, args, agent) => {
       const input = z.object({ publicationId: uuid, channel: z.enum(channelIds), ownerApproval: z.string().trim().min(2).max(500) }).parse(args);
       return withImages(await approveChannelGraphics(db, owner, agent, input));
+    },
+  },
+  {
+    name: 'list_photos',
+    description:
+      'Zdjęcia z biblioteki Studio dopuszczone do publikacji (zatwierdzone, ze zgodą), jako miniatury z id. query zawęża po nazwie, osobach albo numerze. Użyj id w update_graphic (photoAssetId).',
+    inputSchema: { type: 'object', properties: { query: { type: 'string' }, limit: { type: 'number' } } },
+    scope: 'draft',
+    run: async (db, owner, args) => {
+      const input = z.object({ query: z.string().max(80).default(''), limit: z.number().int().min(1).max(12).default(8) }).parse(args || {});
+      return withImages(await listPhotos(db, owner, input));
+    },
+  },
+  {
+    name: 'update_graphic',
+    description:
+      'Uzupełnia grafikę kanału publikacji: nagłówek (title), zdjęcie (photoAssetId z list_photos, null usuwa) albo kompozycję (visualStyle). index = numer grafiki w zestawie (1 = okładka). Zwraca, co jeszcze trzeba poprawić. Zatwierdzenia robi accept_publication po akceptacji właściciela.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        publicationId: { type: 'string' },
+        channel: channelEnum,
+        index: { type: 'number' },
+        title: { type: 'string' },
+        photoAssetId: { type: ['string', 'null'] },
+        visualStyle: { type: 'string' },
+      },
+      required: ['publicationId', 'channel'],
+    },
+    scope: 'draft',
+    run: async (db, owner, args) => json(await updateChannelGraphic(db, owner, { ...args, channel: z.enum(channelIds).parse(args?.channel) })),
+  },
+  {
+    name: 'accept_publication',
+    description:
+      'Po akceptacji właściciela („akceptuję”, „OK”) całej publikacji, którą mu wysłałeś (fakty i wątpliwości, grafiki, teksty wszystkich kanałów), wykonuje resztę: potwierdza fakty, zatwierdza grafiki i kanały, eksportuje, publikuje artykuł na stronie (gdy termin minął; późniejszy wyjdzie sam o zaplanowanej godzinie) i zwraca finalne PNG do Facebooka i Instagrama. ownerApproval to dosłowna odpowiedź właściciela. Bez niej nie wywołuj. acceptRepetition: true tylko gdy pokazałeś właścicielowi ostrzeżenie o powtórzeniu siatki.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        publicationId: { type: 'string' },
+        ownerApproval: { type: 'string', description: 'Dosłowna odpowiedź właściciela, np. „akceptuję”' },
+        acceptRepetition: { type: 'boolean' },
+      },
+      required: ['publicationId', 'ownerApproval'],
+    },
+    scope: 'graphics',
+    run: async (db, owner, args, agent) => {
+      const input = z.object({ publicationId: uuid, ownerApproval: z.string().trim().min(2).max(500), acceptRepetition: z.boolean().default(false) }).parse(args);
+      return json(await acceptPublication(db, owner, agent, input));
     },
   },
   {

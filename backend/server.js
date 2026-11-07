@@ -4,6 +4,8 @@ import { Prisma } from '@prisma/client';
 import { updateMatchPresentation, invalidateMatchPages } from './matchPresentation.js';
 import express from 'express';
 import { createStudioRouter } from './studio/routes.js';
+import { startWebsiteScheduler } from './studio/publications/website.js';
+import { ownerId as studioOwnerId } from './studio/config.js';
 import cors from 'cors';
 import { loginUser, getLoginLogs, touchUserActivity, getSessionUser, signSessionToken } from './dataStore.js';
 import jwt from 'jsonwebtoken';
@@ -124,6 +126,8 @@ app.use((req, res, next) => {
 });
 
 app.use('/api/studio/v1', createStudioRouter({ db: prisma, loginUser }));
+// Approved website articles go live at their planned time; the owner's OK is the decision.
+if (process.env.NODE_ENV !== 'test') startWebsiteScheduler(prisma, studioOwnerId);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

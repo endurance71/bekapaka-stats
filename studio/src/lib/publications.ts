@@ -60,6 +60,8 @@ export type Item = {
   publishedAt: string | null;
   externalUrl: string | null;
   externalId: string | null;
+  // Last failed automatic publication (website), cleared once it goes live.
+  error?: string | null;
   revision: number;
   graphic: Graphic | null;
   // Post-match set: further graphics after the cover, in order (null = deleted project).
