@@ -99,7 +99,8 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     `- Adres: \`${mcpUrl}\` (Streamable HTTP, bez sesji, tylko POST).`,
     '- Autoryzacja: nagłówek `Authorization: Bearer bkpk_agent_…`. Token tworzy właściciel w Studio → Ustawienia → Agent. Token pokazywany jest raz; można go odwołać.',
-    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje i proponować teksty kanałów w stanie roboczym. **Nie może** potwierdzać faktów, zatwierdzać, publikować, pobierać paczek ani zmieniać ustawień.',
+    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym i renderować podglądy grafik (`render_graphics`). **Nie może** potwierdzać faktów, zatwierdzać tekstów, publikować ani zmieniać ustawień.',
+    '- Z dodatkowym uprawnieniem `graphics` (Studio → Ustawienia → Agent) agent po akceptacji właściciela w czacie zatwierdza grafiki kanału w wersji z podglądu i eksportuje finalne PNG (`approve_graphics`). Dosłowna akceptacja właściciela trafia do historii publikacji (`graphics-approved`). Pliki agent pobiera z podpisanych linków ważnych godzinę; odwołanie tokenu unieważnia je od razu.',
     '- Limit: 120 żądań na minutę na token.',
     '',
     ...(tools.length ? ['| Narzędzie | Uprawnienie | Opis |', '|---|---|---|', ...tools.map((t) => `| \`${t.name}\` | ${t.scope}${t.panel ? ' + panel-ai' : ''} | ${cell(t.description)} |`), ''] : []),
@@ -113,7 +114,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     'Serwer udostępnia też gotowe polecenia (MCP prompts, w Desktop menu „+”): `odswiez-analizy`, `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa`, `zagrywka` (z panel-ai) oraz `teksty-publikacji`.',
     '',
-    'Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → informacja dla właściciela, że teksty czekają na zatwierdzenie.',
+    'Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → `render_graphics` → grafiki i tekst do właściciela → po „akceptuję” `approve_graphics` → publikacja finalnych PNG z tym tekstem.',
     '',
   ].join('\n');
 }

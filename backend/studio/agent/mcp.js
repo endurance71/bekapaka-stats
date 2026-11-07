@@ -1,5 +1,6 @@
-// MCP endpoint for external agents (Claude, Cursor…): read facts and playbooks, draft copy.
-// Agents never confirm facts, approve, publish, download packages or change settings — the owner does, in Studio.
+// MCP endpoint for external agents (Claude, Cursor, OpenBot…): read facts and playbooks, draft copy, render previews.
+// Agents never confirm facts, publish or change settings. With the opt-in `graphics` scope an agent may approve and
+// export the graphics of a channel after the owner accepted them in chat; otherwise the owner approves in Studio.
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { CallToolRequestSchema, GetPromptRequestSchema, ListPromptsRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -15,9 +16,12 @@ import { studioAgentOperations } from './operations.js';
 import { promptsFor, SERVER_INSTRUCTIONS } from './agentPrompts.js';
 import { fail } from '../config.js';
 import { logGeneration } from '../../ai-engine/log.js';
+import { approveChannelGraphics, renderChannelPreviews, resolveSignedLink } from './graphics.js';
 
 const json = (data) => ({ content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] });
 const uuid = z.string().uuid();
+// Text summary first, then the images (small JPEG previews the agent can look at and show the owner).
+const withImages = ({ summary, images }) => ({ content: [{ type: 'text', text: JSON.stringify(summary, null, 2) }, ...images] });
 const channelEnum = { type: 'string', enum: channelIds };
 
 // Panel operations are listed statically so the Studio import graph never loads panel code until a call needs it.
@@ -75,7 +79,7 @@ function agentView(p) {
       lint: i.issues,
       blockers: i.ready,
       // Post-match set: the cover and further graphics in order (carousel on Instagram, album on Facebook).
-      graphics: [i.graphic, ...(i.extraGraphics || [])].filter(Boolean).map((g) => ({ name: g.name, postType: g.postType, valid: g.valid, exported: !!g.exportJobId })),
+      graphics: [i.graphic, ...(i.extraGraphics || [])].filter(Boolean).map((g) => ({ name: g.name, postType: g.postType, valid: g.valid, exported: !!g.exportJobId, errors: (g.errors || []).map((e) => e.message) })),
       // Feed repetition (same composition or background as recent posts) — the owner must accept it on approval.
       variety: i.variety ? { composition: i.variety.composition, warnings: i.variety.warnings.map((w) => w.message) } : undefined,
       plannedAt: i.plannedAt,
@@ -226,6 +230,40 @@ export const tools = [
       }
       if (args.title) p = await updatePublication(db, owner, id, { expectedRevision: p.revision, title: String(args.title) });
       return json({ id: p.id, title: p.title, plannedAt: p.plannedAt, channels: p.items.map((i) => ({ channel: i.channel, status: i.status, plannedAt: i.plannedAt })) });
+    },
+  },
+  {
+    name: 'render_graphics',
+    description:
+      'Renderuje podgląd grafik jednego kanału publikacji (okładka i dalsze grafiki zestawu, w formacie kanału) i zwraca je jako obrazy oraz linki do pełnych PNG (ważne godzinę). Podgląd ma napis PODGLĄD ROBOCZY. Pokaż grafiki razem z tekstem kanału właścicielowi i czekaj na jego akceptację. blockersBeforeExport to rzeczy do poprawy w Studio przed eksportem.',
+    inputSchema: {
+      type: 'object',
+      properties: { publicationId: { type: 'string' }, channel: channelEnum },
+      required: ['publicationId', 'channel'],
+    },
+    scope: 'draft',
+    run: async (db, owner, args, agent) => {
+      const input = z.object({ publicationId: uuid, channel: z.enum(channelIds) }).parse(args);
+      return withImages(await renderChannelPreviews(db, owner, agent, input));
+    },
+  },
+  {
+    name: 'approve_graphics',
+    description:
+      'Po wyraźnej akceptacji właściciela w czacie („akceptuję”, „OK”) zatwierdza grafiki kanału w wersji z ostatniego podglądu render_graphics i eksportuje je bez napisu podglądu. Zwraca linki do finalnych PNG w pełnej jakości (ważne godzinę) do publikacji. ownerApproval to dosłowna odpowiedź właściciela; zapisuje się w historii publikacji. Bez akceptacji właściciela nie wywołuj. Gdy grafika zmieniła się od podglądu, pokaż ją ponownie.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        publicationId: { type: 'string' },
+        channel: channelEnum,
+        ownerApproval: { type: 'string', description: 'Dosłowna odpowiedź właściciela, np. „akceptuję”' },
+      },
+      required: ['publicationId', 'channel', 'ownerApproval'],
+    },
+    scope: 'graphics',
+    run: async (db, owner, args, agent) => {
+      const input = z.object({ publicationId: uuid, channel: z.enum(channelIds), ownerApproval: z.string().trim().min(2).max(500) }).parse(args);
+      return withImages(await approveChannelGraphics(db, owner, agent, input));
     },
   },
   {
@@ -409,6 +447,17 @@ function buildServer(db, agent) {
 
 /** Mounted before the cookie/CSRF middleware: agents authenticate with a Bearer token only. */
 export function mcpRoutes(router, db) {
+  // Signed, hour-long links from render_graphics / approve_graphics, so an agent can download PNG files without a cookie.
+  router.get('/agent-files/:jobId/:key', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    res.set('X-Content-Type-Options', 'nosniff');
+    if (!ownerId()) return res.status(503).json({ error: 'Studio czeka na konfigurację właściciela' });
+    const file = await resolveSignedLink(db, { ...req.params, ...req.query });
+    if (!file) return res.status(404).json({ error: 'Link wygasł albo jest nieprawidłowy. Wygeneruj grafikę ponownie.' });
+    res.type('image/png');
+    res.attachment(file.name);
+    res.sendFile(file.path);
+  });
   router.all('/mcp', async (req, res) => {
     res.set('Cache-Control', 'no-store');
     if (!ownerId()) return res.status(503).json({ error: 'Studio czeka na konfigurację właściciela' });

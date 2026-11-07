@@ -306,7 +306,8 @@ Fakty:
 
 - Adres: `https://studio.bekapaka.pl/api/studio/v1/mcp` (Streamable HTTP, bez sesji, tylko POST).
 - Autoryzacja: nagłówek `Authorization: Bearer bkpk_agent_…`. Token tworzy właściciel w Studio → Ustawienia → Agent. Token pokazywany jest raz; można go odwołać.
-- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje i proponować teksty kanałów w stanie roboczym. **Nie może** potwierdzać faktów, zatwierdzać, publikować, pobierać paczek ani zmieniać ustawień.
+- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym i renderować podglądy grafik (`render_graphics`). **Nie może** potwierdzać faktów, zatwierdzać tekstów, publikować ani zmieniać ustawień.
+- Z dodatkowym uprawnieniem `graphics` (Studio → Ustawienia → Agent) agent po akceptacji właściciela w czacie zatwierdza grafiki kanału w wersji z podglądu i eksportuje finalne PNG (`approve_graphics`). Dosłowna akceptacja właściciela trafia do historii publikacji (`graphics-approved`). Pliki agent pobiera z podpisanych linków ważnych godzinę; odwołanie tokenu unieważnia je od razu.
 - Limit: 120 żądań na minutę na token.
 
 | Narzędzie | Uprawnienie | Opis |
@@ -320,6 +321,8 @@ Fakty:
 | `create_publication` | draft | Tworzy roboczą publikację ze schematu. Fakty z meczu KALK (source) albo ręczne (facts). Fakty wymagają potwierdzenia przez właściciela w Studio. |
 | `propose_copy` | draft | Zapisuje propozycję tekstu jednego kanału (tylko kanał w stanie roboczym). Zwraca wynik kontroli marki. Zatwierdza wyłącznie właściciel. |
 | `schedule_publication` | draft | Ustawia termin publikacji (ISO 8601 z przesunięciem strefy, np. 2026-10-15T18:00:00+02:00). Bez channel ustawia termin całej publikacji i wszystkich nieopublikowanych kanałów; z channel zmienia termin jednego roboczego kanału. Opcjonalnie zmienia nazwę. |
+| `render_graphics` | draft | Renderuje podgląd grafik jednego kanału publikacji (okładka i dalsze grafiki zestawu, w formacie kanału) i zwraca je jako obrazy oraz linki do pełnych PNG (ważne godzinę). Podgląd ma napis PODGLĄD ROBOCZY. Pokaż grafiki razem z tekstem kanału właścicielowi i czekaj na jego akceptację. blockersBeforeExport to rzeczy do poprawy w Studio przed eksportem. |
+| `approve_graphics` | graphics | Po wyraźnej akceptacji właściciela w czacie („akceptuję”, „OK”) zatwierdza grafiki kanału w wersji z ostatniego podglądu render_graphics i eksportuje je bez napisu podglądu. Zwraca linki do finalnych PNG w pełnej jakości (ważne godzinę) do publikacji. ownerApproval to dosłowna odpowiedź właściciela; zapisuje się w historii publikacji. Bez akceptacji właściciela nie wywołuj. Gdy grafika zmieniła się od podglądu, pokaż ją ponownie. |
 | `list_seasons` | read + panel-ai | Sezony w danych panelu (id, etykieta, aktywny) i sezon domyślny analiz. |
 | `list_panel_analyses` | read + panel-ai | Analizy AI panelu (mecze, zawodnicy, scouting rywali, briefing, karta przedmeczowa) ze stanem missing / stale / fresh liczonym jak w panelu. Każda pozycja ma task.operation i task.args gotowe do prepare_ai_task. Domyślnie tylko brakujące i nieaktualne. |
 | `get_panel_analysis` | read + panel-ai | Zapisana analiza panelu (treść, model, data) i jej stan względem bieżących danych. target: gameId (match), playerId (player), nazwa rywala (scouting, pregame — domyślnie najbliższy); briefing bez target. |
@@ -369,4 +372,4 @@ Claude Desktop (`claude_desktop_config.json`) uruchamia tylko serwery lokalne �
 
 Serwer udostępnia też gotowe polecenia (MCP prompts, w Desktop menu „+”): `odswiez-analizy`, `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa`, `zagrywka` (z panel-ai) oraz `teksty-publikacji`.
 
-Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → informacja dla właściciela, że teksty czekają na zatwierdzenie.
+Zalecany przebieg pracy agenta: `list_publications` → `get_publication` (fakty i blokady) → `get_prompts` → opcjonalnie `schematic_copy` jako szkic → `propose_copy` dla każdego kanału → poprawki do zera błędów kontroli marki → `render_graphics` → grafiki i tekst do właściciela → po „akceptuję” `approve_graphics` → publikacja finalnych PNG z tym tekstem.
