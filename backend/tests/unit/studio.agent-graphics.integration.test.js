@@ -214,8 +214,8 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     // Only photos the owner may publish can go on a graphic.
     const badPhoto = await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', photoAssetId: 'nie-ma-takiego' }, agentToken);
     expect(badPhoto.result.isError).toBe(true);
-    const fixed = summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', title: 'Mikołajkowy turniej rodzinny w Bobolicach' }, agentToken));
-    expect(fixed).toMatchObject({ title: 'Mikołajkowy turniej rodzinny w Bobolicach', stillToFix: [] });
+    const fixed = summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.' }, agentToken));
+    expect(fixed).toMatchObject({ title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.', stillToFix: [] });
     expect(summary(await call('list_photos', {}, agentToken)).photos).toEqual([]);
     // No OK from the owner, no call: the tool requires the verbatim answer.
     expect((await call('accept_publication', { publicationId: pub.id }, agentToken)).result.isError).toBe(true);
