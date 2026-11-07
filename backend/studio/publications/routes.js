@@ -17,6 +17,7 @@ import { linkWebsiteArticle, publishWebsite, syncWebsiteDraft, websiteConfigured
 import {
   applyTemplates,
   approveItem,
+  approveItemGraphics,
   archivePublication,
   confirmFacts,
   refreshFacts,
@@ -88,6 +89,9 @@ export function publicationRoutes(router, db) {
     const input = z.object({ expectedRevision: z.number().int().min(1), acceptRepetition: z.boolean().default(false) }).strict().parse(req.body);
     res.json(await approveItem(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), input.expectedRevision, input.acceptRepetition));
   });
+  router.post('/publications/:id/items/:itemId/approve-graphics', async (req, res) =>
+    res.json(await approveItemGraphics(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
+  );
   router.post('/publications/:id/items/:itemId/published', async (req, res) =>
     res.json(await markPublished(db, req.studioOwner, uuid(req.params.id), uuid(req.params.itemId), req.body)),
   );

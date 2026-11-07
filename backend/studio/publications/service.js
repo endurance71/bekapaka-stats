@@ -11,6 +11,7 @@ import { opponentLogo } from '../opponent-logos.js';
 import { matchReport } from './match-report.js';
 import { currentSponsorFooter } from './sponsors.js';
 import { projectView, validation } from '../service.js';
+import { approveGraphics } from './graphics-approval.js';
 import { channelIds, channels, copySchemas, factsSchema } from './channels.js';
 import { graphicFormats, itemGraphicKeys, playbook } from './playbooks.js';
 import { setContent } from './match-graphics.js';
@@ -554,6 +555,59 @@ export async function approveItem(db, owner, pubId, itemId, expectedRevision, ac
     });
   });
   return publicationView(db, owner, pubId);
+}
+
+/**
+ * The owner's one-step OK on the publication page („Akceptuję grafiki i tekst”): approves every graphic of the
+ * variant in the formats this publication's channels use (a graphic shared by the post and the story is approved
+ * in both at once), exports them and, when nothing else blocks it, approves the variant too.
+ */
+export async function approveItemGraphics(db, owner, pubId, itemId, input, wait) {
+  const data = z
+    .object({ expectedRevision: z.number().int().min(1), approveVariant: z.boolean().default(true), acceptRepetition: z.boolean().default(false) })
+    .strict()
+    .parse(input);
+  const view = await publicationView(db, owner, pubId);
+  if (view.status === 'archived') fail(409, 'Publikacja jest zarchiwizowana');
+  const item = view.items.find((i) => i.id === itemId);
+  if (!item) fail(404, 'Wariant publikacji nie istnieje');
+  if (item.status !== 'draft') fail(409, 'Zatwierdzić można tylko roboczy wariant');
+  if (item.revision !== data.expectedRevision) fail(409, 'Wariant zmienił się na innym urządzeniu. Odśwież widok; Twoje zmiany pozostają w formularzu.');
+  if (!factsConfirmed(view)) fail(422, 'Najpierw potwierdź fakty publikacji — grafiki pokazują te dane');
+  if (!item.graphic) fail(422, 'Ten kanał nie ma grafiki');
+  const set = [item.graphic, ...item.extraGraphics];
+  if (set.some((g) => !g)) fail(409, 'Grafika zestawu nie jest już dostępna. Uzupełnij zestaw w Studio.');
+  const active = view.items.filter((i) => ['draft', 'approved'].includes(i.status));
+  const formatsFor = (g) => [
+    ...new Set(
+      active
+        .filter((i) => i.graphic?.projectId === g.projectId || i.extraGraphics.some((x) => x?.projectId === g.projectId))
+        .map((i) => i.format)
+        .filter((f) => f === item.format || g.formats.includes(f)),
+    ),
+  ];
+  const result = await approveGraphics(
+    db,
+    owner,
+    set.map((g) => ({ projectId: g.projectId, formats: formatsFor(g) })),
+    { render: true, adjustFormats: true, wait },
+  );
+  await event(db, item.id, 'graphics-approved', 'owner', {
+    graphics: result.approved.map(({ projectId, revision, previews }) => ({ projectId, revision, formats: previews.map((p) => p.format) })),
+  });
+  let publication = await publicationView(db, owner, pubId);
+  const current = publication.items.find((i) => i.id === itemId);
+  const repeated = (current.variety?.warnings.length ?? 0) > 0;
+  let variantApproved = false;
+  if (data.approveVariant && current.status === 'draft' && !current.ready.length && (!repeated || data.acceptRepetition)) {
+    publication = await approveItem(db, owner, pubId, itemId, current.revision, data.acceptRepetition);
+    variantApproved = true;
+  }
+  return {
+    publication,
+    variantApproved,
+    graphics: result.graphics.map((g) => ({ projectId: g.projectId, name: g.name, status: g.status, errors: g.errors, error: g.status === 'failed' ? g.job?.error || null : null })),
+  };
 }
 
 export async function markPublished(db, owner, pubId, itemId, input) {

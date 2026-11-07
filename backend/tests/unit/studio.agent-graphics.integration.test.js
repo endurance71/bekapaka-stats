@@ -113,7 +113,9 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     expect(s.graphics).toHaveLength(1);
     const [g] = s.graphics;
     expect(g.status, g.error).toBe('completed');
-    expect(g).toMatchObject({ projectId, format: 'feed', revision: 1 });
+    // No story channel in this publication: render drops that format first (revision 2), so it cannot block the export.
+    expect(g).toMatchObject({ projectId, format: 'feed', revision: 2 });
+    expect((await request(`/projects/${projectId}`)).value.payload.formats).toEqual(['feed', 'landscape']);
     // Nothing approved yet: the template still needs the owner's look in Studio; the revision approval is not listed.
     expect(g.blockersBeforeExport).toContain('Zatwierdź bieżącą wersję szablonu po ocenie podglądu');
     expect(g.blockersBeforeExport).not.toContain('Potwierdź dane i wygląd tej rewizji');
@@ -132,11 +134,16 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     const r = await call('approve_graphics', { publicationId: publication.id, channel: 'instagram_feed', ownerApproval: 'akceptuję' });
     const s = summary(r);
     expect(s).toMatchObject({ approved: 1, exported: false });
+    // The OK covers the composition shown (4:5); the 16:9 of the website variant still waits for its own look.
     expect(s.blocked[0].errors).toContain('Zatwierdź bieżącą wersję szablonu po ocenie podglądu');
     expect(s.blocked[0].errors).not.toContain('Potwierdź dane i wygląd tej rewizji');
+    const project = (await request(`/projects/${projectId}`)).value;
+    const designs = await db.studioTemplate.findMany({ where: { ownerId: owner, status: 'approved' } });
+    expect(designs.map((d) => d.version.split(':')[3])).toEqual(['feed']);
+    expect(project.currentRevision).toBe(2);
     const item = publication.items.find((i) => i.channel === 'instagram_feed');
     const event = await db.studioPublishEvent.findFirst({ where: { itemId: item.id, action: 'graphics-approved' } });
-    expect(event).toMatchObject({ actor: 'agent:OpenBot Social', payload: { ownerApproval: 'akceptuję', graphics: [{ projectId, revision: 1 }] } });
+    expect(event).toMatchObject({ actor: 'agent:OpenBot Social', payload: { ownerApproval: 'akceptuję', graphics: [{ projectId, revision: 2, formats: ['feed'] }] } });
   }, 60_000);
 
   it('exports the approved revision and serves the final PNG through the signed link', async () => {
@@ -178,4 +185,26 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     expect(r.result.isError).toBe(true);
     expect(summary(r).error).toContain('zmieniła się od podglądu');
   }, 30_000);
+
+  it('lets the owner accept a channel in one step: compositions of every format the publication uses, revision, export', async () => {
+    // Nothing approved in the editor: the one OK on the publication page has to pass the composition gate itself.
+    await db.studioTemplate.deleteMany({ where: { ownerId: owner } });
+    const pub = (await request(`/publications/${publication.id}`)).value;
+    expect((await request(`/publications/${publication.id}/confirm-facts`, { expectedRevision: pub.revision }, 'POST')).res.status).toBe(200);
+    const fb = (await request(`/publications/${publication.id}`)).value.items.find((i) => i.channel === 'facebook');
+    expect(fb.ready.some((m) => m.startsWith('Zatwierdź grafikę'))).toBe(true);
+    const r = await withWorker(() => request(`/publications/${publication.id}/items/${fb.id}/approve-graphics`, { expectedRevision: fb.revision }, 'POST'));
+    expect(r.res.status, JSON.stringify(r.value)).toBe(200);
+    expect(r.value.graphics).toEqual([expect.objectContaining({ projectId, status: 'completed', errors: [] })]);
+    // The website variant uses the same graphic in 16:9: its graphic step is done by the same OK.
+    for (const item of r.value.publication.items) expect(item.ready.filter((m) => /grafik/i.test(m)), item.channel).toEqual([]);
+    const after = r.value.publication.items.find((i) => i.id === fb.id);
+    expect(r.value.variantApproved).toBe(after.status === 'approved');
+    const event = await db.studioPublishEvent.findFirst({ where: { itemId: fb.id, action: 'graphics-approved' } });
+    expect(event).toMatchObject({ actor: 'owner' });
+    expect([...event.payload.graphics[0].formats].sort()).toEqual(['feed', 'landscape']);
+    // A stale revision number is refused, so a second tab cannot approve what it did not show.
+    const stale = await request(`/publications/${publication.id}/items/${fb.id}/approve-graphics`, { expectedRevision: fb.revision + 5 }, 'POST');
+    expect(stale.res.status).toBe(409);
+  }, 120_000);
 });
