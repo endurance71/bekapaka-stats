@@ -1065,7 +1065,8 @@ a.primary.is-disabled {
 }
 .token-list li {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 10px;
   align-items: center;
   border: 1px solid var(--line);
@@ -1075,6 +1076,7 @@ a.primary.is-disabled {
 .token-list li span {
   display: flex;
   flex-direction: column;
+  margin-right: auto;
 }
 .token-list small {
   color: var(--muted);

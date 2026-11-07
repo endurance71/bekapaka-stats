@@ -4,8 +4,9 @@ import { fail, ownerId } from '../config.js';
 import { hash } from '../storage.js';
 
 export const AGENT_SCOPES = ['read', 'draft'];
-// Opt-in only: panel analyses (matches, players, scouting, briefing, tactics) include personal player data.
-export const OPTIONAL_SCOPES = ['panel-ai'];
+// Opt-in only: panel analyses (matches, players, scouting, briefing, tactics) include personal player data;
+// `graphics` lets an agent approve and export graphics after the owner accepted them in chat.
+export const OPTIONAL_SCOPES = ['panel-ai', 'graphics'];
 const PREFIX = 'bkpk_agent_';
 const tokenPattern = /^bkpk_agent_[A-Za-z0-9_-]{43}$/;
 
@@ -20,6 +21,13 @@ export async function createAgentToken(db, owner, input) {
 export const publicToken = ({ id, ...row }) => ({ ...row, id: id.slice(0, 16) });
 export async function listAgentTokens(db, owner) {
   return (await db.studioAgentToken.findMany({ where: { ownerId: owner }, orderBy: { createdAt: 'desc' } })).map(publicToken);
+}
+/** Changes the opt-in scopes of an active token; the token value (and the agent's configuration) stays the same. */
+export async function setAgentTokenScopes(db, owner, shortId, input) {
+  const { scopes } = z.object({ scopes: z.array(z.enum(OPTIONAL_SCOPES)).max(OPTIONAL_SCOPES.length) }).strict().parse(input);
+  const row = await db.studioAgentToken.findFirst({ where: { ownerId: owner, id: { startsWith: z.string().regex(/^[a-f0-9]{16}$/).parse(shortId) }, revokedAt: null } });
+  if (!row) fail(404, 'Token nie istnieje albo jest odwołany');
+  return publicToken(await db.studioAgentToken.update({ where: { id: row.id }, data: { scopes: [...AGENT_SCOPES, ...new Set(scopes)] } }));
 }
 export async function revokeAgentToken(db, owner, shortId) {
   const updated = await db.studioAgentToken.updateMany({ where: { ownerId: owner, id: { startsWith: z.string().regex(/^[a-f0-9]{16}$/).parse(shortId) }, revokedAt: null }, data: { revokedAt: new Date() } });

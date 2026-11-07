@@ -45,12 +45,26 @@ export default function AgentTokens() {
   const tokens = useQuery({ queryKey: ['agent-tokens'], queryFn: () => api<AgentToken[]>('/agent-tokens') });
   const [name, setName] = useState('');
   const [panelAi, setPanelAi] = useState(false);
+  const [graphics, setGraphics] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [target, setTarget] = useState<ConfigTarget>('code');
   const mcpUrl = `${window.location.origin}/api/studio/v1/mcp`;
   const config = mcpConfig(target, mcpUrl, created || '<token>');
   const reload = () => client.invalidateQueries({ queryKey: ['agent-tokens'] });
+  const optional = (t: AgentToken) => t.scopes.filter((s) => s === 'panel-ai' || s === 'graphics');
+  const toggleGraphics = async (t: AgentToken) => {
+    setError('');
+    const rest = optional(t).filter((s) => s !== 'graphics');
+    try {
+      await send(`/agent-tokens/${t.id}/scopes`, {
+        scopes: t.scopes.includes('graphics') ? rest : [...rest, 'graphics'],
+      });
+      await reload();
+    } catch (err) {
+      setError(message(err));
+    }
+  };
 
   return (
     <section className="settings-card">
@@ -58,8 +72,8 @@ export default function AgentTokens() {
         <KeyRound size={18} /> Agent (MCP)
       </h2>
       <p className="muted">
-        Agent czyta schematy, fakty i zasady marki, tworzy robocze publikacje i proponuje teksty kanałów. Nie potwierdza
-        faktów, nie zatwierdza i nie publikuje. Adres: <code>{mcpUrl}</code>
+        Agent czyta schematy, fakty i zasady marki, tworzy robocze publikacje, proponuje teksty kanałów i renderuje
+        podglądy grafik. Nie potwierdza faktów i nie zatwierdza tekstów. Adres: <code>{mcpUrl}</code>
       </p>
       <p className="muted">
         Twój Claude Code (na Twojej subskrypcji) może też wykonywać zadania AI Studio: <code>list_ai_tasks</code> →{' '}
@@ -77,13 +91,12 @@ export default function AgentTokens() {
           e.preventDefault();
           setError('');
           try {
-            const r = await send<{ token: string }>('/agent-tokens', {
-              name,
-              ...(panelAi ? { scopes: ['panel-ai'] } : {}),
-            });
+            const scopes = [...(panelAi ? ['panel-ai'] : []), ...(graphics ? ['graphics'] : [])];
+            const r = await send<{ token: string }>('/agent-tokens', { name, ...(scopes.length ? { scopes } : {}) });
             setCreated(r.token);
             setName('');
             setPanelAi(false);
+            setGraphics(false);
             await reload();
           } catch (err) {
             setError(message(err));
@@ -103,6 +116,13 @@ export default function AgentTokens() {
           <span>
             Także analizy panelu (<code>panel-ai</code>): mecze, plany zawodników, scouting, briefing, taktyka. Agent
             dostanie dane zawodników — zaznacz tylko dla własnego, zaufanego agenta.
+          </span>
+        </label>
+        <label className="token-scope">
+          <input type="checkbox" checked={graphics} onChange={(e) => setGraphics(e.target.checked)} />
+          <span>
+            Także zatwierdzanie grafik (<code>graphics</code>): po Twoim „akceptuję” w czacie agent zatwierdza grafiki
+            kanału w wersji, którą Ci pokazał, i pobiera finalne PNG do publikacji.
           </span>
         </label>
       </form>
@@ -130,7 +150,8 @@ export default function AgentTokens() {
             <span>
               <b>{t.name}</b>
               <small>
-                {t.prefix}… · {t.scopes.includes('panel-ai') ? 'Studio + panel · ' : ''}utworzony{' '}
+                {t.prefix}… · {t.scopes.includes('panel-ai') ? 'Studio + panel · ' : ''}
+                {t.scopes.includes('graphics') ? 'zatwierdza grafiki po akceptacji · ' : ''}utworzony{' '}
                 {new Date(t.createdAt).toLocaleDateString('pl-PL')} ·{' '}
                 {t.revokedAt
                   ? 'odwołany'
@@ -139,6 +160,11 @@ export default function AgentTokens() {
                     : 'jeszcze nieużyty'}
               </small>
             </span>
+            {!t.revokedAt && (
+              <button className="text-button" onClick={() => void toggleGraphics(t)}>
+                {t.scopes.includes('graphics') ? 'Wyłącz zatwierdzanie grafik' : 'Pozwól zatwierdzać grafiki'}
+              </button>
+            )}
             {!t.revokedAt && (
               <button
                 className="text-button"

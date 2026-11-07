@@ -9,7 +9,7 @@ import { LINT_VERSION } from './brand-lint.js';
 import { PROMPT_VERSION } from './prompts.js';
 import { queueCopy } from '../ai.js';
 import { fetchSponsors } from './sponsors.js';
-import { createAgentToken, listAgentTokens, revokeAgentToken } from '../agent/tokens.js';
+import { createAgentToken, listAgentTokens, revokeAgentToken, setAgentTokenScopes } from '../agent/tokens.js';
 import { contentSystemDocument } from './document.js';
 import { tools as agentTools } from '../agent/mcp.js';
 import { origin } from '../config.js';
@@ -139,6 +139,7 @@ export function publicationRoutes(router, db) {
   });
   router.get('/agent-tokens', async (req, res) => res.json(await listAgentTokens(db, req.studioOwner)));
   router.post('/agent-tokens', async (req, res) => res.status(201).json(await createAgentToken(db, req.studioOwner, req.body)));
+  router.post('/agent-tokens/:id/scopes', async (req, res) => res.json(await setAgentTokenScopes(db, req.studioOwner, req.params.id, req.body)));
   router.post('/agent-tokens/:id/revoke', async (req, res) => {
     await revokeAgentToken(db, req.studioOwner, req.params.id);
     res.json({ ok: true });
