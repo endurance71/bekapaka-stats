@@ -160,6 +160,12 @@ describe('default publication time', () => {
     expect(scheduleAt(playbook('matchday'), kickoff).toISOString()).toBe('2026-10-18T07:00:00.000Z');
     expect(scheduleAt(playbook('match-report'), kickoff).toISOString()).toBe('2026-10-19T08:00:00.000Z');
   });
+  it('gives the match report article the dark 16:9 result poster, like the match articles on the site', () => {
+    const p = playbook('match-report');
+    expect(p.items.website).toEqual({ graphic: 'poster', format: 'landscape' });
+    expect(p.graphics.poster).toMatchObject({ postType: 'final', visualStyle: 'poster', formats: ['landscape'] });
+    expect(p.items.instagram_story.graphic).toBe('cover');
+  });
   it('follows the clock change and keeps exact offsets for live and result', () => {
     // 25 October: CET from 03:00, so 09:00 is 08:00 UTC.
     expect(scheduleAt(playbook('matchday'), '2026-10-25T15:20:00.000Z').toISOString()).toBe('2026-10-25T08:00:00.000Z');

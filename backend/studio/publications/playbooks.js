@@ -83,11 +83,14 @@ export const playbooks = [
     at: '10:00',
     factsKind: 'match',
     required: ['opponent', 'scoreUs', 'scoreThem'],
+    // The article cover follows the site's match articles (GMVT 18.10, Kosz-All-In 4.10): the dark 16:9 result
+    // poster, not the portrait report cover on paper, which reads as a player card next to them.
     graphics: {
       main: { postType: 'carousel', formats: ['feed'] },
       cover: { postType: 'report-cover', formats: ['story', 'feed'] },
+      poster: { postType: 'final', visualStyle: 'poster', role: 'poster', formats: ['landscape'] },
     },
-    items: { instagram_feed: IG(), instagram_story: STORY('cover'), facebook: FB(), website: portraitWWW('cover') },
+    items: { instagram_feed: IG(), instagram_story: STORY('cover'), facebook: FB(), website: WWW('poster') },
     hint: 'Przebieg meczu w 3–4 krokach, sekcja „Mecz w liczbach”, liderzy, zdjęcia z prawami do publikacji. Artykuł na stronie jest źródłem, social prowadzi do niego.',
   },
   {
