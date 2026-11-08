@@ -69,11 +69,13 @@ scratch/
 
 # BeKaPaKa Studio private files and Python runtime
 data/studio/
-output/studio-backgrounds/
 backend/studio/.venv/
 studio/playwright-report/
 studio/test-results/
 studio/*.tsbuildinfo
 
-# Local visual review artifacts
-output/studio-brandbook-repair/
+# Local generated output (renders, print files, visual reviews)
+output/
+
+# Local Claude Code preview config
+.claude/launch.json
