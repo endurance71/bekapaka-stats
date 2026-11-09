@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, ArrowUpRight, Search } from 'lucide-react';
-import { compositionLabel, postTypes as defaults, visualStyles } from '../../lib/contracts';
+import { compositionLabel, postTypes as defaults, variantsFor, visualStyles } from '../../lib/contracts';
+import { layoutThumb, type Layout } from '../../lib/designs';
 import { plural } from '../../lib/plural';
 import type { PostType } from '../../lib/types';
 import './post-catalog.css';
@@ -20,7 +21,7 @@ export default function PostCatalog({
 }: {
   posts: PostType[];
   busy: boolean;
-  onCreate: (id: string, style: string) => void;
+  onCreate: (id: string, style: string, designVariant?: number) => void;
 }) {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState(ALL);
@@ -41,24 +42,32 @@ export default function PostCatalog({
           Typy publikacji
         </button>
         <h3>{selected.label}</h3>
-        <p className="muted small">Wybierz kompozycję. Stroje A/B ustawisz osobno w edytorze.</p>
+        <p className="muted small">Wybierz układ. Stroje A/B ustawisz osobno w edytorze.</p>
         <div className="composition-grid">
-          {visualStyles
-            .filter((style) => selected.styles.includes(style.id))
-            .map((style) => (
-              <button key={style.id} disabled={busy} onClick={() => onCreate(selected.id, style.id)}>
-                <img src={`/designs/${selected.id}-${style.id}.webp`} alt={`${selected.label} — ${style.label}`} />
-                <h3>{compositionLabel(selected, style.id)}</h3>
-                <p>
-                  {selected.family === 'announcement' && style.id === 'editorial'
-                    ? 'Data konturem i mecz w panelu 24°.'
-                    : style.description}
-                </p>
-                <span className="template-meta">
-                  Wybierz kompozycję <ArrowUpRight size={16} />
-                </span>
-              </button>
-            ))}
+          {(variantsFor(selected) as Layout[]).map((layout) => (
+            <button
+              key={layout.n}
+              disabled={busy}
+              onClick={() => onCreate(selected.id, layout.style, layout.legacy ? undefined : layout.n)}
+            >
+              <img
+                src={layoutThumb(selected, layout)}
+                alt={`${selected.label} — ${layout.name || compositionLabel(selected, layout.style)}`}
+                loading="lazy"
+              />
+              <h3>
+                {layout.n}. {layout.name || compositionLabel(selected, layout.style)}
+              </h3>
+              <p>
+                {[visualStyles.find((s) => s.id === layout.style)?.label, layout.description]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </p>
+              <span className="template-meta">
+                Wybierz układ <ArrowUpRight size={16} />
+              </span>
+            </button>
+          ))}
         </div>
         <p className="muted small">
           Miniatury przedstawiają przykładowe dane. Projekt rozpoczyna się z pustymi polami. Nowe kompozycje wymagają
@@ -100,7 +109,7 @@ export default function PostCatalog({
             <p>
               {p.id === 'final'
                 ? 'Wygrana lub porażka wynika z punktów.'
-                : `${plural(p.styles.length, 'kompozycja', 'kompozycje', 'kompozycji')} · do oceny wizualnej`}
+                : `${plural(variantsFor(p).length, 'układ', 'układy', 'układów')} · do oceny wizualnej`}
             </p>
             <ArrowUpRight size={16} />
           </button>

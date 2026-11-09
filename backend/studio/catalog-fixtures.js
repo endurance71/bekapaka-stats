@@ -1,6 +1,7 @@
 import { postTypes, newPostProject } from './contracts.js';
-export function fixture(type, style='sport') {
- const project=newPostProject(type.id,style);
+import { variantsFor } from './post-types.js';
+export function fixture(type, style='sport', designVariant) {
+ const project=newPostProject(type.id,style,designVariant);
  Object.assign(project.content,{opponent:'Koszalin Basketball',opponentShort:'KBS',date:'2026-10-11T14:30:00+02:00',originalDate:'2026-10-04T12:00:00+02:00',venue:type.family==='tournament'?'CESiR Bobolice':['announcement','result','lineup'].includes(type.family)||['training','invitation'].includes(type.variant)?'KOSiR Koszalin':'',title:type.label.toUpperCase(),body:'Gramy razem. Widzimy się na parkiecie.',scoreUs:108,scoreThem:97,edition:3,teams:8,days:1,firstName:'Paweł',lastName:'Żółkiewicz',number:'24',position:'Rozgrywający',attribution:'Zawodnik BeKaPaKa',altText:'Przykładowa kompozycja materiału klubowego.',phase:'Przerwa',photoAssetId:'photo',kitBConfirmed:true,mvpConfirmed:true,lineupConfirmed:true,kicker:'6. kolejka KALK',subtitle:'BeKaPaKa 108:97 Koszalin Basketball',heroStats:[{value:'12:0',label:'seria po przerwie'},{value:'22',label:'zbiórki w ataku'}],quarters:[{label:'1. kwarta',us:30,them:22},{label:'2. kwarta',us:25,them:28},{label:'3. kwarta',us:28,them:20},{label:'4. kwarta',us:25,them:27}]});
  project.content.lineup=Array.from({length:type.variant==='five'?5:8},(_,i)=>({id:String(i),firstName:'Paweł',lastName:'Żółkiewicz',number:String(i+1),position:'PG'}));
  project.content.schedule=Array.from({length:8},(_,i)=>({date:'2026-10-11T14:30:00+02:00',opponent:'Koszalin Basketball',round:String(i+1)}));
@@ -10,4 +11,5 @@ export function fixture(type, style='sport') {
  project.content.partnerIds=type.variant==='spotlight'?['1']:['1','2','3','4'];
  return project;
 }
-if(process.argv[1]?.endsWith('catalog-fixtures.js')) console.log(JSON.stringify(postTypes.map(type=>({...type,projects:type.styles.map(style=>fixture(type,style))}))));
+// One project per layout variant; legacy layouts come first in style order (tests index them).
+if(process.argv[1]?.endsWith('catalog-fixtures.js')) console.log(JSON.stringify(postTypes.map(type=>({...type,projects:variantsFor(type).map(v=>fixture(type,v.style,v.legacy?undefined:v.n))}))));

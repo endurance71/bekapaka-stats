@@ -1,5 +1,5 @@
 import { statisticalSnapshot } from './statistics.js';
-import { postTypes, visualStyles, postType, designKey, DESIGN_VERSION, designFormats } from './post-types.js';
+import { postTypes, visualStyles, postType, designKey, DESIGN_VERSION, designFormats, variantsFor, variantKey } from './post-types.js';
 import express from 'express';
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
@@ -60,7 +60,16 @@ export function createStudioRouter({ db, loginUser }) {
   router.get('/templates', async (req, res) => {
     await seedStudio(db);
     const states = await db.studioTemplate.findMany({ where: { ownerId: req.studioOwner, brandVersion: BRAND_VERSION } });
-    res.json({ brandVersion: BRAND_VERSION, formats, visualStyles, postTypes:postTypes.map(p=>({...p,designs:p.styles.flatMap(style=>designFormats(p,style).flatMap(format=>['A','B'].flatMap(kit=>{ const prefix=designKey({postType:p.id,visualStyle:style,designVersion:DESIGN_VERSION,content:{kit}},format); const matches=states.filter(s=>s.family===p.family&&s.version.startsWith(prefix.replace('material-brand','material-')));return [{style,format,kit,backgroundAssetId:null,status:states.find(s=>s.version===prefix)?.status || 'draft'},...matches.filter(s=>s.version!==prefix).map(s=>({style,format,kit,backgroundAssetId:s.version.split(':material-')[1],status:s.status}))];})))})), templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
+    // One design row per variant × format × kit; approvals with a background material are listed next to the base one.
+    const designsOf=(p)=>variantsFor(p).flatMap(layout=>designFormats(p,layout.style).flatMap(format=>['A','B'].flatMap(kit=>{
+      const project={postType:p.id,visualStyle:layout.style,designVersion:DESIGN_VERSION,...(layout.legacy?{}:{designVariant:layout.n}),content:{kit}};
+      const key=designKey(project,format); const suffix=variantKey(p,project);
+      const base=key.slice(0,key.length-suffix.length).replace(/material-brand$/,'material-');
+      const row={style:layout.style,designVariant:layout.n,variantName:layout.name,legacy:!!layout.legacy,format,kit};
+      const matches=states.filter(s=>s.family===p.family&&s.version.startsWith(base)&&s.version!==key&&(suffix?s.version.endsWith(suffix):!/:layout-\d+$/.test(s.version)));
+      return [{...row,backgroundAssetId:null,status:states.find(s=>s.version===key)?.status || 'draft'},...matches.map(s=>({...row,backgroundAssetId:s.version.slice(base.length,s.version.length-suffix.length),status:s.status}))];
+    })));
+    res.json({ brandVersion: BRAND_VERSION, formats, visualStyles, postTypes:postTypes.map(p=>({...p,variants:variantsFor(p),designs:designsOf(p)})), templates: templates.map(t => ({ ...t, ...states.find(s => s.family === t.id && s.version === t.version) })) });
   });
   router.post('/templates/:family/approve', async (req, res) => {
     fail(422,'Historyczna rodzina nie ma sprawdzonego wzorca. Przenieś projekt do bieżącej kompozycji');
@@ -80,8 +89,10 @@ export function createStudioRouter({ db, loginUser }) {
   });
   router.post('/designs/:postType/:style/:format/status', async(req,res)=>{
     const type=postType(req.params.postType);if(!type || !type.styles.includes(req.params.style)||!designFormats(type,req.params.style).includes(req.params.format)) fail(404,'Kompozycja nie istnieje');
-    const input=z.object({status:z.enum(['draft','retired']),kit:z.enum(['A','B']),backgroundAssetId:z.string().max(128).nullable().default(null)}).strict().parse(req.body);
-    const version=designKey({postType:type.id,visualStyle:req.params.style,designVersion:DESIGN_VERSION,content:{kit:input.kit,backgroundAssetId:input.backgroundAssetId}},req.params.format);
+    const input=z.object({status:z.enum(['draft','retired']),kit:z.enum(['A','B']),backgroundAssetId:z.string().max(128).nullable().default(null),designVariant:z.number().int().min(1).max(10).optional()}).strict().parse(req.body);
+    const layout=input.designVariant===undefined ? null : variantsFor(type,req.params.style).find(x=>x.n===input.designVariant);
+    if (input.designVariant!==undefined && !layout) fail(404,'Wariant układu nie istnieje');
+    const version=designKey({postType:type.id,visualStyle:req.params.style,designVersion:DESIGN_VERSION,...(layout && !layout.legacy?{designVariant:layout.n}:{}),content:{kit:input.kit,backgroundAssetId:input.backgroundAssetId}},req.params.format);
     const id=`${req.studioOwner}:${type.family}:${version}:${BRAND_VERSION}`;
     await db.studioTemplate.upsert({where:{id},create:{id,ownerId:req.studioOwner,family:type.family,version,brandVersion:BRAND_VERSION,status:input.status},update:{status:input.status,approvedAt:null}});
     res.json({ok:true});

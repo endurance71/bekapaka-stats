@@ -18,7 +18,7 @@ import { ownAcronym, setContent } from './match-graphics.js';
 import { altText, schematicCopy, TEMPLATE_VERSION, when } from './templates.js';
 import { hasErrors, lintCopy } from './brand-lint.js';
 import { channelTexts, folders } from './texts.js';
-import { GRID_CHANNELS, GRID_SIZE, compositionName, signatureOf, varietyWarnings } from './variety.js';
+import { GRID_CHANNELS, GRID_SIZE, compositionName, signatureOf, varietyWarnings, pickVariant } from './variety.js';
 
 export const settingsSchema = z
   .object({
@@ -123,10 +123,10 @@ const bodyIsContent = (type) =>
   (type.family === 'partners' && type.variant === 'thanks');
 
 // Prefill a graphic project from the facts; the project keeps its own revisions afterwards.
-export function projectFromFacts(definition, facts, source, title, partnerIds, alt = '', opponentLogoAssetId = null) {
+export function projectFromFacts(definition, facts, source, title, partnerIds, alt = '', opponentLogoAssetId = null, designVariant = undefined) {
   const type = postType(definition.postType);
   if (!type) fail(500, `Playbook wskazuje nieznany typ grafiki: ${definition.postType}`);
-  const base = newPostProject(type.id, type.styles.includes(definition.visualStyle) ? definition.visualStyle : undefined);
+  const base = newPostProject(type.id, type.styles.includes(definition.visualStyle) ? definition.visualStyle : undefined, designVariant);
   const formats = graphicFormats(definition).filter((f) => designFormats(type, base.visualStyle).includes(f));
   // Post-match set (reference 18.10.2026): poster numbers, leaders and comparison rows from the confirmed report.
   const set = definition.role ? setContent(definition.role, facts) : {};
@@ -381,13 +381,18 @@ export async function createPublication(db, owner, input) {
   const plannedAt = data.plannedAt ? new Date(data.plannedAt) : anchor;
   const copy = schematicCopy(def, facts, settings);
   const wanted = Object.keys(def.items).filter((c) => !data.channels || data.channels.includes(c));
+  // Layout rotation: each new graphic takes the family layout least recently seen in the feed grid.
+  const recent = (await gridHistory(db, owner, 'instagram_feed')).map((h) => h.signature);
   return db.$transaction(async (tx) => {
     const projects = {};
     for (const [key, definition] of Object.entries(def.graphics)) {
       if (!wanted.some((c) => itemGraphicKeys(def.items[c]).includes(key))) continue;
       // A set graphic the facts cannot fill (no box score yet) is left out instead of shipping empty rows.
       if (definition.role && definition.role !== 'poster' && !setContent(definition.role, facts)) continue;
-      const payload = projectFromFacts(definition, facts, fromSource?.source, title, partnerIds, altText(def, facts), logo?.id);
+      const type = postType(definition.postType);
+      const layout = type ? pickVariant(type, type.styles.includes(definition.visualStyle) ? definition.visualStyle : undefined, recent) : null;
+      const payload = projectFromFacts(definition, facts, fromSource?.source, title, partnerIds, altText(def, facts), logo?.id, layout?.n);
+      recent.unshift(signatureOf(payload));
       const project = await tx.studioProject.create({ data: { ownerId: owner, name: payload.name, family: payload.family } });
       await tx.studioRevision.create({ data: { projectId: project.id, number: 1, payload, contentHash: hash(payload), brandVersion: BRAND_VERSION, templateVersion: projectTemplateVersion(payload) } });
       projects[key] = project.id;

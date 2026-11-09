@@ -58,6 +58,9 @@ export default function ExportPanel(props: Props) {
     !!publication?.designs?.some(
       (d) =>
         d.style === project.visualStyle &&
+        (d.legacy
+          ? !project.designVariant || project.designVariant === d.designVariant
+          : d.designVariant === project.designVariant) &&
         d.format === f &&
         d.kit === project.content.kit &&
         d.backgroundAssetId === (project.content.backgroundAssetId || null) &&

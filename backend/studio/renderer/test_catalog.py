@@ -32,8 +32,9 @@ class CatalogTests(unittest.TestCase):
                                         self.assertGreater(footer['bounds'][1],1600)
 
                                 if fmt=='feed' and uniform=='A':geometries.append(Path(r['files'][0]['svg']).read_text())
-                with self.subTest(publication=t['id'],distinct_styles=True):
-                    self.assertEqual(len({json.dumps(g) for g in geometries}),len(t['styles']),'Available compositions must differ')
+                with self.subTest(publication=t['id'],distinct_layouts=True):
+                    # Every layout variant of a type (legacy styles and new layouts) draws a different composition.
+                    self.assertEqual(len({json.dumps(g) for g in geometries}),len(t['projects']),'Available layouts must differ')
     def test_long_lists_paginate_without_omitting_rows(self):
         t=next(t for t in self.catalog if t['id']=='standings')
         p=t['projects'][0];p['content']['tableRows']=[{'label':'Drużyna '+str(i),'value':str(i),'detail':'8 M · 4 W · 4 P'} for i in range(40)]
@@ -66,10 +67,12 @@ class CatalogTests(unittest.TestCase):
             texts=[b['text'] for b in r['checks'][0]['text']]
             for value in ['FILIP KARPIŃSKI','20','PKT','NR','69']:self.assertIn(value,texts)
     def test_entry_information_remains_readable_in_compact_formats(self):
-        p=next(t for t in self.catalog if t['id']=='preview')['projects'][0]
-        p['content']['entryInfo']='WSTĘP WOLNY'
-        with tempfile.TemporaryDirectory() as tmp:
+        # The legacy sport layout and every new layout show confirmed entry information.
+        for p in [x for x in next(t for t in self.catalog if t['id']=='preview')['projects'] if x['visualStyle']=='sport' or x.get('designVariant')]:
+          p['content']['entryInfo']='WSTĘP WOLNY'
+          with tempfile.TemporaryDirectory() as tmp:
             for fmt in ['square','landscape','feed','story']:
+              with self.subTest(layout=p.get('designVariant'),format=fmt):
                 r=render({'project':p},fmt,tmp,'export',{},[])
                 self.assertFalse(r['checks'][0]['errors'])
                 self.assertIn('WSTĘP WOLNY',[b['text'] for b in r['checks'][0]['text']])
@@ -81,12 +84,13 @@ class CatalogTests(unittest.TestCase):
     def test_missing_time_fits_native_announcement_panels(self):
         with tempfile.TemporaryDirectory() as tmp:
             for purpose in ['preview','matchday','postponed','cancelled']:
-                p=next(t for t in self.catalog if t['id']==purpose)['projects'][0]
+              # Every sport/editorial layout (legacy and variants) states the missing time the same way.
+              for p in [x for x in next(t for t in self.catalog if t['id']==purpose)['projects'] if x['visualStyle']=='sport' or x.get('designVariant')]:
                 p['content'].update(date='',originalDate='',opponent='',opponentShort='')
                 for uniform in ['A','B']:
                     p['content']['kit']=uniform
                     for fmt in ['feed','story','square','landscape']:
-                        with self.subTest(purpose=purpose,kit=uniform,format=fmt):
+                        with self.subTest(purpose=purpose,layout=p.get('designVariant'),kit=uniform,format=fmt):
                             r=render({'project':p},fmt,tmp,'preview',{},[])
                             self.assertFalse(r['checks'][0]['errors'])
                             self.assertIn('ODWOŁANY' if purpose=='cancelled' else 'GODZINA TBC',[b['text'] for b in r['checks'][0]['text']])
@@ -106,13 +110,15 @@ class CatalogTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             for purpose in ['final','halftime','live']:
                 t=next(t for t in self.catalog if t['id']==purpose)
-                for style in t['styles']:
+                for layout in t['projects']:
+                    style=layout['visualStyle']
                     for uniform in ['A','B']:
                         for scores in [(None,None),(86,None),(None,20),(86,20)]:
                             p=deepcopy(empty);p.update(postType=purpose,variant=t['variant'],visualStyle=style)
+                            if layout.get('designVariant'):p['designVariant']=layout['designVariant']
                             p['content'].update(kit=uniform,scoreUs=scores[0],scoreThem=scores[1])
                             for fmt in t['formats']:
-                                with self.subTest(purpose=purpose,style=style,kit=uniform,scores=scores,format=fmt):
+                                with self.subTest(purpose=purpose,style=style,layout=layout.get('designVariant'),kit=uniform,scores=scores,format=fmt):
                                     r=render({'project':p},fmt,tmp,'preview',{},[])
                                     self.assertFalse(r['checks'][0]['errors'])
                                     self.assertTrue(r['files'])
@@ -153,11 +159,13 @@ class OpponentLogoTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             assets=self.logos(tmp)
             for purpose in ['final','halftime','preview','postponed','cancelled']:
-                t=next(t for t in self.catalog if t['id']==purpose);p=deepcopy(next(x for x in t['projects'] if x['visualStyle']=='sport'))
-                for logo in ['flat','clear']:
+                t=next(t for t in self.catalog if t['id']==purpose)
+                # The legacy sport layout and every new layout with the mark pair (poster and photo frames excepted).
+                for p in [deepcopy(x) for x in t['projects'] if x['visualStyle']=='sport' or (x.get('designVariant') and x['visualStyle'] not in ('poster','photo'))]:
+                  for logo in ['flat','clear']:
                     for uniform in ['A','B']:
                         for fmt in t['formats']:
-                            with self.subTest(purpose=purpose,logo=logo,kit=uniform,format=fmt):
+                            with self.subTest(purpose=purpose,layout=p.get('designVariant'),logo=logo,kit=uniform,format=fmt):
                                 p['content'].update(kit=uniform,opponentLogoAssetId=None)
                                 plain=Path(render({'project':p},fmt,tmp,'preview',assets,[])['files'][0]['svg']).read_text().count('<image')
                                 p['content']['opponentLogoAssetId']=logo

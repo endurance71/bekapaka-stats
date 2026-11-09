@@ -34,9 +34,10 @@ export default function DesignStatuses() {
             </summary>
             <div className="template-statuses">
               {p.designs?.map((d) => (
-                <div key={`${d.style}-${d.format}-${d.kit}-${d.backgroundAssetId}`}>
+                <div key={`${d.designVariant}-${d.style}-${d.format}-${d.kit}-${d.backgroundAssetId}`}>
                   <b>
-                    {compositionLabel(p, d.style)} · {formatSpec(d.format).label} · strój {d.kit} ·{' '}
+                    {d.variantName ? `${d.designVariant}. ${d.variantName}` : compositionLabel(p, d.style)} ·{' '}
+                    {formatSpec(d.format).label} · strój {d.kit} ·{' '}
                     {d.backgroundAssetId ? 'tło z biblioteki' : 'materiał marki'}
                   </b>
                   <span className={`status status-${d.status}`}>{labels[d.status]}</span>
@@ -47,6 +48,7 @@ export default function DesignStatuses() {
                         status: d.status === 'retired' ? 'draft' : 'retired',
                         kit: d.kit,
                         backgroundAssetId: d.backgroundAssetId,
+                        ...(d.designVariant && !d.legacy ? { designVariant: d.designVariant } : {}),
                       })
                     }
                   >

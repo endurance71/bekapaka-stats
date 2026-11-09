@@ -493,8 +493,13 @@ def stats_paper(p,rows):
                 display(p,row['number'],p.w-p.m-208,mid+18,44,C['black'],maxw=90,cut=False)
 
 def compose(p,part,index):
+    # Layout variants (design-variants.js): numbers not listed in variants.LAYOUTS keep the legacy composition.
+    from variants import layout_for
+    layout=layout_for(p)
+    if getattr(layout,'paper',False):p.paper=True;p.ink=C['black']
     foundation(p);p.layer('30-tresc')
-    if p.family=='announcement':announcement(p)
+    if layout:layout(p)
+    elif p.family=='announcement':announcement(p)
     elif p.family=='result':result(p)
     elif p.family=='lineup':lineup(p,part or [])
     elif p.family=='player':player(p)

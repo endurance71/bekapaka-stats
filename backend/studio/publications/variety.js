@@ -1,7 +1,7 @@
 // Feed variety: the owner found the profile monotonous when every post used the same dark score board
 // (GMVT series, 18.10.2026). Before approving a feed post Studio compares its graphic with the recent
 // and scheduled posts of the same channel and warns about repetition. Isomorphic, pure rules.
-import { compositionLabel, postType } from '../post-types.js';
+import { compositionLabel, postType, projectVariant, variantsFor } from '../post-types.js';
 
 /** Channels shown as a grid / timeline where repetition is visible. */
 export const GRID_CHANNELS = ['instagram_feed', 'facebook'];
@@ -17,16 +17,42 @@ export function signatureOf(payload) {
     visualStyle: payload.visualStyle || null,
     kit: payload.content?.kit || 'A',
     material: payload.content?.backgroundAssetId || 'brand',
+    // Only layouts added as variants are named; legacy layouts keep the signature they had before variants.
+    ...(payload.designVariant && !projectVariant(postType(payload.postType), payload)?.legacy ? { designVariant: payload.designVariant } : {}),
   };
 }
 
-export const compositionKey = (s) => (s?.postType && s.visualStyle ? `${s.postType}:${s.visualStyle}` : null);
+export const compositionKey = (s) => (s?.postType && s.visualStyle ? `${s.postType}:${s.visualStyle}${s.designVariant ? `:${s.designVariant}` : ''}` : null);
 
 export function compositionName(s) {
   if (!s) return '';
   if (s.composition === 'external') return 'grafika spoza Studio';
   const type = postType(s.postType);
-  return [type?.label, type ? compositionLabel(type, s.visualStyle) : s.visualStyle].filter(Boolean).join(' · ');
+  const layout = type && s.designVariant ? variantsFor(type).find((v) => v.n === s.designVariant) : null;
+  return [type?.label, layout ? layout.name : type ? compositionLabel(type, s.visualStyle) : s.visualStyle].filter(Boolean).join(' · ');
+}
+
+/** Number of the layout a signature shows (legacy layouts resolve from their style). */
+function layoutOf(s) {
+  const type = postType(s?.postType);
+  if (!type) return null;
+  return s.designVariant || projectVariant(type, { visualStyle: s.visualStyle })?.n || null;
+}
+
+/**
+ * Layout for a new graphic: one not used in the family's last 3 posts, else the least recently used;
+ * ties go to the lower number. A fixed style (playbook reference) rotates only within that style; otherwise
+ * layouts needing material the facts do not carry (photo, jersey) are skipped.
+ * @param {object} type post type
+ * @param {string|undefined} style fixed visual style
+ * @param {object[]} history signatures, newest first
+ */
+export function pickVariant(type, style, history = []) {
+  const candidates = style ? variantsFor(type, style) : variantsFor(type).filter((v) => !['photo', 'jersey'].includes(v.style));
+  if (!candidates.length) return null;
+  const used = history.filter((s) => s && postType(s.postType)?.family === type.family).map(layoutOf);
+  const age = (n) => { const i = used.indexOf(n); return i < 0 ? Infinity : i; };
+  return [...candidates].sort((a, b) => age(b.n) - age(a.n) || a.n - b.n)[0];
 }
 
 const when = (entry) => entry.publishedAt || entry.plannedAt || null;
