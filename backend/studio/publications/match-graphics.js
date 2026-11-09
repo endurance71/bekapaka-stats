@@ -4,12 +4,15 @@ import { count } from './templates.js';
 
 const has = (v) => v !== null && v !== undefined && v !== '';
 const fin = (v) => Number.isFinite(v);
-// The rival's own acronym: a word of 2–6 capitals or digits inside a name that is not written all in capitals
-// („Maxbau Okna Dako PSP” → PSP). An all-caps name („GMVT TEAM”) has no such word and keeps the older rules.
+// The rival's own acronym: the last word of 2–6 capitals or digits inside a name that is not written all in capitals
+// („Maxbau Okna Dako PSP” → PSP). Club prefixes (KS, MKS, UKS…), Roman numerals and age groups (II, U19) are not
+// acronyms. An all-caps name („GMVT TEAM”) has no such word and keeps the older rules.
+const NOT_ACRONYM = /^(?:[MULG]?KS|AZS|SKS|KKS|TS|[IVX]+|U\d{1,2})$/u;
 export function ownAcronym(words) {
   const caps = (w) => /^[\p{Lu}\p{N}]+$/u.test(w);
   if (words.every(caps)) return '';
-  return words.find((w) => /^[\p{Lu}\p{N}]{2,6}$/u.test(w) && /\p{Lu}/u.test(w)) || '';
+  const found = words.filter((w) => /^[\p{Lu}\p{N}]{2,6}$/u.test(w) && /\p{Lu}/u.test(w) && !NOT_ACRONYM.test(w));
+  return found.at(-1) || '';
 }
 
 // Column header of the rival: its own acronym („GMVT TEAM” → GMVT, „Maxbau Okna Dako PSP” → PSP), else initials or the first letters of one word.

@@ -63,7 +63,8 @@ export async function updateChannelGraphic(db, owner, input) {
   if (a.body !== undefined) payload.content.body = a.body;
   if (a.subtitle !== undefined) payload.content.subtitle = a.subtitle;
   if (a.opponentShort !== undefined) {
-    if (!('opponentShort' in payload.content)) fail(422, 'Ta grafika nie ma tarczy rywala');
+    // Only match graphics (announcement, result) draw the rival's shield.
+    if (!['announcement', 'result'].includes(postType(payload.postType)?.family)) fail(422, 'Ta grafika nie ma tarczy rywala');
     payload.content.opponentShort = a.opponentShort.toLocaleUpperCase('pl-PL');
   }
   if (a.photoAssetId !== undefined) {
