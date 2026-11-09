@@ -1,5 +1,6 @@
 import designManifest from './design-manifest.json' with { type: 'json' };
-export { designManifest };
+import { familyVariants, variantsFor, legacyVariant, projectVariant, variantKey } from './design-variants.js';
+export { designManifest, familyVariants, variantsFor, legacyVariant, projectVariant, variantKey };
 // Publication purpose is separate from composition and uniform colours.
 export const DESIGN_VERSION = '3.0.0';
 export const visualStyles = [
@@ -45,7 +46,7 @@ export const isCurrentDesign = project => project.designVersion === DESIGN_VERSI
 export const designKey = (project, format) => {
   const version=project.designVersion || '2.0.0';
   const base=`${version}:${project.postType}:${project.visualStyle}${format ? ':'+format : ''}`;
-  return version==='3.0.0' ? `${base}:engine-${designManifest.sha256.slice(0,12)}:kit-${project.content?.kit || 'A'}:material-${project.content?.backgroundAssetId || 'brand'}` : base;
+  return version==='3.0.0' ? `${base}:engine-${designManifest.sha256.slice(0,12)}:kit-${project.content?.kit || 'A'}:material-${project.content?.backgroundAssetId || 'brand'}${variantKey(postType(project.postType),project)}` : base;
 };
 export const projectTemplateVersion = project => project.postType ? designKey(project) : '1.0.0';
 export const rendererVersionFor = project => project.postType ? project.designVersion || '2.0.0' : '1.0.5';

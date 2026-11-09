@@ -1,20 +1,25 @@
 {
   "version": "3.0.0",
-  "sha256": "3c9ed1978c9ce9aa38770659408482754941035cf2b27f710eb03dd4045eb752",
+  "sha256": "332a931f5699563a1a36a495cee2c38613294b2cb2bee561a80de7aa89752112",
   "files": {
-    "renderer/render.py": "157e77237e98947794d32686b257b87671a53e1e76f0610d6eac289732803b4c",
-    "renderer/render_v3.py": "ce864fc63b7af4205dbb64ad554b720c12cce899e909b240a89442c6c9df8f09",
+    "renderer/render.py": "136048d12fcccea916cb91488e1a27a35c898c8cb817e26a23b0d154bfb3cc75",
+    "renderer/render_v3.py": "3868e3fde9c11e6409f0454e61ea5cacc8d878838826ec0a801bc22746a43777",
     "renderer/render_v2.py": "5622d6ea6a640f51e269ca291c772b0a75c76237d7ce5483086ca3cc6718ef2d",
     "renderer/references/core.py": "2b37f4a4992567899ccb83b22d8b6de77c28e5356c8414f899da09628c92ad27",
     "renderer/references/kit_b.py": "a134575623a73b448a534b755edde7ce871c380721278a8e4c8853fd98a768b1",
     "renderer/references/sources.json": "6c1b62a39af631dc6b22c7c2e245289fea5c3a0b2f08ee442d23ba7745e8b694",
     "render.js": "3124166876085c973a1f5a29f1f3294a824c2c9ebbe209443137e6ec04abaa13",
-    "post-types.js": "12a42473f09cfe6f517e24f354dd68d7cee0c881b7f74318a76445239e2e0a20",
-    "contracts.js": "0f0cb030a39edca1e9e246b36d05989cb87cefce809268cc0b7f90809de56bb9",
+    "post-types.js": "914cf39dd984ea0cae34c71abadbfe6b02c4b045eca689189572577dfaec692a",
+    "contracts.js": "de8817e2c8602592c8fd5971374ceb525748609e597acdc17c1f8b8a0b4b8a38",
     "validation.js": "5d1bf4b0d432329e1b8e2faf2b93fa8abe0d23b418b4a3c280eaacb29b1a88c9",
     "material-context.js": "022cd4bd5cd02928be36c4e16067910ad7b85248ef725a6063f1ae72fec0904e",
     "composition-specs.json": "5c0abd4186fc5ceec092123eda1b62861cd6aa54646d38cf30880d50ebe664db",
-    "backgrounds/09-luk-za-trzy.png": "4e48b0d6151da8ee722e418e4de2461ee005111943b3d384ed476ee44ef259fb"
+    "backgrounds/09-luk-za-trzy.png": "4e48b0d6151da8ee722e418e4de2461ee005111943b3d384ed476ee44ef259fb",
+    "design-variants.js": "9e321d9b0883a1f841d9f3c8381471f357c655e93f617edc01e12966a77eca22",
+    "renderer/variants/__init__.py": "a720b27f323666af3b8eb37dd91bb1c4481252f7d7fde3436f045c9d524f729f",
+    "renderer/variants/common.py": "d2e22d5cc3c6d427f304d850e6783ed5eb39c7be547a0a17f7b03df453cf9de7",
+    "renderer/variants/announcement.py": "993664f3565db1c46af8117405970abb40f48601ede5daf65477c5793f18b772",
+    "renderer/variants/result.py": "8180121ea023a21b7d007061d776b6f0c489f7654f7884f5ad60c0d3c897778c"
   },
   "approval": "requires-owner-review"
 }

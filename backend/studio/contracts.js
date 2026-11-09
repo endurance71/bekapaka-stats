@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { postTypes, postType, DESIGN_VERSION, designFormats } from './post-types.js';
+import { postTypes, postType, DESIGN_VERSION, designFormats, variantsFor } from './post-types.js';
 export { postTypes, visualStyles, DESIGN_VERSION } from './post-types.js';
 
 export const BRAND_VERSION = '2.0.2026-10-03';
@@ -56,6 +56,8 @@ export const projectContentSchema = z.object({
 }).strict();
 export const projectSchema = z.object({
   postType: z.string().max(60).optional(), visualStyle: z.enum(['sport','photo','editorial','jersey','poster']).optional(), designVersion: z.enum(['2.0.0', DESIGN_VERSION]).optional(),
+  // Optional without default so payloads saved before variants keep their content hash (absent = legacy layout).
+  designVariant: z.number().int().min(1).max(10).optional(),
   name: z.string().trim().min(1).max(180), family: z.enum(templates.map(t => t.id)), variant: z.string().min(1).max(30), layout: z.string().min(1).max(30),
   formats: z.array(z.enum(Object.keys(formats))).min(1).max(4).refine(a => new Set(a).size === a.length, 'Formaty nie mogą się powtarzać'),
   content: projectContentSchema,
@@ -64,6 +66,10 @@ export const projectSchema = z.object({
   if (v.postType) {
     const type = postType(v.postType);
     if (!type || type.family !== v.family || type.variant !== v.variant || !(v.designVersion==='2.0.0' ? ['sport','photo','editorial'] : type.styles).includes(v.visualStyle) || !['2.0.0',DESIGN_VERSION].includes(v.designVersion) || (v.designVersion===DESIGN_VERSION && v.formats.some(f => !designFormats(type,v.visualStyle).includes(f)))) ctx.addIssue({code:'custom',path:['postType'],message:'Typ publikacji, kompozycja lub wersja są niezgodne'});
+    if (v.designVariant !== undefined) {
+      const layout = type && v.designVersion===DESIGN_VERSION ? variantsFor(type).find(x => x.n === v.designVariant) : null;
+      if (!layout || layout.style !== v.visualStyle) ctx.addIssue({code:'custom',path:['designVariant'],message:'Wariant układu nie należy do tego typu lub stylu'});
+    }
   } else if (v.visualStyle || v.designVersion || ['statistics','club'].includes(v.family)) ctx.addIssue({code:'custom',path:['postType'],message:'Wybierz typ publikacji'});
   for (const [path, ok] of [['variant', t.variants.includes(v.variant)], ['layout', t.layouts.includes(v.layout)], ['formats', v.formats.every(f => t.formats.includes(f))]]) {
     if (!ok) ctx.addIssue({ code: 'custom', path: [path], message: 'Wariant lub format nie należy do tej rodziny' });
@@ -84,9 +90,13 @@ export function assetIds(content) {
   return [...new Set([content.photoAssetId, content.backgroundAssetId, content.opponentLogoAssetId, ...content.slides.map(s => s.assetId)].filter(Boolean))];
 }
 
-export function newPostProject(id, style) {
+export function newPostProject(id, style, designVariant) {
   const p = postType(id); if (!p) throw new Error('Nieznany typ publikacji');
   const t = templates.find(t => t.id === p.family);
-  style=style || p.styles[0];
-  return projectSchema.parse({name:p.label, family:p.family, variant:p.variant, layout:t.layouts[0], postType:p.id, visualStyle:style, designVersion:DESIGN_VERSION, formats:['feed','story'], content:{venue:p.family==='tournament' ? 'CESiR Bobolice' : ['announcement','result','lineup'].includes(p.family) ? 'KOSiR Koszalin' : '', tableRows:[], statScope:['standings','season'].includes(p.variant)?'season':'match', attribution:''}});
+  const layout = designVariant === undefined || designVariant === null ? null : variantsFor(p).find(x => x.n === designVariant);
+  if (designVariant != null && !layout) throw new Error('Nieznany wariant układu');
+  style=layout?.style || style || p.styles[0];
+  // Legacy layouts keep the payload without the field, so their design key and hash stay as before variants.
+  const variantField = layout && !layout.legacy ? {designVariant:layout.n} : {};
+  return projectSchema.parse({name:p.label, family:p.family, variant:p.variant, layout:t.layouts[0], postType:p.id, visualStyle:style, ...variantField, designVersion:DESIGN_VERSION, formats:['feed','story'], content:{venue:p.family==='tournament' ? 'CESiR Bobolice' : ['announcement','result','lineup'].includes(p.family) ? 'KOSiR Koszalin' : '', tableRows:[], statScope:['standings','season'].includes(p.variant)?'season':'match', attribution:''}});
 }

@@ -59,10 +59,10 @@ export default function AppShell() {
     [],
   );
 
-  async function create(postType: string, style: string) {
+  async function create(postType: string, style: string, designVariant?: number) {
     setBusy(true);
     try {
-      const v = await send<View>('/projects', newPostProject(postType, style));
+      const v = await send<View>('/projects', newPostProject(postType, style, designVariant));
       void client.invalidateQueries({ queryKey: keys.projects });
       setNewOpen(false);
       navigate(`/grafiki/${v.id}`);

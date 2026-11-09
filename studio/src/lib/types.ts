@@ -161,7 +161,16 @@ export type Budget = {
   tasks: AiTask[];
   models: AiModel[];
 };
-export type Design = { style: string; format: string; status: string; kit: string; backgroundAssetId: string | null };
+export type Design = {
+  style: string;
+  format: string;
+  status: string;
+  kit: string;
+  backgroundAssetId: string | null;
+  designVariant?: number;
+  variantName?: string;
+  legacy?: boolean;
+};
 export type PostType = {
   id: string;
   family: string;
@@ -172,6 +181,7 @@ export type PostType = {
   styles: string[];
   formats: string[];
   designs?: Design[];
+  variants?: { n: number; style: string; name: string; description: string; legacy?: boolean }[];
 };
 export type ExportEntry = {
   id: string;

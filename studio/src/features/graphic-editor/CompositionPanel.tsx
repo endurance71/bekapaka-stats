@@ -1,4 +1,12 @@
-import { compositionLabel, DESIGN_VERSION, designFormats, visualStyles } from '../../lib/contracts';
+import {
+  compositionLabel,
+  DESIGN_VERSION,
+  designFormats,
+  projectVariant,
+  variantsFor,
+  visualStyles,
+} from '../../lib/contracts';
+import { layoutThumb, type Layout } from '../../lib/designs';
 import type { Project } from '../../lib/types';
 import { useEditor } from './editor-context';
 import { ImageSelect, Toggle } from './fields';
@@ -46,7 +54,32 @@ export default function CompositionPanel() {
     <details open>
       <summary>Kompozycja</summary>
       <div className="form-group">
-        {project.postType ? (
+        {project.postType && current && publication ? (
+          <div className="editor-compositions">
+            {(variantsFor(publication) as Layout[]).map((layout) => (
+              <button
+                key={layout.n}
+                disabled={readonly}
+                title={layout.description}
+                aria-pressed={(projectVariant(publication, project) as Layout | null)?.n === layout.n}
+                onClick={() => {
+                  // Legacy layouts are stored without the field so their design key stays as before variants.
+                  const next = { ...project };
+                  delete next.designVariant;
+                  change({
+                    ...next,
+                    ...(layout.legacy ? {} : { designVariant: layout.n }),
+                    visualStyle: layout.style as Project['visualStyle'],
+                    formats: project.formats.filter((f) => designFormats(publication, layout.style).includes(f)),
+                  });
+                }}
+              >
+                <img src={layoutThumb(publication, layout)} alt="" loading="lazy" />
+                {layout.n}. {layout.name || compositionLabel(publication, layout.style)}
+              </button>
+            ))}
+          </div>
+        ) : project.postType ? (
           <div className="editor-compositions">
             {visualStyles
               .filter((style) => !current || publication?.styles.includes(style.id))

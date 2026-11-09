@@ -74,3 +74,33 @@ describe('update_graphic: rival shield text (opponentShort)', () => {
     expect(out.title).toBe('PIERWSZA PIĄTKA');
   });
 });
+
+describe('update_graphic: layout variant (designVariant)', () => {
+  beforeEach(() => {
+    state.saved = undefined;
+  });
+
+  it('sets a new layout together with its style and lists the layouts', async () => {
+    state.view = graphic('final', 'sport');
+    const out = await updateChannelGraphic({}, 'owner', input({ designVariant: 9 }));
+    expect(state.saved).toMatchObject({ designVariant: 9, visualStyle: 'poster' });
+    expect(out.designVariant).toBe(9);
+    expect(out.layouts).toHaveLength(10);
+  });
+
+  it('stores a legacy layout without the field and a bare style change returns to the legacy layout', async () => {
+    state.view = { ...graphic('final', 'sport'), payload: { ...graphic('final', 'sport').payload, designVariant: 5 } };
+    await updateChannelGraphic({}, 'owner', input({ designVariant: 2 }));
+    expect(state.saved).toMatchObject({ visualStyle: 'photo' });
+    expect(state.saved).not.toHaveProperty('designVariant');
+    state.view = { ...graphic('final', 'sport'), payload: { ...graphic('final', 'sport').payload, designVariant: 5 } };
+    await updateChannelGraphic({}, 'owner', input({ visualStyle: 'sport' }));
+    expect(state.saved).not.toHaveProperty('designVariant');
+  });
+
+  it('rejects an unknown layout or one that contradicts the given style', async () => {
+    state.view = graphic('preview', 'sport');
+    await expect(updateChannelGraphic({}, 'owner', input({ designVariant: 3 }))).rejects.toThrow(/Dostępne układy/);
+    await expect(updateChannelGraphic({}, 'owner', input({ designVariant: 9, visualStyle: 'sport' }))).rejects.toThrow(/kompozycję editorial/);
+  });
+});

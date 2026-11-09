@@ -8,6 +8,8 @@ export {
   designFormats,
   compositionLabel,
   projectTemplateVersion,
+  variantsFor,
+  projectVariant,
 } from '../../../backend/studio/post-types.js';
 export { materialCompatible } from '../../../backend/studio/material-context.js';
 

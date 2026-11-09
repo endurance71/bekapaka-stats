@@ -6,7 +6,7 @@ import sharp from 'sharp';
 import { z } from 'zod';
 import { fail } from '../config.js';
 import { filePath } from '../storage.js';
-import { designFormats, postType } from '../post-types.js';
+import { designFormats, postType, variantsFor, projectVariant } from '../post-types.js';
 import { projectView, updateProject, validation } from '../service.js';
 import { approveItem, approveItemGraphics, confirmFacts, publicationView } from '../publications/service.js';
 import { publishWebsite, websiteConfigured } from '../publications/website.js';
@@ -43,6 +43,8 @@ const graphicInput = z
     subtitle: z.string().trim().max(120).optional(),
     photoAssetId: z.string().max(128).nullable().optional(),
     visualStyle: z.string().max(40).optional(),
+    // Layout variant of the family (list in `layouts`); sets the composition style with it.
+    designVariant: z.number().int().min(1).max(10).optional(),
     // Text on the neutral rival shield when the library has no logo of this rival; Studio guesses it from the name.
     opponentShort: z
       .string()
@@ -86,6 +88,18 @@ export async function updateChannelGraphic(db, owner, input) {
     if (!type?.styles.includes(a.visualStyle)) fail(422, `Dostępne kompozycje: ${(type?.styles || []).join(', ')}`);
     if (payload.formats.some((f) => !designFormats(type, a.visualStyle).includes(f))) fail(422, 'Ta kompozycja nie ma wszystkich formatów tej grafiki');
     payload.visualStyle = a.visualStyle;
+    // A style change alone returns to that style's original layout.
+    if (a.designVariant === undefined) delete payload.designVariant;
+  }
+  if (a.designVariant !== undefined) {
+    const type = postType(payload.postType);
+    const layout = type ? variantsFor(type).find((v) => v.n === a.designVariant) : null;
+    if (!layout) fail(422, `Dostępne układy: ${(type ? variantsFor(type) : []).map((v) => `${v.n} ${v.name}`).join(', ')}`);
+    if (a.visualStyle && a.visualStyle !== layout.style) fail(422, `Układ ${layout.n} ma kompozycję ${layout.style}`);
+    if (payload.formats.some((f) => !designFormats(type, layout.style).includes(f))) fail(422, 'Ten układ nie ma wszystkich formatów tej grafiki');
+    payload.visualStyle = layout.style;
+    if (layout.legacy) delete payload.designVariant;
+    else payload.designVariant = layout.n;
   }
   const updated = await updateProject(db, owner, view.id, view.currentRevision, payload);
   const report = await validation(db, owner, updated);
@@ -101,7 +115,9 @@ export async function updateChannelGraphic(db, owner, input) {
     opponentShort: updated.payload.content.opponentShort,
     photoAssetId: updated.payload.content.photoAssetId,
     visualStyle: updated.payload.visualStyle,
+    designVariant: type ? projectVariant(type, updated.payload)?.n ?? null : null,
     compositions: type?.styles || [],
+    layouts: type ? variantsFor(type).map((v) => ({ n: v.n, name: v.name, style: v.style })) : [],
     stillToFix: left,
     note: left.length ? 'Popraw pozostałe pola, potem render_graphics.' : 'Gotowe do pokazania właścicielowi: render_graphics.',
   };

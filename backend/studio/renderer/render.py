@@ -357,7 +357,7 @@ def render(payload,format_name,output,mode,assets,partners_list):
         p.format_name=format_name
         if v3:
             from render_v3 import compose
-            p.visual_style=project['visualStyle'];p.post_type=project['postType']
+            p.visual_style=project['visualStyle'];p.post_type=project['postType'];p.design_variant=project.get('designVariant')
             compose(p,part,index)
         else:
             MAT.plate(p,'lineup-paper.png' if p.paper else ('plyta-granat.png' if p.kit=='B' else 'plyta-czysta.png'))
