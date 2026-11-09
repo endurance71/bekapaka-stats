@@ -15,6 +15,15 @@ describe('layout variants catalogue', () => {
     }
   });
 
+  it('gives every post type ten distinct layouts (nine where the jersey is match-day only)', () => {
+    for (const type of postTypes) {
+      const numbers = variantsFor(type).map((v) => v.n);
+      expect(new Set(numbers).size, type.id).toBe(numbers.length);
+      expect(numbers.length, type.id).toBe(['preview', 'postponed', 'cancelled'].includes(type.id) ? 9 : 10);
+      for (const v of variantsFor(type)) expect(type.styles, `${type.id}/${v.n}`).toContain(v.style);
+    }
+  });
+
   it('keeps one legacy layout per style of every post type (the composition from before variants)', () => {
     for (const type of postTypes)
       for (const style of type.styles) expect(legacyVariant(type, style), `${type.id}/${style}`).toMatchObject({ style, legacy: true });

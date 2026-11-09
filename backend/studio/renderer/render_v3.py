@@ -495,10 +495,12 @@ def stats_paper(p,rows):
 def compose(p,part,index):
     # Layout variants (design-variants.js): numbers not listed in variants.LAYOUTS keep the legacy composition.
     from variants import layout_for
-    layout=layout_for(p)
-    if getattr(layout,'paper',False):p.paper=True;p.ink=C['black']
+    layout=layout_for(p);p.page_index=index
+    surface=getattr(layout,'surface','paper' if getattr(layout,'paper',False) else None)
+    if surface=='paper':p.paper=True;p.ink=C['black']
+    elif surface=='dark':p.paper=False;p.ink=C['white']
     foundation(p);p.layer('30-tresc')
-    if layout:layout(p)
+    if layout:layout(p,part) if getattr(layout,'wants_part',False) else layout(p)
     elif p.family=='announcement':announcement(p)
     elif p.family=='result':result(p)
     elif p.family=='lineup':lineup(p,part or [])
