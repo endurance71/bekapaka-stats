@@ -216,6 +216,9 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     expect(badPhoto.result.isError).toBe(true);
     const fixed = summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.' }, agentToken));
     expect(fixed).toMatchObject({ title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.', stillToFix: [] });
+    // The rival shield text Studio guessed from the name can be corrected by the agent (stored upper case, max 8).
+    expect(summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', opponentShort: ' psp ' }, agentToken))).toMatchObject({ opponentShort: 'PSP' });
+    expect((await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', opponentShort: 'ZADLUGISKROT' }, agentToken)).result.isError).toBe(true);
     expect(summary(await call('list_photos', {}, agentToken)).photos).toEqual([]);
     // No OK from the owner, no call: the tool requires the verbatim answer.
     expect((await call('accept_publication', { publicationId: pub.id }, agentToken)).result.isError).toBe(true);
