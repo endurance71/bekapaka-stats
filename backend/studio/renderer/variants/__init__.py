@@ -9,5 +9,7 @@ def layout_for(p):
         from . import announcement as m
     elif p.family=='result':
         from . import result as m
-    else:return None
+    else:
+        from .families import layouts
+        return layouts(p.family,getattr(p,'post_type',None)).get(n)
     return m.LAYOUTS.get(n)
