@@ -4,10 +4,20 @@ import { count } from './templates.js';
 
 const has = (v) => v !== null && v !== undefined && v !== '';
 const fin = (v) => Number.isFinite(v);
-// Column header of the rival: its own acronym („GMVT TEAM” → GMVT), else initials or the first letters of one word.
+// The rival's own acronym: a word of 2–6 capitals or digits inside a name that is not written all in capitals
+// („Maxbau Okna Dako PSP” → PSP). An all-caps name („GMVT TEAM”) has no such word and keeps the older rules.
+export function ownAcronym(words) {
+  const caps = (w) => /^[\p{Lu}\p{N}]+$/u.test(w);
+  if (words.every(caps)) return '';
+  return words.find((w) => /^[\p{Lu}\p{N}]{2,6}$/u.test(w) && /\p{Lu}/u.test(w)) || '';
+}
+
+// Column header of the rival: its own acronym („GMVT TEAM” → GMVT, „Maxbau Okna Dako PSP” → PSP), else initials or the first letters of one word.
 export function columnName(name) {
   const words = String(name || '').split(/[\s\-–]+/).map((w) => w.replace(/[^\p{L}\p{N}]/gu, '')).filter(Boolean);
   if (!words.length) return 'RYWAL';
+  const acronym = ownAcronym(words);
+  if (acronym) return acronym;
   if (/^[\p{Lu}\p{N}]{2,6}$/u.test(words[0])) return words[0];
   const short = words.length > 1 ? words.map((w) => w[0]).join('').slice(0, 4) : words[0].slice(0, 6);
   return short.toLocaleUpperCase('pl-PL');

@@ -68,6 +68,7 @@ describe('post-match graphic set (reference 18.10.2026)', () => {
 
   it('names the rival column by its acronym or initials', () => {
     expect(columnName('GMVT TEAM')).toBe('GMVT');
+    expect(columnName('Maxbau Okna Dako PSP')).toBe('PSP');
     expect(columnName('Młode Wilki')).toBe('MW');
     expect(columnName('Koszalin')).toBe('KOSZAL');
     expect(columnName('')).toBe('RYWAL');

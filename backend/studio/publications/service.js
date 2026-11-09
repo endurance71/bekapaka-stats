@@ -14,7 +14,7 @@ import { projectView, validation } from '../service.js';
 import { approveGraphics } from './graphics-approval.js';
 import { channelIds, channels, copySchemas, factsSchema } from './channels.js';
 import { graphicFormats, itemGraphicKeys, playbook } from './playbooks.js';
-import { setContent } from './match-graphics.js';
+import { ownAcronym, setContent } from './match-graphics.js';
 import { altText, schematicCopy, TEMPLATE_VERSION, when } from './templates.js';
 import { hasErrors, lintCopy } from './brand-lint.js';
 import { channelTexts, folders } from './texts.js';
@@ -101,14 +101,17 @@ export async function matchFacts(db, seasonId, id) {
   return { facts, source: sourceEnvelope('match', match).source };
 }
 
-// Text on the neutral rival shield (brand rule M8, used when the library has no logo of this rival): initials of a multi-word name
-// („Młode Wilki” → MW, „Kosz-All-In” → KAI), a short name as is, otherwise its first 4 letters.
+// Text on the neutral rival shield (brand rule M8, used when the library has no logo of this rival): the rival's own acronym
+// („Maxbau Okna Dako PSP” → PSP), otherwise initials of a multi-word name („Młode Wilki” → MW, „Kosz-All-In” → KAI),
+// a short name as is, otherwise its first 4 letters.
 export function opponentShort(name) {
   const words = String(name || '')
     .split(/[\s\-–]+/)
     .map((w) => w.replace(/[^\p{L}\p{N}]/gu, ''))
     .filter((w) => w.length > 1 || /\p{N}/u.test(w));
   if (!words.length) return '';
+  const acronym = ownAcronym(words);
+  if (acronym) return acronym;
   const short = words.length > 1 ? words.map((w) => w[0]).join('').slice(0, 4) : words[0].length <= 5 ? words[0] : words[0].slice(0, 4);
   return short.toLocaleUpperCase('pl-PL');
 }

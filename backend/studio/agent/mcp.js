@@ -281,7 +281,7 @@ export const tools = [
   {
     name: 'update_graphic',
     description:
-      'Uzupełnia grafikę kanału publikacji: nagłówek (title), opis (body, krótki: render_graphics zgłosi, ile wierszy mieści układ), podtytuł (subtitle), zdjęcie (photoAssetId z list_photos, null usuwa) albo kompozycję (visualStyle). index = numer grafiki w zestawie (1 = okładka). Zwraca, co jeszcze trzeba poprawić. Zatwierdzenia robi accept_publication po akceptacji właściciela.',
+      'Uzupełnia grafikę kanału publikacji: nagłówek (title), opis (body, krótki: render_graphics zgłosi, ile wierszy mieści układ), podtytuł (subtitle), skrót rywala na tarczy (opponentShort, do 8 znaków, np. PSP), zdjęcie (photoAssetId z list_photos, null usuwa) albo kompozycję (visualStyle). index = numer grafiki w zestawie (1 = okładka). Zwraca, co jeszcze trzeba poprawić. Zatwierdzenia robi accept_publication po akceptacji właściciela.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -291,6 +291,7 @@ export const tools = [
         title: { type: 'string' },
         body: { type: 'string' },
         subtitle: { type: 'string' },
+        opponentShort: { type: 'string' },
         photoAssetId: { type: ['string', 'null'] },
         visualStyle: { type: 'string' },
       },

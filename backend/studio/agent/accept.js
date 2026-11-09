@@ -41,6 +41,7 @@ const graphicInput = z
     title: z.string().trim().max(180).optional(),
     body: z.string().trim().max(1500).optional(),
     subtitle: z.string().trim().max(120).optional(),
+    opponentShort: z.string().trim().min(1).max(8).optional(),
     photoAssetId: z.string().max(128).nullable().optional(),
     visualStyle: z.string().max(40).optional(),
   })
@@ -61,6 +62,10 @@ export async function updateChannelGraphic(db, owner, input) {
   if (a.title !== undefined) payload.content.title = a.title;
   if (a.body !== undefined) payload.content.body = a.body;
   if (a.subtitle !== undefined) payload.content.subtitle = a.subtitle;
+  if (a.opponentShort !== undefined) {
+    if (!('opponentShort' in payload.content)) fail(422, 'Ta grafika nie ma tarczy rywala');
+    payload.content.opponentShort = a.opponentShort.toLocaleUpperCase('pl-PL');
+  }
   if (a.photoAssetId !== undefined) {
     if (a.photoAssetId) {
       const asset = await db.studioAsset.findFirst({ where: { id: a.photoAssetId, ownerId: owner } });
@@ -85,6 +90,7 @@ export async function updateChannelGraphic(db, owner, input) {
     title: updated.payload.content.title,
     body: updated.payload.content.body,
     subtitle: updated.payload.content.subtitle,
+    opponentShort: updated.payload.content.opponentShort,
     photoAssetId: updated.payload.content.photoAssetId,
     visualStyle: updated.payload.visualStyle,
     compositions: type?.styles || [],
