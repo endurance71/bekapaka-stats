@@ -99,7 +99,7 @@ export function contentSystemDocument({ mcpUrl = 'https://studio.bekapaka.pl/api
     '',
     `- Adres: \`${mcpUrl}\` (Streamable HTTP, bez sesji, tylko POST).`,
     '- Autoryzacja: nagłówek `Authorization: Bearer bkpk_agent_…`. Token tworzy właściciel w Studio → Ustawienia → Agent. Token pokazywany jest raz; można go odwołać.',
-    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym uzupełniać grafiki (`update_graphic`: nagłówek, zdjęcie z `list_photos`, kompozycja) i renderować podglądy (`render_graphics`). Bez dosłownego „akceptuję” właściciela nie potwierdza faktów, nie zatwierdza i nie publikuje; ustawień nie zmienia nigdy.',
+    '- Agent może czytać schematy, zasady i publikacje, tworzyć robocze publikacje, proponować teksty kanałów w stanie roboczym uzupełniać grafiki (`update_graphic`: nagłówek, zdjęcie z `list_photos`, kompozycja, skrót rywala na tarczy) i renderować podglądy (`render_graphics`). Bez dosłownego „akceptuję” właściciela nie potwierdza faktów, nie zatwierdza i nie publikuje; ustawień nie zmienia nigdy.',
     '- Z dodatkowym uprawnieniem `graphics` (Studio → Ustawienia → Agent) agent po akceptacji właściciela w czacie zatwierdza grafiki kanału w wersji z podglądu (kompozycję w formacie kanału i rewizję) i eksportuje finalne PNG (`approve_graphics`). Grafika wspólna dla posta i relacji eksportuje się, gdy właściciel zaakceptuje oba kanały. Dosłowna akceptacja właściciela trafia do historii publikacji (`graphics-approved`). Pliki agent pobiera z podpisanych linków ważnych godzinę; odwołanie tokenu unieważnia je od razu.',
     '- Limit: 120 żądań na minutę na token.',
     '',

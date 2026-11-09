@@ -216,6 +216,9 @@ describe.skipIf(!enabled)('Studio MCP graphics: preview, approval after the owne
     expect(badPhoto.result.isError).toBe(true);
     const fixed = summary(await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.' }, agentToken));
     expect(fixed).toMatchObject({ title: 'Mikołajkowy turniej rodzinny w Bobolicach', body: 'Zapraszamy całe rodziny.', stillToFix: [] });
+    // The rival shield text is only for match graphics (saving it there: studio.update-graphic.test.js); a news graphic has no shield.
+    expect((await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', opponentShort: 'PSP' }, agentToken)).result.isError).toBe(true);
+    expect((await call('update_graphic', { publicationId: pub.id, channel: 'instagram_feed', opponentShort: 'ZADLUGISKROT' }, agentToken)).result.isError).toBe(true);
     expect(summary(await call('list_photos', {}, agentToken)).photos).toEqual([]);
     // No OK from the owner, no call: the tool requires the verbatim answer.
     expect((await call('accept_publication', { publicationId: pub.id }, agentToken)).result.isError).toBe(true);

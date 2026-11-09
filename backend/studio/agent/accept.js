@@ -1,5 +1,5 @@
 // Agent side of „the owner checks everything once and says akceptuję”: the agent fixes the graphic fields it can
-// (headline, photo, composition), sends the owner every doubt with the graphics and texts, and on the owner's
+// (headline, photo, composition, rival shield text), sends the owner every doubt with the graphics and texts, and on the owner's
 // verbatim OK carries out the rest: facts, graphics, variants, export and the website publication.
 import fs from 'node:fs/promises';
 import sharp from 'sharp';
@@ -41,13 +41,20 @@ const graphicInput = z
     title: z.string().trim().max(180).optional(),
     body: z.string().trim().max(1500).optional(),
     subtitle: z.string().trim().max(120).optional(),
-    opponentShort: z.string().trim().min(1).max(8).optional(),
     photoAssetId: z.string().max(128).nullable().optional(),
     visualStyle: z.string().max(40).optional(),
+    // Text on the neutral rival shield when the library has no logo of this rival; Studio guesses it from the name.
+    opponentShort: z
+      .string()
+      .trim()
+      .min(1)
+      .max(8)
+      .transform((v) => v.toLocaleUpperCase('pl-PL'))
+      .optional(),
   })
   .strict();
 
-/** Sets the headline, photo or composition of one graphic of a channel; returns what still blocks it. */
+/** Sets the headline, photo, composition or rival shield text of one graphic of a channel; returns what still blocks it. */
 export async function updateChannelGraphic(db, owner, input) {
   const a = graphicInput.parse(input);
   const p = await publicationView(db, owner, a.publicationId);
@@ -63,9 +70,9 @@ export async function updateChannelGraphic(db, owner, input) {
   if (a.body !== undefined) payload.content.body = a.body;
   if (a.subtitle !== undefined) payload.content.subtitle = a.subtitle;
   if (a.opponentShort !== undefined) {
-    // Only match graphics (announcement, result) draw the rival's shield.
+    // Only match graphics (announcement, result) draw the rival's shield; elsewhere the text would be saved without effect.
     if (!['announcement', 'result'].includes(postType(payload.postType)?.family)) fail(422, 'Ta grafika nie ma tarczy rywala');
-    payload.content.opponentShort = a.opponentShort.toLocaleUpperCase('pl-PL');
+    payload.content.opponentShort = a.opponentShort;
   }
   if (a.photoAssetId !== undefined) {
     if (a.photoAssetId) {
