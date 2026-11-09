@@ -69,7 +69,11 @@ export async function updateChannelGraphic(db, owner, input) {
   if (a.title !== undefined) payload.content.title = a.title;
   if (a.body !== undefined) payload.content.body = a.body;
   if (a.subtitle !== undefined) payload.content.subtitle = a.subtitle;
-  if (a.opponentShort !== undefined) payload.content.opponentShort = a.opponentShort;
+  if (a.opponentShort !== undefined) {
+    // Only match graphics (announcement, result) draw the rival's shield; elsewhere the text would be saved without effect.
+    if (!['announcement', 'result'].includes(postType(payload.postType)?.family)) fail(422, 'Ta grafika nie ma tarczy rywala');
+    payload.content.opponentShort = a.opponentShort;
+  }
   if (a.photoAssetId !== undefined) {
     if (a.photoAssetId) {
       const asset = await db.studioAsset.findFirst({ where: { id: a.photoAssetId, ownerId: owner } });

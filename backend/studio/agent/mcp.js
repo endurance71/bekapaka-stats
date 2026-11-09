@@ -281,7 +281,7 @@ export const tools = [
   {
     name: 'update_graphic',
     description:
-      'Uzupełnia grafikę kanału publikacji: nagłówek (title), opis (body, krótki: render_graphics zgłosi, ile wierszy mieści układ), podtytuł (subtitle), zdjęcie (photoAssetId z list_photos, null usuwa), kompozycję (visualStyle) albo skrót rywala na tarczy (opponentShort, do 8 znaków; Studio zgaduje go z nazwy rywala, gdy w bibliotece nie ma jego herbu — popraw, gdy właściciel poda właściwy). index = numer grafiki w zestawie (1 = okładka). Zwraca, co jeszcze trzeba poprawić. Zatwierdzenia robi accept_publication po akceptacji właściciela.',
+      'Uzupełnia grafikę kanału publikacji: nagłówek (title), opis (body, krótki: render_graphics zgłosi, ile wierszy mieści układ), podtytuł (subtitle), zdjęcie (photoAssetId z list_photos, null usuwa), kompozycję (visualStyle) albo skrót rywala na tarczy (opponentShort, do 8 znaków, tylko zapowiedź i wynik meczu; Studio zgaduje go z nazwy rywala, gdy w bibliotece nie ma jego herbu — popraw, gdy właściciel poda właściwy). index = numer grafiki w zestawie (1 = okładka). Zwraca, co jeszcze trzeba poprawić. Zatwierdzenia robi accept_publication po akceptacji właściciela.',
     inputSchema: {
       type: 'object',
       properties: {

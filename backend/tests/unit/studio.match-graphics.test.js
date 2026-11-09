@@ -68,6 +68,10 @@ describe('post-match graphic set (reference 18.10.2026)', () => {
 
   it('names the rival column by its acronym or initials', () => {
     expect(columnName('GMVT TEAM')).toBe('GMVT');
+    expect(columnName('Maxbau Okna Dako PSP')).toBe('PSP');
+    expect(columnName('KS GRYF Słupsk')).toBe('GRYF');
+    expect(columnName('Basket Team II')).toBe('BTI');
+    expect(columnName('Bobolice U19')).toBe('BU');
     expect(columnName('Młode Wilki')).toBe('MW');
     expect(columnName('Koszalin')).toBe('KOSZAL');
     expect(columnName('')).toBe('RYWAL');

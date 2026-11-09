@@ -97,6 +97,9 @@ describe('match report article', () => {
 describe('rival shield text', () => {
   it('uses initials or a short name instead of the placeholder', () => {
     expect(opponentShort('Kosz-All-In')).toBe('KAI');
+    expect(opponentShort('Maxbau Okna Dako PSP')).toBe('PSP');
+    expect(opponentShort('GMVT TEAM')).toBe('GT');
+    expect(opponentShort('Młode Wilki')).toBe('MW');
     expect(opponentShort('Młode Wilki')).toBe('MW');
     expect(opponentShort('AZS')).toBe('AZS');
     expect(opponentShort('PANTERY')).toBe('PANT');
