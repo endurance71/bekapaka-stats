@@ -38,7 +38,7 @@ export async function listSeasonsForAgent() {
 }
 
 /**
- * Pozycje katalogu panelu w postaci dla agenta. Pozycje bez danych (np. mecz bez box score, zawodnik z < 3 meczami)
+ * Pozycje katalogu panelu w postaci dla agenta. Pozycje bez danych (np. mecz bez box score, zawodnik bez rozegranego meczu)
  * nie trafiają na listę, są tylko liczone.
  * @param {Array<Record<string, any>>} items pozycje z getAiAnalysesCatalog
  */

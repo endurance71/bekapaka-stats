@@ -11,12 +11,17 @@ let presetUpgrade = null;
 import { computeTeamSynergy, emptySynergy } from '../kalk/v2/synergy.js';
 import { signPrintToken } from '../lib/pregamePrint.js';
 import { getJwtSecret } from '../lib/requireEnv.js';
+import { playsEnabled } from '../lib/featureFlags.js';
 
 export const tacticsRouter = express.Router();
 
 /**
- * ZAGRYWKI (PLAYBOOK)
+ * ZAGRYWKI (PLAYBOOK) — wyłączone, dopóki PLAYS_ENABLED nie jest „true” (na produkcji wyłączone).
  */
+tacticsRouter.use('/plays', (req, res, next) => {
+  if (playsEnabled()) return next();
+  return res.status(404).json({ error: 'Zagrywki są wyłączone' });
+});
 
 // GET /api/tactics/plays
 tacticsRouter.get('/plays', async (req, res) => {

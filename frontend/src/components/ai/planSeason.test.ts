@@ -28,16 +28,16 @@ describe('planSeasonInfo', () => {
         });
     });
 
-    it('za mało meczów w wybranym sezonie: wyjaśnia, skąd plan', () => {
-        expect(planSeasonInfo({ planSeasonId: 'season_2025-2026', selectedSeasonId: 'season_2026-2027', seasons, gamesInSelected: 2 })).toEqual({
+    it('brak meczów w wybranym sezonie: wyjaśnia, skąd plan', () => {
+        expect(planSeasonInfo({ planSeasonId: 'season_2025-2026', selectedSeasonId: 'season_2026-2027', seasons, gamesInSelected: 0 })).toEqual({
             seasonLabel: '2025/26',
-            note: 'Za mało meczów w sezonie 2026/27 — pokazujemy plan z sezonu 2025/26'
+            note: 'Brak meczów w sezonie 2026/27 — pokazujemy plan z sezonu 2025/26'
         });
     });
 
     it('inny sezon przy wystarczającej lub nieznanej liczbie meczów: neutralna notka', () => {
         const note = 'Plan dotyczy sezonu 2025/26, nie wybranego 2026/27';
-        expect(planSeasonInfo({ planSeasonId: 'season_2025-2026', selectedSeasonId: 'season_2026-2027', seasons, gamesInSelected: 5 }).note).toBe(note);
+        expect(planSeasonInfo({ planSeasonId: 'season_2025-2026', selectedSeasonId: 'season_2026-2027', seasons, gamesInSelected: 1 }).note).toBe(note);
         expect(planSeasonInfo({ planSeasonId: 'season_2025-2026', selectedSeasonId: 'season_2026-2027', seasons, gamesInSelected: null }).note).toBe(note);
     });
 });

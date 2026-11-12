@@ -14,6 +14,7 @@ import { createPublication, getSettings, gridPreview, listPublications, publicat
 import { allowRequest, authenticateAgent } from './tokens.js';
 import { studioAgentOperations } from './operations.js';
 import { promptsFor, SERVER_INSTRUCTIONS } from './agentPrompts.js';
+import { playsEnabled } from '../../lib/featureFlags.js';
 import { fail } from '../config.js';
 import { logGeneration } from '../../ai-engine/log.js';
 import { approveChannelGraphics, renderChannelPreviews, resolveSignedLink } from './graphics.js';
@@ -26,7 +27,10 @@ const withImages = ({ summary, images }) => ({ content: [{ type: 'text', text: J
 const channelEnum = { type: 'string', enum: channelIds };
 
 // Panel operations are listed statically so the Studio import graph never loads panel code until a call needs it.
-const PANEL_OPERATIONS = ['panel.match', 'panel.player', 'panel.scouting', 'panel.briefing', 'panel.play', 'panel.pregame'];
+// panel.play (zagrywki) tylko przy PLAYS_ENABLED=true.
+const PANEL_OPERATIONS = ['panel.match', 'panel.player', 'panel.scouting', 'panel.briefing', 'panel.play', 'panel.pregame'].filter(
+  (op) => op !== 'panel.play' || playsEnabled()
+);
 const OPERATION_IDS = [...Object.keys(studioAgentOperations), ...PANEL_OPERATIONS];
 const AGENT_MODEL = 'agent-mcp';
 

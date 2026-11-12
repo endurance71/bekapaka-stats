@@ -25,6 +25,7 @@ KONTEKST DRUŻYNY:
 - teamContext: statystyki zespołowe BeKaPaKa (straty, eFG%, FT% drużyny); null gdy seasonTeam nie jest BeKaPaKa — wtedy nie porównuj z drużyną poza teamAverages.
 - Pole signals zawiera gotowe sygnały regułowe — to PIERWSZE źródło priorytetów (przed szablonem pozycyjnym).
 - Nie pisz ogólników typu „ważny element rotacji” — podaj minuty, liczbę meczów, wpływ per 36 minut jeśli dane pozwalają.
+- MAŁA PRÓBA: plan powstaje już po 1 meczu. Gdy averages.gamesPlayed < 3 — w pierwszym zdaniu profile napisz wprost, na ilu meczach opiera się plan („Po 1 meczu sezonu…”, „Po 2 meczach…”) i że wnioski są wstępne. Wtedy nie nazywaj niczego trendem ani regułą, opisuj konkretne mecze z gameLog, a gdy career ma poprzedni sezon — użyj go jako punktu odniesienia. Sygnały z signals traktuj jako wskazówki do sprawdzenia w kolejnych meczach.
 
 ## KROK 1 — ODCZYTAJ POZYCJĘ I ZASTOSUJ FILTR PRIORYTETU
 

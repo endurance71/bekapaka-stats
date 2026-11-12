@@ -15,7 +15,7 @@ export function shortSeasonLabel(labelOrId: string | null | undefined): string |
 
 /**
  * Sezon zapisanego planu rozwoju i notka, gdy różni się od wybranego w menu
- * (plan z poprzedniego sezonu, bo w bieżącym zawodnik ma za mało meczów).
+ * (plan z poprzedniego sezonu, bo w bieżącym zawodnik nie rozegrał jeszcze meczu).
  */
 export function planSeasonInfo({
   planSeasonId,
@@ -35,8 +35,8 @@ export function planSeasonInfo({
   if (!selectedSeasonId || selectedSeasonId === planSeasonId) return { seasonLabel: planLabel, note: null };
   const selectedLabel = label(selectedSeasonId);
   const note =
-    gamesInSelected != null && gamesInSelected < 3
-      ? `Za mało meczów w sezonie ${selectedLabel} — pokazujemy plan z sezonu ${planLabel}`
+    gamesInSelected != null && gamesInSelected < 1
+      ? `Brak meczów w sezonie ${selectedLabel} — pokazujemy plan z sezonu ${planLabel}`
       : `Plan dotyczy sezonu ${planLabel}, nie wybranego ${selectedLabel}`;
   return { seasonLabel: planLabel, note };
 }
