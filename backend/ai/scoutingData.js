@@ -126,6 +126,26 @@ export function seasonStatToKeyPlayer(row) {
 }
 
 /**
+ * Średni +/- na mecz z logów — tylko z meczów, które mają +/- w protokole KALK. Suma sezonu z KALK liczy brakujące
+ * mecze jako 0 (u rywali zwykle same zera), więc nie nadaje się do analiz.
+ * @param {Array<{ playerSlug?: string | null, kalkMatchId: string, plusMinus?: number | null }>} logs
+ * @param {Set<string>} matchesWithPlusMinus
+ * @returns {Map<string, { perGame: number, games: number }>}
+ */
+export function plusMinusPerGame(logs, matchesWithPlusMinus) {
+  /** @type {Map<string, { total: number, games: number }>} */
+  const acc = new Map();
+  for (const r of logs || []) {
+    if (!r.playerSlug || !matchesWithPlusMinus.has(String(r.kalkMatchId))) continue;
+    const cur = acc.get(r.playerSlug) || { total: 0, games: 0 };
+    cur.total += Number(r.plusMinus) || 0;
+    cur.games += 1;
+    acc.set(r.playerSlug, cur);
+  }
+  return new Map([...acc].map(([slug, v]) => [slug, { perGame: Math.round((v.total / v.games) * 10) / 10, games: v.games }]));
+}
+
+/**
  * Stary katalog KalkPlayer → kluczowy zawodnik (gdy brak KalkPlayerSeasonStat).
  * @param {Record<string, any>} p
  */
@@ -185,7 +205,8 @@ export function teamSeasonAveragesFromStats(own, against) {
     fastBreakPtsPg: avg(own, 'fastBreakPts'),
     ptsOffTurnoversPg: avg(own, 'ptsOffTurnovers'),
     secondChancePtsPg: avg(own, 'secondChancePts'),
-    ptsInPaintPg: avg(own, 'ptsInPaint'),
+    // KALK nie liczy punktów spod kosza (publikuje 0) — brak danych zamiast mylącego zera
+    ptsInPaintPg: null,
     quarterScoring: Object.fromEntries(
       QUARTER_KEYS.map((q) => [q, { for: avg(own, q), against: avg(against, q) }])
     )
@@ -339,6 +360,29 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
   });
 
   const matchIds = oppMatches.map((m) => m.id);
+  // +/- kluczowych zawodników: średnia na mecz tylko z meczów, w których KALK podał +/- (inaczej publikuje same zera)
+  const [pmLogs, pmMatchRows] = slugs.length && matchIds.length
+    ? await Promise.all([
+        safe(
+          () =>
+            prisma.kalkPlayerGameLog.findMany({
+              where: { seasonId, playerSlug: { in: slugs }, kalkMatchId: { in: matchIds } },
+              select: { playerSlug: true, kalkMatchId: true, plusMinus: true }
+            }),
+          []
+        ),
+        safe(
+          () =>
+            prisma.kalkPlayerGameLog.findMany({
+              where: { seasonId, kalkMatchId: { in: matchIds }, plusMinus: { not: 0 } },
+              select: { kalkMatchId: true },
+              distinct: ['kalkMatchId']
+            }),
+          []
+        )
+      ])
+    : [[], []];
+  const plusMinusBySlug = plusMinusPerGame(pmLogs, new Set(pmMatchRows.map((r) => String(r.kalkMatchId))));
   const [statRows, pbpRows] = await Promise.all([
     matchIds.length
       ? safe(() => prisma.kalkTeamGameStat.findMany({ where: { seasonId, kalkMatchId: { in: matchIds } } }), [])
@@ -411,7 +455,14 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
     keyPlayers: seasonStats.length
       ? seasonStats
           .filter((r) => (r.games || 0) > 0)
-          .map((r) => seasonStatToKeyPlayer({ ...r, playerName: nameBySlug.get(r.playerSlug) || null }))
+          .map((r) => {
+            const pm = plusMinusBySlug.get(r.playerSlug);
+            return {
+              ...seasonStatToKeyPlayer({ ...r, playerName: nameBySlug.get(r.playerSlug) || null }),
+              plusMinus: pm ? pm.perGame : null,
+              plusMinusGames: pm ? pm.games : 0
+            };
+          })
           .sort((a, b) => (b.ppg ?? 0) - (a.ppg ?? 0))
           .slice(0, 6)
       : legacyPlayers.map(legacyKalkPlayerToKeyPlayer).slice(0, 6),

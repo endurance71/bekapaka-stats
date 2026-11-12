@@ -67,11 +67,24 @@ describe('GameInfoPanel', () => {
         expect(screen.getByText('Jan Kowalski, Adam Nowak')).toBeInTheDocument();
         expect(screen.getByText('Piotr Zieliński')).toBeInTheDocument();
         expect(screen.getByText('Po stratach rywala')).toBeInTheDocument();
-        // KALK raportuje 0 „spod kosza” dla obu → wiersz pominięty
+        // KALK nie liczy punktów spod kosza (0 albo kilka punktów) → wiersz nigdy nie jest pokazywany
         expect(screen.queryByText('Spod kosza')).not.toBeInTheDocument();
         expect(screen.getByText('Rekordy meczu')).toBeInTheDocument();
         expect(screen.getByText('F. Filipczak')).toBeInTheDocument();
         const h2hLink = screen.getByRole('link', { name: /01\.11\.2025/ });
         expect(h2hLink).toHaveAttribute('href', '/games/900?seasonId=season_2025-2026');
+    });
+
+    it('nie pokazuje „Spod kosza” nawet przy niezerowej liczbie z KALK (np. 4:0 przy 28 celnych za 2)', () => {
+        const withPaint = {
+            ...info,
+            pointsSources: {
+                home: { ...info.pointsSources?.home, ptsInPaint: 4 },
+                away: { ...info.pointsSources?.away, ptsInPaint: 0 },
+            },
+        } as typeof info;
+        render(<MemoryRouter><GameInfoPanel info={withPaint} /></MemoryRouter>);
+        expect(screen.getByText('Po stratach rywala')).toBeInTheDocument();
+        expect(screen.queryByText('Spod kosza')).not.toBeInTheDocument();
     });
 });

@@ -173,10 +173,8 @@ function PointsSourcesCard({ info, left, right }: { info: GameInfoResponse; left
         add('Po stratach rywala', ps[left]?.ptsOffTurnovers, ps[right]?.ptsOffTurnovers);
         add('Z drugiej szansy', ps[left]?.secondChancePts, ps[right]?.secondChancePts);
         add('Z kontrataku', ps[left]?.fastBreakPts, ps[right]?.fastBreakPts);
-        // KALK często raportuje 0 w polu trzech sekund dla obu drużyn — wtedy pomijamy.
-        if ((ps[left]?.ptsInPaint ?? 0) + (ps[right]?.ptsInPaint ?? 0) > 0) {
-            add('Spod kosza', ps[left]?.ptsInPaint, ps[right]?.ptsInPaint);
-        }
+        // „Spod kosza” celowo pomijamy: KALK nie zapisuje miejsca rzutu i publikuje tu 0 albo kilka punktów
+        // (np. 4:0 przy 28 celnych za 2) — taka liczba wprowadza w błąd.
     }
     const benchRows: CompareRow[] = [];
     const ts = info.teamStats;
