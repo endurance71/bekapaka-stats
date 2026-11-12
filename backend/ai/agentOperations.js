@@ -44,7 +44,8 @@ const allPanelAgentOperations = {
     args: { type: 'object', properties: { opponent: { type: 'string' }, ...seasonProp }, required: ['opponent'] },
     parse: (a) => z.object({ opponent: z.string().trim().min(1).max(120), seasonId }).strict().parse(a),
     prepare: (a) => prepareScoutingReport(a.opponent, { seasonId: a.seasonId }),
-    save: (prep, output) => saveScoutingReport(prep, output, AGENT_MODEL)
+    // Wynik agenta musi mieć pełną strukturę (personnel z 4 polami, 3–5 punktów do szatni) — niepełny jest odrzucany.
+    save: (prep, output) => saveScoutingReport(prep, output, AGENT_MODEL, { strict: true })
   },
   'panel.briefing': {
     label: 'Briefing drużyny (Markdown z wymaganymi sekcjami)',
