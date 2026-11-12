@@ -82,9 +82,9 @@ export function normalizeBoxPlayer(p) {
 }
 
 /**
- * KALK publikuje +/- i faule wymuszone jako 0 dla całego meczu, gdy ich nie liczy (brak protokołu z Drive).
- * Przy rozstrzygniętym meczu same zera są niemożliwe (Σ +/- = 5 × różnica, Σ fauli wymuszonych = faule rywala),
- * więc taki mecz dostaje null — brak danych, nie zero. Mutuje wiersze, zwraca, czego brakuje.
+ * KALK publikuje +/- i faule wymuszone jako 0, gdy ich nie liczy (brak protokołu z Drive). Wołane osobno dla każdej
+ * drużyny: przy rozstrzygniętym meczu same zera drużyny są niemożliwe (Σ +/- = 5 × różnica, Σ fauli wymuszonych =
+ * faule rywala), więc dostają null — brak danych, nie zero. Mutuje wiersze, zwraca, czego brakuje.
  * @param {ReturnType<typeof normalizeBoxPlayer>[]} players
  */
 export function markMissingProtocolStats(players) {
@@ -259,16 +259,16 @@ export function buildMatchPayloadFromGame(game, extras = {}) {
 
   const usPlayers = (bekapakaTeam?.players || []).map(normalizeBoxPlayer);
   const themPlayers = (opponentTeam?.players || []).map(normalizeBoxPlayer);
-  const missing = markMissingProtocolStats([...usPlayers, ...themPlayers]);
+  // Osobno dla każdej drużyny: +/- jednej (protokół / akcja po akcji) nie czyni zer drugiej prawdziwymi.
+  const missingUs = markMissingProtocolStats(usPlayers);
+  const missingThem = markMissingProtocolStats(themPlayers);
 
   // Kolejność: KalkTeamGameStat → boxScore.teams[].totals (v2) → suma z zawodników.
   const boxTotals = (team) => (team?.totals && typeof team.totals === 'object' && Number.isFinite(team.totals.pts) ? team.totals : null);
   const usTotals = teamTotals(usStat || boxTotals(bekapakaTeam), usPlayers, bekapakaTeam?.pts ?? game.scoreUs);
   const themTotals = teamTotals(themStat || boxTotals(opponentTeam), themPlayers, opponentTeam?.pts ?? game.scoreThem);
-  if (missing.pfDrawn) {
-    usTotals.pfDrawn = null;
-    themTotals.pfDrawn = null;
-  }
+  if (missingUs.pfDrawn) usTotals.pfDrawn = null;
+  if (missingThem.pfDrawn) themTotals.pfDrawn = null;
 
   const usSources = pointsSourcesFor(usStat, info?.pointsSources?.[usSide]);
   const themSources = pointsSourcesFor(themStat, info?.pointsSources?.[themSide]);

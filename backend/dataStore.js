@@ -77,7 +77,7 @@ import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { getJwtSecret } from './lib/requireEnv.js';
-import { matchHasPlusMinus } from './kalk/v2/util.js';
+import { teamPlusMinusAvailable } from './kalk/v2/util.js';
 import { resolveMatchDay } from './lib/matchDay.js';
 import { rosterKalkSlug } from './kalk/v2/readModels.js';
 import { linkRosterFromHistory } from './kalk/v2/rosterHistory.js';
@@ -568,7 +568,7 @@ export async function getPlayerStats(playerId, seasonIdParam) {
           opponent: row.opponentName,
           teamName: row.teamName,
           eval: typeof row.eval === 'number' ? row.eval : null,
-          plusMinusAvailable: row.kalkMatch?.boxScore ? matchHasPlusMinus(row.kalkMatch.boxScore) : true
+          plusMinusAvailable: row.kalkMatch?.boxScore ? teamPlusMinusAvailable(row.kalkMatch.boxScore, row.teamName) : true
         });
       });
 

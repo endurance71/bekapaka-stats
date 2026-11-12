@@ -125,18 +125,21 @@ export function seasonStatToKeyPlayer(row) {
   };
 }
 
+/** Klucz drużyny w meczu (mecz + strona) — +/- sprawdzamy osobno dla każdej drużyny. */
+export const plusMinusKey = (kalkMatchId, side) => `${kalkMatchId}:${side ?? ''}`;
+
 /**
- * Średni +/- na mecz z logów — tylko z meczów, które mają +/- w protokole KALK. Suma sezonu z KALK liczy brakujące
- * mecze jako 0 (u rywali zwykle same zera), więc nie nadaje się do analiz.
- * @param {Array<{ playerSlug?: string | null, kalkMatchId: string, plusMinus?: number | null }>} logs
- * @param {Set<string>} matchesWithPlusMinus
+ * Średni +/- na mecz z logów — tylko z meczów, w których drużyna zawodnika ma +/- (protokół albo akcja po akcji).
+ * Suma sezonu z KALK liczy brakujące mecze jako 0, a +/- jednej drużyny nie czyni zer drugiej prawdziwymi.
+ * @param {Array<{ playerSlug?: string | null, kalkMatchId: string, side?: string | null, plusMinus?: number | null }>} logs
+ * @param {Set<string>} matchesWithPlusMinus — klucze plusMinusKey(mecz, strona)
  * @returns {Map<string, { perGame: number, games: number }>}
  */
 export function plusMinusPerGame(logs, matchesWithPlusMinus) {
   /** @type {Map<string, { total: number, games: number }>} */
   const acc = new Map();
   for (const r of logs || []) {
-    if (!r.playerSlug || !matchesWithPlusMinus.has(String(r.kalkMatchId))) continue;
+    if (!r.playerSlug || !matchesWithPlusMinus.has(plusMinusKey(r.kalkMatchId, r.side))) continue;
     const cur = acc.get(r.playerSlug) || { total: 0, games: 0 };
     cur.total += Number(r.plusMinus) || 0;
     cur.games += 1;
@@ -367,7 +370,7 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
           () =>
             prisma.kalkPlayerGameLog.findMany({
               where: { seasonId, playerSlug: { in: slugs }, kalkMatchId: { in: matchIds } },
-              select: { playerSlug: true, kalkMatchId: true, plusMinus: true }
+              select: { playerSlug: true, kalkMatchId: true, side: true, plusMinus: true }
             }),
           []
         ),
@@ -375,14 +378,14 @@ export async function loadScoutingExtras({ opponentName, seasonId }) {
           () =>
             prisma.kalkPlayerGameLog.findMany({
               where: { seasonId, kalkMatchId: { in: matchIds }, plusMinus: { not: 0 } },
-              select: { kalkMatchId: true },
-              distinct: ['kalkMatchId']
+              select: { kalkMatchId: true, side: true },
+              distinct: ['kalkMatchId', 'side']
             }),
           []
         )
       ])
     : [[], []];
-  const plusMinusBySlug = plusMinusPerGame(pmLogs, new Set(pmMatchRows.map((r) => String(r.kalkMatchId))));
+  const plusMinusBySlug = plusMinusPerGame(pmLogs, new Set(pmMatchRows.map((r) => plusMinusKey(r.kalkMatchId, r.side))));
   const [statRows, pbpRows] = await Promise.all([
     matchIds.length
       ? safe(() => prisma.kalkTeamGameStat.findMany({ where: { seasonId, kalkMatchId: { in: matchIds } } }), [])
