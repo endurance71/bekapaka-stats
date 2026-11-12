@@ -1,8 +1,9 @@
 // Gotowe polecenia MCP (prompts) — w Claude Desktop widoczne w menu „+”. Opisują wyłącznie przebieg pracy na narzędziach;
 // zasady redakcji i dane zadania zawsze pochodzą z prepare_ai_task, żeby nie było drugiego źródła prawdy.
+import { playsEnabled } from '../../lib/featureFlags.js';
 
 export const SERVER_INSTRUCTIONS = [
-  'Serwer BeKaPaKa: analizy AI panelu (mecz, zawodnik, scouting, briefing, karta przedmeczowa, zagrywka) i teksty publikacji Studio.',
+  `Serwer BeKaPaKa: analizy AI panelu (mecz, zawodnik, scouting, briefing, karta przedmeczowa${playsEnabled() ? ', zagrywka' : ''}) i teksty publikacji Studio.`,
   'Tekst piszesz Ty — aplikacja daje prompt i zapisuje wynik. Przebieg każdego zadania:',
   '1) znajdź zadanie: list_panel_analyses (analizy panelu z gotowymi task.operation i task.args) albo list_publications (Studio);',
   '2) prepare_ai_task z tymi argumentami;',
@@ -112,4 +113,6 @@ export const agentPrompts = [
 ];
 
 /** Prompty dostępne dla tokenu (panelowe tylko z zakresem panel-ai). */
-export const promptsFor = (scopes) => agentPrompts.filter((p) => !p.panel || scopes.includes('panel-ai'));
+// Zagrywki są wyłączone, dopóki PLAYS_ENABLED nie jest „true” — wtedy znika też polecenie „zagrywka”.
+export const promptsFor = (scopes) =>
+  agentPrompts.filter((p) => (!p.panel || scopes.includes('panel-ai')) && (p.name !== 'zagrywka' || playsEnabled()));

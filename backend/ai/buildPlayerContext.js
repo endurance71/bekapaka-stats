@@ -256,6 +256,16 @@ function gameLogForPrompt(g, match) {
 }
 
 /**
+ * Czy zawodnik był na boisku w meczu (minuty „mm:ss” > 0 albo jakakolwiek akcja w box score).
+ * @param {Record<string, any>} game — wpis gameLog z getPlayerStats
+ */
+export function gameHasCourtTime(game) {
+  const [m, s] = String(game?.min ?? '').split(':');
+  if ((Number(m) || 0) * 60 + (Number(s) || 0) > 0) return true;
+  return ['pts', 'reb', 'ast', 'stl', 'blk', 'tov', 'pf', 'fga', 'fta'].some((k) => Number(game?.[k]) > 0);
+}
+
+/**
  * @param {string} playerId
  * @param {{ seasonId?: string | null }} [options]
  */
@@ -265,8 +275,9 @@ export async function buildPlayerContext(playerId, options = {}) {
   if (!stats) {
     throw new AiValidationError('Zawodnik nie znaleziony');
   }
-  if (!stats.gameLog || stats.gameLog.length < 3) {
-    throw new AiValidationError('Za mało meczów w bazie (minimum 3 — synchronizacja KALK)');
+  // Plan już od pierwszego meczu — ale tylko z minutami na boisku (sam wpis w protokole bez gry to nie dane).
+  if (!stats.gameLog?.some(gameHasCourtTime)) {
+    throw new AiValidationError('Brak rozegranego meczu w sezonie (minimum 1 mecz z minutami — synchronizacja KALK)');
   }
 
   const roster = await prisma.rosterPlayer.findUnique({

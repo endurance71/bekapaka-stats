@@ -349,7 +349,7 @@ export default function PlayerProfile() {
                         canGenerate={isAdmin}
                         loading={aiLoading}
                         onGenerate={handleGenerateAi}
-                        emptyHint="Brak planu rozwoju — użyj „Generuj” (potrzebne min. 3 mecze)."
+                        emptyHint="Brak planu rozwoju — użyj „Generuj” (potrzebny min. 1 rozegrany mecz)."
                         playerEmptyHint="Plan rozwoju pojawi się, gdy trener go przygotuje (po 3 meczach)."
                     />
                 )}

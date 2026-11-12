@@ -126,8 +126,15 @@ describe('panel discovery for Claude Desktop', () => {
     const refresh = all.find((p) => p.name === 'odswiez-analizy').text({ kind: 'player' });
     expect(refresh).toContain('list_panel_analyses');
     expect(refresh).toContain('tylko rodzaj player');
-    const play = all.find((p) => p.name === 'zagrywka').text({ goal: 'rzut za 3' });
-    expect(play).toContain('{"goal":"rzut za 3"}');
+    // Zagrywki są domyślnie wyłączone (PLAYS_ENABLED) — polecenie pojawia się dopiero po włączeniu.
+    expect(all.map((p) => p.name)).not.toContain('zagrywka');
+    vi.stubEnv('PLAYS_ENABLED', 'true');
+    try {
+      const play = promptsFor(['read', 'draft', 'panel-ai']).find((p) => p.name === 'zagrywka').text({ goal: 'rzut za 3' });
+      expect(play).toContain('{"goal":"rzut za 3"}');
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
 

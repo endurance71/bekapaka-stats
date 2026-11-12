@@ -85,7 +85,7 @@ Obrazy (zadanie 'image') → zawsze generateImage (Gemini), poza routingiem
 | Plan rozwoju zawodnika | `generate.js` · `POST /api/players/:id/analyze` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
 | Raport scoutingowy | `generate.js` · `POST /api/scouting/analyze` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
 | Briefing drużyny | `generate.js` · `POST /api/ai/briefing/generate` | Tak | Tak (Markdown) | Tak, `panel-ai` | Przełącznik |
-| Generator zagrywek | `ai/tacticsOps.js` · `POST /api/tactics/plays/generate` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
+| Generator zagrywek (wyłączony, włącza `PLAYS_ENABLED=true`) | `ai/tacticsOps.js` · `POST /api/tactics/plays/generate` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
 | Karta odprawy | `tacticsOps.js` · `POST /api/tactics/pregame/generate` | Tak | Tak (JSON) | Tak, `panel-ai` | Przełącznik |
 | Teksty publikacji (IG, FB, WWW) | `studio/ai.js` · `POST /publications/:id/ai-copy` | Tak (model zadania) | Tak | Tak (`studio.copy`) | Przełącznik |
 | Relacja meczowa WWW | `studio/ai.js` (krok reportera) | Tak | Tak | Tak (`studio.report`) | Przełącznik |
@@ -207,7 +207,7 @@ Kolejność (zgodnie z `docs/vps-runbook.md` i `docs/vps-optimization.md`):
    - Gdy `npx` nie jest w PATH aplikacji, podaj pełną ścieżkę (`which npx`) albo dodaj `PATH` w `env`.
 3. Uruchom Claude Desktop ponownie. Polecenia są w menu „+” → bekapaka:
    - `odswiez-analizy` generuje po kolei wszystkie brakujące i nieaktualne analizy (opcjonalnie tylko jeden rodzaj albo sezon);
-   - `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa` i `zagrywka` dotyczą pojedynczych analiz;
+   - `analiza-meczu`, `plan-rozwoju`, `scouting-rywala`, `briefing-tygodnia`, `karta-przedmeczowa` i `zagrywka` (tylko przy `PLAYS_ENABLED=true`) dotyczą pojedynczych analiz;
    - `teksty-publikacji` tworzy szkice Studio do zatwierdzenia.
 4. Generacja idzie na limitach Twojej subskrypcji (jak w Claude Code). Serwer loguje `source: mcp`, `costKind: none`.
 5. Karta przedmeczowa nie zapisuje hasha danych, więc `list_panel_analyses` pokazuje ją jako brakującą albo aktualną, bez stanu „nieaktualna”.

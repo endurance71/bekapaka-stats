@@ -12,6 +12,7 @@ import {
   saveTeamBriefing
 } from './generate.js';
 import { preparePlay, preparePregame, savePlay, savePregame } from './tacticsOps.js';
+import { playsEnabled } from '../lib/featureFlags.js';
 
 /** Model zapisywany przy wynikach agenta MCP — odróżnialny od API i SDK w katalogu i audycie. */
 export const AGENT_MODEL = 'agent-mcp';
@@ -19,7 +20,7 @@ const seasonId = z.string().trim().max(80).optional();
 const text = (max) => z.string().trim().max(max).optional();
 const seasonProp = { seasonId: { type: 'string', description: 'Sezon (opcjonalnie, domyślnie aktywny)' } };
 
-export const panelAgentOperations = {
+const allPanelAgentOperations = {
   'panel.match': {
     label: 'Analiza meczu (Markdown z wymaganymi sekcjami)',
     output: 'markdown',
@@ -73,5 +74,10 @@ export const panelAgentOperations = {
     save: (prep, output) => savePregame(prep, output, AGENT_MODEL)
   }
 };
+
+// Zagrywki (panel.play) dostępne tylko przy PLAYS_ENABLED=true — na produkcji wyłączone.
+export const panelAgentOperations = Object.fromEntries(
+  Object.entries(allPanelAgentOperations).filter(([id]) => id !== 'panel.play' || playsEnabled())
+);
 
 export { withAiLock } from './locks.js';

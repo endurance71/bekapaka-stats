@@ -9,6 +9,7 @@ import { SeasonPreferenceProvider } from './context/SeasonPreferenceContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import RedirectPreserveSearch from './shared/ui/RedirectPreserveSearch';
 import { pageImports } from './routes/pageImports';
+import { PLAYS_ENABLED } from './shared/lib/featureFlags';
 
 // Eager-loaded: pages the user lands on first
 import Dashboard from './pages/Dashboard';
@@ -52,7 +53,7 @@ export default function App() {
                       {/* stare adresy (zakładki, linki z AI, skróty PWA) */}
                       <Route path="/scouting" element={<RedirectPreserveSearch to="/rywal" />} />
                       <Route path="/roster" element={<RedirectPreserveSearch to="/druzyna" />} />
-                      <Route path="/tactics" element={<RedirectPreserveSearch to="/druzyna" extra={{ widok: 'zagrywki' }} />} />
+                      <Route path="/tactics" element={<RedirectPreserveSearch to="/druzyna" extra={PLAYS_ENABLED ? { widok: 'zagrywki' } : undefined} />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/players/:id" element={<PlayerProfile />} />
                       <Route
