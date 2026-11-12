@@ -83,5 +83,5 @@ jobs:
         run: |
           docker run --rm --entrypoint /opt/studio-python/bin/python ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }} -m unittest discover -s /app/studio/renderer -p 'test_*.py'
           # Claude Agent SDK engine: module, shared core and the glibc native binary must be in the image.
-          docker run --rm --entrypoint node ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }} --input-type=module -e "await import('@anthropic-ai/claude-agent-sdk'); await import('/app/ai-engine/agentSdk.js'); console.log('agent sdk ok')"
+          docker run --rm --entrypoint node ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }} --input-type=module -e "await import('@anthropic-ai/claude-agent-sdk'); await import('/app/ai-engine/agentSdk.js'); await import('/app/ai-engine/operations.js'); await import('/app/studio/ai.js'); console.log('agent sdk ok')"
           docker run --rm --entrypoint /app/node_modules/@anthropic-ai/claude-agent-sdk-linux-x64/claude ghcr.io/${{ github.repository }}/studio-worker:${{ github.sha }} --version
