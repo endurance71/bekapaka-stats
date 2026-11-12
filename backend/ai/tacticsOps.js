@@ -8,6 +8,7 @@ import { buildTacticalPlaySystemInstruction, buildTacticalPlayUserPrompt } from 
 import { DEFAULT_PREGAME_VENUE, buildPreGameCardSystemInstruction, buildPreGameCardUserPrompt } from './prompts/pregameBriefingCard.pl.js';
 import { PREGAME_CARD_SCHEMA, TACTICAL_PLAY_SCHEMA, validatePlayDiagram } from './responseSchemas.js';
 import { findScoutingReport } from './scoutingData.js';
+import { loadOwnPlayerStats } from './pregameOwnStats.js';
 import { resolveSeasonId } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
 import { matchLogistics } from '../lib/matchDay.js';
@@ -114,7 +115,10 @@ export async function preparePregame(input = {}) {
       }
     : null;
 
-  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, roster, nextMatch });
+  // Liczby naszych zawodników (od 1 meczu) — do porównań z rywalami na karcie.
+  const ownStats = await loadOwnPlayerStats(roster, targetSeasonId).catch(() => null);
+
+  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, ownStats, roster, nextMatch });
   return {
     operation: 'panel.pregame',
     lockKey: `pregame:${targetSeasonId}:${String(opponent).toLowerCase()}`,

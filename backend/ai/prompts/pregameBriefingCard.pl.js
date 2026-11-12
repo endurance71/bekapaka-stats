@@ -15,7 +15,15 @@ ZASADY ANTY-HALUCYNACYJNE:
 - Gdy wartość jest null lub jej brak — nie podawaj liczby (możesz napisać „brak danych”).
 - Pierwszą piątkę wybieraj WYŁĄCZNIE z „Kadra BeKaPaKa” — playerId, imię, nazwisko i numer skopiuj dokładnie z listy. Nie dopisuj zawodników spoza listy.
 - Każde założenie taktyczne (tacticalKeys) odwołuje się do konkretnej liczby lub zawodnika z danych o rywalu (np. PPG lidera, trójki, straty), jeśli takie dane są dostępne.
+- Liczby naszych zawodników bierz WYŁĄCZNIE z sekcji „Statystyki zawodników BeKaPaKa w sezonie” (JSON). Zawodnik z listy withoutGames nie ma meczów w sezonie — nie podawaj dla niego liczb.
 - Wszystkie mecze ligi rozgrywane są w hali ${DEFAULT_PREGAME_VENUE} — nie używaj pojęć „u siebie”, „na wyjeździe”, „we własnej hali”.
+
+PORÓWNANIA (OBOWIĄZKOWE):
+- assignment każdego zawodnika pierwszej piątki zaczyna się od tego, kogo kryje („Kryje Nowaka.”), a potem zawiera porównanie: 1–2 liczby naszego zawodnika i 1–2 liczby kryjącego go rywala, dobrane do zadania (zbiórki przeciw zbieraczowi, przechwyty przeciw stratom, skuteczność za 2 przeciw faulom rywala itp.), oraz wniosek, co z tego wynika na boisku.
+- Porównuj także wtedy, gdy zawodnik (nasz albo rywala) zagrał tylko 1 lub 2 mecze — przy takiej liczbie dopisz próbę w nawiasie, np. „(1 mecz)”, „(2 mecze)”. Mała próba nie jest powodem, żeby pominąć porównanie.
+- Dobieraj pary tak, żeby każdy z kluczowych zawodników rywala (keyPlayers) miał swojego obrońcę w piątce albo w benchKeys.
+- benchKeys: dla każdego rezerwowego, któremu dajesz zadanie, podaj 1–2 jego liczby z sezonu (z próbą przy 1–2 meczach) i wskaż, na kogo z rywali wchodzi.
+- Przy wyborze piątki: gdy nikt w kadrze nie ma statusu starter: TAK, kieruj się polem starts (ile razy zawodnik zaczynał mecz w tym sezonie), a potem games i minutami.
 
 Zwracaj WYŁĄCZNIE poprawny JSON (bez znaczników markdown):
 {
@@ -57,11 +65,12 @@ Pole focus przyjmuje jedną z wartości: defense, offense, transition.${POLISH_S
  *   opponentName: string,
  *   scoutingReport?: { summaryMd?: string | null, analysisJson?: unknown } | null,
  *   opponentStats?: Record<string, unknown> | null,
+ *   ownStats?: { players: Array<Record<string, unknown>>, withoutGames: string[] } | null,
  *   roster?: Array<Record<string, any>>,
  *   nextMatch?: { date?: Date | string | null, venue?: string | null } | null
  * }} input
  */
-export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, opponentStats, roster, nextMatch }) {
+export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, opponentStats, ownStats, roster, nextMatch }) {
   const rosterStr = Array.isArray(roster) && roster.length
     ? roster
         .map(
@@ -74,6 +83,10 @@ export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, oppon
   const statsBlock = opponentStats
     ? `Dane o rywalu (${opponentName}) — JSON:\n${JSON.stringify(opponentStats, null, 2)}`
     : `Dane o rywalu (${opponentName}): brak danych liczbowych.`;
+
+  const ownBlock = ownStats?.players?.length
+    ? `Statystyki zawodników BeKaPaKa w sezonie (box score KALK, średnie na mecz od 1. meczu; games = próba, starts = mecze w pierwszej piątce, twoPt/threePt/ft = celne/oddane i %, plusMinusTotal = suma +/- w sezonie) — JSON:\n${JSON.stringify(ownStats, null, 2)}`
+    : 'Statystyki zawodników BeKaPaKa w sezonie: brak meczów w bazie — porównuj tylko tam, gdzie są liczby rywala, bez liczb naszych zawodników.';
 
   const reportBlock = scoutingReport?.summaryMd
     ? `\nRaport scoutingowy (tekst, pomocniczo — liczby weryfikuj z JSON powyżej):\n${scoutingReport.summaryMd}`
@@ -95,5 +108,7 @@ Informacje o meczu:
 Kadra BeKaPaKa:
 ${rosterStr}
 
-Wybierz najbardziej optymalną pierwszą piątkę (preferuj graczy ze statusem starter: TAK) i dopasuj im zadania obronne/atakujące pod kątem rywala ${opponentName}.`;
+${ownBlock}
+
+Wybierz najbardziej optymalną pierwszą piątkę (preferuj graczy ze statusem starter: TAK, a gdy nikt go nie ma — tych z najwięcej starts) i dopasuj im zadania obronne/atakujące pod kątem rywala ${opponentName}. Każde zadanie zawiera porównanie naszego zawodnika z rywalem, którego kryje — także przy próbie 1–2 meczów.`;
 }
