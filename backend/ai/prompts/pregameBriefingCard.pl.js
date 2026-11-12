@@ -85,7 +85,7 @@ export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, oppon
     : `Dane o rywalu (${opponentName}): brak danych liczbowych.`;
 
   const ownBlock = ownStats?.players?.length
-    ? `Statystyki zawodników BeKaPaKa w sezonie (box score KALK, średnie na mecz od 1. meczu; games = próba, starts = mecze w pierwszej piątce, twoPt/threePt/ft = celne/oddane i %, plusMinusTotal = suma +/- w sezonie) — JSON:\n${JSON.stringify(ownStats, null, 2)}`
+    ? `Statystyki zawodników BeKaPaKa w sezonie (box score KALK, średnie na mecz od 1. meczu; games = próba, starts = mecze w pierwszej piątce, twoPt/threePt/ft = celne/oddane i %, plusMinusTotal = suma +/- z plusMinusGames meczów, w których protokół ma +/-; null = brak +/-) — JSON:\n${JSON.stringify(ownStats, null, 2)}`
     : 'Statystyki zawodników BeKaPaKa w sezonie: brak meczów w bazie — porównuj tylko tam, gdzie są liczby rywala, bez liczb naszych zawodników.';
 
   const reportBlock = scoutingReport?.summaryMd

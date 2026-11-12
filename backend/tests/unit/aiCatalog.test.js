@@ -110,6 +110,29 @@ describe('getAiAnalysesCatalog — staleness', () => {
     expect(byId.get('player:p-old-season')).toMatchObject({ dataReady: false, stale: false, staleReason: 'no-data' });
     expect(byId.get('player:p-new')).toMatchObject({ dataReady: false });
   });
+
+  it('pozycja i numer zawodnika jak w kadrze: najpierw profil KALK, potem wpis w składzie', async () => {
+    prismaMock.kalkSeason.findUnique.mockResolvedValue({ id: SEASON, isActive: true });
+    prismaMock.kalkMatch.findMany.mockResolvedValue([]);
+    prismaMock.rosterPlayer.findMany.mockResolvedValue([
+      { id: 'p-karp', firstName: 'Filip', lastName: 'Karpiński', position: 'C', number: 69, kalkSlug: 'filip-karpinski', aiDevelopmentSummary: null },
+      { id: 'p-ole', firstName: 'Dawid', lastName: 'Olearczyk', position: null, number: null, kalkPlayerId: 'season_2026-2027__dawid-olearczyk', aiDevelopmentSummary: null },
+      { id: 'p-bez', firstName: 'Jan', lastName: 'Bezprofilu', position: 'PF', number: 4, aiDevelopmentSummary: null }
+    ]);
+    prismaMock.kalkPlayerProfile.findMany.mockResolvedValue([
+      { slug: 'filip-karpinski', position: 'SF', lastNumber: 69 },
+      { slug: 'dawid-olearczyk', position: 'PG', lastNumber: 1 }
+    ]);
+    prismaMock.leagueTeam.findMany.mockResolvedValue([]);
+    prismaMock.scoutingAiReport.findMany.mockResolvedValue([]);
+
+    const { getAiAnalysesCatalog } = await import('../../ai/catalog.js');
+    const byId = new Map((await getAiAnalysesCatalog(SEASON)).items.map((i) => [i.id, i]));
+
+    expect(byId.get('player:p-karp').subtitle).toBe('SF · #69');
+    expect(byId.get('player:p-ole').subtitle).toBe('PG · #1');
+    expect(byId.get('player:p-bez').subtitle).toBe('PF · #4');
+  });
 });
 
 describe('scoutingReportsForSeason / legacyReportMatchesSeason', () => {

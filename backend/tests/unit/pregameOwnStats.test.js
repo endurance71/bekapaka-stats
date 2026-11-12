@@ -36,12 +36,14 @@ const log = (kalkPlayerId, over = {}) => ({
 
 describe('statystyki naszych zawodników do karty przedmeczowej', () => {
   const { players, withoutGames } = buildOwnPlayerStats(roster, [
-    log('k-karp', { starter: true, secondsPlayed: 1860, pts: 24, twoPm: 11, twoPa: 16, reb: 7, orb: 3 }),
-    log('k-karp', { starter: true, secondsPlayed: 1860, pts: 20, twoPm: 9, twoPa: 14, ftm: 2, fta: 4, reb: 6, orb: 2 }),
-    log('k-sos', { starter: true, secondsPlayed: 1400, reb: 9, orb: 2, plusMinus: 20 }),
-    log('k-sos', { starter: true, secondsPlayed: 1400, reb: 8, orb: 2, plusMinus: 22 }),
-    log('k-mal', { secondsPlayed: 576, pts: 3, threePm: 1, threePa: 2, reb: 2, orb: 1, tov: 2 })
+    // m1 i m2 mają +/- w protokole; m3 to mecz bez +/- (KALK: same zera u wszystkich)
+    log('k-karp', { kalkMatchId: 'm1', starter: true, secondsPlayed: 1860, pts: 24, twoPm: 11, twoPa: 16, reb: 7, orb: 3, plusMinus: 11 }),
+    log('k-karp', { kalkMatchId: 'm3', starter: true, secondsPlayed: 1860, pts: 20, twoPm: 9, twoPa: 14, ftm: 2, fta: 4, reb: 6, orb: 2 }),
+    log('k-sos', { kalkMatchId: 'm1', starter: true, secondsPlayed: 1400, reb: 9, orb: 2, plusMinus: 20 }),
+    log('k-sos', { kalkMatchId: 'm2', starter: true, secondsPlayed: 1400, reb: 8, orb: 2, plusMinus: 22 }),
+    log('k-mal', { kalkMatchId: 'm3', secondsPlayed: 576, pts: 3, threePm: 1, threePa: 2, reb: 2, orb: 1, tov: 2 })
   ]);
+
 
   it('liczy średnie już od jednego meczu i podaje próbę', () => {
     const malina = players.find((p) => p.name === 'Mirosław Malina');
@@ -55,7 +57,12 @@ describe('statystyki naszych zawodników do karty przedmeczowej', () => {
     expect(karp.twoPt).toEqual({ made: 20, attempted: 30, pct: 66.7 });
     expect(karp.ft).toEqual({ made: 2, attempted: 4, pct: 50 });
     expect(karp.threePt.pct).toBeNull();
-    expect(players.find((p) => p.playerId === 'r-sos').plusMinusTotal).toBe(42);
+    expect(players.find((p) => p.playerId === 'r-sos')).toMatchObject({ plusMinusTotal: 42, plusMinusGames: 2 });
+  });
+
+  it('mecz bez +/- w protokole nie wchodzi do sumy +/- (brak danych, nie zero)', () => {
+    expect(players.find((p) => p.playerId === 'r-karp')).toMatchObject({ games: 2, plusMinusTotal: 11, plusMinusGames: 1 });
+    expect(players.find((p) => p.playerId === 'r-mal')).toMatchObject({ games: 1, plusMinusTotal: null, plusMinusGames: 0 });
   });
 
   it('zawodnik bez meczów nie dostaje liczb, a kolejność zaczyna się od wyjść w piątce', () => {

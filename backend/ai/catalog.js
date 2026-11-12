@@ -15,6 +15,7 @@ import { TEMPLATE_MODEL_NAME } from './geminiClient.js';
 import { activeModel, isAiConfigured } from './textEngine.js';
 import { normalizeOpponentKey } from './normalizeOpponent.js';
 import { legacyReportMatchesSeason, parseScoutingReportKey } from './scoutingData.js';
+import { rosterKalkSlug } from '../kalk/v2/readModels.js';
 
 const BEKAPAKA_KALK_MATCH_OR = [
   { homeTeamName: { contains: 'BeKaPaKa', mode: 'insensitive' } },
@@ -321,6 +322,8 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       lastName: true,
       number: true,
       position: true,
+      kalkSlug: true,
+      kalkPlayerId: true,
       aiDevelopmentSummary: true,
       aiDevelopmentAt: true,
       aiDevelopmentModel: true,
@@ -329,7 +332,19 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
     }
   });
 
+  // Pozycja i numer jak w kadrze i w danych planu: najpierw profil KALK, potem wpis trenera w składzie
+  const profileSlugs = [...new Set(players.map((p) => rosterKalkSlug(p)).filter(Boolean))];
+  const profileBySlug = new Map(
+    (profileSlugs.length
+      ? (await prisma.kalkPlayerProfile.findMany({ where: { slug: { in: profileSlugs } }, select: { slug: true, position: true, lastNumber: true } })) || []
+      : []
+    ).map((pr) => [pr.slug, pr])
+  );
+
   const playerItems = await mapLimit(players, 4, async (p) => {
+    const profile = profileBySlug.get(rosterKalkSlug(p));
+    const position = profile?.position || p.position || null;
+    const number = p.number ?? profile?.lastNumber ?? null;
     const name = `${p.firstName} ${p.lastName}`.trim();
     const hasContent = hasDetailedPlayerPlanMarkdown(p.aiDevelopmentSummary);
     const st = await getPlayerPlanStaleness(p, targetSeasonId);
@@ -340,7 +355,7 @@ export async function getAiAnalysesCatalog(querySeasonId = undefined) {
       type: 'player',
       category: 'Zawodnicy',
       title: `Plan rozwoju — ${name}`,
-      subtitle: [p.position, p.number != null ? `#${p.number}` : null].filter(Boolean).join(' · ') || null,
+      subtitle: [position, number != null ? `#${number}` : null].filter(Boolean).join(' · ') || null,
       generatedAt: p.aiDevelopmentAt?.toISOString() ?? null,
       model: p.aiDevelopmentModel ?? null,
       hasContent,

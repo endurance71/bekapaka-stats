@@ -81,8 +81,8 @@ describe('KALK v2 — ingestKalkV2Bundle', () => {
     const log = t.kalkPlayerGameLog.find((l) => l.playerSlug === 'dawid-olearczyk');
     expect(log).toMatchObject({ kalkPlayerId: '2026-2027__dawid-olearczyk', isWin: true, ast: 2, ftm: 1, fta: 2, side: 'home', starter: true });
     expect(log.stats).toMatchObject({ opponent: 'Kosz-All-In', pts: 3, three_pm: 0, min: '40:00', scoreLabel: '12:7' });
-    expect(t.kalkPlayByPlayEvent).toHaveLength(17);
-    expect(res.pbp.eventsWritten).toBe(17);
+    expect(t.kalkPlayByPlayEvent).toHaveLength(22);
+    expect(res.pbp.eventsWritten).toBe(22);
   });
 
   it('jest idempotentny — drugi import nie zmienia niczego', async () => {
@@ -115,7 +115,7 @@ describe('KALK v2 — ingestKalkV2Bundle', () => {
     const res = await ingestKalkV2Bundle(b, { prisma, syncPlayers: null, logger: quiet });
     expect(res.matches.updated).toBe(1);
     expect(res.pbp.matchesReplaced).toBe(0);
-    expect(prisma.$tables.kalkPlayByPlayEvent).toHaveLength(17);
+    expect(prisma.$tables.kalkPlayByPlayEvent).toHaveLength(22);
     expect(prisma.$tables.kalkPlayerGameLog.find((l) => l.playerSlug === 'tomasz-kaszubowski').eval).toBe(2);
   });
 

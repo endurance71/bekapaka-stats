@@ -268,7 +268,7 @@ function pickTotals(t) {
 }
 
 /**
- * E7 — PBP vs wynik i box score.
+ * E7 — PBP vs wynik i box score (celne, trójki, wolne, faule) oraz akcje nierozpoznane przez parser.
  */
 export function checkPlayByPlay(km, events, teams = km.boxScore?.teams || []) {
   const out = [];
@@ -280,7 +280,9 @@ export function checkPlayByPlay(km, events, teams = km.boxScore?.teams || []) {
   let ph = 0;
   let pa = 0;
   const pts = { home: 0, away: 0 };
-  const counts = { home: { fgm: 0, threePm: 0, ftm: 0, fta: 0 }, away: { fgm: 0, threePm: 0, ftm: 0, fta: 0 } };
+  const counts = { home: { fgm: 0, threePm: 0, ftm: 0, fta: 0, pf: 0 }, away: { fgm: 0, threePm: 0, ftm: 0, fta: 0, pf: 0 } };
+  /** @type {Map<string, number>} akcje, których parser nie rozpoznał (actionRaw → liczba) */
+  const unknown = new Map();
   const clock = new Map();
   let clockIssues = 0;
   let unresolved = 0;
@@ -303,7 +305,9 @@ export function checkPlayByPlay(km, events, teams = km.boxScore?.teams || []) {
         counts[side].fta += 1;
       }
       if (e.actionType === 'ft_missed') counts[side].fta += 1;
+      if (e.actionType === 'foul') counts[side].pf += 1;
     }
+    if (e.actionType === 'unknown') unknown.set(e.actionRaw || '?', (unknown.get(e.actionRaw || '?') || 0) + 1);
     if (e.clockSec != null) {
       const prev = clock.get(e.period);
       if (prev != null && e.clockSec > prev) clockIssues += 1;
@@ -323,6 +327,10 @@ export function checkPlayByPlay(km, events, teams = km.boxScore?.teams || []) {
       .map((k) => `${k} PBP ${counts[side][k]} vs box ${box[k]}`);
     if (diffs.length) add('warn', `PBP ${t.name}: ${diffs.join(', ')}`);
   });
+  if (unknown.size) {
+    const list = [...unknown.entries()].map(([raw, count]) => `„${raw}” ×${count}`).join(', ');
+    add('warn', `PBP: nierozpoznane akcje (parser) — ${list}`);
+  }
   if (clockIssues) add('warn', `PBP: zegar rośnie w obrębie kwarty (${clockIssues}×)`);
   if (unresolved) add('warn', `PBP: ${unresolved} zdarzeń zawodnika bez sluga`);
   return out;
