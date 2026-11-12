@@ -43,6 +43,7 @@ import {
 } from './util.js';
 import { validateKalkV2Bundle } from './validateBundle.js';
 import { applyProtocolCorrections } from './protocolCorrections.js';
+import { applyPbpPlusMinus } from './pbpPlusMinus.js';
 import { reconcileStandings } from './standings.js';
 
 export const V2_DIVISION_PATH = 'liga/dywizja-ii';
@@ -246,6 +247,9 @@ export async function ingestKalkV2Bundle(bundle, opts = {}) {
   // +/- i faule wymuszone z oficjalnych protokołów (KALK podaje 0) — przed box score, logami i hashem meczu.
   const corrected = applyProtocolCorrections(seasonId, matches);
   for (const msg of corrected.warnings) warn(`korekta protokołu: ${msg}`);
+  // +/- z akcji po akcji dla drużyn, którym KALK podał same zera i nie ma ich w protokołach (tylko gdy piątki są pewne).
+  const pbpPlusMinus = applyPbpPlusMinus(matches);
+  if (pbpPlusMinus.teams) logger?.log?.(`  +/- z akcji po akcji: ${pbpPlusMinus.teams} drużyn w meczach`);
   const boxById = new Map();
   for (const match of matches) {
     const id = String(match.kalkMatchId);

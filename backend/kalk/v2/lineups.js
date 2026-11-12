@@ -5,9 +5,13 @@
  * Zmiana: `playerSlug` wchodzi, `subOutSlug` / `subOutNumber` schodzi; pierwsza piątka = zmiana bez schodzącego
  * („Zmiana: #-2 → …”), także przed `period_start`. „Na boisku” (`on_court`) i akcja zawodnika spoza piątki
  * dopisują go. Odcinek bez dokładnie 5 zawodników jest „niepewny” i nie liczy się do par.
+ * KALK często zapisuje zmianę kilka–kilkanaście sekund po pierwszej akcji wchodzącego zawodnika — gdy akcję robi
+ * ktoś spoza parkietu, a jego wejście jest zapisane w tej samej kwarcie najwyżej LATE_SUB_WINDOW_SEC później,
+ * zmiana (z zejściem) jest stosowana od razu, a późniejszy wpis pomijany.
  */
 
 const LINEUP_SIZE = 5;
+const LATE_SUB_WINDOW_SEC = 20;
 
 const playerKey = (slug, number) => slug || (number != null ? `#${number}` : null);
 
@@ -65,7 +69,37 @@ export function computeLineupStints(events, side) {
     open(ev, before);
   };
 
-  for (const ev of sorted) {
+  /** Wpisy zmian już zastosowane wcześniej (spóźnione w zapisie KALK). */
+  const appliedEarly = new Set();
+  const outKeyOf = (sub) =>
+    sub.subOutSlug
+    || (sub.subOutNumber != null ? [...onCourt.entries()].find(([, n]) => n === sub.subOutNumber)?.[0] : null)
+    || null;
+  const applySub = (sub) => {
+    const inKey = playerKey(sub.playerSlug, sub.playerNumber);
+    const outKey = outKeyOf(sub);
+    if (outKey) onCourt.delete(outKey);
+    if (inKey) {
+      onCourt.set(inKey, sub.playerNumber ?? null);
+      remember(inKey, sub);
+    }
+  };
+  /** Najbliższe zapisane wejście zawodnika `key` (ta sama strona i kwarta, w oknie czasu). */
+  const lateEntryOf = (i, key, ev) => {
+    for (let j = i + 1; j < sorted.length; j += 1) {
+      const next = sorted[j];
+      if (next.period !== ev.period) return null;
+      if ((next.elapsedSec ?? 0) - (ev.elapsedSec ?? 0) > LATE_SUB_WINDOW_SEC) return null;
+      if (next.side !== side || next.actionType !== 'sub' || appliedEarly.has(next)) continue;
+      if (playerKey(next.playerSlug, next.playerNumber) === key) return next;
+      // zawodnik schodzi w tym oknie, zanim wejdzie — to nie jest spóźniony wpis jego wejścia
+      if (next.subOutSlug === key) return null;
+    }
+    return null;
+  };
+
+  for (let i = 0; i < sorted.length; i += 1) {
+    const ev = sorted[i];
     lastEv = ev;
     if (!current) open(ev, before);
     if (ev.side !== side) {
@@ -75,16 +109,15 @@ export function computeLineupStints(events, side) {
     const inKey = playerKey(ev.playerSlug, ev.playerNumber);
 
     if (ev.actionType === 'sub') {
-      const outKey = ev.subOutSlug
-        || (ev.subOutNumber != null ? [...onCourt.entries()].find(([, n]) => n === ev.subOutNumber)?.[0] : null)
-        || null;
-      change(ev, () => {
-        if (outKey) onCourt.delete(outKey);
-        if (inKey) {
-          onCourt.set(inKey, ev.playerNumber ?? null);
-          remember(inKey, ev);
-        }
-      });
+      if (appliedEarly.has(ev)) {
+        before = ev;
+        continue;
+      }
+      change(ev, () => applySub(ev));
+    } else if (inKey && !onCourt.has(inKey) && ev.actionType !== 'on_court' && lateEntryOf(i, inKey, ev)) {
+      const late = lateEntryOf(i, inKey, ev);
+      appliedEarly.add(late);
+      change(ev, () => applySub(late));
     } else if (inKey && !onCourt.has(inKey)) {
       // „Na boisku” albo akcja zawodnika, którego nie widzieliśmy na parkiecie
       change(ev, () => {

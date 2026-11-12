@@ -121,7 +121,9 @@ export function buildBoxScoreJson(match, schedule) {
     name: team?.name || '',
     isBekapaka: isBekapakaTeamName(team?.name),
     players: (team?.players || []).map((p) => boxPlayerToLegacy(p, team)),
-    pts
+    pts,
+    // +/- policzony z akcji po akcji (KALK podał same zera) — patrz pbpPlusMinus.js
+    ...(team?.plusMinusSource ? { plusMinusSource: team.plusMinusSource } : {})
   });
 
   const homeTeam = enrichKalkTeamStats(legacyTeam(home, homePts), awayPts);
