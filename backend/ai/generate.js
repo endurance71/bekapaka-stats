@@ -20,7 +20,8 @@ import { SCOUTING_SYSTEM, buildScoutingUser } from './prompts/scoutingOpponent.p
 import { buildPersonnelMdFromAnalysis } from './scoutingPersonnel.js';
 import {
   buildScoutingSummaryMd,
-  parseScoutingJson
+  parseScoutingJson,
+  scoutingStructureIssues
 } from './scoutingMarkdown.js';
 import { BRIEFING_SYSTEM, buildBriefingUser } from './prompts/teamBriefing.pl.js';
 import { hasCompleteBriefingMarkdown } from './briefingMarkdown.js';
@@ -364,8 +365,16 @@ async function cachedScoutingReport(prep) {
   return null;
 }
 
-export async function saveScoutingReport(prep, raw, model) {
+/**
+ * @param {{ strict?: boolean }} [options] — strict (wynik agenta MCP): niepełny raport (np. bez personnel.bench) jest
+ *   odrzucany zamiast zapisu z pustymi sekcjami.
+ */
+export async function saveScoutingReport(prep, raw, model, { strict = false } = {}) {
   const { ctx } = prep;
+  if (strict) {
+    const issues = scoutingStructureIssues(raw);
+    if (issues.length) throw new Error(`Raport scoutingowy nie spełnia wymaganej struktury: ${issues.join('; ')}`);
+  }
   const analysisJson = parseScoutingJson(raw);
   const personnelMd = buildPersonnelMdFromAnalysis(analysisJson);
   const summaryMd = buildScoutingSummaryMd(analysisJson) || analysisJson.summary;

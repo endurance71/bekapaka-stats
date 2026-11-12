@@ -182,6 +182,43 @@ export function mergeScoutingAnalysis(primary, fallback) {
  * @param {string} raw
  * @returns {ScoutingAnalysis}
  */
+/**
+ * Braki w strukturze raportu scoutingowego względem SCOUTING_SCHEMA (wszystkie pola tekstowe niepuste, personnel z 4 polami,
+ * lockerRoom 3–5 punktów, werdykt od „KLUCZ:”). Pusta lista = raport kompletny.
+ * @param {unknown} raw — tekst JSON albo obiekt
+ * @returns {string[]}
+ */
+export function scoutingStructureIssues(raw) {
+  let obj = raw;
+  if (typeof raw === 'string') {
+    try {
+      obj = JSON.parse(raw.trim().replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim());
+    } catch {
+      return ['wynik nie jest poprawnym JSON'];
+    }
+  }
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return ['wynik nie jest obiektem JSON'];
+  const issues = [];
+  const text = (v) => typeof v === 'string' && v.trim().length > 0;
+  for (const key of ['summary', 'offense', 'defense', 'verdict']) {
+    if (!text(obj[key])) issues.push(`brak pola ${key}`);
+  }
+  if (text(obj.verdict) && !/^\s*KLUCZ:/.test(obj.verdict)) issues.push('verdict musi zaczynać się od „KLUCZ:”');
+  const personnel = obj.personnel;
+  if (!personnel || typeof personnel !== 'object' || Array.isArray(personnel)) {
+    issues.push('brak obiektu personnel');
+  } else {
+    for (const key of ['keyPlayers', 'threats', 'matchups', 'bench']) {
+      if (!text(personnel[key])) issues.push(`brak pola personnel.${key}`);
+    }
+  }
+  const room = obj.lockerRoom;
+  if (!Array.isArray(room) || room.length < 3 || room.length > 5 || !room.every(text)) {
+    issues.push('lockerRoom musi mieć 3–5 niepustych punktów');
+  }
+  return issues;
+}
+
 export function parseScoutingJson(raw) {
   const text = (raw || '').trim();
   if (!text) {
