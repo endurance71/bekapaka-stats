@@ -124,13 +124,27 @@ export function formatMinutes(secondsPlayed) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
 
+/** Czy drużyna ma +/- w meczu: przynajmniej jeden jej zawodnik z wartością ≠ 0 (KALK często publikuje same zera). */
+export function teamHasPlusMinus(team) {
+  return (Array.isArray(team?.players) ? team.players : []).some((p) => {
+    const pm = Number(p?.plusMinus ?? p?.plus_minus);
+    return Number.isFinite(pm) && pm !== 0;
+  });
+}
+
 /** Czy KALK podał +/- w meczu: przynajmniej jeden zawodnik z wartością ≠ 0 (w części meczów KALK go nie liczy). */
 export function matchHasPlusMinus(boxScore) {
   const teams = Array.isArray(boxScore?.teams) ? boxScore.teams : [];
-  return teams.some((t) =>
-    (Array.isArray(t?.players) ? t.players : []).some((p) => {
-      const pm = Number(p?.plusMinus ?? p?.plus_minus);
-      return Number.isFinite(pm) && pm !== 0;
-    })
-  );
+  return teams.some(teamHasPlusMinus);
+}
+
+/**
+ * +/- drużyny `teamName` w meczu. Drużyny sprawdzamy osobno: +/- jednej (z protokołu albo z akcji po akcji)
+ * nie oznacza, że zera drugiej są prawdziwe. Bez dopasowania nazwy — jak dla całego meczu.
+ */
+export function teamPlusMinusAvailable(boxScore, teamName) {
+  const teams = Array.isArray(boxScore?.teams) ? boxScore.teams : [];
+  const norm = (s) => String(s || '').trim().toLowerCase();
+  const team = teams.find((t) => norm(t?.name) && norm(t.name) === norm(teamName));
+  return team ? teamHasPlusMinus(team) : matchHasPlusMinus(boxScore);
 }
