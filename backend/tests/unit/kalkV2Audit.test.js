@@ -147,6 +147,20 @@ describe('Audyt KALK v2 — kontrole meczu (czyste funkcje)', () => {
     expect(issues.some((i) => i.severity === 'warn' && /fgm PBP 4 vs box 5/.test(i.message))).toBe(true);
   });
 
+  it('E7: faule z PBP vs box score i akcje nierozpoznane przez parser', async () => {
+    const { km, ctx } = await matchRow();
+    expect(checkPlayByPlay(km, ctx.events)).toEqual([]);
+    // Przed poprawką parsera „Faul osobisty” trafiał do unknown — faule znikały z PBP
+    const events = ctx.events.map((e) => (e.actionType === 'foul' ? { ...e, actionType: 'unknown' } : e));
+    const messages = checkPlayByPlay(km, events).map((i) => i.message);
+    expect(messages).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/BeKaPaKa Bobolice: pf PBP 0 vs box 4/),
+        expect.stringMatching(/nierozpoznane akcje \(parser\) — „Faul osobisty” ×5/)
+      ])
+    );
+  });
+
   it('E8/E9/E10/E11/E13: starterzy, minuty, bloki, liczba zawodników, tabele typowane', async () => {
     const { km, ctx } = await matchRow();
     const away = km.boxScore.teams[1];

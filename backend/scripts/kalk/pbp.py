@@ -15,6 +15,7 @@ FT_RE = re.compile(r'^(Celny|Niecelny) rzut wolny$')
 PLAYER_NUM_RE = re.compile(r'^(?P<name>.+?)\s*\(#(?P<num>-?\d+)\)$')
 SUB_RE = re.compile(r'^Zmiana:\s*(?P<out>.+?)\s*→\s*(?P<in>.+)$')
 ON_COURT_RE = re.compile(r'^Na boisku:\s*(?P<in>.+)$')
+FOUL_RE = re.compile(r'^Faul\b', re.IGNORECASE)
 SIMPLE_ACTIONS = {
     'Zbiórka': 'rebound',
     'Asysta': 'assist',
@@ -55,6 +56,11 @@ def classify(action: str) -> dict:
         return result
     if action in SIMPLE_ACTIONS:
         result['actionType'] = SIMPLE_ACTIONS[action]
+        return result
+    # KALK zapisuje faule także z rodzajem („Faul osobisty”, „Faul techniczny”, „Faul niesportowy”…) —
+    # wszystkie liczą się do fauli zawodnika w box score; rodzaj zostaje w actionRaw.
+    if FOUL_RE.match(action):
+        result['actionType'] = 'foul'
         return result
     match = SUB_RE.match(action)
     if match:

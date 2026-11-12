@@ -88,7 +88,7 @@ node backend/scripts/kalk-data-audit.js --season <slug|all> [--strict] [--fail-o
 docker exec -w /app bkpk-backend-prod node scripts/kalk-data-audit.js --season all --strict
 ```
 
-Kontrole meczu E1–E13 (box score vs terminarz, sumy, kwarty, przebieg, PBP vs box score, piątka, minuty, bloki, sekcje) i sezonu S1–S7 (brakujące mecze z linkami `/mecz/{id}`, tabela przeliczona z wyników, statystyki sezonowe vs logi, duplikaty, unikalność ID, aktualność syncu). Kod wyjścia 1 przy problemach w trybie `--strict`.
+Kontrole meczu E1–E13 (box score vs terminarz, sumy, kwarty, przebieg, PBP vs box score — celne, trójki, wolne i faule — oraz akcje nierozpoznane przez parser, piątka, minuty, bloki, sekcje) i sezonu S1–S7 (brakujące mecze z linkami `/mecz/{id}`, tabela przeliczona z wyników, statystyki sezonowe vs logi, duplikaty, unikalność ID, aktualność syncu). Kod wyjścia 1 przy problemach w trybie `--strict`.
 
 ## Testy
 

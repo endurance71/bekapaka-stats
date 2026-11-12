@@ -618,6 +618,8 @@ export async function getPlayerStats(playerId, seasonIdParam) {
         ts: gamesCount > 0 && (totalFga + 0.44 * totalFta) > 0 ? totalPoints / (2 * (totalFga + 0.44 * totalFta)) : null,
         // +/- tylko z meczów, w których KALK go podał; brak takich meczów → null (panel chowa wskaźnik)
         plusMinusAvg: plusMinusGames > 0 ? totalPlusMinus / plusMinusGames : null,
+        // Ile meczów ma +/- (KALK często podaje 0 dla całego meczu, gdy brak protokołu z Drive)
+        plusMinusGames,
         evalAvg: evalGames > 0 ? totalEval / evalGames : (typeof kalkPlayer?.eval === 'number' ? kalkPlayer.eval : null),
         gamesPlayed: gamesCount,
         minutesPlayed: Math.round(totalMinutesSeconds / 60)

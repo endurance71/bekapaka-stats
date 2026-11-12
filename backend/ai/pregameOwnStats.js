@@ -14,6 +14,19 @@ function shooting(made, attempted) {
 }
 
 /**
+ * Suma +/- tylko z meczów, które mają +/- w protokole; null, gdy żaden mecz zawodnika go nie ma.
+ * @param {Array<Record<string, any>>} rows
+ * @param {Set<string>} matchesWithPlusMinus
+ */
+function plusMinusOf(rows, matchesWithPlusMinus) {
+  const known = rows.filter((r) => matchesWithPlusMinus.has(String(r.kalkMatchId)));
+  return {
+    plusMinusTotal: known.length ? known.reduce((acc, r) => acc + (Number(r.plusMinus) || 0), 0) : null,
+    plusMinusGames: known.length
+  };
+}
+
+/**
  * Identyfikator zawodnika KALK powiązanego z wierszem kadry (z getRoster).
  * @param {Record<string, any>} player
  * @returns {string | null}
@@ -36,6 +49,12 @@ export function buildOwnPlayerStats(roster, logs) {
     if (!logsByKalkId.has(key)) logsByKalkId.set(key, []);
     logsByKalkId.get(key).push(row);
   }
+
+  // Mecz, w którym wszyscy nasi zawodnicy mają +/- = 0, nie ma +/- w protokole KALK (suma +/- drużyny = 5 × różnica
+  // punktów, więc przy rozstrzygniętym meczu nie może wynosić 0) — takie mecze pomijamy w sumie +/-.
+  const matchesWithPlusMinus = new Set(
+    (logs || []).filter((r) => Number(r.plusMinus) !== 0 && r.plusMinus != null).map((r) => String(r.kalkMatchId))
+  );
 
   const players = [];
   const withoutGames = [];
@@ -69,7 +88,7 @@ export function buildOwnPlayerStats(roster, logs) {
       twoPt: shooting(sum('twoPm'), sum('twoPa')),
       threePt: shooting(sum('threePm'), sum('threePa')),
       ft: shooting(sum('ftm'), sum('fta')),
-      plusMinusTotal: sum('plusMinus')
+      ...plusMinusOf(rows, matchesWithPlusMinus)
     });
   }
 

@@ -277,6 +277,10 @@ class PlayByPlayTests(unittest.TestCase):
         on_court = pbp.classify('Na boisku: Stefan Płaczek (#15)')
         self.assertEqual((on_court['actionType'], on_court['subInNumber']), ('on_court', 15))
         self.assertEqual(pbp.classify('Coś nowego')['actionType'], 'unknown')
+        # Faule z rodzajem (mecze 4144 i 4184: „Faul osobisty” trafiał do unknown)
+        for raw in ('Faul osobisty', 'Faul techniczny', 'Faul niesportowy', 'faul osobisty'):
+            self.assertEqual(pbp.classify(raw)['actionType'], 'foul', raw)
+        self.assertEqual(pbp.classify('Faulowany')['actionType'], 'unknown')
 
     def test_pbp_4124(self):
         data, result = parse_4124_pbp()

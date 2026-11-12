@@ -251,7 +251,8 @@ function gameLogForPrompt(g, match) {
     ftm: intOrNull(g.ftm),
     fta: intOrNull(g.fta),
     efgPct: intOrNull(g.fga) ? roundOrNull((g.efg ?? 0) * 100, 1) : null,
-    plusMinus: intOrNull(g.plusMinus)
+    // Mecz bez +/- w protokole (same zera w KALK) → null, nie 0 — inaczej suma i średnia się rozjeżdżają
+    plusMinus: g.plusMinusAvailable === false ? null : intOrNull(g.plusMinus)
   };
 }
 
@@ -394,6 +395,7 @@ export async function buildPlayerContext(playerId, options = {}) {
       efg: roundOrNull(avg.efg, 3),
       ts: roundOrNull(avg.ts, 3),
       plusMinusAvg: roundOrNull(avg.plusMinusAvg, 1),
+      plusMinusGames: intOrNull(avg.plusMinusGames),
       gamesPlayed: intOrNull(avg.gamesPlayed),
       minutesPlayed: intOrNull(avg.minutesPlayed)
     },
