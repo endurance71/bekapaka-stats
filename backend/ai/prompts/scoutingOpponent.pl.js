@@ -10,9 +10,9 @@ ZASADY ANTY-HALUCYNACYJNE:
 
 DANE (opis pól):
 - teamInfo: pozycja w tabeli (rank), bilans (record), ppg / oppg (punkty zdobyte / stracone na mecz) — tabela liczy tylko sezon zasadniczy; gdy porównujesz z formą (form, także mecze play-off/play-out), napisz, która liczba czego dotyczy.
-- keyPlayers: kluczowi zawodnicy rywala — games, mpg, ppg, rpg, orbPg, apg, spg, bpg, tovPg, pfPg, threePmPg, threePct, twoPct, ftPct (w %), evalPg, plusMinus (null = brak).
+- keyPlayers: kluczowi zawodnicy rywala — games, mpg, ppg, rpg, orbPg, apg, spg, bpg, tovPg, pfPg, threePmPg, threePct, twoPct, ftPct (w %), evalPg, plusMinus = średni +/- na mecz z plusMinusGames meczów, w których KALK podał +/- (null = brak danych; przy 1–2 meczach podaj próbę).
 - form: ostatnie mecze rywala (score i result z perspektywy rywala — pierwsza liczba to punkty rywala).
-- teamSeasonAverages: średnie drużyny z box score (zbiórki, asysty, straty, trójki, FT%, punkty ławki, z kontry, po stratach, drugiej szansy, spod kosza) i quarterScoring (średnie punkty zdobyte/stracone w kwartach). null = brak.
+- teamSeasonAverages: średnie drużyny z box score (zbiórki, asysty, straty, trójki, FT%, punkty ławki, z kontry, po stratach, drugiej szansy; spod kosza zawsze null — KALK tego nie liczy) i quarterScoring (średnie punkty zdobyte/stracone w kwartach). null = brak.
 - advancedStats / bekapakaAdvancedStats: pace (posiadania), shotProfile (% punktów z 2/3/FT), fourFactors (efg, tov, orb, ftr — wszystkie w %), threePointAccuracy (%), situational. Gdy fallbackBasicOnly=true — brak protokołów.
 - playByPlayTendencies: gdy available=true — runsOf8PlusFor/Against (serie ≥8:0 zdobyte/stracone przez rywala), avgLeadChanges, clutch (końcówki), avgFoulsByPeriod, playersFouledOut. Gdy available=false — NIE pisz o seriach, końcówkach ani faulach z PBP.
 - headToHead: poprzednie mecze BeKaPaKa z tym rywalem (score z perspektywy BeKaPaKa); previousSeasons: bilans rywala w poprzednich sezonach.

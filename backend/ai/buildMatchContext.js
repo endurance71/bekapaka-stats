@@ -82,6 +82,24 @@ export function normalizeBoxPlayer(p) {
 }
 
 /**
+ * KALK publikuje +/- i faule wymuszone jako 0 dla całego meczu, gdy ich nie liczy (brak protokołu z Drive).
+ * Przy rozstrzygniętym meczu same zera są niemożliwe (Σ +/- = 5 × różnica, Σ fauli wymuszonych = faule rywala),
+ * więc taki mecz dostaje null — brak danych, nie zero. Mutuje wiersze, zwraca, czego brakuje.
+ * @param {ReturnType<typeof normalizeBoxPlayer>[]} players
+ */
+export function markMissingProtocolStats(players) {
+  const missing = {
+    plusMinus: !players.some((p) => (p.plusMinus ?? 0) !== 0),
+    pfDrawn: !players.some((p) => (p.pfDrawn ?? 0) !== 0)
+  };
+  for (const p of players) {
+    if (missing.plusMinus) p.plusMinus = null;
+    if (missing.pfDrawn) p.pfDrawn = null;
+  }
+  return missing;
+}
+
+/**
  * Wiersz zawodnika do promptu (pełny box score).
  * @param {ReturnType<typeof normalizeBoxPlayer>} p
  */
@@ -181,7 +199,9 @@ export function pointsSourcesFor(teamStat, infoSources) {
     fastBreakPts: pick('fastBreakPts'),
     ptsOffTurnovers: pick('ptsOffTurnovers'),
     secondChancePts: pick('secondChancePts'),
-    ptsInPaint: pick('ptsInPaint')
+    // KALK nie zapisuje miejsca rzutu — „punkty z pomalowanego” to u nich 0 albo kilka punktów przy dziesiątkach
+    // celnych rzutów za 2. Liczba nic nie mówi, więc do analiz trafia jako brak danych.
+    ptsInPaint: null
   };
   return Object.values(sources).some((v) => v !== null) ? sources : null;
 }
@@ -239,11 +259,16 @@ export function buildMatchPayloadFromGame(game, extras = {}) {
 
   const usPlayers = (bekapakaTeam?.players || []).map(normalizeBoxPlayer);
   const themPlayers = (opponentTeam?.players || []).map(normalizeBoxPlayer);
+  const missing = markMissingProtocolStats([...usPlayers, ...themPlayers]);
 
   // Kolejność: KalkTeamGameStat → boxScore.teams[].totals (v2) → suma z zawodników.
   const boxTotals = (team) => (team?.totals && typeof team.totals === 'object' && Number.isFinite(team.totals.pts) ? team.totals : null);
   const usTotals = teamTotals(usStat || boxTotals(bekapakaTeam), usPlayers, bekapakaTeam?.pts ?? game.scoreUs);
   const themTotals = teamTotals(themStat || boxTotals(opponentTeam), themPlayers, opponentTeam?.pts ?? game.scoreThem);
+  if (missing.pfDrawn) {
+    usTotals.pfDrawn = null;
+    themTotals.pfDrawn = null;
+  }
 
   const usSources = pointsSourcesFor(usStat, info?.pointsSources?.[usSide]);
   const themSources = pointsSourcesFor(themStat, info?.pointsSources?.[themSide]);
