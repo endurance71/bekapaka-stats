@@ -14,6 +14,14 @@ i kończy się grafiką zapowiedzi ze Studio, więc typografia planszy końcowej
 
 Podstawa każdego meczu: `posterId`, `opponent`, `opponentShort`, `kickoff` (ISO ze strefą), `venue`, `entry`, `round`.
 
+Rolka z treningu: wzór `G-Trening` (ok. 18 s) z klipów telefonu: ujęcia ze zwolnieniem na wsadach (materiał 120 kl./s),
+napisy z faktów (bilans sezonu), potem starcie, godzina i plakat. Dane w `training` (`dir` w `public/footage/`, ujęcia z
+`from`, odcinkami `segs` {rate, len} i klatką wsadu `hit`), np. `data/maxbau-trening-2026-11-14.json`; renderuj go z nazwą
+wzoru (`npm run render -- data/maxbau-trening-2026-11-14.json G-Trening`). Klipy iPhone (HDR HLG) zamień najpierw na SDR:
+`avconvert -s IMG.MOV -o IMG.mov -p Preset1920x1080` (zostaje 120 kl./s). Podkład generuje `scripts/beat.py out.wav 18.6`
+(Python z numpy i scipy; synteza bez sampli, 100 BPM, uderzenia na cięciach co 18 klatek), potem dołóż go ffmpeg z
+`loudnorm=I=-14:TP=-1.5`.
+
 ## Jak zrobić film
 
 ```bash

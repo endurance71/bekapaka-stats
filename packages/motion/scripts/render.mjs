@@ -19,6 +19,7 @@ const has = {
   'C-Forma': () => match.season?.scores?.length,
   'D-Tablica': () => true,
   'E-Redakcyjnie': () => true,
+  'G-Trening': () => match.training?.shots?.length,
 };
 const ids = wanted.length ? wanted : Object.keys(has).filter((id) => has[id]());
 const out = path.join(pkg, 'out', match.posterId);
