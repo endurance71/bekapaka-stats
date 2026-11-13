@@ -11,7 +11,7 @@ import { findScoutingReport } from './scoutingData.js';
 import { loadOwnPlayerStats } from './pregameOwnStats.js';
 import { resolveSeasonId } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
-import { matchLogistics } from '../lib/matchDay.js';
+import { matchLogistics, squadForMatch } from '../lib/matchDay.js';
 
 function parseJson(raw, what) {
   try {
@@ -93,13 +93,15 @@ export async function preparePregame(input = {}) {
     throw err;
   }
 
-  const [roster, scoutingLookup, scoutingData] = await Promise.all([
+  const [fullRoster, scoutingLookup, scoutingData] = await Promise.all([
     getRoster(targetSeasonId),
     // Raport scoutingu tego sezonu (klucz sezonowy, fallback: stary klucz bez sezonu)
     findScoutingReport(String(opponent), targetSeasonId).catch(() => ({ report: null })),
     getDetailedScouting(String(opponent), targetSeasonId, { includeAiPayload: true }).catch(() => null)
   ]);
   const scoutingReport = scoutingLookup?.report || null;
+  // Skład na mecz z dnia meczowego: kontuzjowani i nieobecni nie trafiają do kadry w prompcie ani do piątki
+  const { available: roster, unavailable } = squadForMatch(fullRoster, nextMatch?.matchDay);
 
   // Statystyki rywala z tych samych danych co scouting (bez tekstu modelu) — źródło liczb dla odprawy.
   const ai = scoutingData?.aiPayload || null;
@@ -118,7 +120,7 @@ export async function preparePregame(input = {}) {
   // Liczby naszych zawodników (od 1 meczu) — do porównań z rywalami na karcie.
   const ownStats = await loadOwnPlayerStats(roster, targetSeasonId).catch(() => null);
 
-  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, ownStats, roster, nextMatch });
+  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, ownStats, roster, unavailable, nextMatch });
   return {
     operation: 'panel.pregame',
     lockKey: `pregame:${targetSeasonId}:${String(opponent).toLowerCase()}`,
@@ -143,13 +145,18 @@ export async function savePregame(prep, raw, model) {
   const parsed = parseJson(raw, 'karta odprawy');
   // Ten sam kontrakt co schemat (Gemini wymusza go po stronie API; inne silniki i agent — tutaj).
   if (!Array.isArray(parsed?.tacticalKeys) || parsed.tacticalKeys.length !== 3) throw new Error('Karta odprawy musi mieć dokładnie 3 klucze taktyczne');
-  if (!Array.isArray(parsed?.startingFive) || parsed.startingFive.length !== 5) throw new Error('Karta odprawy musi mieć dokładnie 5 zawodników w pierwszej piątce');
+  if (!Array.isArray(parsed?.startingFive) || parsed.startingFive.length !== 5) throw new Error('Karta odprawy musi mieć dokładnie 5 miejsc strefy (D1–D5)');
   const { roster, nextMatch } = prep;
   // Anty-halucynacja: w piątce tylko zawodnicy z kadry (dopasowanie po playerId lub imieniu i nazwisku).
   const rosterById = new Map((roster || []).map((p) => [String(p.id), p]));
   const rosterByName = new Map((roster || []).map((p) => [`${p.firstName} ${p.lastName}`.trim().toLowerCase(), p]));
+  // Miejsca strefy D1–D5 bez zawodnika (piątkę trener ustala na meczu); podany zawodnik musi być z kadry.
   parsed.startingFive = parsed.startingFive
     .map((slot) => {
+      const position = String(slot?.position || '').trim().toUpperCase();
+      if (!slot?.playerId && !slot?.name) {
+        return /^D[1-5]$/.test(position) && slot?.assignment ? { position, assignment: String(slot.assignment) } : null;
+      }
       const match = rosterById.get(String(slot?.playerId)) || rosterByName.get(String(slot?.name || '').trim().toLowerCase());
       if (!match) return null;
       return { ...slot, playerId: match.id, name: `${match.firstName} ${match.lastName}`.trim(), number: match.number ?? null };
