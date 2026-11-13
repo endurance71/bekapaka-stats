@@ -7,8 +7,8 @@ export const TEAM_DEFENSE = 'strefa 2-3';
 export const ZONE_SPOTS = Object.freeze([
   { id: 'D1', label: 'Lewy górny', line: 'top', duty: 'Nacisk na piłkę na obwodzie, zamyka wjazd środkiem, doskok do strzelca na lewym skrzydle.' },
   { id: 'D2', label: 'Prawy górny', line: 'top', duty: 'Pilnuje linii rzutów wolnych, przejmuje piłkę po prawej, doskok do strzelca na prawym skrzydle.' },
-  { id: 'D3', label: 'Lewe dolne skrzydło', line: 'low', duty: 'Nisko po lewej stronie kosza; wyjście do rogu i na skrzydło, zastawianie po rzucie z drugiej strony.' },
-  { id: 'D4', label: 'Prawe dolne skrzydło', line: 'low', duty: 'Nisko po prawej stronie kosza; wyjście do rogu i na skrzydło, zastawianie po rzucie z drugiej strony.' },
+  { id: 'D3', label: 'Lewe dolne skrzydło', short: 'Lewe dolne', line: 'low', duty: 'Nisko po lewej stronie kosza; wyjście do rogu i na skrzydło, zastawianie po rzucie z drugiej strony.' },
+  { id: 'D4', label: 'Prawe dolne skrzydło', short: 'Prawe dolne', line: 'low', duty: 'Nisko po prawej stronie kosza; wyjście do rogu i na skrzydło, zastawianie po rzucie z drugiej strony.' },
   { id: 'D5', label: 'Środek', line: 'low', duty: 'Kotwica pod koszem: pole trzech sekund, linia rzutów wolnych, pierwszy do zastawienia najlepszego zbierającego.' }
 ]);
 

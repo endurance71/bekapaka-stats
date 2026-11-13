@@ -84,8 +84,10 @@ describe('statystyki naszych zawodników do karty przedmeczowej', () => {
     expect(user).toMatch(/także przy próbie 1–2 meczów/);
 
     const system = buildPreGameCardSystemInstruction();
-    expect(system).toContain('PORÓWNANIA (OBOWIĄZKOWE)');
-    expect(system).toMatch(/tylko 1 lub 2 mecze/);
+    expect(system).toContain('ZADANIA MIEJSC STREFY (OBOWIĄZKOWE)');
+    expect(system).toContain('NIE wybieraj pierwszej piątki');
+    expect(system).toContain('strefą 2-3');
+    expect(system).toMatch(/z 1 lub 2 meczów/);
   });
 
   it('bez meczów w bazie prompt mówi to wprost zamiast podawać pusty JSON', () => {

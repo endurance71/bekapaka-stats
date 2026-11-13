@@ -7,7 +7,6 @@ import { prisma } from './prisma.js';
 import { LEAGUE_TABLE_ORDER_BY } from './leagueTeamResolve.js';
 import { getDetailedScouting, getRoster } from '../dataStore.js';
 import { loadScoutingExtras } from '../ai/scoutingData.js';
-import { loadOwnPlayerStats } from '../ai/pregameOwnStats.js';
 import { getPlayerCareer } from '../kalk/v2/readModels.js';
 import { normTeam, pickSeasons, seasonLabel } from './pregameSeasons.js';
 import { squadForMatch } from './matchDay.js';
@@ -88,19 +87,6 @@ export async function loadPregameReport({ seasonId, opponent, matchDay = null })
     .filter(Boolean)
     .sort((a, b) => (b.current.perGame?.pts ?? 0) - (a.current.perGame?.pts ?? 0));
 
-  // Nasza kadra: bieżący sezon z box score (jak na karcie odprawy) + poprzedni sezon z kariery
-  const own = await loadOwnPlayerStats(roster, sid).catch(() => null);
-  const ownPlayers = await Promise.all(
-    (own?.players || [])
-      .filter((p) => p.games > 0)
-      .map(async (p) => {
-        const career = await careerSafe(p.playerId);
-        const { previous } = pickSeasons(career, { seasonSlug, prevSlug, teamName: usName });
-        const r = roster.find((x) => String(x.id) === String(p.playerId));
-        return { ...p, position: r?.position ?? null, previous };
-      })
-  );
-
   const squad = squadForMatch(roster, matchDay);
   const person = (p) => ({ id: p.id, name: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(), number: p.number ?? null });
 
@@ -128,8 +114,7 @@ export async function loadPregameReport({ seasonId, opponent, matchDay = null })
       points: t.points
     })),
     analysis: scouting.aiMeta?.fromGemini ? scouting.aiAnalysis : null,
-    opponentPlayers,
-    ownPlayers
+    opponentPlayers
   };
 }
 

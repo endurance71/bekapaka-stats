@@ -145,13 +145,18 @@ export async function savePregame(prep, raw, model) {
   const parsed = parseJson(raw, 'karta odprawy');
   // Ten sam kontrakt co schemat (Gemini wymusza go po stronie API; inne silniki i agent — tutaj).
   if (!Array.isArray(parsed?.tacticalKeys) || parsed.tacticalKeys.length !== 3) throw new Error('Karta odprawy musi mieć dokładnie 3 klucze taktyczne');
-  if (!Array.isArray(parsed?.startingFive) || parsed.startingFive.length !== 5) throw new Error('Karta odprawy musi mieć dokładnie 5 zawodników w pierwszej piątce');
+  if (!Array.isArray(parsed?.startingFive) || parsed.startingFive.length !== 5) throw new Error('Karta odprawy musi mieć dokładnie 5 miejsc strefy (D1–D5)');
   const { roster, nextMatch } = prep;
   // Anty-halucynacja: w piątce tylko zawodnicy z kadry (dopasowanie po playerId lub imieniu i nazwisku).
   const rosterById = new Map((roster || []).map((p) => [String(p.id), p]));
   const rosterByName = new Map((roster || []).map((p) => [`${p.firstName} ${p.lastName}`.trim().toLowerCase(), p]));
+  // Miejsca strefy D1–D5 bez zawodnika (piątkę trener ustala na meczu); podany zawodnik musi być z kadry.
   parsed.startingFive = parsed.startingFive
     .map((slot) => {
+      const position = String(slot?.position || '').trim().toUpperCase();
+      if (!slot?.playerId && !slot?.name) {
+        return /^D[1-5]$/.test(position) && slot?.assignment ? { position, assignment: String(slot.assignment) } : null;
+      }
       const match = rosterById.get(String(slot?.playerId)) || rosterByName.get(String(slot?.name || '').trim().toLowerCase());
       if (!match) return null;
       return { ...slot, playerId: match.id, name: `${match.firstName} ${match.lastName}`.trim(), number: match.number ?? null };

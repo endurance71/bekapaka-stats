@@ -19,7 +19,8 @@ export interface PreGameData {
   jerseyColor: string;
   venue: string;
   tacticalKeys: Array<{ number: number; title: string; description: string; focus: string }>;
-  startingFive: Array<{ position: string; name: string; number?: number; assignment: string }>;
+  /** Miejsca strefy 2-3 (D1–D5); starsze karty mają też zawodnika */
+  startingFive: Array<{ position: string; name?: string | null; number?: number | null; assignment: string }>;
   benchKeys?: string | null;
   motivationalMotto?: string | null;
   generatedByAi: boolean;
@@ -99,8 +100,8 @@ export default function PreGameMatchCard({
 🎯 3 KLUCZOWE ZAŁOŻENIA TAKTYCZNE:
 ${briefing.tacticalKeys?.map((k) => `${k.number}. ${k.title.toUpperCase()}: ${k.description}`).join('\n')}
 
-⭐ WYJŚCIOWA PIĄTKA & KRYCIE:
-${briefing.startingFive?.map((p) => `- [${p.position}] #${p.number || ''} ${p.name}: ${p.assignment}`).join('\n')}
+🛡️ STREFA 2-3 — ZADANIA:
+${briefing.startingFive?.map((p) => `- [${p.position}]${p.name ? ` #${p.number || ''} ${p.name}` : ''}: ${p.assignment}`).join('\n')}
 ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.motivationalMotto ? `\n🔥 MOTTO: "${briefing.motivationalMotto}"` : ''}`;
 
     try {
@@ -340,11 +341,11 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
             <div className="my-8">
               <h3 className="text-[20px] sm:text-[22px] leading-tight text-bkpk-text-primary mb-4 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-bkpk-primary shrink-0" />
-                Pierwsza piątka i zadania w obronie
+                Strefa 2-3 — zadania miejsc
               </h3>
 
               {!briefing.startingFive?.length && (
-                <p className="text-sm text-bkpk-text-muted">Trener poda piątkę i zadania przed meczem.</p>
+                <p className="text-sm text-bkpk-text-muted">Trener poda zadania przed meczem.</p>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                 {briefing.startingFive?.map((player) => (
@@ -363,14 +364,16 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
                           </span>
                         )}
                       </div>
-                      <span className="text-[14px] font-semibold text-bkpk-text-primary block truncate mb-2">
-                        {player.name}
-                      </span>
+                      {player.name && (
+                        <span className="text-[14px] font-semibold text-bkpk-text-primary block truncate mb-2">
+                          {player.name}
+                        </span>
+                      )}
                     </div>
 
                     <div className="pt-2 border-t border-bkpk-border-subtle">
                       <span className="label-caps text-[11px] text-bkpk-text-muted block mb-0.5">
-                        Zadanie / Krycie:
+                        Zadanie:
                       </span>
                       <p className="text-[13px] text-bkpk-text-secondary leading-snug">
                         {player.assignment}

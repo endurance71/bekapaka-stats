@@ -428,14 +428,12 @@ export function zoneLineup(startingFive) {
   return ZONE_SPOTS.map((spot) => ({ spot, slot: taken.get(spot.id) || null }));
 }
 
-const lastName = (name) => String(name || '').trim().split(/\s+/).pop();
-
 function zoneCourt(lineup) {
   const pos = { D1: [86, 104], D2: [214, 104], D3: [52, 182], D4: [248, 182], D5: [150, 200] };
   const dots = lineup
     .map(({ spot, slot }) => {
       const [x, y] = pos[spot.id];
-      const label = slot ? `${slot.number != null ? `#${slot.number} ` : ''}${lastName(slot.name)}` : spot.label;
+      const label = spot.short || spot.label;
       return `<g><circle cx="${x}" cy="${y}" r="17" fill="${spot.line === 'top' ? '#EF1734' : '#0B0B0B'}"/><text class="zid" x="${x}" y="${y + 5}" text-anchor="middle">${spot.id}</text><text class="zname" x="${x}" y="${spot.line === 'top' || spot.id === 'D5' ? y - 24 : y + 32}" text-anchor="middle">${esc(label)}</text></g>`;
     })
     .join('');
@@ -470,20 +468,14 @@ function zoneThreats(players) {
   return `<div class="threats">${groups.map(([h, html]) => `<div><h3>${esc(h)}</h3><ul>${html}</ul></div>`).join('')}</div>`;
 }
 
-function zoneRow({ spot, slot }, own, prevLabel) {
-  const o = own;
-  const ownLine = o
-    ? `${fmt(o.ppg)} pkt · ${fmt(o.rpg)} zb · ${fmt(o.spg)} prz · ${fmt(o.apg)} as${isNum(o.plusMinusTotal) ? ` · +/- ${signed(o.plusMinusTotal)}` : ''} <small>(${sample(o.games)})</small>`
-    : '';
-  const oPrev = o && asList(o.previous)[0];
-  const ownPrev = oPrev ? `<small class="prevs">${esc(oPrev.seasonLabel || prevLabel || '')}: ${fmt(oPrev.perGame?.pts)} pkt, ${fmt(oPrev.perGame?.reb)} zb (${sample(oPrev.games)})</small>` : '';
-  // Stare karty (krycie 1 na 1, „Kryje X.”) nie pasują do strefy — wtedy zadanie miejsca strefy
+function zoneRow({ spot, slot }) {
+  // Stare karty (krycie 1 na 1, „Kryje X.”) nie pasują do strefy — wtedy ogólne zadanie miejsca
   const text = slot?.assignment && !/^\s*Kryje\s/u.test(slot.assignment)
     ? slot.assignment.replace(/^\s*D[1-5]\s*[—–-]\s*[^.]{0,40}\.\s*/u, '')
     : spot.duty;
   return `<div class="zr">
   <div class="zspot ${spot.line}"><b>${spot.id}</b><span>${esc(spot.label)}</span></div>
-  <div class="zbody"><div class="zwho"><b>${slot ? `${slot.number != null ? `#${esc(slot.number)} ` : ''}${esc(slot.name)}` : NONE}</b><span>${ownLine}</span>${ownPrev}</div><p>${esc(text)}</p></div>
+  <div class="zbody"><p>${esc(text)}</p></div>
 </div>`;
 }
 
@@ -511,7 +503,6 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
 
   const analysis = report?.analysis || null;
   const oppPlayers = asList(report?.opponentPlayers);
-  const ownPlayers = asList(report?.ownPlayers);
   const prevLabel = report?.prevSeasonLabel || null;
   const threats = linesByPlayer(analysis?.personnel?.threats, oppPlayers);
   const keyCards = oppPlayers.slice(0, 6);
@@ -548,13 +539,12 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
   // Strona 3 — atak i obrona rywala (tekst analizy) + tabela i historia
   const threatsHtml = zoneThreats(oppPlayers);
   const hist = report ? history(report) : '';
-  const pageText = analysis?.offense || analysis?.defense || hist || threatsHtml
+  const pageText = analysis?.offense || analysis?.defense || hist
     ? `<section class="page">
   <h1 class="ph">Atak i obrona rywala</h1>
   ${analysis?.offense ? `<section class="card text"><h2>Ich atak</h2>${mdLite(analysis.offense)}</section>` : ''}
   ${analysis?.defense ? `<section class="card text"><h2>Ich obrona</h2>${mdLite(analysis.defense)}</section>` : ''}
   ${analysis?.personnel?.matchups ? `<section class="card text"><h2>Jak ich bronić strefą 2-3</h2>${mdLite(analysis.personnel.matchups)}</section>` : ''}
-  ${threatsHtml ? `<section class="card"><h2>Na kogo uważa strefa <small>z liczb sezonu</small></h2>${threatsHtml}</section>` : ''}
   ${hist}
   ${footer(opponent)}
 </section>`
@@ -580,10 +570,10 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
     )
     .join('');
   const lineup = zoneLineup(briefing?.startingFive);
-  const hasFive = lineup.some((l) => l.slot);
+  const hasFive = lineup.some((l) => l.slot) || Boolean(report);
   const zoneRows = hasFive
     ? lineup
-        .map((l) => zoneRow(l, l.slot && (ownPlayers.find((p) => String(p.playerId) === String(l.slot.playerId)) || ownPlayers.find((p) => fold(p.name) === fold(l.slot.name))), prevLabel))
+        .map((l) => zoneRow(l))
         .join('')
     : '';
   const locker = asList(analysis?.lockerRoom);
@@ -607,11 +597,12 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
   ${footer(opponent)}
 </section>`;
 
-  const page5 = hasFive || briefing?.benchKeys
+  const page5 = hasFive || threatsHtml || briefing?.benchKeys
     ? `<section class="page">
-  <h1 class="ph">Strefa 2-3 <small>pierwsza piątka na miejscach strefy · sezon ${esc(report?.seasonLabel || '')}, średnio na mecz${prevLabel ? ` · pod spodem sezon ${esc(prevLabel)}` : ''}</small></h1>
-  ${hasFive || briefing?.benchKeys ? `<div class="zone-top">${hasFive ? `<div class="card zc">${zoneCourt(lineup)}</div>` : ''}${briefing?.benchKeys ? `<section class="card text bench"><h2>Rezerwowi — kto kogo zmienia</h2>${mdLite(briefing.benchKeys)}</section>` : ''}</div>` : ''}
+  <h1 class="ph">Strefa 2-3 <small>zadania miejsc strefy · pierwszą piątkę trener ustala na meczu</small></h1>
+  ${hasFive || threatsHtml ? `<div class="zone-top">${hasFive ? `<div class="card zc">${zoneCourt(lineup)}</div>` : ''}${threatsHtml ? `<section class="card"><h2>Na kogo uważa strefa <small>z liczb sezonu</small></h2>${threatsHtml}</section>` : ''}</div>` : ''}
   ${zoneRows ? `<section class="card"><h2>Zadania w strefie</h2><div class="zrows">${zoneRows}</div></section>` : ''}
+  ${String(briefing?.benchKeys || '').trim() ? `<section class="card text"><h2>Rezerwowi</h2>${mdLite(briefing.benchKeys)}</section>` : ''}
   ${footer(opponent)}
 </section>`
     : '';
@@ -829,6 +820,7 @@ p { margin: 0 0 1.6mm; } ul { margin: 0 0 1.6mm; padding-left: 4.5mm; } li { mar
 .court .zid { font: 800 15px 'Barlow Condensed', sans-serif; fill: #fff; }
 .court .zname { font: 800 12.5px 'Barlow Condensed', sans-serif; fill: #0B0B0B; text-transform: uppercase; paint-order: stroke; stroke: #EFEBE3; stroke-width: 4px; stroke-linejoin: round; }
 .threats { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm 3mm; }
+.zone-top .threats { grid-template-columns: 1fr; gap: 1.6mm; }
 .threats h3 { font-size: 9.6pt; margin: 0 0 .8mm; color: var(--red); }
 .threats ul { margin: 0; padding-left: 4mm; font-size: 8.4pt; } .threats li { margin-bottom: .4mm; } .threats small { color: #8a857d; }
 .zrows { display: grid; gap: 1.6mm; }
@@ -838,7 +830,7 @@ p { margin: 0 0 1.6mm; } ul { margin: 0 0 1.6mm; padding-left: 4.5mm; } li { mar
 .zspot b { display: block; font: 800 18pt/1 'Barlow Condensed', sans-serif; } .zspot span { font: 600 6.6pt/1.15 'Barlow', sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .zwho b { font: 800 10.5pt/1.05 'Barlow Condensed', sans-serif; text-transform: uppercase; margin-right: 2mm; }
 .zwho span { font-size: 7.8pt; color: #2b2825; } .zwho small { color: #6f6a62; } .zwho small.prevs { display: block; font-size: 6.8pt; }
-.zbody p { margin: .8mm 0 0; font-size: 8.1pt; line-height: 1.34; }
+.zbody p { margin: 0; font-size: 8.8pt; line-height: 1.4; }
 
 .chips { display: flex; flex-wrap: wrap; gap: 1.4mm; }
 .chip { display: inline-flex; align-items: center; gap: 1.4mm; background: var(--black); color: var(--white); font: 800 10pt 'Barlow Condensed', sans-serif; text-transform: uppercase; padding: .8mm 2.2mm .8mm 0; }

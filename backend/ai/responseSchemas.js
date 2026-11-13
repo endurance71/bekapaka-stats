@@ -75,14 +75,12 @@ export const PREGAME_CARD_SCHEMA = {
       maxItems: 5,
       items: {
         type: 'object',
+        // Miejsca strefy 2-3 (D1–D5) — piątkę trener ustala na meczu; zawodnik opcjonalny (stare karty)
         properties: {
-          position: str,
-          playerId: str,
-          name: str,
-          number: { type: ['integer', 'null'] },
+          position: { type: 'string', enum: ['D1', 'D2', 'D3', 'D4', 'D5'] },
           assignment: str
         },
-        required: ['position', 'playerId', 'name', 'assignment']
+        required: ['position', 'assignment']
       }
     },
     benchKeys: str,
