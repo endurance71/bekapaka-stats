@@ -18,7 +18,7 @@ function seasonLine(row) {
     teamName: row.teamName || null,
     competition: row.competition || null,
     games: row.games || 0,
-    perGame: row.perGame,
+    perGame: { ...row.perGame, threePm: row.games && row.totals?.threePm != null ? Math.round((row.totals.threePm / row.games) * 10) / 10 : null },
     pct: row.pct,
     plusMinusTotal: row.totals?.plusMinus ?? null
   };

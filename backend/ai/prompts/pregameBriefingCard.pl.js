@@ -1,4 +1,5 @@
 import { POLISH_STYLE } from './polishStyle.pl.js';
+import { TEAM_DEFENSE_RULES } from './teamDefense.pl.js';
 /**
  * Generator promptu odprawy przedmeczowej (Pre-Game Matchday Card) dla Gemini AI.
  */
@@ -14,15 +15,17 @@ ZASADY ANTY-HALUCYNACYJNE:
 - Liczby i nazwiska rywali bierz WYŁĄCZNIE z sekcji „Dane o rywalu” (JSON). Nie wymyślaj statystyk, procentów ani zawodników.
 - Gdy wartość jest null lub jej brak — nie podawaj liczby (możesz napisać „brak danych”).
 - Pierwszą piątkę wybieraj WYŁĄCZNIE z „Kadra BeKaPaKa” — playerId, imię, nazwisko i numer skopiuj dokładnie z listy. Nie dopisuj zawodników spoza listy.
-- Każde założenie taktyczne (tacticalKeys) odwołuje się do konkretnej liczby lub zawodnika z danych o rywalu (np. PPG lidera, trójki, straty), jeśli takie dane są dostępne.
+- Każde założenie taktyczne (tacticalKeys) odwołuje się do konkretnej liczby lub zawodnika z danych o rywalu (np. PPG lidera, trójki, straty), jeśli takie dane są dostępne. Założenie obronne dotyczy gry strefą 2-3 przeciw temu rywalowi.
 - Liczby naszych zawodników bierz WYŁĄCZNIE z sekcji „Statystyki zawodników BeKaPaKa w sezonie” (JSON). Zawodnik z listy withoutGames nie ma meczów w sezonie — nie podawaj dla niego liczb.
 - Wszystkie mecze ligi rozgrywane są w hali ${DEFAULT_PREGAME_VENUE} — nie używaj pojęć „u siebie”, „na wyjeździe”, „we własnej hali”.
 
+${TEAM_DEFENSE_RULES}
 PORÓWNANIA (OBOWIĄZKOWE):
-- assignment każdego zawodnika pierwszej piątki zaczyna się od tego, kogo kryje („Kryje Nowaka.”), a potem zawiera porównanie: 1–2 liczby naszego zawodnika i 1–2 liczby kryjącego go rywala, dobrane do zadania (zbiórki przeciw zbieraczowi, przechwyty przeciw stratom, skuteczność za 2 przeciw faulom rywala itp.), oraz wniosek, co z tego wynika na boisku.
+- position każdego zawodnika pierwszej piątki to jego miejsce w strefie: D1, D2, D3, D4 albo D5 (każde dokładnie raz). Na górną linię (D1, D2) wybieraj szybszych obrońców z przechwytami, na D5 najlepiej zbierającego.
+- assignment zaczyna się od miejsca w strefie („D5 — środek strefy.”), potem mówi, którzy rywale z keyPlayers atakują jego obszar i jak (rzut z dystansu, wejście, zbiórka w ataku, kozłowanie ze stratami), zawiera porównanie: 1–2 liczby naszego zawodnika i 1–2 liczby tych rywali dobrane do zadania (zbiórki przeciw zbieraczowi, przechwyty przeciw stratom, doskok przeciw trójkom), oraz wniosek, co robi na boisku. W ataku może dodać jedno zdanie o swoim zadaniu.
 - Porównuj także wtedy, gdy zawodnik (nasz albo rywala) zagrał tylko 1 lub 2 mecze — przy takiej liczbie dopisz próbę w nawiasie, np. „(1 mecz)”, „(2 mecze)”. Mała próba nie jest powodem, żeby pominąć porównanie.
-- Dobieraj pary tak, żeby każdy z kluczowych zawodników rywala (keyPlayers) miał swojego obrońcę w piątce albo w benchKeys.
-- benchKeys: dla każdego rezerwowego, któremu dajesz zadanie, podaj 1–2 jego liczby z sezonu (z próbą przy 1–2 meczach) i wskaż, na kogo z rywali wchodzi.
+- Każdy z kluczowych zawodników rywala (keyPlayers) musi pojawić się w zadaniu przynajmniej jednego miejsca strefy (w piątce albo w benchKeys).
+- benchKeys: dla każdego rezerwowego, któremu dajesz zadanie, podaj 1–2 jego liczby z sezonu (z próbą przy 1–2 meczach) i wskaż, za kogo i na które miejsce strefy (D1–D5) wchodzi.
 - Przy wyborze piątki: gdy nikt w kadrze nie ma statusu starter: TAK, kieruj się polem starts (ile razy zawodnik zaczynał mecz w tym sezonie), a potem games i minutami.
 
 Zwracaj WYŁĄCZNIE poprawny JSON (bez znaczników markdown):
@@ -48,11 +51,11 @@ Zwracaj WYŁĄCZNIE poprawny JSON (bez znaczników markdown):
     }
   ],
   "startingFive": [
-    { "position": "PG", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 10, "assignment": "Kryje rozgrywającego rywala, nacisk na koźle" },
-    { "position": "SG", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 7, "assignment": "Pilnuje strzelca rywala na obwodzie" },
-    { "position": "SF", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 24, "assignment": "Zabezpiecza deski i wyprowadza szybki atak" },
-    { "position": "PF", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 15, "assignment": "Rotacja w obronie ze słabej strony" },
-    { "position": "C", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 33, "assignment": "Kontrola strefy podkoszowej" }
+    { "position": "D1", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 10, "assignment": "D1 — lewy górny. Nacisk na rozgrywającego rywala przy wyprowadzeniu, doskok do strzelca na lewym skrzydle…" },
+    { "position": "D2", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 7, "assignment": "D2 — prawy górny. Pilnuje linii rzutów wolnych…" },
+    { "position": "D3", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 24, "assignment": "D3 — lewe dolne skrzydło. Wyjście do rogu na strzelca, zastawianie…" },
+    { "position": "D4", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 15, "assignment": "D4 — prawe dolne skrzydło…" },
+    { "position": "D5", "playerId": "id z kadry", "name": "Imię Nazwisko z kadry", "number": 33, "assignment": "D5 — środek. Kotwica pod koszem, zastawia najlepszego zbierającego rywala…" }
   ],
   "benchKeys": "Zadania dla rezerwowych (konkretne, powiązane z danymi o rywalu).",
   "motivationalMotto": "Krótkie, mocne hasło motywacyjne na mecz (1 zdanie)"
@@ -70,7 +73,12 @@ Pole focus przyjmuje jedną z wartości: defense, offense, transition.${POLISH_S
  *   nextMatch?: { date?: Date | string | null, venue?: string | null } | null
  * }} input
  */
-export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, opponentStats, ownStats, roster, nextMatch }) {
+export function buildPreGameCardUserPrompt({ opponentName, scoutingReport, opponentStats, ownStats, roster, unavailable = [], nextMatch }) {
+  const absentStr = unavailable.length
+    ? `\nNiedostępni na ten mecz — nie wybieraj ich do piątki i nie dawaj im zadań: ${unavailable
+        .map((u) => `${u.player.firstName} ${u.player.lastName} (${u.reason})`)
+        .join(', ')}.\n`
+    : '';
   const rosterStr = Array.isArray(roster) && roster.length
     ? roster
         .map(
@@ -105,10 +113,10 @@ Informacje o meczu:
 - Data i godzina: ${date}
 - Hala: ${nextMatch?.venue || DEFAULT_PREGAME_VENUE}
 
-Kadra BeKaPaKa:
+Kadra BeKaPaKa${unavailable.length ? ' dostępna na ten mecz' : ''}:
 ${rosterStr}
-
+${absentStr}
 ${ownBlock}
 
-Wybierz najbardziej optymalną pierwszą piątkę (preferuj graczy ze statusem starter: TAK, a gdy nikt go nie ma — tych z najwięcej starts) i dopasuj im zadania obronne/atakujące pod kątem rywala ${opponentName}. Każde zadanie zawiera porównanie naszego zawodnika z rywalem, którego kryje — także przy próbie 1–2 meczów.`;
+Wybierz najbardziej optymalną pierwszą piątkę (preferuj graczy ze statusem starter: TAK, a gdy nikt go nie ma — tych z najwięcej starts) ustaw ją w strefie 2-3 (D1–D5) i dopasuj zadania pod kątem rywala ${opponentName}. Każde zadanie zawiera porównanie naszego zawodnika z rywalami, którzy atakują jego obszar strefy — także przy próbie 1–2 meczów.`;
 }

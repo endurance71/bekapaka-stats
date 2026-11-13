@@ -10,6 +10,7 @@ import { loadScoutingExtras } from '../ai/scoutingData.js';
 import { loadOwnPlayerStats } from '../ai/pregameOwnStats.js';
 import { getPlayerCareer } from '../kalk/v2/readModels.js';
 import { normTeam, pickSeasons, seasonLabel } from './pregameSeasons.js';
+import { squadForMatch } from './matchDay.js';
 
 async function careerSafe(id) {
   try {
@@ -20,10 +21,10 @@ async function careerSafe(id) {
 }
 
 /**
- * @param {{ seasonId: string, opponent: string }} target
+ * @param {{ seasonId: string, opponent: string, matchDay?: any }} target
  * @returns {Promise<object|null>} null, gdy brak danych scoutingu rywala
  */
-export async function loadPregameReport({ seasonId, opponent }) {
+export async function loadPregameReport({ seasonId, opponent, matchDay = null }) {
   const scouting = await getDetailedScouting(opponent, seasonId, { includeAiPayload: true }).catch(() => null);
   if (!scouting?.aiPayload) return null;
   const ai = scouting.aiPayload;
@@ -100,7 +101,13 @@ export async function loadPregameReport({ seasonId, opponent }) {
       })
   );
 
+  const squad = squadForMatch(roster, matchDay);
+  const person = (p) => ({ id: p.id, name: `${p.firstName ?? ''} ${p.lastName ?? ''}`.trim(), number: p.number ?? null });
+
   return {
+    squad: squad.set
+      ? { available: squad.available.map(person), unavailable: squad.unavailable.map((u) => ({ ...person(u.player), reason: u.reason })) }
+      : null,
     seasonLabel: seasonLabel(seasonSlug),
     prevSeasonLabel: seasonLabel(prevSlug),
     teams: { us: ai.teamInfo?.bekapaka || null, them: ai.teamInfo?.opponent || null },

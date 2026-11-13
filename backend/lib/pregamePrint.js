@@ -9,6 +9,7 @@
 import jwt from 'jsonwebtoken';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { POSITION_TO_SPOT, ZONE_SPOTS } from '../ai/prompts/teamDefense.pl.js';
 
 const SCOPE = 'pregame-print';
 export const PRINT_LINK_TTL = '15m';
@@ -396,7 +397,7 @@ function playerCard(p, prevLabel, howTo) {
   <div class="shots">${shots}</div>
   <div class="pfacts">${facts.map(esc).join(' · ')}</div>
   ${prevLine}
-  ${howTo ? `<div class="how"><b>Jak kryć:</b> ${esc(howTo)}</div>` : ''}
+  ${howTo ? `<div class="how"><b>Jak bronić:</b> ${esc(howTo)}</div>` : ''}
 </article>`;
 }
 
@@ -412,24 +413,77 @@ function rosterTable(players, prevLabel) {
 }
 
 // ── plan ──
-function matchupRow(slot, own, rival, prevLabel) {
+/** Piątka → miejsca strefy 2-3 (D1–D5 z karty albo z pozycji koszykarskich). */
+export function zoneLineup(startingFive) {
+  const slots = asList(startingFive);
+  const taken = new Map();
+  const pending = [];
+  for (const slot of slots) {
+    const raw = String(slot?.position || '').toUpperCase().trim();
+    const id = /^D[1-5]$/.test(raw) ? raw : POSITION_TO_SPOT[raw];
+    if (id && !taken.has(id)) taken.set(id, slot);
+    else pending.push(slot);
+  }
+  for (const spot of ZONE_SPOTS) if (!taken.has(spot.id) && pending.length) taken.set(spot.id, pending.shift());
+  return ZONE_SPOTS.map((spot) => ({ spot, slot: taken.get(spot.id) || null }));
+}
+
+const lastName = (name) => String(name || '').trim().split(/\s+/).pop();
+
+function zoneCourt(lineup) {
+  const pos = { D1: [86, 104], D2: [214, 104], D3: [52, 182], D4: [248, 182], D5: [150, 200] };
+  const dots = lineup
+    .map(({ spot, slot }) => {
+      const [x, y] = pos[spot.id];
+      const label = slot ? `${slot.number != null ? `#${slot.number} ` : ''}${lastName(slot.name)}` : spot.label;
+      return `<g><circle cx="${x}" cy="${y}" r="17" fill="${spot.line === 'top' ? '#EF1734' : '#0B0B0B'}"/><text class="zid" x="${x}" y="${y + 5}" text-anchor="middle">${spot.id}</text><text class="zname" x="${x}" y="${spot.line === 'top' || spot.id === 'D5' ? y - 24 : y + 32}" text-anchor="middle">${esc(label)}</text></g>`;
+    })
+    .join('');
+  return `<svg class="court" viewBox="0 0 300 260" aria-label="Strefa 2-3">
+  <rect x="1" y="1" width="298" height="258" fill="#EFEBE3" stroke="#0B0B0B" stroke-width="2"/>
+  <path d="M22 259 V200 A128 128 0 0 1 278 200 V259" fill="none" stroke="#0B0B0B" stroke-width="2"/>
+  <rect x="105" y="146" width="90" height="113" fill="#E4DED3" stroke="#0B0B0B" stroke-width="2"/>
+  <path d="M120 146 A30 30 0 0 1 180 146" fill="none" stroke="#0B0B0B" stroke-width="2"/>
+  <line x1="135" y1="244" x2="165" y2="244" stroke="#0B0B0B" stroke-width="3"/><circle cx="150" cy="236" r="6" fill="none" stroke="#EF1734" stroke-width="2.5"/>
+  <path d="M86 104 L52 182 L150 200 L242 182 L214 104 Z" fill="rgba(239,23,52,.07)" stroke="#EF1734" stroke-width="1.2" stroke-dasharray="4 4"/>
+  ${dots}
+</svg>`;
+}
+
+/** Zagrożenia dla strefy z liczb zawodników rywala (bez interpretacji modelu). */
+function zoneThreats(players) {
+  const list = asList(players).filter((p) => p.current?.games > 0);
+  const pick = (key, min, fmtRow) =>
+    list
+      .filter((p) => isNum(p.current.perGame?.[key]) && p.current.perGame[key] >= min)
+      .sort((a, b) => b.current.perGame[key] - a.current.perGame[key])
+      .slice(0, 3)
+      .map((p) => `<li><b>${esc(p.name)}</b> ${fmtRow(p)} <small>(${sample(p.current.games)})</small></li>`)
+      .join('');
+  const groups = [
+    ['Strzelcy z dystansu — doskok', pick('threePm', 0.7, (p) => `${fmt(p.current.perGame.threePm)} trójki na mecz, ${pct(p.current.pct?.three)}`)],
+    ['Zbiórki w ataku — zastawiamy', pick('orb', 1.5, (p) => `${fmt(p.current.perGame.orb)} w ataku, ${fmt(p.current.perGame.reb)} razem`)],
+    ['Straty — pułapka w rogu', pick('tov', 2, (p) => `${fmt(p.current.perGame.tov)} straty na mecz`)],
+    ['Faule — wchodzimy na nich', pick('pf', 3, (p) => `${fmt(p.current.perGame.pf)} fauli na mecz`)]
+  ].filter(([, html]) => html);
+  if (!groups.length) return '';
+  return `<div class="threats">${groups.map(([h, html]) => `<div><h3>${esc(h)}</h3><ul>${html}</ul></div>`).join('')}</div>`;
+}
+
+function zoneRow({ spot, slot }, own, prevLabel) {
   const o = own;
   const ownLine = o
-    ? `${fmt(o.ppg)} pkt · ${fmt(o.rpg)} zb · ${fmt(o.apg)} as · ${fmt(o.spg)} prz${isNum(o.plusMinusTotal) ? ` · +/- ${signed(o.plusMinusTotal)}` : ''} <small>(${sample(o.games)})</small>`
+    ? `${fmt(o.ppg)} pkt · ${fmt(o.rpg)} zb · ${fmt(o.spg)} prz · ${fmt(o.apg)} as${isNum(o.plusMinusTotal) ? ` · +/- ${signed(o.plusMinusTotal)}` : ''} <small>(${sample(o.games)})</small>`
     : '';
   const oPrev = o && asList(o.previous)[0];
   const ownPrev = oPrev ? `<small class="prevs">${esc(oPrev.seasonLabel || prevLabel || '')}: ${fmt(oPrev.perGame?.pts)} pkt, ${fmt(oPrev.perGame?.reb)} zb (${sample(oPrev.games)})</small>` : '';
-  const rc = rival?.current;
-  const rivalLine = rc
-    ? `${fmt(rc.perGame?.pts)} pkt · ${fmt(rc.perGame?.reb)} zb · ${fmt(rc.perGame?.ast)} as · ${fmt(rc.perGame?.tov)} str · ${fmt(rc.perGame?.pf)} f <small>(${sample(rc.games)})</small>`
-    : '';
-  const rPrev = rival && asList(rival.previous)[0];
-  const rivalPrev = rPrev ? `<small class="prevs">${esc(rPrev.seasonLabel || prevLabel || '')}: ${fmt(rPrev.perGame?.pts)} pkt, ${fmt(rPrev.perGame?.reb)} zb (${sample(rPrev.games)}${rPrev.competition ? `, ${esc(rPrev.competition)}` : ''})</small>` : '';
-  return `<div class="mu">
-  <div class="mside us"><span class="pos">${esc(slot.position)}</span><div><b>${slot.number != null ? `#${esc(slot.number)} ` : ''}${esc(slot.name)}</b><span>${ownLine}</span>${ownPrev}</div></div>
-  <div class="marrow">kryje</div>
-  <div class="mside them">${rival ? `<div><b>${isNum(rival.number) ? `#${esc(rival.number)} ` : ''}${esc(rival.name)}</b><span>${rivalLine}</span>${rivalPrev}</div>` : '<div><b>—</b></div>'}</div>
-  <p class="task">${esc(slot.assignment)}</p>
+  // Stare karty (krycie 1 na 1, „Kryje X.”) nie pasują do strefy — wtedy zadanie miejsca strefy
+  const text = slot?.assignment && !/^\s*Kryje\s/u.test(slot.assignment)
+    ? slot.assignment.replace(/^\s*D[1-5]\s*[—–-]\s*[^.]{0,40}\.\s*/u, '')
+    : spot.duty;
+  return `<div class="zr">
+  <div class="zspot ${spot.line}"><b>${spot.id}</b><span>${esc(spot.label)}</span></div>
+  <div class="zbody"><div class="zwho"><b>${slot ? `${slot.number != null ? `#${esc(slot.number)} ` : ''}${esc(slot.name)}` : NONE}</b><span>${ownLine}</span>${ownPrev}</div><p>${esc(text)}</p></div>
 </div>`;
 }
 
@@ -492,13 +546,15 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
     : '';
 
   // Strona 3 — atak i obrona rywala (tekst analizy) + tabela i historia
+  const threatsHtml = zoneThreats(oppPlayers);
   const hist = report ? history(report) : '';
-  const pageText = analysis?.offense || analysis?.defense || hist
+  const pageText = analysis?.offense || analysis?.defense || hist || threatsHtml
     ? `<section class="page">
   <h1 class="ph">Atak i obrona rywala</h1>
   ${analysis?.offense ? `<section class="card text"><h2>Ich atak</h2>${mdLite(analysis.offense)}</section>` : ''}
   ${analysis?.defense ? `<section class="card text"><h2>Ich obrona</h2>${mdLite(analysis.defense)}</section>` : ''}
-  ${analysis?.personnel?.matchups ? `<section class="card text"><h2>Jak ich bronić — ustawienie</h2>${mdLite(analysis.personnel.matchups)}</section>` : ''}
+  ${analysis?.personnel?.matchups ? `<section class="card text"><h2>Jak ich bronić strefą 2-3</h2>${mdLite(analysis.personnel.matchups)}</section>` : ''}
+  ${threatsHtml ? `<section class="card"><h2>Na kogo uważa strefa <small>z liczb sezonu</small></h2>${threatsHtml}</section>` : ''}
   ${hist}
   ${footer(opponent)}
 </section>`
@@ -523,17 +579,27 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
         `<div class="key"><span class="kn">${esc(k.number ?? i + 1)}</span><div><span class="tag">${esc(FOCUS[k.focus] ?? 'Taktyka')}</span><h3>${esc(k.title)}</h3><p>${esc(k.description)}</p></div></div>`
     )
     .join('');
-  const five = asList(briefing?.startingFive)
-    .map((slot) => {
-      const own = ownPlayers.find((p) => String(p.playerId) === String(slot.playerId)) || ownPlayers.find((p) => fold(p.name) === fold(slot.name));
-      const m = String(slot.assignment || '').match(/^\s*Kryje\s+([\p{L}-]+)/u);
-      const rival = m ? findBySurname(oppPlayers, m[1]) : null;
-      return matchupRow(slot, own, rival, prevLabel);
-    })
-    .join('');
+  const lineup = zoneLineup(briefing?.startingFive);
+  const hasFive = lineup.some((l) => l.slot);
+  const zoneRows = hasFive
+    ? lineup
+        .map((l) => zoneRow(l, l.slot && (ownPlayers.find((p) => String(p.playerId) === String(l.slot.playerId)) || ownPlayers.find((p) => fold(p.name) === fold(l.slot.name))), prevLabel))
+        .join('')
+    : '';
   const locker = asList(analysis?.lockerRoom);
+  const sq = report?.squad;
+  const squadHtml = sq
+    ? `<section class="card squad"><h2>Skład na mecz <small>${sq.available.length} zawodników</small></h2><div class="chips">${sq.available
+        .map((p) => `<span class="chip"><b>${p.number != null ? esc(p.number) : "–"}</b>${esc(p.name)}</span>`)
+        .join('')}</div>${
+        sq.unavailable.length
+          ? `<p class="out"><b>Nie grają:</b> ${sq.unavailable.map((p) => `${esc(p.name)}${p.reason === 'kontuzja' ? ' <em>(kontuzja)</em>' : ''}`).join(', ')}</p>`
+          : ''
+      }</section>`
+    : '';
   const page4 = `<section class="page">
   <h1 class="ph">Plan na mecz</h1>
+  ${squadHtml}
   ${vHead ? `<section class="klucz"><b>${esc(vHead.replace(/^KLUCZ:\s*/i, ''))}</b>${vRest.length ? mdLite(vRest.join('\n')) : ''}</section>` : ''}
   ${keys ? `<section class="card"><h2>3 kluczowe założenia</h2><div class="keys">${keys}</div></section>` : ''}
   ${locker.length ? `<section class="card szatnia"><h2>Szatnia — 5 rzeczy przed wyjściem</h2><ol>${locker.map((l) => `<li><span class="box"></span>${esc(l)}</li>`).join('')}</ol></section>` : ''}
@@ -541,11 +607,11 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
   ${footer(opponent)}
 </section>`;
 
-  const page5 = five || briefing?.benchKeys
+  const page5 = hasFive || briefing?.benchKeys
     ? `<section class="page">
-  <h1 class="ph">Krycie i rotacja <small>sezon ${esc(report?.seasonLabel || '')}, średnio na mecz${prevLabel ? ` · pod spodem sezon ${esc(prevLabel)}` : ''}</small></h1>
-  ${five ? `<section class="card"><h2>Pierwsza piątka — kto kogo kryje</h2><div class="mus">${five}</div></section>` : ''}
-  ${briefing?.benchKeys ? `<section class="card text"><h2>Rezerwowi — kto kogo zmienia</h2>${mdLite(briefing.benchKeys)}</section>` : ''}
+  <h1 class="ph">Strefa 2-3 <small>pierwsza piątka na miejscach strefy · sezon ${esc(report?.seasonLabel || '')}, średnio na mecz${prevLabel ? ` · pod spodem sezon ${esc(prevLabel)}` : ''}</small></h1>
+  ${hasFive || briefing?.benchKeys ? `<div class="zone-top">${hasFive ? `<div class="card zc">${zoneCourt(lineup)}</div>` : ''}${briefing?.benchKeys ? `<section class="card text bench"><h2>Rezerwowi — kto kogo zmienia</h2>${mdLite(briefing.benchKeys)}</section>` : ''}</div>` : ''}
+  ${zoneRows ? `<section class="card"><h2>Zadania w strefie</h2><div class="zrows">${zoneRows}</div></section>` : ''}
   ${footer(opponent)}
 </section>`
     : '';
@@ -599,7 +665,7 @@ p { margin: 0 0 1.6mm; } ul { margin: 0 0 1.6mm; padding-left: 4.5mm; } li { mar
 .card, .subcard { background: var(--card); border: 1px solid var(--rule); padding: 3.4mm 3.8mm; margin-bottom: 3.2mm; break-inside: avoid; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3.2mm; } .grid2 > * { margin-bottom: 0; } .grid2 { margin-bottom: 3.2mm; }
 .grid2.text .card, .card.text { font-size: 9pt; }
-.card.text p, .card.text li { font-size: 9.6pt; line-height: 1.45; }
+.card.text p, .card.text li { font-size: 9pt; line-height: 1.38; }
 .note { font-size: 7.4pt; color: #6f6a62; margin: 1.5mm 0 0; }
 .empty { padding: 6mm; background: var(--card); border: 1px dashed var(--muted); }
 .pf { position: absolute; left: 11mm; right: 11mm; bottom: 7mm; display: flex; justify-content: space-between; font: 600 7pt 'Barlow', sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 2mm; }
@@ -755,6 +821,29 @@ p { margin: 0 0 1.6mm; } ul { margin: 0 0 1.6mm; padding-left: 4.5mm; } li { mar
 .szatnia ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.6mm; }
 .szatnia li { display: grid; grid-template-columns: 5mm 1fr; gap: 2mm; font-size: 9pt; margin: 0; }
 .box { width: 3.6mm; height: 3.6mm; border: 1.5px solid var(--black); margin-top: .6mm; }
+
+/* strefa 2-3 */
+.bench p, .bench li { font-size: 8.2pt !important; line-height: 1.32 !important; }
+.zone-top { display: grid; grid-template-columns: 68mm 1fr; gap: 3.2mm; margin-bottom: 3.2mm; } .zone-top > * { margin-bottom: 0; }
+.zc { padding: 2.5mm; } .court { width: 100%; height: auto; display: block; }
+.court .zid { font: 800 15px 'Barlow Condensed', sans-serif; fill: #fff; }
+.court .zname { font: 800 12.5px 'Barlow Condensed', sans-serif; fill: #0B0B0B; text-transform: uppercase; paint-order: stroke; stroke: #EFEBE3; stroke-width: 4px; stroke-linejoin: round; }
+.threats { display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm 3mm; }
+.threats h3 { font-size: 9.6pt; margin: 0 0 .8mm; color: var(--red); }
+.threats ul { margin: 0; padding-left: 4mm; font-size: 8.4pt; } .threats li { margin-bottom: .4mm; } .threats small { color: #8a857d; }
+.zrows { display: grid; gap: 1.6mm; }
+.zr { display: grid; grid-template-columns: 20mm 1fr; gap: 2.6mm; break-inside: avoid; border-bottom: 1px solid #ebe7df; padding-bottom: 1.6mm; }
+.zr:last-child { border-bottom: 0; padding-bottom: 0; }
+.zspot { background: var(--black); color: var(--white); padding: 1.6mm 2mm; } .zspot.top { background: var(--red); }
+.zspot b { display: block; font: 800 18pt/1 'Barlow Condensed', sans-serif; } .zspot span { font: 600 6.6pt/1.15 'Barlow', sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.zwho b { font: 800 10.5pt/1.05 'Barlow Condensed', sans-serif; text-transform: uppercase; margin-right: 2mm; }
+.zwho span { font-size: 7.8pt; color: #2b2825; } .zwho small { color: #6f6a62; } .zwho small.prevs { display: block; font-size: 6.8pt; }
+.zbody p { margin: .8mm 0 0; font-size: 8.1pt; line-height: 1.34; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 1.4mm; }
+.chip { display: inline-flex; align-items: center; gap: 1.4mm; background: var(--black); color: var(--white); font: 800 10pt 'Barlow Condensed', sans-serif; text-transform: uppercase; padding: .8mm 2.2mm .8mm 0; }
+.chip b { background: var(--red); color: #fff; padding: 0 1.6mm; min-width: 7mm; text-align: center; font-weight: 800; }
+.squad .out { margin: 2mm 0 0; font-size: 8.6pt; } .squad .out em { color: var(--red); font-style: normal; font-weight: 600; }
 
 /* ekran */
 .toolbar { position: sticky; top: 0; z-index: 5; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 10px 16px; background: var(--black); color: var(--white); }

@@ -12,7 +12,14 @@ export interface MatchDay {
     gatheringEstimated: boolean;
     kit: string | null;
     notes: string | null;
+    /** Skład na mecz: dostępni (pusta lista = nie ustalono) i kontuzjowani — ID zawodników kadry */
+    squad?: string[];
+    injured?: string[];
 }
+
+type RosterRow = { id: string; firstName: string; lastName: string; number?: number | null };
+type Availability = 'gra' | 'nie gra' | 'kontuzja';
+const AVAILABILITY: Availability[] = ['gra', 'nie gra', 'kontuzja'];
 
 const fieldLabel = 'grid gap-1.5 label-caps text-xs text-bkpk-text-secondary';
 const fieldControl =
@@ -54,18 +61,46 @@ function MatchDayEditor({ matchId, seasonId, matchDay, onSaved }: { matchId: str
     const [notes, setNotes] = useState(matchDay.notes ?? '');
     const [message, setMessage] = useState('');
     const [saving, setSaving] = useState(false);
+    const [roster, setRoster] = useState<RosterRow[]>([]);
+    // Brak ustalonego składu = wszyscy grają; kontuzjowani zawsze poza składem
+    const [availability, setAvailability] = useState<Record<string, Availability>>({});
+
+    useEffect(() => {
+        let active = true;
+        fetchJSON<RosterRow[]>(`/api/roster?seasonId=${encodeURIComponent(seasonId)}`)
+            .then((rows) => {
+                if (!active) return;
+                const list = (rows || []).slice().sort((a, b) => (a.number ?? 999) - (b.number ?? 999));
+                setRoster(list);
+                const squad = new Set(matchDay.squad || []);
+                const injured = new Set(matchDay.injured || []);
+                setAvailability(
+                    Object.fromEntries(
+                        list.map((p) => [p.id, injured.has(p.id) ? 'kontuzja' : squad.size && !squad.has(p.id) ? 'nie gra' : 'gra'])
+                    )
+                );
+            })
+            .catch(() => undefined);
+        return () => {
+            active = false;
+        };
+    }, [seasonId, matchDay.squad, matchDay.injured]);
 
     async function save(event: React.FormEvent) {
         event.preventDefault();
         setSaving(true);
         setMessage('');
         try {
+            const values = roster.map((p) => [p.id, availability[p.id] || 'gra'] as const);
+            const everyone = values.every(([, v]) => v === 'gra');
+            const squad = everyone ? [] : values.filter(([, v]) => v === 'gra').map(([id]) => id);
+            const injured = values.filter(([, v]) => v === 'kontuzja').map(([id]) => id);
             const result = await fetchJSON<{ matchDay: MatchDay }>(
                 `/api/admin/matches/${encodeURIComponent(seasonId)}/${encodeURIComponent(matchId)}/match-day`,
                 {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ matchDay: { gatheringTime, kit, notes } })
+                    body: JSON.stringify({ matchDay: { gatheringTime, kit, notes, squad, injured } })
                 }
             );
             setMessage('Zapisano.');
@@ -95,6 +130,42 @@ function MatchDayEditor({ matchId, seasonId, matchDay, onSaved }: { matchId: str
                     Uwagi dla drużyny
                     <textarea className={`${fieldControl} py-2 min-h-[88px]`} maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} />
                 </label>
+                {roster.length > 0 && (
+                    <fieldset className="sm:col-span-2 grid gap-2">
+                        <legend className="label-caps text-xs text-bkpk-text-secondary mb-1">Skład na mecz (odprawa i raport biorą tylko grających)</legend>
+                        {roster.map((p) => (
+                            <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-bkpk-border-subtle pb-2">
+                                <span className="text-sm text-bkpk-text-primary">
+                                    {p.number != null && <span className="tabular-nums text-bkpk-text-secondary mr-2">#{p.number}</span>}
+                                    {p.firstName} {p.lastName}
+                                </span>
+                                <span className="flex gap-1" role="radiogroup" aria-label={`${p.firstName} ${p.lastName}`}>
+                                    {AVAILABILITY.map((v) => {
+                                        const active = (availability[p.id] || 'gra') === v;
+                                        return (
+                                            <button
+                                                key={v}
+                                                type="button"
+                                                role="radio"
+                                                aria-checked={active}
+                                                onClick={() => setAvailability((prev) => ({ ...prev, [p.id]: v }))}
+                                                className={`min-h-[36px] px-2.5 label-caps text-[11px] border transition-colors ${
+                                                    active
+                                                        ? v === 'gra'
+                                                            ? 'bg-bkpk-primary border-bkpk-primary text-white'
+                                                            : 'bg-bkpk-text-primary border-bkpk-text-primary text-bkpk-bg'
+                                                        : 'border-bkpk-border-strong text-bkpk-text-secondary hover:border-bkpk-text-primary'
+                                                }`}
+                                            >
+                                                {v}
+                                            </button>
+                                        );
+                                    })}
+                                </span>
+                            </div>
+                        ))}
+                    </fieldset>
+                )}
                 <div className="sm:col-span-2 flex flex-wrap items-center gap-4">
                     <BkpkButton type="submit" variant="primary" size="sm" disabled={saving}>
                         {saving ? 'Zapisywanie…' : 'Zapisz'}
@@ -140,6 +211,15 @@ export default function MatchDayCard({
                     <dt className="label-caps text-xs text-bkpk-text-secondary">Strój</dt>
                     <dd className="text-sm font-semibold text-bkpk-text-primary">{current?.kit || 'trener poda'}</dd>
                 </div>
+                {(current?.squad?.length || current?.injured?.length) ? (
+                    <div className="col-span-2">
+                        <dt className="label-caps text-xs text-bkpk-text-secondary">Skład</dt>
+                        <dd className="text-sm text-bkpk-text-primary">
+                            {current?.squad?.length ? `${current.squad.length} zawodników ustalonych na mecz` : 'wszyscy dostępni'}
+                            {current?.injured?.length ? ` · kontuzje: ${current.injured.length}` : ''}
+                        </dd>
+                    </div>
+                ) : null}
                 {current?.notes && (
                     <div className="col-span-2">
                         <dt className="label-caps text-xs text-bkpk-text-secondary">Od trenera</dt>

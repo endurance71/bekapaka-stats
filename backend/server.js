@@ -226,7 +226,7 @@ app.get(['/api/print/pregame', '/print/pregame'], async (req, res) => {
       })
     ]);
     // Raport o rywalu (liczby z bazy); bez niego strona pokazuje samą odprawę
-    const report = await loadPregameReport({ seasonId, opponent }).catch((err) => {
+    const report = await loadPregameReport({ seasonId, opponent, matchDay: nextMatch?.matchDay ?? null }).catch((err) => {
       console.error('Pregame report data error:', err);
       return null;
     });

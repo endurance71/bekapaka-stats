@@ -11,7 +11,7 @@ import { findScoutingReport } from './scoutingData.js';
 import { loadOwnPlayerStats } from './pregameOwnStats.js';
 import { resolveSeasonId } from '../seasonService.js';
 import { getRoster, getNextOpponentScouting, getDetailedScouting } from '../dataStore.js';
-import { matchLogistics } from '../lib/matchDay.js';
+import { matchLogistics, squadForMatch } from '../lib/matchDay.js';
 
 function parseJson(raw, what) {
   try {
@@ -93,13 +93,15 @@ export async function preparePregame(input = {}) {
     throw err;
   }
 
-  const [roster, scoutingLookup, scoutingData] = await Promise.all([
+  const [fullRoster, scoutingLookup, scoutingData] = await Promise.all([
     getRoster(targetSeasonId),
     // Raport scoutingu tego sezonu (klucz sezonowy, fallback: stary klucz bez sezonu)
     findScoutingReport(String(opponent), targetSeasonId).catch(() => ({ report: null })),
     getDetailedScouting(String(opponent), targetSeasonId, { includeAiPayload: true }).catch(() => null)
   ]);
   const scoutingReport = scoutingLookup?.report || null;
+  // Skład na mecz z dnia meczowego: kontuzjowani i nieobecni nie trafiają do kadry w prompcie ani do piątki
+  const { available: roster, unavailable } = squadForMatch(fullRoster, nextMatch?.matchDay);
 
   // Statystyki rywala z tych samych danych co scouting (bez tekstu modelu) — źródło liczb dla odprawy.
   const ai = scoutingData?.aiPayload || null;
@@ -118,7 +120,7 @@ export async function preparePregame(input = {}) {
   // Liczby naszych zawodników (od 1 meczu) — do porównań z rywalami na karcie.
   const ownStats = await loadOwnPlayerStats(roster, targetSeasonId).catch(() => null);
 
-  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, ownStats, roster, nextMatch });
+  const user = buildPreGameCardUserPrompt({ opponentName: opponent, scoutingReport, opponentStats, ownStats, roster, unavailable, nextMatch });
   return {
     operation: 'panel.pregame',
     lockKey: `pregame:${targetSeasonId}:${String(opponent).toLowerCase()}`,
