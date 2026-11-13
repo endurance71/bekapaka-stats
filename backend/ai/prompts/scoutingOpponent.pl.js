@@ -26,10 +26,10 @@ ZASADY SEKCJI:
 - defense: wskaż słabość do atakowania — opieraj się na teamInfo.opponent.oppg, advancedStats.fourFactors.ftr i advancedStats.fourFactors.tov (gdy nie null). Jeśli oppg > ppg rywala o więcej niż 5 — odnotuj to jako defensywny problem.
 - verdict zaczynaj od "KLUCZ:" — jedna linia + pod spodem 2–3 bullet pointy taktyki dla naszej drużyny.
 - personnel.keyPlayers: wymień zawodników z keyPlayers po nazwisku z liczbami (ppg, rpg/apg, threePct, games).
-- personnel.threats: dla każdego z keyPlayers JEDNA konkretna akcja obronna w naszej strefie 2-3 oparta na jego liczbach (np. trójki: threePct i threePmPg → doskok; zbiórki: orbPg → zastawianie; straty: tovPg → pułapka). Linia zaczyna się od nazwiska i dwukropka.
-- personnel.matchups: jak nasza strefa 2-3 ma bronić tego rywala — 4–5 punktów: kogo górna linia (D1, D2) i skrzydła (D3, D4) doskakują na obwodzie, kogo D3–D5 zastawiają przy zbiórce, gdzie postawić pułapkę na zawodnika ze stratami, jak rywal może atakować strefę (rzut za 3, linia rzutów wolnych, druga szansa) — każdy punkt z liczbą z danych. Nie pisz o kryciu 1 na 1 ani o parach „X kryje Y”; jeśli brak danych o składzie BeKaPaKa — opisz same zadania miejsc strefy.
+- personnel.threats: dla każdego z keyPlayers JEDNA konkretna akcja obronna w naszej strefie 2-3 (która część strefy: górna linia, skrzydła, środek — bez nazwisk naszych zawodników) oparta na jego liczbach (np. trójki: threePct i threePmPg → doskok; zbiórki: orbPg → zastawianie; straty: tovPg → pułapka). Linia zaczyna się od nazwiska i dwukropka.
+- personnel.matchups: jak nasza strefa 2-3 ma bronić tego rywala — 4–5 punktów: kogo górna linia (D1, D2) i skrzydła (D3, D4) doskakują na obwodzie, kogo D3–D5 zastawiają przy zbiórce, gdzie postawić pułapkę na zawodnika ze stratami, jak rywal może atakować strefę (rzut za 3, linia rzutów wolnych, druga szansa) — każdy punkt z liczbą z danych. Nie pisz o kryciu 1 na 1 ani o parach „X kryje Y” i nie używaj nazwisk naszych zawodników — tylko miejsca strefy (górna linia D1–D2, dolne skrzydła D3–D4, środek D5); jeśli brak danych o składzie BeKaPaKa — opisz same zadania miejsc strefy.
 - personnel.bench: gdy teamSeasonAverages.benchPtsPg nie jest null — odnieś się do tej liczby; w przeciwnym razie napisz „brak danych o ławce”.
-- lockerRoom: 5 punktów — każdy to KONKRETNA instrukcja wykonywalna na boisku z nazwiskiem lub liczbą z danych, NIE ogólna motywacja.
+- lockerRoom: 5 punktów — każdy to KONKRETNA instrukcja wykonywalna na boisku z nazwiskiem rywala lub liczbą z danych, NIE ogólna motywacja; w obronie mów o miejscach strefy, nie o naszych nazwiskach.
 
 Odpowiedz WYŁĄCZNIE poprawnym JSON (bez markdown, bez komentarzy) w formacie:
 {

@@ -15,14 +15,14 @@ ZASADY ANTY-HALUCYNACYJNE:
 - Liczby i nazwiska rywali bierz WYŁĄCZNIE z sekcji „Dane o rywalu” (JSON). Nie wymyślaj statystyk, procentów ani zawodników.
 - Gdy wartość jest null lub jej brak — nie podawaj liczby (możesz napisać „brak danych”).
 - Pierwszą piątkę wybieraj WYŁĄCZNIE z „Kadra BeKaPaKa” — playerId, imię, nazwisko i numer skopiuj dokładnie z listy. Nie dopisuj zawodników spoza listy.
-- Każde założenie taktyczne (tacticalKeys) odwołuje się do konkretnej liczby lub zawodnika z danych o rywalu (np. PPG lidera, trójki, straty), jeśli takie dane są dostępne. Założenie obronne dotyczy gry strefą 2-3 przeciw temu rywalowi.
+- Każde założenie taktyczne (tacticalKeys) odwołuje się do konkretnej liczby lub zawodnika z danych o rywalu (np. PPG lidera, trójki, straty), jeśli takie dane są dostępne. Założenie obronne dotyczy gry strefą 2-3 przeciw temu rywalowi i mówi o miejscach strefy (górna linia D1–D2, dolne skrzydła D3–D4, środek D5), nie o naszych nazwiskach.
 - Liczby naszych zawodników bierz WYŁĄCZNIE z sekcji „Statystyki zawodników BeKaPaKa w sezonie” (JSON). Zawodnik z listy withoutGames nie ma meczów w sezonie — nie podawaj dla niego liczb.
 - Wszystkie mecze ligi rozgrywane są w hali ${DEFAULT_PREGAME_VENUE} — nie używaj pojęć „u siebie”, „na wyjeździe”, „we własnej hali”.
 
 ${TEAM_DEFENSE_RULES}
 PORÓWNANIA (OBOWIĄZKOWE):
 - position każdego zawodnika pierwszej piątki to jego miejsce w strefie: D1, D2, D3, D4 albo D5 (każde dokładnie raz). Na górną linię (D1, D2) wybieraj szybszych obrońców z przechwytami, na D5 najlepiej zbierającego.
-- assignment zaczyna się od miejsca w strefie („D5 — środek strefy.”), potem mówi, którzy rywale z keyPlayers atakują jego obszar i jak (rzut z dystansu, wejście, zbiórka w ataku, kozłowanie ze stratami), zawiera porównanie: 1–2 liczby naszego zawodnika i 1–2 liczby tych rywali dobrane do zadania (zbiórki przeciw zbieraczowi, przechwyty przeciw stratom, doskok przeciw trójkom), oraz wniosek, co robi na boisku. W ataku może dodać jedno zdanie o swoim zadaniu.
+- assignment zaczyna się od miejsca w strefie („D5 — środek strefy.”), część obronną pisze o miejscu (np. „D5 zastawia Dolika”), bez nazwiska naszego zawodnika, potem mówi, którzy rywale z keyPlayers atakują jego obszar i jak (rzut z dystansu, wejście, zbiórka w ataku, kozłowanie ze stratami), zawiera porównanie: 1–2 liczby naszego zawodnika i 1–2 liczby tych rywali dobrane do zadania (zbiórki przeciw zbieraczowi, przechwyty przeciw stratom, doskok przeciw trójkom), oraz wniosek, co robi na boisku. W ataku może dodać jedno zdanie o swoim zadaniu.
 - Porównuj także wtedy, gdy zawodnik (nasz albo rywala) zagrał tylko 1 lub 2 mecze — przy takiej liczbie dopisz próbę w nawiasie, np. „(1 mecz)”, „(2 mecze)”. Mała próba nie jest powodem, żeby pominąć porównanie.
 - Każdy z kluczowych zawodników rywala (keyPlayers) musi pojawić się w zadaniu przynajmniej jednego miejsca strefy (w piątce albo w benchKeys).
 - benchKeys: dla każdego rezerwowego, któremu dajesz zadanie, podaj 1–2 jego liczby z sezonu (z próbą przy 1–2 meczach) i wskaż, za kogo i na które miejsce strefy (D1–D5) wchodzi.
