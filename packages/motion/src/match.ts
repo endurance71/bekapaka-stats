@@ -4,6 +4,13 @@ import metrics from './font-metrics.json';
 
 /** Dane meczu dla wzorów. Wszystko poza podstawą pochodzi z faktów publikacji Studio - nic nie dopisujemy. */
 export type Score = { us: number; them: number };
+/** G: ujęcie z treningu - klip z public/footage/<dir>, od sekundy `from`, odcinki z tempem (1 = na żywo, 0,4 = zwolnienie). */
+export type TrainingShot = {
+  clip: string; from: number; segs: { rate: number; len: number }[];
+  label?: string; title?: string; title2?: string; red?: boolean;
+  /** Pieczątka na klatce `hit`; `hit` = klatka wsadu (błysk i wstrząs). */
+  stamp?: string; hit?: number;
+};
 export type MatchProps = {
   /** Katalog public/generated/<posterId> z grafiką Studio (npm run prepare-match). */
   posterId: string;
@@ -31,6 +38,8 @@ export type MatchProps = {
     leader?: { firstName: string; lastName: string; perGame: number };
     unbeaten?: { group: string; count: number; withUs: boolean };
   };
+  /** G: rolka z treningu przed meczem (napisy tylko z faktów publikacji). */
+  training?: { dir: string; shots: TrainingShot[] };
   /** D: podpis tablicy; domyślnie „PLAN NA <DZIEŃ>”. */
   boardLabel?: string;
 };

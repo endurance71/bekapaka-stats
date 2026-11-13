@@ -1,0 +1,28 @@
+{
+  "posterId": "maxbau-2026-11-14",
+  "opponent": "Maxbau Okna Dako PSP",
+  "opponentShort": "PSP",
+  "kickoff": "2026-11-14T17:40:00+01:00",
+  "venue": "KOSiR Koszalin",
+  "entry": "Wstęp wolny",
+  "round": "11. KOLEJKA KALK",
+  "source": "Publikacja Studio „Maxbau · dzień przed meczem” (terminarz Dywizji II na kalk-koszalin.com, stan na 9.11.2026; bilans 3 mecze, 3 wygrane wg protokołów). Klipy: trening 12–13.11.2026 (IMG_1976–1980, iPhone 4K 120 kl./s, HDR→SDR przez avconvert).",
+  "season": {
+    "label": "SEZON 2026/2027",
+    "scores": [
+      { "us": 86, "them": 20 },
+      { "us": 56, "them": 54 },
+      { "us": 68, "them": 48 }
+    ]
+  },
+  "training": {
+    "dir": "trening-2026-11-13",
+    "shots": [
+      { "clip": "IMG_1976.mov", "from": 0.36, "segs": [{ "rate": 1, "len": 44 }, { "rate": 0.4, "len": 64 }], "title": "TRENING", "title2": "PRZEDMECZOWY", "stamp": "ZROBIONY", "hit": 72 },
+      { "clip": "IMG_1977.mov", "from": 4.12, "segs": [{ "rate": 1, "len": 15 }, { "rate": 0.33, "len": 57 }], "label": "SEZON 2026/2027", "title": "3 MECZE", "hit": 36 },
+      { "clip": "IMG_1978.mov", "from": 1.75, "segs": [{ "rate": 1, "len": 27 }, { "rate": 0.45, "len": 45 }], "title": "3 WYGRANE", "red": true, "hit": 40 },
+      { "clip": "IMG_1980.mov", "from": 11.2, "segs": [{ "rate": 1, "len": 18 }, { "rate": 0.4, "len": 54 }], "label": "JUTRO", "title": "PO CZWARTĄ", "title2": "WYGRANĄ", "hit": 37 },
+      { "clip": "IMG_1980.mov", "from": 12.9, "segs": [{ "rate": 1, "len": 36 }], "title": "GOTOWI." }
+    ]
+  }
+}
