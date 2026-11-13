@@ -91,7 +91,8 @@ import { getPlayerHome } from './kalk/v2/home.js';
 import { matchLogistics, resolveMatchDay, validateMatchDay } from './lib/matchDay.js';
 import { buildIcsCalendar, leagueMatchToEvent, selectTeamMatches } from './lib/calendarIcs.js';
 import { normalizeGoals, validateGoals } from './lib/playerGoals.js';
-import { PRINT_SCRIPT, printErrorHtml, renderPregamePrintHtml, verifyPrintToken } from './lib/pregamePrint.js';
+import { PRINT_ASSETS, PRINT_SCRIPT, printErrorHtml, renderPregamePrintHtml, verifyPrintToken } from './lib/pregamePrint.js';
+import { loadPregameReport } from './lib/pregameReport.js';
 
 const execFile = promisify(execFileCb);
 const __filename = fileURLToPath(import.meta.url);
@@ -197,10 +198,17 @@ app.get(['/api/print/print.js', '/print/print.js'], (req, res) => {
   res.type('application/javascript').set('Cache-Control', 'public, max-age=300').send(PRINT_SCRIPT);
 });
 
+// Fonty i herb marki dla stron druku (tylko pliki z listy PRINT_ASSETS)
+app.get(['/api/print/assets/:name', '/print/assets/:name'], (req, res) => {
+  const asset = PRINT_ASSETS[req.params.name];
+  if (!asset) return res.status(404).end();
+  res.type(asset.type).set('Cache-Control', 'public, max-age=86400').sendFile(asset.file);
+});
+
 app.get(['/api/print/pregame', '/print/pregame'], async (req, res) => {
   res.set('Cache-Control', 'no-store');
   const target = verifyPrintToken(SECRET_KEY, req.query.t);
-  if (!target) return res.status(401).type('html').send(printErrorHtml('Link do druku wygasł — wróć do panelu i stuknij „Drukuj A4 / PDF” ponownie.'));
+  if (!target) return res.status(401).type('html').send(printErrorHtml('Link do druku wygasł — wróć do panelu i stuknij „Raport o rywalu — PDF” ponownie.'));
   try {
     const { seasonId, opponent } = target;
     const [briefing, nextMatch] = await Promise.all([
@@ -217,7 +225,12 @@ app.get(['/api/print/pregame', '/print/pregame'], async (req, res) => {
         orderBy: { date: 'asc' }
       })
     ]);
-    res.type('html').send(renderPregamePrintHtml({ briefing, logistics: matchLogistics(nextMatch), venue: nextMatch?.venue ?? null, opponent }));
+    // Raport o rywalu (liczby z bazy); bez niego strona pokazuje samą odprawę
+    const report = await loadPregameReport({ seasonId, opponent }).catch((err) => {
+      console.error('Pregame report data error:', err);
+      return null;
+    });
+    res.type('html').send(renderPregamePrintHtml({ briefing, logistics: matchLogistics(nextMatch), venue: nextMatch?.venue ?? null, opponent, report }));
   } catch (err) {
     console.error('Pregame print error:', err);
     res.status(500).type('html').send(printErrorHtml('Nie udało się przygotować odprawy do druku.'));

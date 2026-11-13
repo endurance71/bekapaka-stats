@@ -183,7 +183,7 @@ ${briefing.benchKeys ? `\n⚡ ŁAWKA: ${briefing.benchKeys}` : ''}${briefing.mot
               </BkpkButton>
               <BkpkButton variant="outline" size="sm" onClick={handlePrint}>
                 <Printer className="w-4 h-4 mr-1.5" />
-                Drukuj A4 / PDF
+                Raport o rywalu — PDF
               </BkpkButton>
             </>
           )}
