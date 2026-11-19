@@ -1,10 +1,18 @@
 {
   "posterId": "maxbau-2026-11-14",
   "opponent": "Maxbau Okna Dako PSP",
-  "opponentShort": "MO",
+  "opponentShort": "PSP",
   "kickoff": "2026-11-14T17:40:00+01:00",
   "venue": "KOSiR Koszalin",
   "entry": "Wstęp wolny",
   "round": "11. KOLEJKA KALK",
-  "source": "Następny mecz z faktów publikacji „Grubik · zapowiedź” (kalk-koszalin.com, stan na 2.11.2026). Przykład wzorów D i E dla długiej nazwy rywala; przed publikacją potwierdź fakty."
+  "source": "Publikacja Studio „Maxbau · zapowiedź” (terminarz Dywizji II na kalk-koszalin.com, stan na 9.11.2026; bilans po 9. kolejce, protokół nr 4184). Pierwszy mecz z rywalem w sezonie, więc bez h2h i bez wzoru B.",
+  "season": {
+    "label": "SEZON 2026/2027",
+    "scores": [
+      { "us": 86, "them": 20 },
+      { "us": 56, "them": 54 },
+      { "us": 68, "them": 48 }
+    ]
+  }
 }

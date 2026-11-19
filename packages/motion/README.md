@@ -14,6 +14,11 @@ i kończy się grafiką zapowiedzi ze Studio, więc typografia planszy końcowej
 
 Podstawa każdego meczu: `posterId`, `opponent`, `opponentShort`, `kickoff` (ISO ze strefą), `venue`, `entry`, `round`.
 
+Po meczu jest wzór `F-Wynik` (ok. 11–13 s): „WYGRANA” i wynik odliczany od zera → kwarty → liczby meczu (`highlights`) →
+lider → bilans sezonu → grafika „Wynik końcowy” ze Studio. Wymaga `result` (`us`, `them`; `halftime`, `quarters`,
+`highlights`, `leader` opcjonalnie). Plik meczu z `result` renderuje tylko F, więc zapowiedź i rolka po meczu to osobne
+pliki, np. `data/grubik-wynik-2026-11-07.json`. Fakty bierz z publikacji Studio „wynik meczu” (protokół KALK).
+
 Rolka z treningu: wzór `G-Trening` (ok. 18 s) z klipów telefonu: ujęcia ze zwolnieniem na wsadach (materiał 120 kl./s),
 napisy z faktów (bilans sezonu), potem starcie, godzina i plakat. Dane w `training` (`dir` w `public/footage/`, ujęcia z
 `from`, odcinkami `segs` {rate, len} i klatką wsadu `hit`), np. `data/maxbau-trening-2026-11-14.json`; renderuj go z nazwą
