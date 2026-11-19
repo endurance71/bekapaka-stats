@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const upsert = vi.fn(async ({ create }) => ({ id: 'b1', ...create }));
-vi.mock('../../lib/prisma.js', () => ({ prisma: { preGameBriefing: { upsert: (...a) => upsert(...a) } } }));
+const findFirst = vi.fn();
+vi.mock('../../lib/prisma.js', () => ({
+  prisma: { preGameBriefing: { upsert: (...a) => upsert(...a) }, leagueMatch: { findFirst: (...a) => findFirst(...a) } }
+}));
 
-const { pregameKeyIssues, savePregame } = await import('../../ai/tacticsOps.js');
+const { findPregameMatch, pregameKeyIssues, savePregame } = await import('../../ai/tacticsOps.js');
 const { renderPregamePrintHtml } = await import('../../lib/pregamePrint.js');
 
 const keys = () => [
@@ -60,5 +63,58 @@ describe('zapis karty przedmeczowej', () => {
     });
     expect(html).toContain('Hasło na mecz');
     expect(html).toContain('„Zero &lt;prezentów&gt;”');
+  });
+});
+
+// Terminarz BeKaPaKa: Maxbau rozegrany 14.11, najbliższy mecz to Młode Wilki 6.12.
+const schedule = [
+  { date: new Date('2026-11-14T16:40:00Z'), homeTeam: 'BeKaPaKa Bobolice', guestTeam: 'Maxbau Okna Dako PSP', isFinished: true, venue: 'ZOS - KOSiR' },
+  { date: new Date('2026-12-06T12:20:00Z'), homeTeam: 'BeKaPaKa Bobolice', guestTeam: 'Młode Wilki', isFinished: false, venue: 'ZOS - KOSiR' },
+  { date: new Date('2026-12-13T12:20:00Z'), homeTeam: 'Fasolki', guestTeam: 'BeKaPaKa Bobolice', isFinished: false, venue: 'ZOS - KOSiR' }
+];
+const has = (m, name) => [m.homeTeam, m.guestTeam].some((t) => t.toLowerCase().includes(name.toLowerCase()));
+// Minimalny odpowiednik zapytania Prisma używanego w findPregameMatch.
+const queryLeague = async ({ where, orderBy }) => {
+  const names = (where.AND || []).map((c) => c.OR[0].homeTeam.contains);
+  const rows = schedule
+    .filter((m) => m.isFinished === where.isFinished)
+    .filter((m) => (names.length ? names.every((n) => has(m, n)) : has(m, 'bekapaka')))
+    .sort((a, b) => (orderBy.date === 'asc' ? a.date - b.date : b.date - a.date));
+  return rows[0] || null;
+};
+
+describe('mecz karty przedmeczowej', () => {
+  beforeEach(() => {
+    findFirst.mockReset();
+    findFirst.mockImplementation(queryLeague);
+    upsert.mockClear();
+  });
+
+  it('bierze najbliższy mecz z tym rywalem, nie najbliższy mecz BeKaPaKa', async () => {
+    expect((await findPregameMatch('s1', 'Fasolki')).date.toISOString()).toBe('2026-12-13T12:20:00.000Z');
+    expect((await findPregameMatch('s1', 'Młode Wilki')).guestTeam).toBe('Młode Wilki');
+  });
+
+  it('dla rozegranego rywala bierze ostatni mecz z nim (karta zachowuje swoją datę)', async () => {
+    const m = await findPregameMatch('s1', 'Maxbau Okna Dako PSP');
+    expect(m.date.toISOString()).toBe('2026-11-14T16:40:00.000Z');
+    expect(m.isFinished).toBe(true);
+  });
+
+  it('bez rywala bierze najbliższy mecz BeKaPaKa', async () => {
+    expect((await findPregameMatch('s1', null)).guestTeam).toBe('Młode Wilki');
+    expect(await findPregameMatch(null, 'X')).toBeNull();
+  });
+
+  it('bez meczu w terminarzu nie nadpisuje daty, hali ani godzin karty', async () => {
+    await savePregame({ ...prep, nextMatch: null }, { tacticalKeys: keys(), startingFive: zone(), benchKeys: '', motivationalMotto: 'x' }, 'm');
+    const { update, create } = upsert.mock.calls[0][0];
+    for (const f of ['matchDate', 'venue', 'gatheringTime', 'tipoffTime', 'jerseyColor']) expect(update).not.toHaveProperty(f);
+    expect(create.venue).toBeTruthy();
+  });
+
+  it('z meczem zapisuje jego datę', async () => {
+    await savePregame({ ...prep, nextMatch: schedule[0] }, { tacticalKeys: keys(), startingFive: zone(), benchKeys: '', motivationalMotto: 'x' }, 'm');
+    expect(upsert.mock.calls[0][0].update.matchDate.toISOString()).toBe('2026-11-14T16:40:00.000Z');
   });
 });

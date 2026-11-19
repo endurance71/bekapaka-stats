@@ -64,28 +64,40 @@ export async function generatePlay(input) {
   return savePlay(prep, out.text, out.model);
 }
 
+const teamIs = (name) => ({
+  OR: [{ homeTeam: { contains: name, mode: 'insensitive' } }, { guestTeam: { contains: name, mode: 'insensitive' } }]
+});
+
+/**
+ * Mecz, którego dotyczy karta: najbliższy nierozegrany mecz BeKaPaKa z TYM rywalem, a gdy go nie ma —
+ * ostatni rozegrany z nim mecz (karta archiwalna zachowuje swoją datę). Bez rywala — najbliższy mecz BeKaPaKa.
+ * Wcześniej brany był zawsze najbliższy mecz BeKaPaKa, więc karta innego rywala dostawała cudzą datę i skład.
+ * @param {string|null} seasonId
+ * @param {string|null|undefined} opponent
+ */
+export async function findPregameMatch(seasonId, opponent) {
+  if (!seasonId) return null;
+  const bekapaka = teamIs('bekapaka');
+  const name = String(opponent || '').trim();
+  if (!name) {
+    return prisma.leagueMatch.findFirst({ where: { seasonId, isFinished: false, ...bekapaka }, orderBy: { date: 'asc' } });
+  }
+  const where = { seasonId, AND: [bekapaka, teamIs(name)] };
+  return (
+    (await prisma.leagueMatch.findFirst({ where: { ...where, isFinished: false }, orderBy: { date: 'asc' } })) ||
+    (await prisma.leagueMatch.findFirst({ where: { ...where, isFinished: true }, orderBy: { date: 'desc' } }))
+  );
+}
+
 /** @param {{ seasonId?: string, opponent?: string }} input */
 export async function preparePregame(input = {}) {
   const targetSeasonId = await resolveSeasonId(input.seasonId);
   let opponent = input.opponent;
-  let nextMatch = null;
 
   const nextScouting = await getNextOpponentScouting(targetSeasonId);
   if (!opponent && nextScouting?.opponent) opponent = nextScouting.opponent;
 
-  if (targetSeasonId) {
-    nextMatch = await prisma.leagueMatch.findFirst({
-      where: {
-        seasonId: targetSeasonId,
-        isFinished: false,
-        OR: [
-          { homeTeam: { contains: 'bekapaka', mode: 'insensitive' } },
-          { guestTeam: { contains: 'bekapaka', mode: 'insensitive' } }
-        ]
-      },
-      orderBy: { date: 'asc' }
-    });
-  }
+  const nextMatch = await findPregameMatch(targetSeasonId, opponent);
 
   if (!opponent) {
     const err = new Error('Brak zdefiniowanego rywala do odprawy');
@@ -191,13 +203,13 @@ export async function savePregame(prep, raw, model) {
     .filter(Boolean);
 
   // Godziny i strój tylko z terminarza i dnia meczowego (czas polski) — bez zgadywania
+  // Bez meczu w terminarzu nie nadpisujemy daty, hali ani godzin zapisanych wcześniej na karcie.
   const { matchDate, tipoffTime: tipoff, gatheringTime: gathering, kit } = matchLogistics(nextMatch);
+  const logistics = nextMatch
+    ? { matchDate, venue: nextMatch.venue || DEFAULT_PREGAME_VENUE, gatheringTime: gathering, tipoffTime: tipoff, jerseyColor: kit || '' }
+    : {};
   const data = {
-    matchDate,
-    venue: nextMatch?.venue || DEFAULT_PREGAME_VENUE,
-    gatheringTime: gathering,
-    tipoffTime: tipoff,
-    jerseyColor: kit || '',
+    ...logistics,
     tacticalKeys: parsed.tacticalKeys || [],
     startingFive: parsed.startingFive || [],
     benchKeys: parsed.benchKeys || null,
@@ -207,7 +219,7 @@ export async function savePregame(prep, raw, model) {
   };
   const briefing = await prisma.preGameBriefing.upsert({
     where: { seasonId_opponentName: { seasonId: prep.seasonId, opponentName: prep.opponent } },
-    create: { seasonId: prep.seasonId, opponentName: prep.opponent, ...data },
+    create: { seasonId: prep.seasonId, opponentName: prep.opponent, venue: DEFAULT_PREGAME_VENUE, jerseyColor: '', ...data },
     update: data
   });
   return { briefing, model };
