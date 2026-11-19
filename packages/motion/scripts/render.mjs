@@ -13,13 +13,16 @@ if (!fs.existsSync(path.join(pkg, 'public/generated', match.posterId, 'parts.jso
   throw new Error(`Najpierw: npm run prepare-match -- ${file}`);
 }
 // Te same warunki co `requires` we wzorach - tu tylko po to, żeby pominąć wzory bez danych zamiast przerywać.
+// Mecz z „result” to rolka po meczu (tylko F); bez niego zapowiedzi A–E.
+const preview = !match.result;
 const has = {
-  'A-Wracamy': () => match.headline,
-  'B-Rewanz': () => match.rematch,
-  'C-Forma': () => match.season?.scores?.length,
-  'D-Tablica': () => true,
-  'E-Redakcyjnie': () => true,
-  'G-Trening': () => match.training?.shots?.length,
+  'A-Wracamy': () => preview && match.headline,
+  'B-Rewanz': () => preview && match.rematch,
+  'C-Forma': () => preview && match.season?.scores?.length,
+  'D-Tablica': () => preview,
+  'E-Redakcyjnie': () => preview,
+  'F-Wynik': () => !preview,
+  'G-Trening': () => preview && match.training?.shots?.length,
 };
 const ids = wanted.length ? wanted : Object.keys(has).filter((id) => has[id]());
 const out = path.join(pkg, 'out', match.posterId);

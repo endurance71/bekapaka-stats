@@ -38,12 +38,11 @@ await sharp({ create: { width: 1080, height: 1920, channels: 3, background: '#ff
 // 2. Render Studio z danymi meczu.
 const { postTypes } = await import(pathToFileURL(path.join(studio, 'contracts.js')));
 const { fixture } = await import(pathToFileURL(path.join(studio, 'catalog-fixtures.js')));
-const type = postTypes.find((t) => t.id === 'preview');
 const out = path.join(pkg, 'public/generated', match.posterId);
 fs.mkdirSync(out, { recursive: true });
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bkpk-motion-'));
-const svgFor = (style) => {
-  const project = fixture(type, style);
+const svgFor = (style, typeId = 'preview') => {
+  const project = fixture(postTypes.find((t) => t.id === typeId), style);
   Object.assign(project.content, {
     opponent: match.opponent,
     opponentShort: match.opponentShort,
@@ -53,9 +52,10 @@ const svgFor = (style) => {
     entryInfo: match.entry || '',
     photoAssetId: null,
     kit: match.kit || 'A',
+    ...(typeId === 'final' ? { scoreUs: match.result.us, scoreThem: match.result.them, heroStats: [], quarters: [] } : {}),
   });
-  const dir = path.join(tmp, style);
-  const req = path.join(tmp, `${style}.json`);
+  const dir = path.join(tmp, `${typeId}-${style}`);
+  const req = path.join(tmp, `${typeId}-${style}.json`);
   fs.writeFileSync(req, JSON.stringify({ project, format: 'story', output: dir, mode: 'export', assets: {}, partners: [] }));
   const res = JSON.parse(execFileSync(python, [path.join(studio, 'renderer/render.py'), req], { encoding: 'utf8' }));
   if (res.error) throw new Error(`Studio: ${res.error}`);
@@ -65,5 +65,7 @@ const svgFor = (style) => {
 // 3. Części do animacji i plansza redakcyjna.
 execFileSync('python3', [path.join(here, 'split.py'), svgFor('sport'), out, match.opponent], { stdio: 'inherit' });
 await sharp(svgFor('editorial')).png().toFile(path.join(out, 'poster-editorial.png'));
+// Rolka po meczu (wzór F) kończy się grafiką „Wynik końcowy” ze Studio (styl sport, story).
+if (match.result) await sharp(svgFor('sport', 'final')).png().toFile(path.join(out, 'poster-final.png'));
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(`Gotowe: public/generated/${match.posterId}`);

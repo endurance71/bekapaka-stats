@@ -1,0 +1,34 @@
+{
+  "posterId": "grubik-wynik-2026-11-07",
+  "opponent": "Grubik Team",
+  "opponentShort": "GT",
+  "kickoff": "2026-11-07T16:50:00+01:00",
+  "venue": "KOSiR Koszalin",
+  "entry": "Wstęp wolny",
+  "round": "9. KOLEJKA KALK",
+  "source": "Publikacja Studio „Grubik · wynik meczu” (oficjalny protokół meczu nr 4184 z 7.11.2026).",
+  "result": {
+    "us": 68,
+    "them": 48,
+    "halftime": { "us": 33, "them": 27 },
+    "quarters": [
+      { "us": 22, "them": 16 },
+      { "us": 11, "them": 11 },
+      { "us": 19, "them": 10 },
+      { "us": 16, "them": 11 }
+    ],
+    "highlights": [
+      { "value": "+25", "label": ["NAJWYŻSZE", "PROWADZENIE"] },
+      { "value": "22", "label": ["PUNKTY", "Z KONTR"] }
+    ],
+    "leader": { "firstName": "Filip", "lastName": "Karpiński", "points": 20, "line": "10/16 Z GRY · 7 ZBIÓREK" }
+  },
+  "season": {
+    "label": "SEZON 2026/2027",
+    "scores": [
+      { "us": 86, "them": 20 },
+      { "us": 56, "them": 54 },
+      { "us": 68, "them": 48 }
+    ]
+  }
+}

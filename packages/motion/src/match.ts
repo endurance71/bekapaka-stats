@@ -42,6 +42,14 @@ export type MatchProps = {
   training?: { dir: string; shots: TrainingShot[] };
   /** D: podpis tablicy; domyślnie „PLAN NA <DZIEŃ>”. */
   boardLabel?: string;
+  /** F: wynik rozegranego meczu (fakty publikacji „wynik meczu”). Z nim plik meczu renderuje tylko F. */
+  result?: Score & {
+    halftime?: Score;
+    quarters?: Score[];
+    /** Liczby meczu: wartość i 1–2 wiersze podpisu, np. { value: '+25', label: ['NAJWYŻSZE', 'PROWADZENIE'] }. */
+    highlights?: { value: string; label: string[] }[];
+    leader?: { firstName: string; lastName: string; points: number; line?: string };
+  };
 };
 
 // ---------- daty po polsku (strefa z ISO meczu, nie z komputera) ----------
