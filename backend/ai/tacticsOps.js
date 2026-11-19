@@ -141,10 +141,37 @@ export async function cachedPregame(prep) {
   return existing ? { briefing: existing, cached: true } : null;
 }
 
+const PREGAME_FOCUS = ['defense', 'offense', 'transition'];
+
+/**
+ * Braki w kluczach taktycznych karty (kontrakt PREGAME_CARD_SCHEMA) — pusta lista = OK.
+ * Bez `focus` karta i druk tracą etykietę Obrona/Atak/Przejście, więc taki wynik odrzucamy.
+ * @param {unknown} keys
+ * @returns {string[]}
+ */
+export function pregameKeyIssues(keys) {
+  if (!Array.isArray(keys) || keys.length !== 3) return ['dokładnie 3 klucze taktyczne'];
+  const issues = [];
+  keys.forEach((k, i) => {
+    const n = i + 1;
+    if (!String(k?.title || '').trim()) issues.push(`klucz ${n}: brak tytułu (title)`);
+    if (!String(k?.description || '').trim()) issues.push(`klucz ${n}: brak opisu (description)`);
+    if (!PREGAME_FOCUS.includes(k?.focus)) issues.push(`klucz ${n}: focus musi być jednym z ${PREGAME_FOCUS.join(', ')}`);
+  });
+  return issues;
+}
+
 export async function savePregame(prep, raw, model) {
   const parsed = parseJson(raw, 'karta odprawy');
   // Ten sam kontrakt co schemat (Gemini wymusza go po stronie API; inne silniki i agent — tutaj).
-  if (!Array.isArray(parsed?.tacticalKeys) || parsed.tacticalKeys.length !== 3) throw new Error('Karta odprawy musi mieć dokładnie 3 klucze taktyczne');
+  const keyIssues = pregameKeyIssues(parsed?.tacticalKeys);
+  if (keyIssues.length) throw new Error(`Karta odprawy nie spełnia wymaganej struktury: ${keyIssues.join('; ')}`);
+  parsed.tacticalKeys = parsed.tacticalKeys.map((k, i) => ({
+    number: Number.isInteger(k.number) ? k.number : i + 1,
+    title: String(k.title).trim(),
+    description: String(k.description).trim(),
+    focus: k.focus
+  }));
   if (!Array.isArray(parsed?.startingFive) || parsed.startingFive.length !== 5) throw new Error('Karta odprawy musi mieć dokładnie 5 miejsc strefy (D1–D5)');
   const { roster, nextMatch } = prep;
   // Anty-halucynacja: w piątce tylko zawodnicy z kadry (dopasowanie po playerId lub imieniu i nazwisku).
@@ -174,6 +201,7 @@ export async function savePregame(prep, raw, model) {
     tacticalKeys: parsed.tacticalKeys || [],
     startingFive: parsed.startingFive || [],
     benchKeys: parsed.benchKeys || null,
+    motivationalMotto: String(parsed.motivationalMotto || '').trim() || null,
     generatedByAi: true,
     model
   };
