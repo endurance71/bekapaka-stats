@@ -16,7 +16,7 @@ __pycache__/
 *.tsbuildinfo
 
 # Node.js
-node_modules/
+node_modules
 site/node_modules/
 site/.next/
 cms/node_modules/
@@ -46,7 +46,7 @@ pnpm-debug.log*
 .env
 .env.production
 .env.local
-.venv/
+.venv
 venv/
 ENV/
 
@@ -69,7 +69,7 @@ scratch/
 
 # BeKaPaKa Studio private files and Python runtime
 data/studio/
-backend/studio/.venv/
+backend/studio/.venv
 studio/playwright-report/
 studio/test-results/
 studio/*.tsbuildinfo
