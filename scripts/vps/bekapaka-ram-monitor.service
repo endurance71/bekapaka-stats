@@ -1,0 +1,18 @@
+[Unit]
+Description=BeKaPaKa RAM monitor snapshot
+After=docker.service
+
+[Service]
+Type=oneshot
+# root: docker stats (gniazdo Dockera) i zapis do /var/log.
+# Progi nadpisuje się przez `systemctl edit bekapaka-ram-monitor.service`, np.:
+#   [Service]
+#   Environment=BKP_RAM_WARN_AVAIL_MIB=1536 BKP_RAM_CRIT_AVAIL_MIB=768
+ExecStart=/usr/local/bin/bekapaka-ram-monitor
+# Zawieszony `docker stats` nie może blokować kolejnych pomiarów.
+TimeoutStartSec=2min
+Nice=10
+IOSchedulingClass=idle
+NoNewPrivileges=true
+ProtectHome=true
+PrivateTmp=true
