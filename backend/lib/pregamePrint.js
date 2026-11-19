@@ -593,6 +593,7 @@ export function renderPregamePrintHtml({ briefing, logistics, venue, opponent, r
   ${vHead ? `<section class="klucz"><b>${esc(vHead.replace(/^KLUCZ:\s*/i, ''))}</b>${vRest.length ? mdLite(vRest.join('\n')) : ''}</section>` : ''}
   ${keys ? `<section class="card"><h2>3 kluczowe założenia</h2><div class="keys">${keys}</div></section>` : ''}
   ${locker.length ? `<section class="card szatnia"><h2>Szatnia — 5 rzeczy przed wyjściem</h2><ol>${locker.map((l) => `<li><span class="box"></span>${esc(l)}</li>`).join('')}</ol></section>` : ''}
+  ${String(briefing?.motivationalMotto || '').trim() ? `<section class="card text motto"><h2>Hasło na mecz</h2><p><b>„${esc(String(briefing.motivationalMotto).trim())}”</b></p></section>` : ''}
   ${!briefing ? '<p class="empty">Odprawa na ten mecz nie jest jeszcze gotowa.</p>' : ''}
   ${footer(opponent)}
 </section>`;

@@ -612,6 +612,7 @@ model PreGameBriefing {
   tacticalKeys  Json        // 3 kluczowe założenia [ { title, description, focus } ]
   startingFive  Json        // [ { playerId, name, number, position, assignment } ]
   benchKeys     String?     @db.Text
+  motivationalMotto String? @db.Text // hasło na mecz (1 zdanie)
   
   generatedByAi Boolean     @default(true)
   model         String?
