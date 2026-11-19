@@ -238,7 +238,7 @@ Na współdzielonym VPS **RAM jest wąskim gardłem** przy deployach Docker, bui
 | Plik | Rola |
 |------|------|
 | `scripts/vps/ram-monitor.sh` | Co 5 min: log dostępnej RAM, load, `docker stats`, top RSS; alert do syslog przy progach |
-| `scripts/vps/install-ram-monitor.sh` | Instalacja na VPS (`/usr/local/bin`, cron `/etc/cron.d/bekapaka-ram-monitor`) |
+| `scripts/vps/install-ram-monitor.sh` | Instalacja na VPS (`/usr/local/bin`, timer systemd `bekapaka-ram-monitor.timer`; host nie ma demona cron) |
 | `scripts/vps/vps-optimize.sh` | Jednorazowa optymalizacja: swap, prune cache/obrazów, journal, apt (bez `docker compose down` MOYA) |
 
 ### Instalacja / aktualizacja monitora (na VPS)
@@ -254,9 +254,10 @@ sudo bash scripts/vps/install-ram-monitor.sh
 tail -f /var/log/bekapaka-ram.log
 tail -20 /var/log/bekapaka-ram-alerts.log
 journalctl -t bekapaka-ram --since "1 hour ago"
+systemctl list-timers bekapaka-ram-monitor.timer
 ```
 
-### Progi domyślne (zmienne środowiskowe w cronie, opcjonalnie)
+### Progi domyślne (opcjonalnie `Environment=` w `systemctl edit bekapaka-ram-monitor.service`)
 
 | Zmienna | Domyślnie | Znaczenie |
 |---------|-----------|-----------|

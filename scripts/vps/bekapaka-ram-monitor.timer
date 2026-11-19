@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule BeKaPaKa RAM monitor (every 5 min)
+
+[Timer]
+# Host nie ma demona cron, dlatego timer systemd (jak bekapaka-kalk-sync i studio-backup).
+OnCalendar=*:0/5
+AccuracySec=30s
+Unit=bekapaka-ram-monitor.service
+
+[Install]
+WantedBy=timers.target

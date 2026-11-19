@@ -10,14 +10,15 @@ Dokument uzupełnia [vps-runbook.md](./vps-runbook.md). Dotyczy współdzieloneg
 | **Dysk (74 GiB)** | Cache buildów Docker (`docker builder`), stare obrazy | Drugi po deployach |
 | **CPU (4 vCPU)** | Zwykle niski load | Zapas |
 
-Optymalizacja z czerwca 2026 na produkcji: dysk spadł z ~83% do ~31% użycia po `docker builder prune` i usunięciu nieużywanych obrazów; dodano **swap 2 GiB** i **cron monitora RAM** co 5 minut.
+Optymalizacja z czerwca 2026 na produkcji: dysk spadł z ~83% do ~31% użycia po `docker builder prune` i usunięciu nieużywanych obrazów; dodano **swap 2 GiB** i **monitor RAM** co 5 minut (od 19.11.2026 timer systemd: host nie ma demona cron, więc wpis w `/etc/cron.d` nigdy się nie uruchamiał i log był pusty od czerwca).
 
 ## Skrypty (`scripts/vps/`)
 
 | Plik | Uruchomienie | Opis |
 |------|--------------|------|
-| `ram-monitor.sh` | Cron (root, co 5 min) | Log RAM, load, `docker stats`, top RSS; alert syslog przy progach |
-| `install-ram-monitor.sh` | `sudo bash …` na VPS | Instalacja do `/usr/local/bin/bekapaka-ram-monitor`, cron, logrotate |
+| `ram-monitor.sh` | Timer systemd `bekapaka-ram-monitor.timer` (root, co 5 min) | Log RAM, load, `docker stats`, top RSS; alert syslog przy progach |
+| `install-ram-monitor.sh` | `sudo bash …` na VPS | Instalacja do `/usr/local/bin/bekapaka-ram-monitor`, timer systemd, logrotate; usuwa stary `/etc/cron.d/bekapaka-ram-monitor` |
+| `bekapaka-ram-monitor.service` / `.timer` | przez `install-ram-monitor.sh` | Pomiar co 5 min (`OnCalendar=*:0/5`) |
 | `vps-optimize.sh` | `sudo bash …` na VPS | Swap (jeśli brak), prune cache/obrazów, journal, apt, npm cache |
 | `bekapaka-ram.logrotate` | przez `install-ram-monitor.sh` | Rotacja logów `/var/log/bekapaka-ram*.log` |
 
@@ -55,7 +56,8 @@ free -h
 tail -f /var/log/bekapaka-ram.log
 tail -20 /var/log/bekapaka-ram-alerts.log
 journalctl -t bekapaka-ram --since "24 hours ago"
-sudo /usr/local/bin/bekapaka-ram-monitor   # jednorazowy snapshot
+sudo systemctl start bekapaka-ram-monitor.service   # jednorazowy snapshot
+systemctl list-timers bekapaka-ram-monitor.timer   # kiedy następny pomiar
 ```
 
 ### Progi alertów (domyślne)
@@ -65,10 +67,11 @@ sudo /usr/local/bin/bekapaka-ram-monitor   # jednorazowy snapshot
 | Ostrzeżenie | dostępna RAM &lt; **1024 MiB** lub zajęte ≥ **85%** |
 | Krytyczne | dostępna RAM &lt; **512 MiB** lub zajęte ≥ **92%** |
 
-Nadpisanie (np. w `/etc/cron.d/bekapaka-ram-monitor` przed komendą):
+Nadpisanie przez drop-in systemd (`sudo systemctl edit bekapaka-ram-monitor.service`):
 
-```bash
-BKP_RAM_WARN_AVAIL_MIB=1536 BKP_RAM_CRIT_AVAIL_MIB=768 /usr/local/bin/bekapaka-ram-monitor
+```ini
+[Service]
+Environment=BKP_RAM_WARN_AVAIL_MIB=1536 BKP_RAM_CRIT_AVAIL_MIB=768
 ```
 
 ### Kto zużywa RAM (orientacyjnie)
