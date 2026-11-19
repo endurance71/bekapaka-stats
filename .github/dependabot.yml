@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # nginx is pinned (1.30.7-alpine, 2026-11-19), so its fixes do not arrive by
+  # themselves. Dependabot proposes the next 1.30.x patch once a week; a new
+  # minor or major line stays a decision for a person. Only nginx: the build
+  # stages (node) in the same files are not part of this.
+  - package-ecosystem: docker
+    directories:
+      - /frontend
+      - /studio
+    schedule:
+      interval: weekly
+    allow:
+      - dependency-name: nginx
+    ignore:
+      - dependency-name: nginx
+        update-types:
+          - version-update:semver-major
+          - version-update:semver-minor
