@@ -12,7 +12,7 @@ ENV VITE_COPY_FULL_PUBLIC=1
 RUN npm run build
 
 # Step 2: Serve
-FROM nginx:alpine
+FROM nginx:1.30.7-alpine
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
 RUN chmod -R a+rX /usr/share/nginx/html
 COPY frontend/nginx.prod.conf /etc/nginx/conf.d/default.conf
